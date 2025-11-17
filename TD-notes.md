@@ -8,41 +8,41 @@
 
 **desktop**
 
-&nbsp;	- jednodušší
+ 	- jednodušší
 
-&nbsp;	- přistup k datům aplikace
+ 	- přistup k datům aplikace
 
 
 
-&nbsp;	- nemožnost přístupu jednoduše z telefonu
+ 	- nemožnost přístupu jednoduše z telefonu
 
-&nbsp;	- malá možnost budoucího rozšíření
+ 	- malá možnost budoucího rozšíření
 
 
 
 **webová aplikace**
 
-&nbsp;	- techologické možnosti:
+ 	- techologické možnosti:
 
-&nbsp;		- HTML, JS, JQUERY, PHP + databáze SQL
+ 		- HTML, JS, JQUERY, PHP + databáze SQL
 
-&nbsp;		- HTML, JS, Springboot + SQL databáze
+ 		- HTML, JS, Springboot + SQL databáze
 
-&nbsp;		- HTML JS, Node.js, + SQL databáze
+ 		- HTML JS, Node.js, + SQL databáze
 
-&nbsp;		- React.js / Angular
+ 		- React.js / Angular
 
-&nbsp;	- přístup z webu, i z mobilu
+ 	- přístup z webu, i z mobilu
 
-&nbsp;		- traininglog.gyarab.cz / Azure / naše NAS - veřejná IP
+ 		- traininglog.gyarab.cz / Azure / naše NAS - veřejná IP
 
-&nbsp;	- možnost rozšíření
+ 	- možnost rozšíření
 
 
 
-&nbsp;	- těžší na implementaci
+ 	- těžší na implementaci
 
-&nbsp;	- přístup k datům aplikace
+ 	- přístup k datům aplikace
 
 
 
@@ -56,7 +56,7 @@
 
 \- přístup pod uživatelskými účty
 
-&nbsp;	- přistup trenéra pro vytváření plánů - UI pro jednoduché vytváření plánů (ukládání, filtrování podle typu tréninku)
+ 	- přistup trenéra pro vytváření plánů - UI pro jednoduché vytváření plánů (ukládání, filtrování podle typu tréninku)
 
 \- našeptávač - doporučování tréninků podle už splněných tréninků
 
@@ -71,8 +71,4 @@
 \- přehled zátěže, odběhaných kilometrů atd. samostatná stránka v aplikaci,
 
 možnost filtrování a zobrazení dat jako v statshunters.com
-
-
-
-
 
