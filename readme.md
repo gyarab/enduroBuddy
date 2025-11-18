@@ -41,15 +41,15 @@ Projekt vznikl v rámci individuální odborné činnosti (IOČ).
 - **Zpracování dat:** Parsování FIT souborů a jejich převod do interní struktury.
 - **Analytická vrstva:** Výpočet statistik, trendů a průměrných hodnot.
 - **Uživatelské rozhraní:** Přehledné zobrazení tréninkových výsledků, tabulek a grafů.
-
+<!-- 
 ---
 
 ## Testování
 Testování aplikace probíhalo pomocí:
 - ručního testování funkcionalit,
 - ověřování správnosti výpočtů a zobrazených dat,
-- porovnávání výsledků s daty z Garmin Connect.
-<!-- 
+- porovnávání výsledků s daty z Garmin Connect. -->
+
 ---
 
 ## Uživatelská příručka
