@@ -34,7 +34,7 @@
 
  	- přístup z webu, i z mobilu
 
- 		- traininglog.gyarab.cz / Azure / naše NAS - veřejná IP
+ 		- ?traininglog.gyarab.cz? / Azure - for students / !NAS - veřejná IP!
 
  	- možnost rozšíření
 
