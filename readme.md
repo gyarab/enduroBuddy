@@ -48,7 +48,7 @@ Projekt vznikl v rámci individuální odborné činnosti (IOČ).
 Testování aplikace probíhalo pomocí:
 - ručního testování funkcionalit,
 - ověřování správnosti výpočtů a zobrazených dat,
-- porovnávání výsledků s daty z Garmin Connect. -->
+- porovnávání výsledků s daty z Garmin Connect.
 
 ---
 
