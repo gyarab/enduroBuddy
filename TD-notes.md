@@ -24,13 +24,19 @@
 
  	- techologické možnosti:
 
- 		- HTML, JS, JQUERY, PHP + databáze SQL
+ 		- *HTML, JS, JQUERY, PHP + databáze SQL*
+ 		- ReactJS, HTML, JS, JQUERY, PHP + databáze SQL
+ 		- Angular, HTML, JS, JQUERY, PHP + databáze SQL
 
- 		- HTML, JS, Springboot + SQL databáze
+ 		- **HTML, JS, JQuery, Springboot + SQL databáze**
+ 		- ReactJS, HTML, JS, JQuery, Springboot + SQL databáze
+ 		- Angular, HTML, JS, JQuery, Springboot + SQL databáze
 
- 		- HTML JS, Node.js, + SQL databáze
+ 		- HTML, JS, JQuery, Node.js, + SQL databáze
+ 		- ReactJS, HTML, JS, JQuery, Node.js, + SQL databáze
+ 		- Angular, HTML, JS, JQuery, Node.js, + SQL databáze
 
- 		- React.js / Angular
+        -.fit SDK - Java / JS / Python
 
  	- přístup z webu, i z mobilu
 
