@@ -36,7 +36,7 @@
  		- ReactJS, HTML, JS, JQuery, Node.js, + SQL databáze
  		- Angular, HTML, JS, JQuery, Node.js, + SQL databáze
 
-        - .fit SDK - Java / JS / Python
+        - fit SDK - Java / JS / Python
 
  	- přístup z webu, i z mobilu
 
