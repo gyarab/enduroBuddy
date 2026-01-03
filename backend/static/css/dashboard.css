@@ -1,0 +1,84 @@
+/* 1) Main vertical scroll area (like the scrollbar on the right in your wireframe) */
+.main-scroll {
+  height: calc(100vh - 210px); /* uprav si podle pocitu */
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 6px; /* aby se obsah netlačil pod scrollbar */
+}
+
+/* 2) Week cards */
+.week-card {
+  background: #fff;
+  border: 2px solid #212529;
+  border-radius: 18px;
+  padding: 12px;
+  margin-bottom: 24px; /* bigger gap between weeks */
+}
+
+.week-title {
+  font-weight: 800;
+  font-size: 1.05rem;
+  margin-bottom: 10px;
+}
+
+/* 3) IMPORTANT: always side-by-side */
+.week-content {
+  display: flex;
+  gap: 16px;
+  flex-wrap: nowrap; /* NEVER stack */
+}
+
+/* columns */
+.week-col {
+  flex: 1 1 0;
+  min-width: 0; /* allows inner overflow scroll to work correctly */
+}
+
+/* left a bit wider than right (like wireframe) */
+.week-col:first-child {
+  flex: 1.35 1 0;
+}
+
+/* 4) Horizontal scrollbars for tables */
+.table-scroll {
+  width: 100%;
+  overflow-x: auto;  /* horizontal scrollbar if needed */
+  overflow-y: hidden;
+  border-radius: 12px;
+}
+
+/* Make sure tables can expand horizontally */
+.table {
+  min-width: 720px; /* so the horizontal scroll appears when space is smaller */
+}
+
+/* 5) Sticky table head inside the scroll area */
+.sticky-thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: #f8f9fa; /* same as table-light */
+}
+
+/* Total row under right table */
+.week-total {
+  margin-top: 8px;
+  padding-top: 6px;
+  border-top: 2px solid #212529;
+}
+
+/* Placeholder for Week II dummy */
+.placeholder-box {
+  border: 1px dashed #adb5bd;
+  border-radius: 12px;
+  padding: 14px;
+  color: #6c757d;
+}
+
+/* Month switch bar */
+.month-switch {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}

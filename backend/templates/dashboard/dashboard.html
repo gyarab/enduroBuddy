@@ -1,104 +1,108 @@
 {% extends "base.html" %}
+{% load static %}
+
 {% block title %}Training view | EnduroBuddy{% endblock %}
 
-{% block content %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+{% endblock %}
 
+{% block content %}
 <div class="d-flex justify-content-between align-items-center mb-3">
-  <h3 class="mb-0">Training view</h3>
+  <h3 class="mb-0">Training plan</h3>
   <button class="btn btn-success btn-sm" disabled>Import training</button>
 </div>
 
-<div class="card shadow-sm">
-  <div class="card-body p-0">
+<!-- ========= ONE MAIN SCROLL AREA (vertical scrollbar on the right) ========= -->
+<div class="main-scroll">
 
-    <!-- Tabulka tréninků -->
-    <div class="table-responsive">
-      <table class="table table-striped table-sm align-middle mb-0">
-        <thead class="table-dark">
-          <tr>
-            <th style="width: 70px;">Week</th>
-            <th style="width: 80px;">Date</th>
-            <th style="width: 90px;">Day</th>
-            <th>Training</th>
-            <th style="width: 220px;">Notes-trainer</th>
-          </tr>
-        </thead>
+  <!-- ===================== WEEK CARD ===================== -->
+  <section class="week-card">
+    <div class="week-title">Week I.</div>
 
-        <tbody>
-          <tr>
-            <td>I.</td>
-            <td>1.1</td>
-            <td>Mon</td>
-            <td>2R 15–20×400m ANP, P=45s, 2V</td>
-            <td></td>
-          </tr>
-          <tr>
-            <td></td>
-            <td>2.1</td>
-            <td>Tue</td>
-            <td>10 km klus</td>
-            <td></td>
-          </tr>
-          <tr>
-            <td></td>
-            <td>3.1</td>
-            <td>Wed</td>
-            <td>3R 3×4×200m kopec, 200m MK, P=4′, 3V</td>
-            <td></td>
-          </tr>
-          <tr>
-            <td></td>
-            <td>4.1</td>
-            <td>Thu</td>
-            <td>volno</td>
-            <td></td>
-          </tr>
-          <tr>
-            <td></td>
-            <td>5.1</td>
-            <td>Fri</td>
-            <td>2R 8 km fartlek (3′ svižně, 2′ klus) 2V</td>
-            <td></td>
-          </tr>
-          <tr>
-            <td></td>
-            <td>6.1</td>
-            <td>Sat</td>
-            <td>6–8 km regenerační klus + lehce plyometrie, posilka</td>
-            <td></td>
-          </tr>
-          <tr>
-            <td></td>
-            <td>7.1</td>
-            <td>Sun</td>
-            <td>16–18 km Z2–Z3</td>
-            <td></td>
-          </tr>
+    <!-- Always side by side -->
+    <div class="week-content">
 
-          <tr class="table-secondary">
-            <td>II.</td>
-            <td>8.1</td>
-            <td>Mon</td>
-            <td>2R 4×2km ANP P=2:30, 2V</td>
-            <td></td>
-          </tr>
-        </tbody>
-      </table>
+      <!-- LEFT: Plan -->
+      <div class="week-col">
+        <div class="table-scroll">
+          <table class="table table-sm table-bordered align-middle mb-0">
+            <thead class="table-light sticky-thead">
+              <tr>
+                <th style="width: 90px;">Date</th>
+                <th style="width: 90px;">Day</th>
+                <th>Training</th>
+                <th style="width: 220px;">Coach notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>1.1</td><td>Mon</td><td>10 km easy</td><td></td></tr>
+              <tr><td>2.1</td><td>Tue</td><td>15×400m ANP, P=45s</td><td></td></tr>
+              <tr><td>3.1</td><td>Wed</td><td>Rest / mobility</td><td></td></tr>
+              <tr><td>4.1</td><td>Thu</td><td>Tempo 6 km</td><td></td></tr>
+              <tr><td>5.1</td><td>Fri</td><td>Fartlek</td><td></td></tr>
+              <tr><td>6.1</td><td>Sat</td><td>Easy + strength</td><td></td></tr>
+              <tr><td>7.1</td><td>Sun</td><td>Long run Z2</td><td></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- RIGHT: Result / Analysis -->
+      <div class="week-col">
+        <div class="table-scroll">
+          <table class="table table-sm table-bordered align-middle mb-0">
+            <thead class="table-light sticky-thead">
+              <tr>
+                <th style="min-width: 160px;">Splits</th>
+                <th style="width: 120px;">Time</th>
+                <th style="width: 120px;">Distance</th>
+                <th style="width: 90px;">HR</th>
+                <th style="min-width: 180px;">Feel</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- zatím prázdné řádky -->
+              <tr><td></td><td></td><td></td><td></td><td></td></tr>
+              <tr><td></td><td></td><td></td><td></td><td></td></tr>
+              <tr><td></td><td></td><td></td><td></td><td></td></tr>
+              <tr><td></td><td></td><td></td><td></td><td></td></tr>
+              <tr><td></td><td></td><td></td><td></td><td></td></tr>
+              <tr><td></td><td></td><td></td><td></td><td></td></tr>
+              <tr><td></td><td></td><td></td><td></td><td></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="week-total">
+          <strong>Total:</strong>
+        </div>
+      </div>
+
     </div>
+  </section>
 
-  </div>
+  <!-- ===================== WEEK CARD (dummy) ===================== -->
+  <section class="week-card">
+    <div class="week-title">Week II.</div>
+
+    <div class="week-content">
+      <div class="week-col">
+        <div class="placeholder-box">Planned trainings…</div>
+      </div>
+      <div class="week-col">
+        <div class="placeholder-box">Analysis…</div>
+      </div>
+    </div>
+  </section>
+
 </div>
 
-<!-- "Month buttons" dole jako ve wireframu -->
-<div class="d-flex gap-2 mt-3 flex-wrap">
-  <button class="btn btn-outline-secondary btn-sm" disabled>Month 8</button>
-  <button class="btn btn-outline-secondary btn-sm" disabled>Month 7</button>
-  <button class="btn btn-outline-secondary btn-sm" disabled>Month 6</button>
-  <button class="btn btn-outline-secondary btn-sm" disabled>Month 5</button>
-  <button class="btn btn-outline-secondary btn-sm" disabled>Month 4</button>
-  <button class="btn btn-outline-secondary btn-sm" disabled>Month 3</button>
-  <button class="btn btn-outline-secondary btn-sm" disabled>Month 2</button>
-  <button class="btn btn-outline-secondary btn-sm" disabled>Month 1</button>
+<!-- Month switch (outside main vertical scroll so it stays visible) -->
+<div class="month-switch">
+  <button class="btn btn-outline-secondary btn-sm">Month 8</button>
+  <button class="btn btn-outline-secondary btn-sm active">Month 7</button>
+  <button class="btn btn-outline-secondary btn-sm">Month 6</button>
+  <button class="btn btn-outline-secondary btn-sm">Month 5</button>
 </div>
-
 {% endblock %}
