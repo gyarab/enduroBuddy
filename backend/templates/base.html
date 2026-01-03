@@ -1,41 +1,43 @@
 <!doctype html>
 <html lang="cs">
-  <head>
+
+<head>
     <meta charset="utf-8" />
     <title>{% block title %}EnduroBuddy{% endblock %}</title>
 
     <!-- Bootstrap 5 (CDN) -->
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-  </head>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+</head>
 
-  <body class="bg-light">
+<body class="bg-light">
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-      <div class="container-fluid">
-        <a class="navbar-brand" href="/">EnduroBuddy</a>
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">EnduroBuddy</a>
 
-        {% if user.is_authenticated %}
-          <div class="d-flex gap-2">
-            <a class="btn btn-outline-light btn-sm" href="/">Training view</a>
-            <a class="btn btn-outline-light btn-sm" href="#">Statistics</a>
-            <a class="btn btn-outline-light btn-sm" href="#">Activities</a>
-          </div>
+            {% if user.is_authenticated %}
+            <div class="d-flex gap-2">
+                <a class="btn btn-outline-light btn-sm" href="/">Training view</a>
+                <a class="btn btn-outline-light btn-sm" href="#">Statistics</a>
+                <a class="btn btn-outline-light btn-sm" href="#">Activities</a>
+            </div>
 
-          <div class="ms-auto">
-            <a class="btn btn-outline-warning btn-sm" href="{% url 'logout' %}">
-              Sign out
-            </a>
-          </div>
-        {% endif %}
-      </div>
+            <div class="ms-auto">
+                <form method="post" action="{% url 'logout' %}" class="ms-auto">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-warning btn-sm">
+                        Sign out
+                    </button>
+                </form>
+            </div>
+            {% endif %}
+        </div>
     </nav>
 
     <main class="container my-4">
-      {% block content %}{% endblock %}
+        {% block content %}{% endblock %}
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-  </body>
+</body>
+
 </html>
