@@ -1,0 +1,247 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Training view | EnduroBuddy{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<style>
+  /* ---- layout inspired by wireframe (cards + tables) ---- */
+  .main-scroll{
+    border: 2px solid #111;
+    border-radius: 18px;
+    padding: 14px;
+    max-height: calc(100vh - 220px);
+    overflow-y: auto;
+    background: #fff;
+  }
+
+  .week-card{
+    border: 2px solid #111;
+    border-radius: 18px;
+    padding: 12px;
+    margin-bottom: 18px;
+    background: #fff;
+  }
+
+  .week-title{
+    font-weight: 800;
+    font-size: 18px;
+    margin: 4px 8px 10px 8px;
+  }
+
+  /* always side-by-side */
+  .week-content{
+    display: flex;
+    gap: 18px;
+    align-items: stretch;
+    flex-wrap: nowrap;
+  }
+
+  .week-col{
+    flex: 1;
+    min-width: 420px;
+  }
+  .week-col:first-child{
+    flex: 1.2;
+    min-width: 520px;
+  }
+
+  /* keep tables scrollable inside the card if needed */
+  .table-scroll{
+    border: 2px solid #111;
+    border-radius: 14px;
+    overflow: auto;
+    max-height: 320px;
+    background: #fff;
+  }
+
+  .sticky-thead{
+    position: sticky;
+    top: 0;
+    z-index: 2;
+  }
+
+  .week-total{
+    margin-top: 10px;
+    padding: 10px 8px 6px 8px;
+    border-top: 2px solid #111;
+    font-weight: 800;
+  }
+
+  /* Month switch stays outside the main scroll */
+  .month-switch{
+    display: flex;
+    gap: 10px;
+    margin-top: 12px;
+    padding-top: 6px;
+  }
+
+  /* responsive fallback (optional); comment out if you truly want ALWAYS side-by-side */
+  @media (max-width: 1100px){
+    .week-content{
+      flex-direction: column;
+    }
+    .week-col, .week-col:first-child{
+      min-width: unset;
+    }
+  }
+
+  /* optional: make bootstrap tables feel more "wireframe" */
+  .table-bordered > :not(caption) > * > *{
+    border-color: #111;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h3 class="mb-0">Training plan</h3>
+  <button class="btn btn-success btn-sm" type="button" disabled>Import training</button>
+</div>
+
+<!-- ========= ONE MAIN SCROLL AREA (vertical scrollbar on the right) ========= -->
+<div class="main-scroll">
+
+  <!-- ===================== WEEK CARD ===================== -->
+  <section class="week-card">
+    <div class="week-title">Week I.</div>
+
+    <!-- Always side by side -->
+    <div class="week-content">
+
+      <!-- LEFT: Plan (kept from valid HTML version: card + table) -->
+      <div class="week-col">
+        <div class="table-scroll">
+          <table class="table table-sm table-bordered align-middle mb-0">
+            <caption class="visually-hidden">Training plan table – Week I</caption>
+            <thead class="table-light sticky-thead">
+              <tr>
+                <th scope="col" style="width: 90px;">Date</th>
+                <th scope="col" style="width: 90px;">Day</th>
+                <th scope="col">Training</th>
+                <th scope="col" style="width: 220px;">Coach notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>1.1</td><td>Mon</td><td>10 km easy</td><td></td></tr>
+              <tr><td>2.1</td><td>Tue</td><td>15×400m ANP, P=45s</td><td></td></tr>
+              <tr><td>3.1</td><td>Wed</td><td>Rest / mobility</td><td></td></tr>
+              <tr><td>4.1</td><td>Thu</td><td>Tempo 6 km</td><td></td></tr>
+              <tr><td>5.1</td><td>Fri</td><td>Fartlek</td><td></td></tr>
+              <tr><td>6.1</td><td>Sat</td><td>Easy + strength</td><td></td></tr>
+              <tr><td>7.1</td><td>Sun</td><td>Long run Z2</td><td></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- RIGHT: Result / Analysis (kept from valid HTML version: card + table + total) -->
+      <div class="week-col">
+        <div class="table-scroll">
+          <table class="table table-sm table-bordered align-middle mb-0">
+            <caption class="visually-hidden">Week I analysis table – splits, time, distance, HR, feel</caption>
+            <thead class="table-light sticky-thead">
+              <tr>
+                <th scope="col" style="min-width: 160px;">Splits</th>
+                <th scope="col" style="width: 120px;">Time</th>
+                <th scope="col" style="width: 120px;">Distance</th>
+                <th scope="col" style="width: 90px;">HR</th>
+                <th scope="col" style="min-width: 180px;">Feel</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- zatím prázdné řádky -->
+              <tr><td></td><td></td><td></td><td></td><td></td></tr>
+              <tr><td></td><td></td><td></td><td></td><td></td></tr>
+              <tr><td></td><td></td><td></td><td></td><td></td></tr>
+              <tr><td></td><td></td><td></td><td></td><td></td></tr>
+              <tr><td></td><td></td><td></td><td></td><td></td></tr>
+              <tr><td></td><td></td><td></td><td></td><td></td></tr>
+              <tr><td></td><td></td><td></td><td></td><td></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="week-total">
+          <strong>Total:</strong>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===================== WEEK CARD (second week; keep same card+tables structure) ===================== -->
+  <section class="week-card">
+    <div class="week-title">Week II.</div>
+
+    <div class="week-content">
+      <!-- LEFT -->
+      <div class="week-col">
+        <div class="table-scroll">
+          <table class="table table-sm table-bordered align-middle mb-0">
+            <caption class="visually-hidden">Training plan table – Week II</caption>
+            <thead class="table-light sticky-thead">
+              <tr>
+                <th scope="col" style="width: 90px;">Date</th>
+                <th scope="col" style="width: 90px;">Day</th>
+                <th scope="col">Training</th>
+                <th scope="col" style="width: 220px;">Coach notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td></td><td></td><td></td><td></td></tr>
+              <tr><td></td><td></td><td></td><td></td></tr>
+              <tr><td></td><td></td><td></td><td></td></tr>
+              <tr><td></td><td></td><td></td><td></td></tr>
+              <tr><td></td><td></td><td></td><td></td></tr>
+              <tr><td></td><td></td><td></td><td></td></tr>
+              <tr><td></td><td></td><td></td><td></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- RIGHT -->
+      <div class="week-col">
+        <div class="table-scroll">
+          <table class="table table-sm table-bordered align-middle mb-0">
+            <caption class="visually-hidden">Week II analysis table – splits, time, distance, HR, feel</caption>
+            <thead class="table-light sticky-thead">
+              <tr>
+                <th scope="col" style="min-width: 160px;">Splits</th>
+                <th scope="col" style="width: 120px;">Time</th>
+                <th scope="col" style="width: 120px;">Distance</th>
+                <th scope="col" style="width: 90px;">HR</th>
+                <th scope="col" style="min-width: 180px;">Feel</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td></td><td></td><td></td><td></td><td></td></tr>
+              <tr><td></td><td></td><td></td><td></td><td></td></tr>
+              <tr><td></td><td></td><td></td><td></td><td></td></tr>
+              <tr><td></td><td></td><td></td><td></td><td></td></tr>
+              <tr><td></td><td></td><td></td><td></td><td></td></tr>
+              <tr><td></td><td></td><td></td><td></td><td></td></tr>
+              <tr><td></td><td></td><td></td><td></td><td></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="week-total">
+          <strong>Total:</strong>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- Month switch (outside main vertical scroll so it stays visible) -->
+<div class="month-switch">
+  <button class="btn btn-outline-secondary btn-sm" type="button">Month 8</button>
+  <button class="btn btn-outline-secondary btn-sm active" type="button" aria-current="true">Month 7</button>
+  <button class="btn btn-outline-secondary btn-sm" type="button">Month 6</button>
+  <button class="btn btn-outline-secondary btn-sm" type="button">Month 5</button>
+</div>
+{% endblock %}
