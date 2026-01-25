@@ -1,84 +1,169 @@
-/* 1) Main vertical scroll area (like the scrollbar on the right in your wireframe) */
-.main-scroll {
-  height: calc(100vh - 210px); /* uprav si podle pocitu */
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding-right: 6px; /* aby se obsah netlačil pod scrollbar */
+/* Page layout like wireframe */
+.eb-page {
+  background: #f6f7f8;
+  min-height: 100vh;
 }
 
-/* 2) Week cards */
-.week-card {
+.eb-navbar {
+  background: #ffffff;
+}
+
+.eb-navbtn {
+  border: 2px solid #111;
+  border-radius: 10px;
+  padding: 6px 12px;
   background: #fff;
-  border: 2px solid #212529;
-  border-radius: 18px;
-  padding: 12px;
-  margin-bottom: 24px; /* bigger gap between weeks */
+  font-weight: 600;
 }
 
-.week-title {
-  font-weight: 800;
-  font-size: 1.05rem;
-  margin-bottom: 10px;
+.eb-logoutbtn {
+  border: 2px solid #111;
+  border-radius: 12px;
+  padding: 8px 14px;
+  background: #fff;
+  font-weight: 700;
 }
 
-/* 3) IMPORTANT: always side-by-side */
-.week-content {
+.eb-shell {
   display: flex;
-  gap: 16px;
-  flex-wrap: nowrap; /* NEVER stack */
+  flex-direction: column;
+  height: calc(100vh - 56px); /* minus navbar */
 }
 
-/* columns */
-.week-col {
-  flex: 1 1 0;
-  min-width: 0; /* allows inner overflow scroll to work correctly */
+.eb-header {
+  background: #ffffff;
+  padding: 14px 16px;
 }
 
-/* left a bit wider than right (like wireframe) */
-.week-col:first-child {
-  flex: 1.35 1 0;
+.eb-section-title {
+  font-size: 1.25rem;
+  font-weight: 800;
 }
 
-/* 4) Horizontal scrollbars for tables */
-.table-scroll {
-  width: 100%;
-  overflow-x: auto;  /* horizontal scrollbar if needed */
+.eb-importbtn {
+  border: 2px solid #111;
+  border-radius: 12px;
+  background: #fff;
+  font-weight: 700;
+  padding: 8px 14px;
+}
+
+.eb-content {
+  flex: 1;
+  overflow-y: auto; /* vertical scrollbar like wireframe */
+  padding: 14px 16px 18px;
+}
+
+.eb-week-card {
+  border: 2px solid #111;
+  border-radius: 18px;
+  background: #fff;
+  margin-bottom: 16px; /* bigger gap between weeks */
+}
+
+.eb-week-inner {
+  display: grid;
+  grid-template-columns: 1.25fr 1fr; /* left bigger than right */
+  gap: 14px;
+  padding: 12px;
+}
+
+@media (max-width: 992px) {
+  .eb-week-inner {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Panel (left/right) like “rounded box inside card” */
+.eb-panel {
+  border: 2px solid #111;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+}
+
+.eb-week-title {
+  padding: 10px 12px;
+  font-weight: 800;
+  border-bottom: 2px solid #111;
+}
+
+.eb-week-title-spacer {
+  color: transparent; /* keep same height on right side */
+}
+
+.eb-tablewrap {
+  overflow-x: auto; /* horizontal scroll if table wider */
   overflow-y: hidden;
-  border-radius: 12px;
 }
 
-/* Make sure tables can expand horizontally */
-.table {
-  min-width: 720px; /* so the horizontal scroll appears when space is smaller */
+.eb-table {
+  margin: 0;
 }
 
-/* 5) Sticky table head inside the scroll area */
-.sticky-thead th {
-  position: sticky;
-  top: 0;
-  z-index: 2;
-  background: #f8f9fa; /* same as table-light */
+.eb-table thead th {
+  border-bottom: 2px solid #111 !important;
+  background: #fff;
+  font-weight: 800;
+  white-space: nowrap;
 }
 
-/* Total row under right table */
-.week-total {
-  margin-top: 8px;
-  padding-top: 6px;
-  border-top: 2px solid #212529;
+.eb-table td {
+  vertical-align: middle;
+  white-space: nowrap;
 }
 
-/* Placeholder for Week II dummy */
-.placeholder-box {
-  border: 1px dashed #adb5bd;
-  border-radius: 12px;
-  padding: 14px;
-  color: #6c757d;
+.eb-panel-footer {
+  height: 14px; /* little “empty” line area like wireframe */
+  border-top: 2px solid #111;
 }
 
-/* Month switch bar */
-.month-switch {
+.eb-total {
+  border-top: 2px solid #111;
+  padding: 8px 12px;
   display: flex;
   gap: 8px;
-  margin-top: 12px;
-  flex-wrap: wrap;
+  align-items: center;
+}
+
+.eb-total-label {
+  font-weight: 800;
+}
+
+.eb-total-value {
+  opacity: 0.8;
+}
+
+/* Column sizing like wireframe */
+.eb-col-date { width: 70px; }
+.eb-col-day { width: 70px; }
+.eb-col-notes { width: 160px; }
+
+.eb-col-time { width: 90px; }
+.eb-col-dist { width: 110px; }
+.eb-col-hr { width: 70px; }
+.eb-col-feel { width: 90px; }
+
+/* Bottom month bar */
+.eb-monthbar {
+  background: #ffffff;
+  padding: 10px 12px;
+}
+
+.eb-monthbar-inner {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto; /* horizontal scrollbar like wireframe */
+  padding-bottom: 6px;
+}
+
+.eb-monthbtn {
+  border: 2px solid #111;
+  border-radius: 12px;
+  background: #fff;
+  font-weight: 800;
+  padding: 8px 14px;
+  white-space: nowrap;
 }
