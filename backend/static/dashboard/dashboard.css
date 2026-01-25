@@ -1,0 +1,33 @@
+/* PAGE */
+.eb-page {
+  background: #f5f6f8;
+}
+
+/* WEEK CARDS */
+.eb-week-card {
+  margin-bottom: 32px;
+  border: 1px solid #ddd;
+}
+
+/* SCROLL AREA */
+.eb-scroll-area {
+  max-height: calc(100vh - 160px);
+  overflow-y: auto;
+  padding-bottom: 20px;
+}
+
+/* TABLE SCROLL */
+.eb-table-scroll {
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+/* MONTH SWITCHER */
+.eb-month-switcher {
+  position: sticky;
+  bottom: 0;
+  background: #fff;
+  border-top: 1px solid #ddd;
+  z-index: 100;
+  box-shadow: 0 -2px 8px rgba(0,0,0,0.08);
+}
