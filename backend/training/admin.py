@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import TrainingMonth, TrainingWeek, PlannedTraining
+from .models import TrainingMonth, TrainingWeek, PlannedTraining, CompletedTraining
 
 
 @admin.register(TrainingMonth)
@@ -20,3 +20,8 @@ class PlannedTrainingAdmin(admin.ModelAdmin):
     list_display = ("week", "day_label", "title", "planned_distance_km", "order_in_day")
     list_filter = ("week__training_month__year", "week__training_month__month", "day_label")
     search_fields = ("title", "week__training_month__athlete__username")
+
+@admin.register(CompletedTraining)
+class CompletedTrainingAdmin(admin.ModelAdmin):
+    list_display = ("planned", "distance_m", "time_seconds", "avg_hr", "feel", "updated_at")
+    search_fields = ("planned__training_text", "planned__week__month__athlete__username")
