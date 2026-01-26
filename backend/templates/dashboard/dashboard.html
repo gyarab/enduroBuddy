@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Training view | EnduroBuddy{% endblock %}
 
@@ -12,301 +13,149 @@
   </div>
 
   <!-- ONE COMMON SCROLL AREA (plan + splits move together) -->
-  <div class="border rounded-3 bg-white p-2" style="height: calc(100vh - 180px); overflow: auto;">
+  <div class="border rounded-3 bg-white p-2 eb-scrollwrap">
 
-    <!-- WEEK 1 (cards side by side) -->
-    <div class="mb-4">
-      <div class="row g-3 align-items-stretch">
+    {# ===================== MONTHS (each month contains weeks) ===================== #}
 
-        <!-- LEFT: Week plan card -->
-        <div class="col-12 col-lg-7">
-          <div class="card shadow-sm h-100">
-            <div class="card-body">
+    {% for m in month_cards %}
 
-              <div class="d-flex justify-content-between align-items-center mb-2">
-                <h5 class="mb-0">Week I.</h5>
-                <small class="text-muted">Planned</small>
-              </div>
-
-              <div class="table-responsive">
-                <table class="table table-sm align-middle mb-0">
-                  <thead class="table-light">
-                    <tr>
-                      <th style="width: 90px;">Date</th>
-                      <th style="width: 90px;">Day</th>
-                      <th style="min-width: 420px;">Training</th>
-                      <th style="min-width: 220px;">Coach notes</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>1.1.</td>
-                      <td>Mon</td>
-                      <td>2R 15–20×400m ANP, P=45s 2V</td>
-                      <td></td>
-                    </tr>
-                    <tr>
-                      <td>2.1.</td>
-                      <td>Tue</td>
-                      <td>10 km klus</td>
-                      <td></td>
-                    </tr>
-                    <tr>
-                      <td>3.1.</td>
-                      <td>Wed</td>
-                      <td>3R 3×4×200m kopec, 200m MK, P=4’ 3V</td>
-                      <td></td>
-                    </tr>
-                    <tr>
-                      <td>4.1.</td>
-                      <td>Thu</td>
-                      <td>volno</td>
-                      <td></td>
-                    </tr>
-                    <tr>
-                      <td>5.1.</td>
-                      <td>Fri</td>
-                      <td>2R 8 km fartlek (3’ svižně, 2’ klus) 2V</td>
-                      <td></td>
-                    </tr>
-                    <tr>
-                      <td>6.1.</td>
-                      <td>Sat</td>
-                      <td>6–8 km regenerační klus + lehce plyometrie</td>
-                      <td></td>
-                    </tr>
-                    <tr>
-                      <td>7.1.</td>
-                      <td>Sun</td>
-                      <td>16–18 km Z2–Z3</td>
-                      <td></td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-
-            </div>
-          </div>
+      {# Anchor for month switcher buttons #}
+      <div id="month-{{ m.id }}" class="mb-3">
+        <div class="d-flex align-items-center justify-content-between">
+          <h5 class="mb-0">{{ m.label }}</h5>
+          <small class="text-muted">{{ m.weeks|length }} weeks</small>
         </div>
-
-        <!-- RIGHT: Week splits card -->
-        <div class="col-12 col-lg-5">
-          <div class="card shadow-sm h-100">
-            <div class="card-body">
-
-              <div class="d-flex justify-content-between align-items-center mb-2">
-                <h5 class="mb-0">Splits</h5>
-                <small class="text-muted">Completed</small>
-              </div>
-
-              <div class="table-responsive">
-                <table class="table table-sm align-middle mb-0">
-                  <thead class="table-light">
-                    <tr>
-                      <th style="min-width: 200px;">splits</th>
-                      <th style="width: 110px;">time</th>
-                      <th style="width: 120px;">distance</th>
-                      <th style="width: 90px;">HR</th>
-                      <th style="width: 120px;">feel</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td class="text-muted">—</td>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                    </tr>
-                    <tr>
-                      <td class="text-muted">—</td>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                    </tr>
-                    <tr>
-                      <td class="text-muted">—</td>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                    </tr>
-                    <tr>
-                      <td class="text-muted">—</td>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                    </tr>
-                    <tr>
-                      <td class="text-muted">—</td>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                    </tr>
-                  </tbody>
-                  <tfoot class="table-light">
-                    <tr>
-                      <th colspan="5">Total:</th>
-                    </tr>
-                  </tfoot>
-                </table>
-              </div>
-
-            </div>
-          </div>
-        </div>
-
       </div>
-    </div>
 
-    <!-- WEEK 2 (cards side by side) -->
-    <div class="mb-4">
-      <div class="row g-3 align-items-stretch">
+      {# ===================== WEEKS (cards side by side) ===================== #}
+      {% for w in m.weeks %}
+        <div class="mb-4">
+          <div class="row g-3 align-items-stretch">
 
-        <div class="col-12 col-lg-7">
-          <div class="card shadow-sm h-100">
-            <div class="card-body">
+            <!-- LEFT: Week plan card -->
+            <div class="col-12 col-lg-7">
+              <div class="card shadow-sm h-100">
+                <div class="card-body">
 
-              <div class="d-flex justify-content-between align-items-center mb-2">
-                <h5 class="mb-0">Week II.</h5>
-                <small class="text-muted">Planned</small>
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h5 class="mb-0">Week {{ w.week_index }}.</h5>
+                    <small class="text-muted">Planned</small>
+                  </div>
+
+                  <div class="table-responsive">
+                    <table class="table table-sm align-middle mb-0">
+                      <thead class="table-light">
+                        <tr>
+                          <th style="width: 90px;">Date</th>
+                          <th style="width: 90px;">Day</th>
+                          <th style="min-width: 420px;">Training</th>
+                          <th style="min-width: 220px;">Coach notes</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% for t in w.planned_trainings.all %}
+                          <tr>
+                            {# Date (pokud model nemá date, nahraď třeba t.date_label) #}
+                            <td>
+                              {% if t.date %}
+                                {{ t.date|date:"j.n." }}
+                              {% else %}
+                                —
+                              {% endif %}
+                            </td>
+
+                            {# Day label (Mon/Tue...) - pokud nemáš, klidně zobraz t.day_label nebo — #}
+                            <td>
+                              {% if t.day_label %}
+                                {{ t.day_label }}
+                              {% else %}
+                                —
+                              {% endif %}
+                            </td>
+
+                            {# Training text #}
+                            <td>{{ t.title }}</td>
+
+                            {# Coach notes #}
+                            <td>{% if t.notes %}{{ t.notes }}{% endif %}</td>
+                          </tr>
+                        {% empty %}
+                          <tr>
+                            <td colspan="4" class="text-muted small">
+                              No planned trainings in this week yet.
+                            </td>
+                          </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                  </div>
+
+                </div>
               </div>
-
-              <div class="table-responsive">
-                <table class="table table-sm align-middle mb-0">
-                  <thead class="table-light">
-                    <tr>
-                      <th style="width: 90px;">Date</th>
-                      <th style="width: 90px;">Day</th>
-                      <th style="min-width: 420px;">Training</th>
-                      <th style="min-width: 220px;">Coach notes</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>8.1.</td>
-                      <td>Mon</td>
-                      <td>2R 4×2 km ANP P=2,5’ 2V</td>
-                      <td></td>
-                    </tr>
-                    <tr>
-                      <td>9.1.</td>
-                      <td>Tue</td>
-                      <td>10 km klus</td>
-                      <td></td>
-                    </tr>
-                    <tr>
-                      <td>10.1.</td>
-                      <td>Wed</td>
-                      <td>volno</td>
-                      <td></td>
-                    </tr>
-                    <tr>
-                      <td>11.1.</td>
-                      <td>Thu</td>
-                      <td>4×(1 km svižně / 500 m volně)</td>
-                      <td></td>
-                    </tr>
-                    <tr>
-                      <td>12.1.</td>
-                      <td>Fri</td>
-                      <td>8 km regeneračně</td>
-                      <td></td>
-                    </tr>
-                    <tr>
-                      <td>13.1.</td>
-                      <td>Sat</td>
-                      <td>posilovna / mobility</td>
-                      <td></td>
-                    </tr>
-                    <tr>
-                      <td>14.1.</td>
-                      <td>Sun</td>
-                      <td>18–20 km Z2</td>
-                      <td></td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-
             </div>
+
+            <!-- RIGHT: Week splits card -->
+            <div class="col-12 col-lg-5">
+              <div class="card shadow-sm h-100">
+                <div class="card-body">
+
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h5 class="mb-0">Splits</h5>
+                    <small class="text-muted">Completed</small>
+                  </div>
+
+                  <div class="table-responsive">
+                    <table class="table table-sm align-middle mb-0">
+                      <thead class="table-light">
+                        <tr>
+                          <th style="min-width: 200px;">splits</th>
+                          <th style="width: 110px;">time</th>
+                          <th style="width: 120px;">distance</th>
+                          <th style="width: 90px;">HR</th>
+                          <th style="width: 120px;">feel</th>
+                        </tr>
+                      </thead>
+
+                      {# MVP: zatím jen placeholder řádky navázané na plán (ať je to “vedle sebe” a sedí to) #}
+                      <tbody>
+                        {% for t in w.planned_trainings.all %}
+                          <tr>
+                            <td class="text-muted">—</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                          </tr>
+                        {% empty %}
+                          <tr>
+                            <td colspan="5" class="text-muted small">No rows yet.</td>
+                          </tr>
+                        {% endfor %}
+                      </tbody>
+
+                      <tfoot class="table-light">
+                        <tr>
+                          <th colspan="5">Total:</th>
+                        </tr>
+                      </tfoot>
+                    </table>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
+      {% empty %}
+        <div class="text-muted small mb-4">No weeks in this month yet.</div>
+      {% endfor %}
 
-        <div class="col-12 col-lg-5">
-          <div class="card shadow-sm h-100">
-            <div class="card-body">
-
-              <div class="d-flex justify-content-between align-items-center mb-2">
-                <h5 class="mb-0">Splits</h5>
-                <small class="text-muted">Completed</small>
-              </div>
-
-              <div class="table-responsive">
-                <table class="table table-sm align-middle mb-0">
-                  <thead class="table-light">
-                    <tr>
-                      <th style="min-width: 200px;">splits</th>
-                      <th style="width: 110px;">time</th>
-                      <th style="width: 120px;">distance</th>
-                      <th style="width: 90px;">HR</th>
-                      <th style="width: 120px;">feel</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td class="text-muted">—</td>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                    </tr>
-                    <tr>
-                      <td class="text-muted">—</td>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                    </tr>
-                    <tr>
-                      <td class="text-muted">—</td>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                    </tr>
-                    <tr>
-                      <td class="text-muted">—</td>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                    </tr>
-                    <tr>
-                      <td class="text-muted">—</td>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                    </tr>
-                  </tbody>
-                  <tfoot class="table-light">
-                    <tr>
-                      <th colspan="5">Total:</th>
-                    </tr>
-                  </tfoot>
-                </table>
-              </div>
-
-            </div>
-          </div>
-        </div>
-
+    {% empty %}
+      <div class="text-muted small">
+        No months yet. Create a TrainingMonth in admin for your user.
       </div>
-    </div>
+    {% endfor %}
 
   </div>
 
@@ -314,22 +163,16 @@
   <div class="eb-month-switcher border-top bg-white">
     <div class="container-fluid py-2">
       <div class="d-flex gap-2 flex-wrap">
-        <button class="btn btn-outline-dark btn-sm">Month 1</button>
-        <button class="btn btn-outline-dark btn-sm">Month 2</button>
-        <button class="btn btn-outline-dark btn-sm">Month 3</button>
-        <button class="btn btn-outline-dark btn-sm">Month 4</button>
-        <button class="btn btn-outline-dark btn-sm">Month 5</button>
-        <button class="btn btn-outline-dark btn-sm">Month 6</button>
-        <button class="btn btn-outline-dark btn-sm">Month 7</button>
-        <button class="btn btn-outline-dark btn-sm">Month 8</button>
-        <button class="btn btn-outline-dark btn-sm">Month 9</button>
-        <button class="btn btn-outline-dark btn-sm">Month 10</button>
-        <button class="btn btn-outline-dark btn-sm">Month 11</button>
-        <button class="btn btn-outline-dark btn-sm">Month 12</button>
+        {% for m in month_cards %}
+          <a class="btn btn-outline-dark btn-sm" href="#month-{{ m.id }}">
+            {{ m.label }}
+          </a>
+        {% empty %}
+          <button class="btn btn-outline-dark btn-sm" disabled>No months</button>
+        {% endfor %}
       </div>
     </div>
   </div>
-
 
 </div>
 {% endblock %}
