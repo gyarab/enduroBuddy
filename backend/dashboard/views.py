@@ -14,7 +14,10 @@ def home(request):
     months = (
         TrainingMonth.objects
         .filter(athlete=request.user)
-        .prefetch_related("weeks__planned_trainings")
+        .prefetch_related(
+            "weeks",
+            "weeks__planned_trainings",
+            "weeks__planned_trainings__completed")
         .order_by("-year", "-month")[:6]
     )
 

@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.conf import settings
 
 class TrainingMonth(models.Model):
     athlete = models.ForeignKey(User, on_delete=models.CASCADE, related_name='training_months')
@@ -44,3 +45,23 @@ class PlannedTraining(models.Model):
 
     def __str__(self):
         return f"{self.day_label}: {self.title}"
+    
+class CompletedTraining(models.Model):
+    planned = models.OneToOneField(
+        "PlannedTraining",
+        on_delete=models.CASCADE,
+        related_name="completed",
+    )
+
+    # jednoduché MVP – souhrn (splitů může být později víc)
+    time_seconds = models.PositiveIntegerField(null=True, blank=True)
+    distance_m = models.PositiveIntegerField(null=True, blank=True)
+    avg_hr = models.PositiveIntegerField(null=True, blank=True)
+    feel = models.CharField(max_length=50, blank=True, default="")
+    note = models.TextField(blank=True, default="")
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Completed: {self.planned}"
