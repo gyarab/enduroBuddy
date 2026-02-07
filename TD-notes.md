@@ -1,9 +1,5 @@
 **Aplikace pro správu tréninkového plánu a deníku**
 
-
-
-
-
 **Aplikace:**
 
 **desktop**
@@ -77,4 +73,3 @@
 \- přehled zátěže, odběhaných kilometrů atd. samostatná stránka v aplikaci,
 
 možnost filtrování a zobrazení dat jako v statshunters.com
-
