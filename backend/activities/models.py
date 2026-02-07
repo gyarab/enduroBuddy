@@ -1,48 +1,93 @@
-from django.db import models
 from django.conf import settings
+from django.db import models
+
 
 class Activity(models.Model):
     class Sport(models.TextChoices):
-        RUN = 'run', 'Run'
-        BIKE = 'bike', 'Bike'
-        SWIM = 'swim', 'Swim'
-        OTHER = 'other', 'Other'
+        RUN = "RUN", "Run"
+        BIKE = "BIKE", "Bike"
+        SWIM = "SWIM", "Swim"
+        OTHER = "OTHER", "Other"
 
-    athlete = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='activities')
-    sport = models.CharField(max_length=20, choices=Sport.choices, default=Sport.RUN)
+    athlete = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="activities",
+    )
 
-    start_time = models.DateTimeField(null=True, blank=True)
-    duration = models.PositiveIntegerField(default=0)  # Duration in seconds
-    distance_m = models.PositiveIntegerField(default=0)  # Distance in meters
-    average_hr = models.PositiveIntegerField(null=True, blank=True)  # Average heart rate
-    max_hr = models.PositiveIntegerField(null=True, blank=True)  # Max heart rate
+    sport = models.CharField(
+        max_length=20,
+        choices=Sport.choices,
+        default=Sport.RUN,
+    )
 
-    is_interval_session = models.BooleanField(default=False)
+    started_at = models.DateTimeField(null=True, blank=True)
+    title = models.CharField(max_length=200, blank=True)
 
-    athlete_note = models.TextField(blank=True)
-
-    source_file_name = models.CharField(max_length=255, blank=True)
+    # agregované hodnoty (vyplní parser)
+    duration_s = models.PositiveIntegerField(null=True, blank=True)
+    distance_m = models.PositiveIntegerField(null=True, blank=True)
+    avg_hr = models.PositiveSmallIntegerField(null=True, blank=True)
+    avg_pace_s_per_km = models.PositiveIntegerField(null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        ts = self.start_time.strftime('%Y-%m-%d %H:%M') if self.start_time else 'no-time'
-        return f'{self.athlete} | {self.sport} | {ts}'
-    
-class Interval(models.Model):
-    activity = models.ForeignKey(Activity,on_delete=models.CASCADE,related_name="intervals")
+        ts = self.started_at.strftime("%Y-%m-%d %H:%M") if self.started_at else "no-date"
+        return f"{self.athlete} | {self.sport} | {ts}"
 
-    label = models.CharField(max_length=80, blank=True)
 
-    time_s = models.PositiveIntegerField(default=0)
-    distance_m = models.PositiveIntegerField(default=0)
+class ActivityFile(models.Model):
+    class FileType(models.TextChoices):
+        FIT = "FIT", "FIT"
+        GPX = "GPX", "GPX"
+        TCX = "TCX", "TCX"
+        OTHER = "OTHER", "OTHER"
 
-    avg_hr = models.PositiveIntegerField(null=True, blank=True)
+    activity = models.ForeignKey(
+        Activity,
+        on_delete=models.CASCADE,
+        related_name="files",
+    )
 
-    order = models.PositiveIntegerField(default=0)
+    file_type = models.CharField(
+        max_length=10,
+        choices=FileType.choices,
+        default=FileType.FIT,
+    )
 
-    class Meta:
-        ordering = ["order"]
+    file = models.FileField(upload_to="activity_files/%Y/%m/")
+    original_name = models.CharField(max_length=255, blank=True)
+
+    uploaded_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.activity_id} interval {self.order}"
+        return f"{self.activity_id} | {self.file_type} | {self.original_name or self.file.name}"
+
+
+class ActivityInterval(models.Model):
+    """
+    místo 'split' používáme 'interval'
+    """
+    activity = models.ForeignKey(
+        Activity,
+        on_delete=models.CASCADE,
+        related_name="intervals",
+    )
+
+    index = models.PositiveIntegerField()  # 1..N
+
+    # typicky intervaly z FIT: lapy / opakování
+    duration_s = models.PositiveIntegerField(null=True, blank=True)
+    distance_m = models.PositiveIntegerField(null=True, blank=True)
+    avg_hr = models.PositiveSmallIntegerField(null=True, blank=True)
+    avg_pace_s_per_km = models.PositiveIntegerField(null=True, blank=True)
+
+    note = models.CharField(max_length=200, blank=True)
+
+    class Meta:
+        ordering = ["index"]
+        unique_together = [("activity", "index")]
+
+    def __str__(self):
+        return f"Activity {self.activity_id} | Interval {self.index}"

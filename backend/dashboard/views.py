@@ -1,10 +1,9 @@
-from time import timezone
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 
 from training.models import TrainingMonth
 
-MONTH_NAMES_CS = [ "", "Leden", "Únor", "Březen", "Duben", "Květen", "Červen", "Červenec", "Srpen", "Září", "Říjen", "Listopad", "Prosinec" ]
+MONTH_NAMES_CS = ["", "Leden","Únor","Březen","Duben","Květen","Červen","Červenec","Srpen","Září","Říjen","Listopad","Prosinec"]
 
 def month_label_cs(year: int, month: int) -> str:
     return f"{MONTH_NAMES_CS[month]} {year}"
@@ -17,7 +16,10 @@ def home(request):
         .prefetch_related(
             "weeks",
             "weeks__planned_trainings",
-            "weeks__planned_trainings__completed")
+            "weeks__planned_trainings__completed",
+            "weeks__planned_trainings__completed__activity",
+            "weeks__planned_trainings__completed__activity__intervals",
+        )
         .order_by("-year", "-month")[:6]
     )
 
@@ -31,8 +33,4 @@ def home(request):
             "weeks": list(m.weeks.all()),
         })
 
-    context = {
-        "month_cards": month_cards,
-        # "now": timezone.now(),
-    }
-    return render(request, "dashboard/dashboard.html", context)
+    return render(request, "dashboard/dashboard.html", {"month_cards": month_cards})
