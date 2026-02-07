@@ -9,6 +9,11 @@ class Activity(models.Model):
         SWIM = "SWIM", "Swim"
         OTHER = "OTHER", "Other"
 
+    class WorkoutType(models.TextChoices):
+        UNKNOWN = "UNKNOWN", "Unknown"
+        EASY = "EASY", "Easy"
+        WORKOUT = "WORKOUT", "Workout"
+
     athlete = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -19,6 +24,13 @@ class Activity(models.Model):
         max_length=20,
         choices=Sport.choices,
         default=Sport.RUN,
+    )
+
+    # ✅ Dropdown v adminu (to co chceš)
+    workout_type = models.CharField(
+        max_length=20,
+        choices=WorkoutType.choices,
+        default=WorkoutType.UNKNOWN,
     )
 
     started_at = models.DateTimeField(null=True, blank=True)
@@ -77,7 +89,6 @@ class ActivityInterval(models.Model):
 
     index = models.PositiveIntegerField()  # 1..N
 
-    # typicky intervaly z FIT: lapy / opakování
     duration_s = models.PositiveIntegerField(null=True, blank=True)
     distance_m = models.PositiveIntegerField(null=True, blank=True)
     avg_hr = models.PositiveSmallIntegerField(null=True, blank=True)
