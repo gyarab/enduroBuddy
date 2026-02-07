@@ -1,0 +1,43 @@
+:root{
+  --monthbar-h: 10px;
+}
+
+/* PAGE background + reserve space for bottom bar */
+.eb-page{
+  background: #f5f6f8;
+  padding-bottom: var(--monthbar-h);
+}
+
+/* Scroll area above bottom bar */
+.eb-scrollwrap{
+  height: calc(100vh - 180px - var(--monthbar-h));
+  overflow: auto;
+}
+
+/* ===== Month containers (JS shows exactly one) ===== */
+.month-container{ display: none; }
+.month-container.active{ display: block; }
+
+/* ===== Month switcher fixed bottom ===== */
+.eb-month-switcher{
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1030;
+
+  background: #fff;
+  border-top: 1px solid #ddd;
+  box-shadow: 0 -2px 8px rgba(0,0,0,0.08);
+}
+
+.eb-month-switcher .container-fluid{
+  padding: 10px 0;
+}
+
+/* active button highlight */
+.month-btn.active{
+  background: #212529;
+  color: #fff;
+  border-color: #212529;
+}
