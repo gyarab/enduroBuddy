@@ -6,5 +6,4 @@ class ActivitiesConfig(AppConfig):
     name = "activities"
 
     def ready(self):
-        # načtení signálů (musí být až tady)
         from . import signals  # noqa

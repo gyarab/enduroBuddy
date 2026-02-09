@@ -1,180 +1,176 @@
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional
+from dataclasses import dataclass
 from datetime import datetime
+from typing import Any
+
+# pip: fitparse
+from fitparse import FitFile
 
 
-def _safe_int(x) -> Optional[int]:
+@dataclass
+class FitParseResult:
+    summary: dict[str, Any]
+    intervals: list[dict[str, Any]]
+
+
+def _val(msg, field: str):
     try:
-        if x is None:
-            return None
-        return int(round(float(x)))
+        return msg.get_value(field)
     except Exception:
         return None
 
 
-def _safe_float(x) -> Optional[float]:
+
+def _secs(td):
+    if td is None:
+        return None
+    # fitparse někdy vrací timedelta, někdy číslo
     try:
-        if x is None:
-            return None
-        return float(x)
+        return int(td.total_seconds())
     except Exception:
-        return None
-
-
-def _pace_s_per_km(distance_m: Optional[int], duration_s: Optional[int]) -> Optional[int]:
-    if not distance_m or not duration_s:
-        return None
-    if distance_m < 50:
-        return None
-    km = distance_m / 1000.0
-    return _safe_int(duration_s / km)
-
-
-def _semicircles_to_deg(x) -> Optional[float]:
-    # FIT position_lat/position_long jsou často v "semicircles"
-    try:
-        if x is None:
+        try:
+            return int(td)
+        except Exception:
             return None
-        return float(x) * (180.0 / 2**31)
-    except Exception:
-        return None
 
 
-def parse_fit_file(path: str) -> Dict[str, Any]:
-    """
-    Vrací maximum užitečných dat:
-
-    {
-      "activity": {
-        "started_at": datetime|None,
-        "distance_m": int|None,
-        "duration_s": int|None,
-        "avg_hr": int|None,
-        "max_hr": int|None,
-        "avg_pace_s_per_km": int|None,
-      },
-      "laps": [
-        {"duration_s":..., "distance_m":..., "avg_hr":..., "max_hr":..., "avg_pace_s_per_km":...},
-        ...
-      ],
-      "records": [
-        {"ts":..., "distance_m":..., "speed_mps":..., "hr":..., "cadence":..., "altitude_m":..., "lat":..., "lon":...},
-        ...
-      ],
-      "raw": { ...malý debug výtah... }
-    }
-    """
-    try:
-        from fitparse import FitFile
-    except ImportError as e:
-        raise ImportError("Missing dependency: fitparse. Run: pip install fitparse") from e
-
+def parse_fit_file(path: str) -> FitParseResult:
     fit = FitFile(path)
+    fit.parse()
 
-    # --------- Aggregates from SESSION ----------
-    started_at: Optional[datetime] = None
-    total_distance_m: Optional[int] = None
-    total_timer_s: Optional[int] = None
-    avg_hr: Optional[int] = None
-    max_hr: Optional[int] = None
+    session = None
+    sport = None
+    sub_sport = None
+    started_at = None
+    total_time_s = None
+    total_dist_m = None
+    avg_hr = None
+    avg_speed = None  # m/s
 
+    # 1) SESSION summary
     for msg in fit.get_messages("session"):
-        fields = {f.name: f.value for f in msg}
-        started_at = fields.get("start_time") or started_at
-        total_distance_m = _safe_int(fields.get("total_distance")) or total_distance_m
-        total_timer_s = _safe_int(fields.get("total_timer_time")) or total_timer_s
-        avg_hr = _safe_int(fields.get("avg_heart_rate")) or avg_hr
-        max_hr = _safe_int(fields.get("max_heart_rate")) or max_hr
-        # bereme první session (většinou jedna)
+        session = msg
+        sport = _val(msg, "sport")
+        sub_sport = _val(msg, "sub_sport")
+        started_at = _val(msg, "start_time")
+        total_time_s = _secs(_val(msg, "total_timer_time"))
+        total_dist_m = _val(msg, "total_distance")
+        avg_hr = _val(msg, "avg_heart_rate")
+        avg_speed = _val(msg, "avg_speed")
         break
 
-    avg_pace = _pace_s_per_km(total_distance_m, total_timer_s)
+    # 2) Detect workout steps (structured workouts)
+    has_workout_steps = False
+    for _ in fit.get_messages("workout_step"):
+        has_workout_steps = True
+        break
 
-    activity_data: Dict[str, Any] = {
-        "started_at": started_at,
-        "distance_m": total_distance_m,
-        "duration_s": total_timer_s,
-        "avg_hr": avg_hr,
-        "max_hr": max_hr,
-        "avg_pace_s_per_km": avg_pace,
-    }
+    # 3) Intervals from LAPs (nejčastější a nejspolehlivější)
+    laps = []
+    for lap in fit.get_messages("lap"):
+        lap_time = _secs(_val(lap, "total_timer_time"))
+        lap_dist = _val(lap, "total_distance")
+        lap_avg_hr = _val(lap, "avg_heart_rate")
+        lap_avg_speed = _val(lap, "avg_speed")
 
-    # --------- Laps from LAP ----------
-    laps: List[Dict[str, Any]] = []
-    for msg in fit.get_messages("lap"):
-        fields = {f.name: f.value for f in msg}
-
-        lap_distance = _safe_int(fields.get("total_distance"))
-        lap_time = _safe_int(fields.get("total_timer_time")) or _safe_int(fields.get("total_elapsed_time"))
-
-        lap_avg_hr = _safe_int(fields.get("avg_heart_rate"))
-        lap_max_hr = _safe_int(fields.get("max_heart_rate"))
-
-        lap_avg_pace = _pace_s_per_km(lap_distance, lap_time)
-
-        if not lap_time and not lap_distance:
-            continue
-        if lap_distance is not None and lap_distance < 30:
+        if lap_time is None and lap_dist is None:
             continue
 
-        laps.append({
-            "duration_s": lap_time,
-            "distance_m": lap_distance,
-            "avg_hr": lap_avg_hr,
-            "max_hr": lap_max_hr,
-            "avg_pace_s_per_km": lap_avg_pace,
-        })
+        pace_s_per_km = None
+        # pace: buď z avg_speed, nebo z time/dist
+        if lap_avg_speed and lap_avg_speed > 0:
+            pace_s_per_km = int(round(1000.0 / float(lap_avg_speed)))
+        elif lap_time is not None and lap_dist and lap_dist > 0:
+            pace_s_per_km = int(round(float(lap_time) / (float(lap_dist) / 1000.0)))
 
-    # --------- Records from RECORD ----------
-    records: List[Dict[str, Any]] = []
-    # max_hr fallback: když session max_hr není, dopočítáme z recordů
-    record_max_hr: Optional[int] = None
+        laps.append(
+            {
+                "duration_s": lap_time,
+                "distance_m": int(lap_dist) if lap_dist is not None else None,
+                "avg_hr": int(lap_avg_hr) if lap_avg_hr is not None else None,
+                "avg_pace_s_per_km": pace_s_per_km,
+                "note": "",
+            }
+        )
 
-    for msg in fit.get_messages("record"):
-        fields = {f.name: f.value for f in msg}
+    # 4) Fallback splits z RECORDů (např. 1km splits), když nejsou laps
+    intervals = laps
+    if not intervals:
+        records = []
+        for rec in fit.get_messages("record"):
+            t = _val(rec, "timestamp")
+            d = _val(rec, "distance")  # m (kumulativně)
+            hr = _val(rec, "heart_rate")
+            if t is None or d is None:
+                continue
+            records.append((t, float(d), int(hr) if hr is not None else None))
 
-        ts = fields.get("timestamp")
-        dist = _safe_int(fields.get("distance"))
-        speed = _safe_float(fields.get("speed"))
-        hr = _safe_int(fields.get("heart_rate"))
-        cad = _safe_int(fields.get("cadence"))
-        alt = _safe_float(fields.get("altitude"))
+        # vytvoř 1km splits
+        if records:
+            km = 1
+            start_i = 0
+            while True:
+                target = km * 1000.0
+                end_i = None
+                for i in range(start_i, len(records)):
+                    if records[i][1] >= target:
+                        end_i = i
+                        break
+                if end_i is None:
+                    break
 
-        lat = _semicircles_to_deg(fields.get("position_lat"))
-        lon = _semicircles_to_deg(fields.get("position_long"))
+                t0, d0, _ = records[start_i]
+                t1, d1, _ = records[end_i]
 
-        if hr is not None:
-            record_max_hr = max(record_max_hr or hr, hr)
+                dur = _secs(t1 - t0) if hasattr(t1, "__sub__") else None
+                dist = d1 - d0
+                if dist <= 0:
+                    start_i = end_i
+                    km += 1
+                    continue
 
-        # filtr: pokud není nic, nemá smysl ukládat
-        if ts is None and dist is None and speed is None and hr is None and cad is None and alt is None and lat is None and lon is None:
-            continue
+                pace = int(round(dur / (dist / 1000.0))) if dur is not None else None
 
-        records.append({
-            "ts": ts,
-            "distance_m": dist,
-            "speed_mps": speed,
-            "hr": hr,
-            "cadence": cad,
-            "altitude_m": alt,
-            "lat": lat,
-            "lon": lon,
-        })
+                # avg hr v okně
+                hrs = [h for (_, _, h) in records[start_i:end_i + 1] if h is not None]
+                ahr = int(round(sum(hrs) / len(hrs))) if hrs else None
 
-    # max_hr fallback
-    if activity_data.get("max_hr") is None and record_max_hr is not None:
-        activity_data["max_hr"] = record_max_hr
+                intervals.append(
+                    {
+                        "duration_s": dur,
+                        "distance_m": int(round(dist)),
+                        "avg_hr": ahr,
+                        "avg_pace_s_per_km": pace,
+                        "note": f"{km} km",
+                    }
+                )
 
-    raw_small = {
-        "has_session": started_at is not None,
-        "lap_count": len(laps),
-        "record_count": len(records),
+                start_i = end_i
+                km += 1
+
+    # 5) workout_type heuristic
+    # - structured workout_step → workout
+    # - víc lapů → workout
+    # - jinak run
+    workout_type = "workout" if (has_workout_steps or len(laps) >= 2) else "run"
+
+    # 6) pace summary (z avg_speed, nebo z time/dist)
+    avg_pace_s_per_km = None
+    if avg_speed and float(avg_speed) > 0:
+        avg_pace_s_per_km = int(round(1000.0 / float(avg_speed)))
+    elif total_time_s is not None and total_dist_m and float(total_dist_m) > 0:
+        avg_pace_s_per_km = int(round(float(total_time_s) / (float(total_dist_m) / 1000.0)))
+
+    summary = {
+        "started_at": started_at if isinstance(started_at, datetime) else None,
+        "title": None,
+        "sport": str(sport) if sport is not None else None,
+        "workout_type": workout_type,
+        "duration_s": int(total_time_s) if total_time_s is not None else None,
+        "distance_m": int(total_dist_m) if total_dist_m is not None else None,
+        "avg_hr": int(avg_hr) if avg_hr is not None else None,
+        "avg_pace_s_per_km": avg_pace_s_per_km,
     }
 
-    return {
-        "activity": activity_data,
-        "laps": laps,
-        "records": records,
-        "raw": raw_small,
-    }
+    return FitParseResult(summary=summary, intervals=intervals)
