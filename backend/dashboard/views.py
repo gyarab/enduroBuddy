@@ -11,17 +11,17 @@ def month_label_cs(year: int, month: int) -> str:
 @login_required
 def home(request):
     months = (
-        TrainingMonth.objects
-        .filter(athlete=request.user)
-        .prefetch_related(
-            "weeks",
-            "weeks__planned_trainings",
-            "weeks__planned_trainings__completed",
-            "weeks__planned_trainings__completed__activity",
-            "weeks__planned_trainings__completed__activity__intervals",
-        )
-        .order_by("-year", "-month")[:6]
+    TrainingMonth.objects
+    .filter(athlete=request.user)
+    .prefetch_related(
+        "weeks",
+        "weeks__planned_trainings",
+        "weeks__planned_trainings__activity",
+        "weeks__planned_trainings__activity__intervals",
     )
+    .order_by("-year", "-month")[:6]
+)
+
 
     month_cards = []
     for m in months:
