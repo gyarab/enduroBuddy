@@ -1,60 +1,213 @@
-# Aplikace pro správu a analýzu tréninkového plánu
+# EnduroBuddy Backend
 
-## Popis projektu
-Cílem projektu je navrhnout, implementovat a otestovat aplikaci pro analýzu běžeckých tréninků, které jsou získávány z externích zdrojů (ze souborů ve formátu FIT).  
-Aplikace umožňuje uživateli sledovat vývoj výkonnosti v čase, vyhodnocovat jednotlivé tréninky a na základě těchto analýz efektivně plánovat další běžeckou přípravu.
+Backendová část aplikace EnduroBuddy slouží pro import, ukládání a analýzu sportovních aktivit (primárně běžeckých) ze souborů ve formátu FIT.  
+Systém je navržen s důrazem na datovou efektivitu, rozšiřitelnost a budoucí přechod na produkční infrastrukturu.
 
-Projekt vznikl v rámci individuální odborné činnosti (IOČ).
-
----
-
-## Cíle projektu
-- Získávat data o sportovních aktivitách z externích zdrojů (soubory).
-- Zpracovat a analyzovat tato data.
-- Přehledně zobrazovat klíčové metriky výkonu (vzdálenost, tempo, tepová frekvence, převýšení apod.).
-- Umožnit uživateli sledovat vývoj výkonnosti a plánovat další trénink.
+Projekt vzniká jako součást individuální odborné činnosti (IOČ).
 
 ---
 
-## Funkcionalita aplikace
-- Import dat ze souborů ve formátu FIT.
-- Ukládání aktivit do databáze.
-- Vizualizace tréninkových dat pomocí grafů a tabulek.
-- Generování osobních statistik a přehledů.
-- Filtrování a porovnávání jednotlivých tréninků.
-- Výpočet základních analytických ukazatelů (např. průměrné tempo, celkový objem, zátěžové ukazatele).
+## Hlavní vlastnosti
+
+- Import sportovních aktivit ze souborů FIT  
+- Automatické parsování a normalizace dat  
+- Ukládání analyticky relevantních metrik  
+- Detekce typu aktivity (run, workout, apod.)  
+- Intervalová struktura tréninku  
+- Přehledné administrační rozhraní  
+- Dashboard pro zobrazování výsledků  
+
+---
+
+## Architektura
+
+Aplikace je postavena jako vícevrstvý systém:
+
+- Prezentační vrstva – dashboard a admin rozhraní  
+- Aplikační logika – Django views, signály  
+- Servisní vrstva – FIT parser  
+- Datová vrstva – relační databáze  
+
+Cílem návrhu je:
+
+- oddělení logiky zpracování dat od webové vrstvy  
+- jednoduchý přechod na PostgreSQL  
+- vysoký výkon při práci s větším objemem aktivit  
 
 ---
 
 ## Použité technologie
-| Oblast | Technologie / nástroje |
-|:--|:--|
-| Programovací jazyk | HTML, JS, PHP / Java / Springboot, SQL |
-| Datové formáty | FIT SDK, JSON |
-| Architektura | Vícevrstvá – datová, aplikační a prezentační vrstva |
-| Vývojové nástroje | NetBeans / VS Code, Git |
+
+| Oblast | Technologie |
+|------|-----------|
+| Backend | Python 3.14 |
+| Framework | Django 5 |
+| Databáze | SQLite (vývoj), PostgreSQL (plán) |
+| Import dat | FIT format, fitparse |
+| Frontend | Django templates |
+| Verzování | Git |
 
 ---
 
-## Návrh systému
-- **Datový model:** Ukládá informace o trénincích – datum, vzdálenost, čas, průměrné tempo, srdeční tep, převýšení apod.
-- **Zpracování dat:** Parsování FIT souborů a jejich převod do interní struktury.
-- **Analytická vrstva:** Výpočet statistik, trendů a průměrných hodnot.
-- **Uživatelské rozhraní:** Přehledné zobrazení tréninkových výsledků, tabulek a grafů.
-<!-- 
+## Datový model (zjednodušený)
+
+### Activity
+- čas zahájení  
+- typ sportu  
+- délka trvání  
+- vzdálenost  
+- průměrné tempo  
+- průměrná a maximální TF  
+
+### ActivityInterval
+- pořadí intervalu  
+- délka  
+- vzdálenost  
+- tempo  
+- tepová frekvence  
+
+### ActivityFile
+- zdrojový soubor  
+- typ souboru  
+- vazba na aktivitu  
+
+Systém vědomě neukládá surová senzorová data s vysokou frekvencí.
+
 ---
 
-## Testování
-Testování aplikace probíhalo pomocí:
-- ručního testování funkcionalit,
-- ověřování správnosti výpočtů a zobrazených dat,
-- porovnávání výsledků s daty z Garmin Connect.
+## Struktura projektu
+
+# EnduroBuddy Backend
+
+Backendová část aplikace EnduroBuddy slouží pro import, ukládání a analýzu sportovních aktivit (primárně běžeckých) ze souborů ve formátu FIT.  
+Systém je navržen s důrazem na datovou efektivitu, rozšiřitelnost a budoucí přechod na produkční infrastrukturu.
+
+Projekt vzniká jako součást individuální odborné činnosti (IOČ).
 
 ---
 
-## Uživatelská příručka
+## Hlavní vlastnosti
 
-### Instalace
-1. Naklonujte repozitář:
-   ```bash
-   git clone https://github.com/vojtecholcman/trainingdDiary.git -->
+- Import sportovních aktivit ze souborů FIT  
+- Automatické parsování a normalizace dat  
+- Ukládání analyticky relevantních metrik  
+- Detekce typu aktivity (run, workout, apod.)  
+- Intervalová struktura tréninku  
+- Přehledné administrační rozhraní  
+- Dashboard pro zobrazování výsledků  
+
+---
+
+## Architektura
+
+Aplikace je postavena jako vícevrstvý systém:
+
+- Prezentační vrstva – dashboard a admin rozhraní  
+- Aplikační logika – Django views, signály  
+- Servisní vrstva – FIT parser  
+- Datová vrstva – relační databáze  
+
+Cílem návrhu je:
+
+- oddělení logiky zpracování dat od webové vrstvy  
+- jednoduchý přechod na PostgreSQL  
+- vysoký výkon při práci s větším objemem aktivit  
+
+---
+
+## Použité technologie
+
+| Oblast | Technologie |
+|------|-----------|
+| Backend | Python 3.14 |
+| Framework | Django 5 |
+| Databáze | SQLite (vývoj), PostgreSQL (plán) |
+| Import dat | FIT format, fitparse |
+| Frontend | Django templates |
+| Verzování | Git |
+
+---
+
+## Datový model (zjednodušený)
+
+### Activity
+- čas zahájení  
+- typ sportu  
+- délka trvání  
+- vzdálenost  
+- průměrné tempo  
+- průměrná a maximální TF  
+
+### ActivityInterval
+- pořadí intervalu  
+- délka  
+- vzdálenost  
+- tempo  
+- tepová frekvence  
+
+### ActivityFile
+- zdrojový soubor  
+- typ souboru  
+- vazba na aktivitu  
+
+Systém vědomě neukládá surová senzorová data s vysokou frekvencí.
+
+---
+
+## Struktura projektu
+
+backend/
+│
+├─ activities/
+│ ├─ models.py
+│ ├─ signals.py
+│ └─ services/
+│ └─ fit_parser.py
+│
+├─ dashboard/
+│ └─ views.py
+│
+├─ training/
+├─ accounts/
+├─ templates/
+│ └─ dashboard/
+│ └─ dashboard.html
+│
+├─ media/
+├─ db.sqlite3
+└─ manage.py
+
+
+---
+
+## Instalace
+
+### 1. Klonování repozitáře
+
+```bash
+git clone <repository-url>
+cd backend
+
+### 2. Virtuální prostředí
+´´´bash
+py -3 -m .venv venv
+
+#### Aktivate
+´´´bash
+source .venv/Scripts/Activate
+
+### 3. Instalace závislostí
+´´´bash
+pip install -r requirements.txt
+
+### 4. Migrace databáze
+´´´bash
+python manage.py migrate
+
+### 5. Migrace databáze
+´´´bash
+python manage.py createsuperuser
+
+### 6. Spuštění serveru
+´´´bash
+python manage.py runserver
