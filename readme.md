@@ -177,7 +177,7 @@ backend/
 ├─ media/
 ├─ db.sqlite3
 └─ manage.py
-´´´bash
+
 
 ---
 
