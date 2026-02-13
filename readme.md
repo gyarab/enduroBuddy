@@ -156,6 +156,7 @@ Systém vědomě neukládá surová senzorová data s vysokou frekvencí.
 
 ## Struktura projektu
 
+´´´bash
 backend/
 │
 ├─ activities/
@@ -176,7 +177,7 @@ backend/
 ├─ media/
 ├─ db.sqlite3
 └─ manage.py
-
+´´´bash
 
 ---
 
