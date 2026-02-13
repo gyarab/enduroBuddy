@@ -1,0 +1,14 @@
+services:
+  db:
+    image: postgres:16
+    container_name: endurobuddy-db
+    environment:
+      POSTGRES_DB: endurobuddy
+      POSTGRES_USER: endurobuddy
+      POSTGRES_PASSWORD: endurobuddy_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - endurobuddy_pgdata:/var/lib/postgresql/data
+volumes:
+  endurobuddy_pgdata:
