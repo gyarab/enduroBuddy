@@ -1,0 +1,70 @@
+/* =========================================================
+   1) HORIZONTAL SCROLL pro CELÝ měsíc
+   ========================================================= */
+.eb-scrollwrap {
+  overflow-x: auto;
+  overflow-y: visible;
+  padding-bottom: 90px; /* aby se obsah neschoval za switcher */
+}
+
+/* month containers – jen aktivní je vidět */
+.month-container { display: none; }
+.month-container.is-active { display: block; }
+
+/* =========================================================
+   2) Layout týdnů: nikdy nelámat pod sebe
+   ========================================================= */
+.eb-week-row {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 12px;
+  align-items: stretch;
+}
+
+/* wrappery sloupců */
+.eb-planned-wrap,
+.eb-completed-wrap {
+  flex: 0 0 auto;        /* šířka je "podle obsahu", ne procenta */
+  display: flex;
+}
+
+/* =========================================================
+   3) Karty: základní šířky (fallback) + možnost růstu
+   ========================================================= */
+.eb-card {
+  width: auto;
+}
+
+/* fallback: když nic dlouhého není */
+.eb-planned-card { min-width: 720px; }
+.eb-completed-card { min-width: 560px; }
+
+/* tabulky a obsah nebudou lámat řádky → šířka poroste podle obsahu */
+.eb-planned-card table,
+.eb-completed-card table {
+  white-space: nowrap;
+}
+
+/* intervaly nikdy nezalamovat */
+.eb-intervals-cell {
+  white-space: nowrap;
+}
+
+/* =========================================================
+   4) Month switcher sticky bottom
+   ========================================================= */
+.eb-month-switcher {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #fff;
+  border-top: 1px solid rgba(0,0,0,.1);
+  z-index: 1030;
+}
+
+.month-btn.is-active {
+  background: #212529;
+  color: #fff;
+  border-color: #212529;
+}

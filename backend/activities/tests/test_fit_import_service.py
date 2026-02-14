@@ -27,14 +27,15 @@ class FitImportServiceTests(TestCase):
         fit_path = FIXTURES_DIR / fixture_name
         with open(fit_path, "rb") as f:
             outcome = import_fit_into_activity(
-                activity=activity,
-                fileobj=f,
-                original_name=fit_path.name,
-                create_activity_file_row=False,  # ať test neřeší ActivityFile log
-            )
+        activity=activity,
+        fileobj=f,
+        original_name=fit_path.name,
+        create_activity_file_row=False,
+        )
 
         outcome.activity.refresh_from_db()
         return outcome.activity
+
 
     def test_easy_run_import(self):
         activity = self._import("Z3.fit")
