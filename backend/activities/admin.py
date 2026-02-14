@@ -1,85 +1,64 @@
 from django.contrib import admin
-from django.db import transaction
+from django import forms
 
-from .models import Activity, ActivityFile, ActivityInterval
-from .services.fit_parser import parse_fit_file
-
-
-class ActivityFileInline(admin.TabularInline):
-    model = ActivityFile
-    extra = 0
-    fields = ("file_type", "original_name", "file", "uploaded_at")
-    readonly_fields = ("uploaded_at",)
+from .models import Activity, ActivityFile, ActivityInterval, ActivitySample
+from .services.fit_importer import import_fit_into_activity
 
 
+# Volitelné: inline intervaly v Activity adminu
 class ActivityIntervalInline(admin.TabularInline):
     model = ActivityInterval
     extra = 0
-    fields = ("index", "duration_s", "distance_m", "avg_hr", "avg_pace_s_per_km", "note")
-    ordering = ("index",)
+
+
+# Volitelné: inline samples v Activity adminu (pozor: může být hodně řádků)
+class ActivitySampleInline(admin.TabularInline):
+    model = ActivitySample
+    extra = 0
 
 
 @admin.register(Activity)
 class ActivityAdmin(admin.ModelAdmin):
-    list_display = ("id", "athlete", "sport", "workout_type", "started_at", "distance_m", "duration_s", "avg_hr")
-    list_filter = ("sport", "workout_type", "athlete")
+    list_display = ("id", "athlete", "sport", "workout_type", "started_at", "distance_m", "duration_s")
     search_fields = ("title", "athlete__username")
-    autocomplete_fields = ("athlete", "planned_training")
-    inlines = [ActivityFileInline, ActivityIntervalInline]
+    list_filter = ("sport", "workout_type")
+    inlines = [ActivityIntervalInline]  # sample inline radši nedávat, je to velké
 
 
-@admin.action(description="Re-parse selected FIT files (overwrite summary + intervals)")
-def reparse_fit_files(modeladmin, request, queryset):
-    for af in queryset:
-        if af.file_type != ActivityFile.FileType.FIT or not af.file:
-            continue
+class ActivityFileAdminForm(forms.ModelForm):
+    file_upload = forms.FileField(required=False)
 
-        res = parse_fit_file(af.file.path)
-        activity = af.activity
-
-        with transaction.atomic():
-            s = res.summary or {}
-
-            activity.started_at = s.get("started_at") or activity.started_at
-            activity.title = s.get("title") or activity.title
-            activity.sport = s.get("sport") or activity.sport
-            activity.workout_type = s.get("workout_type") or activity.workout_type
-
-            activity.duration_s = s.get("duration_s")
-            activity.distance_m = s.get("distance_m")
-            activity.avg_hr = s.get("avg_hr")
-            #activity.max_hr = s.get("max_hr")
-            activity.avg_pace_s_per_km = s.get("avg_pace_s_per_km")
-            activity.save()
-
-            ActivityInterval.objects.filter(activity=activity).delete()
-
-            rows = []
-            for i, row in enumerate(res.intervals or [], start=1):
-                rows.append(ActivityInterval(
-                    activity=activity,
-                    index=i,
-                    duration_s=row.get("duration_s"),
-                    distance_m=row.get("distance_m"),
-                    avg_hr=row.get("avg_hr"),
-                    #max_hr=row.get("max_hr"),
-                    avg_pace_s_per_km=row.get("avg_pace_s_per_km"),
-                    note=row.get("note", "") or "",
-                ))
-            if rows:
-                ActivityInterval.objects.bulk_create(rows, batch_size=200)
+    class Meta:
+        model = ActivityFile
+        fields = ["activity", "file_type", "original_name"]  # file pole sem nedáváme
 
 
 @admin.register(ActivityFile)
 class ActivityFileAdmin(admin.ModelAdmin):
+    form = ActivityFileAdminForm
     list_display = ("id", "activity", "file_type", "original_name", "uploaded_at")
-    list_filter = ("file_type", "uploaded_at")
-    search_fields = ("original_name", "activity__title", "activity__athlete__username")
-    actions = [reparse_fit_files]
 
+    def save_model(self, request, obj: ActivityFile, form, change):
+        uploaded = form.cleaned_data.get("file_upload")
 
-@admin.register(ActivityInterval)
-class ActivityIntervalAdmin(admin.ModelAdmin):
-    list_display = ("id", "activity", "index", "duration_s", "distance_m", "avg_hr", "avg_pace_s_per_km", "note")
-    list_filter = ("activity__athlete", "activity__sport")
-    ordering = ("activity_id", "index")
+        # pokud jen edituješ existující log záznam bez uploadu
+        if not uploaded:
+            return super().save_model(request, obj, form, change)
+
+        # nastav original_name (ať projdou testy)
+        if not obj.original_name:
+            obj.original_name = uploaded.name
+
+        # nikdy neukládej fyzický soubor do MEDIA
+        obj.file = None
+
+        # ulož log řádek ActivityFile
+        super().save_model(request, obj, form, change)
+
+        # import do DB (intervaly/samples/summary)
+        import_fit_into_activity(
+            activity=obj.activity,
+            fileobj=uploaded.file,
+            original_name=obj.original_name,
+            create_activity_file_row=False,  # už máme log řádek (obj)
+        )
