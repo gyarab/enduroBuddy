@@ -38,6 +38,7 @@ class Activity(models.Model):
     duration_s = models.PositiveIntegerField(null=True, blank=True)
     distance_m = models.PositiveIntegerField(null=True, blank=True)
     avg_hr = models.PositiveSmallIntegerField(null=True, blank=True)
+    max_hr = models.PositiveSmallIntegerField(null=True, blank=True)
     avg_pace_s_per_km = models.PositiveIntegerField(null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -78,6 +79,7 @@ class ActivityInterval(models.Model):
     duration_s = models.PositiveIntegerField(null=True, blank=True)
     distance_m = models.PositiveIntegerField(null=True, blank=True)
     avg_hr = models.PositiveSmallIntegerField(null=True, blank=True)
+    max_hr = models.PositiveSmallIntegerField(null=True, blank=True)
     avg_pace_s_per_km = models.PositiveIntegerField(null=True, blank=True)
 
     note = models.CharField(max_length=200, blank=True)

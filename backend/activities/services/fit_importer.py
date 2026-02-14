@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime
-from typing import BinaryIO
+from typing import BinaryIO, Optional
 
 from django.db import transaction
 from django.utils import timezone
@@ -22,18 +22,16 @@ def import_fit_into_activity(
     *,
     activity: Activity,
     fileobj: BinaryIO,
-    original_name: str = "",
+    original_name: str | None = None,
     create_activity_file_row: bool = True,
 ) -> FitImportOutcome:
     """
-    Importuje FIT do DB:
-    - parsuje z file-like objektu (nic neukládá na disk)
-    - update Activity summary
-    - přegeneruje ActivityInterval + ActivitySample
-    - volitelně vytvoří ActivityFile řádek jen jako log (bez file)
+    Rozparsuje FIT a uloží data do DB.
+    Soubor se nikam neukládá (parsujeme z fileobj).
+    Vrací FitImportOutcome kvůli testům a diagnostice.
     """
 
-    # 1) parse mimo transakci
+    # parse mimo transakci (rychlé a bez locků)
     res = parse_fit_file(fileobj)
     s = res.summary or {}
 
@@ -41,11 +39,17 @@ def import_fit_into_activity(
     if isinstance(started_at, datetime) and timezone.is_naive(started_at):
         started_at = timezone.make_aware(started_at, timezone.get_current_timezone())
 
-    intervals = res.intervals or []
-    samples = res.samples or []
-
-    # 2) DB změny v jedné transakci
     with transaction.atomic():
+        # volitelný "log" záznam (bez file)
+        if create_activity_file_row:
+            ActivityFile.objects.create(
+                activity=activity,
+                file_type=ActivityFile.FileType.FIT,
+                file=None,
+                original_name=original_name or "",
+            )
+
+        # update Activity summary
         activity.started_at = started_at or activity.started_at
         activity.title = s.get("title") or activity.title
         activity.sport = s.get("sport") or activity.sport
@@ -54,29 +58,31 @@ def import_fit_into_activity(
         activity.duration_s = s.get("duration_s")
         activity.distance_m = s.get("distance_m")
         activity.avg_hr = s.get("avg_hr")
+        activity.max_hr = s.get("max_hr")
         activity.avg_pace_s_per_km = s.get("avg_pace_s_per_km")
         activity.save()
 
-        # intervaly
+        # intervals
         ActivityInterval.objects.filter(activity=activity).delete()
-        interval_rows = [
+        intervals = [
             ActivityInterval(
                 activity=activity,
                 index=i,
                 duration_s=row.get("duration_s"),
                 distance_m=row.get("distance_m"),
                 avg_hr=row.get("avg_hr"),
+                max_hr=row.get("max_hr"),
                 avg_pace_s_per_km=row.get("avg_pace_s_per_km"),
                 note=row.get("note") or "",
             )
-            for i, row in enumerate(intervals, start=1)
+            for i, row in enumerate(res.intervals or [], start=1)
         ]
-        if interval_rows:
-            ActivityInterval.objects.bulk_create(interval_rows, batch_size=500)
+        if intervals:
+            ActivityInterval.objects.bulk_create(intervals, batch_size=500)
 
         # samples
         ActivitySample.objects.filter(activity=activity).delete()
-        sample_rows = [
+        samples = [
             ActivitySample(
                 activity=activity,
                 t_s=row.get("t_s"),
@@ -87,22 +93,13 @@ def import_fit_into_activity(
                 power=row.get("power"),
                 altitude_m=row.get("altitude_m"),
             )
-            for row in samples
+            for row in (res.samples or [])
         ]
-        if sample_rows:
-            ActivitySample.objects.bulk_create(sample_rows, batch_size=2000)
-
-        # ActivityFile jako log, ale bez ukládání souboru
-        if create_activity_file_row:
-            ActivityFile.objects.create(
-                activity=activity,
-                file_type=ActivityFile.FileType.FIT,
-                file=None,  # NIC na disk
-                original_name=original_name or "",
-            )
+        if samples:
+            ActivitySample.objects.bulk_create(samples, batch_size=2000)
 
     return FitImportOutcome(
         activity=activity,
-        intervals_created=len(interval_rows),
-        samples_created=len(sample_rows),
+        intervals_created=len(intervals),
+        samples_created=len(samples),
     )

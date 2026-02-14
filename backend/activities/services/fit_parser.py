@@ -4,7 +4,6 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, BinaryIO, Optional, Union
 
-from django.utils import timezone
 from fitparse import FitFile
 
 SourceType = Union[str, BinaryIO]
@@ -49,30 +48,40 @@ def _sport_to_model(sport) -> Optional[str]:
     return "OTHER"
 
 
-def _make_aware_if_needed(dt: Optional[datetime]) -> Optional[datetime]:
-    if not isinstance(dt, datetime):
-        return None
-    if timezone.is_naive(dt):
-        return timezone.make_aware(dt, timezone.get_current_timezone())
-    return dt
+def _is_work_interval(it: dict[str, Any]) -> bool:
+    dur = it.get("duration_s") or 0
+    dist = it.get("distance_m") or 0
+    pace = it.get("avg_pace_s_per_km")
+
+    if dur <= 0:
+        return False
+
+    # pauzy bývají krátké / minimální distance
+    if dist and dist < 200:
+        return False
+
+    # bez pace se bojíme rozhodnout → pauza
+    if pace is None:
+        return False
+
+    # příliš pomalé = pauza (7:00/km)
+    if pace > 420:
+        return False
+
+    return True
 
 
 def parse_fit_file(source: SourceType) -> FitParseResult:
-    """
-    source může být:
-    - cesta (str)
-    - file-like objekt (např. Django UploadedFile.file)
-    """
     fit = FitFile(source)
     fit.parse()
 
     # --- session summary ---
     sport = None
     sub_sport = None
-    started_at: Optional[datetime] = None
-    total_time_s: Optional[int] = None
+    started_at = None
+    total_time_s = None
     total_dist_m = None
-    avg_hr = None
+    avg_hr_session = None
     avg_speed = None  # m/s
 
     for msg in fit.get_messages("session"):
@@ -81,11 +90,15 @@ def parse_fit_file(source: SourceType) -> FitParseResult:
         started_at = _val(msg, "start_time")
         total_time_s = _secs(_val(msg, "total_timer_time"))
         total_dist_m = _val(msg, "total_distance")
-        avg_hr = _val(msg, "avg_heart_rate")
+        avg_hr_session = _val(msg, "avg_heart_rate")
         avg_speed = _val(msg, "avg_speed")
         break
 
-    started_at = _make_aware_if_needed(started_at)
+    # --- structured workout steps ---
+    has_workout_steps = False
+    for _ in fit.get_messages("workout_step"):
+        has_workout_steps = True
+        break
 
     # --- laps -> intervals ---
     laps: list[dict[str, Any]] = []
@@ -93,8 +106,7 @@ def parse_fit_file(source: SourceType) -> FitParseResult:
         lap_time = _secs(_val(lap, "total_timer_time"))
         lap_dist = _val(lap, "total_distance")
         lap_avg_hr = _val(lap, "avg_heart_rate")
-
-        # Garmin někdy dává avg_speed, někdy ne
+        lap_max_hr = _val(lap, "max_heart_rate")
         lap_avg_speed = _val(lap, "avg_speed")
 
         if lap_time is None and lap_dist is None:
@@ -111,6 +123,7 @@ def parse_fit_file(source: SourceType) -> FitParseResult:
                 "duration_s": lap_time,
                 "distance_m": int(lap_dist) if lap_dist is not None else None,
                 "avg_hr": int(lap_avg_hr) if lap_avg_hr is not None else None,
+                "max_hr": int(lap_max_hr) if lap_max_hr is not None else None,
                 "avg_pace_s_per_km": pace_s_per_km,
                 "note": "",
             }
@@ -124,22 +137,14 @@ def parse_fit_file(source: SourceType) -> FitParseResult:
         ts = _val(rec, "timestamp")
         if not ts:
             continue
-
-        # timestampy v recordech bývají normálně aware/naive konzistentní,
-        # ale pro jistotu si je sjednotíme
-        ts = _make_aware_if_needed(ts)
-
         if start_ts is None:
             start_ts = ts
-        if start_ts is None or ts is None:
-            continue
 
         t_s = int((ts - start_ts).total_seconds())
 
         dist = _val(rec, "distance")
         hr = _val(rec, "heart_rate")
 
-        # preferuj enhanced_* (Garmin)
         speed = _val(rec, "enhanced_speed") or _val(rec, "speed")
         alt = _val(rec, "enhanced_altitude") or _val(rec, "altitude")
 
@@ -158,13 +163,13 @@ def parse_fit_file(source: SourceType) -> FitParseResult:
             }
         )
 
-    # --- workout detection (heuristika co ti prošla testy) ---
-    has_workout_steps = False
-    for _ in fit.get_messages("workout_step"):
-        has_workout_steps = True
-        break
+    # --- max_hr from samples ---
+    max_hr = None
+    hrs = [s["hr"] for s in samples if s.get("hr") is not None]
+    if hrs:
+        max_hr = max(hrs)
 
-    # auto-lap 1km = typicky easy run (nechceme to brát jako workout)
+    # --- auto-km-laps (easy run) ---
     is_auto_km_laps = False
     if len(laps) >= 6:
         dists = [x.get("distance_m") for x in laps if x.get("distance_m")]
@@ -175,6 +180,27 @@ def parse_fit_file(source: SourceType) -> FitParseResult:
 
     workout_type = "WORKOUT" if (has_workout_steps or (len(laps) >= 2 and not is_auto_km_laps)) else "RUN"
 
+    # --- label WORK/REST + work_avg_hr ---
+    work_avg_hr = None
+    if workout_type == "WORKOUT" and laps:
+        num = 0
+        den = 0
+        for it in laps:
+            is_work = _is_work_interval(it)
+            it["note"] = "WORK" if is_work else "REST"
+
+            hr = it.get("avg_hr")
+            dur = it.get("duration_s") or 0
+            if is_work and hr is not None and dur > 0:
+                num += int(hr) * int(dur)
+                den += int(dur)
+
+        if den > 0:
+            work_avg_hr = int(round(num / den))
+    else:
+        for it in laps:
+            it["note"] = ""
+
     # --- pace summary ---
     avg_pace_s_per_km = None
     if avg_speed and float(avg_speed) > 0:
@@ -183,13 +209,15 @@ def parse_fit_file(source: SourceType) -> FitParseResult:
         avg_pace_s_per_km = int(round(float(total_time_s) / (float(total_dist_m) / 1000.0)))
 
     summary = {
-        "started_at": started_at,
+        "started_at": started_at if isinstance(started_at, datetime) else None,
         "title": None,
         "sport": _sport_to_model(sport),
         "workout_type": workout_type,
         "duration_s": int(total_time_s) if total_time_s is not None else None,
         "distance_m": int(total_dist_m) if total_dist_m is not None else None,
-        "avg_hr": int(avg_hr) if avg_hr is not None else None,
+        "avg_hr": int(avg_hr_session) if avg_hr_session is not None else None,
+        "work_avg_hr": work_avg_hr,
+        "max_hr": int(max_hr) if max_hr is not None else None,
         "avg_pace_s_per_km": avg_pace_s_per_km,
         "sub_sport": str(sub_sport) if sub_sport is not None else None,
     }
