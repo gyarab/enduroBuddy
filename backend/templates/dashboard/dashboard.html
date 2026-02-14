@@ -14,10 +14,13 @@
     <button class="btn btn-outline-success btn-sm" disabled>Import training</button>
   </div>
 
-  <!-- SCROLL AREA (HORIZONTAL SCROLL FOR WHOLE MONTH) -->
-  <div class="border rounded-3 bg-white p-2 eb-scrollwrap" id="monthContentArea">
+  <!-- ✅ ONE horizontal-scroll area for whole MONTH content -->
+  <div class="eb-month-xscroll" id="monthXScroll">
 
-    {% for m in month_cards %}
+    <!-- inner must be able to grow wider than viewport -->
+    <div class="eb-month-xscroll-inner">
+
+      {% for m in month_cards %}
       <div class="month-container {% if forloop.first %}is-active{% endif %}"
            data-month-id="{{ m.id }}">
 
@@ -31,156 +34,132 @@
 
         <!-- Weeks -->
         {% for w in m.weeks %}
-          <div class="mb-4">
-            <div class="eb-week-row">
+        <div class="mb-4">
+          <div class="row g-3 align-items-stretch eb-week-row">
 
-              <!-- LEFT: Planned -->
-              <div class="eb-planned-wrap">
-                <div class="card shadow-sm h-100 eb-card eb-planned-card">
-                  <div class="card-body">
-
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                      <h5 class="mb-0">Week {{ w.week_index }}.</h5>
-                      <small class="text-muted">Planned</small>
-                    </div>
-
-                    <div class="table-responsive">
-                      <table class="table table-sm align-middle mb-0">
-                        <thead class="table-light">
-                          <tr>
-                            <th style="width: 90px;">Date</th>
-                            <th style="width: 90px;">Day</th>
-                            <th style="min-width: 420px;">Training</th>
-                            <th style="min-width: 220px;">Coach notes</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {% for t in w.planned_trainings.all %}
-                            <tr>
-                              <td>
-                                {% if t.date %}
-                                  {{ t.date|date:"j.n." }}
-                                {% else %}
-                                  —
-                                {% endif %}
-                              </td>
-
-                              <td>
-                                {% if t.day_label %}
-                                  {{ t.day_label }}
-                                {% else %}
-                                  —
-                                {% endif %}
-                              </td>
-
-                              <td>{{ t.title }}</td>
-                              <td>{% if t.notes %}{{ t.notes }}{% endif %}</td>
-                            </tr>
-                          {% empty %}
-                            <tr>
-                              <td colspan="4" class="text-muted small">
-                                No planned trainings in this week yet.
-                              </td>
-                            </tr>
-                          {% endfor %}
-                        </tbody>
-                      </table>
-                    </div>
-
+            <!-- LEFT: Planned -->
+            <div class="col-12 col-lg-7 eb-col">
+              <div class="card shadow-sm eb-card eb-planned-card">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h5 class="mb-0">Week {{ w.week_index }}.</h5>
+                    <small class="text-muted">Planned</small>
                   </div>
+
+                  <div class="table-responsive">
+                    <table class="table table-sm align-middle mb-0">
+                      <thead class="table-light">
+                        <tr>
+                          <th style="width: 90px;">Date</th>
+                          <th style="width: 90px;">Day</th>
+                          <th class="eb-col-training">Training</th>
+                          <th class="eb-col-notes">Coach notes</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% for t in w.planned_trainings.all %}
+                        <tr>
+                          <td>{% if t.date %}{{ t.date|date:"j.n." }}{% else %}—{% endif %}</td>
+                          <td>{% if t.day_label %}{{ t.day_label }}{% else %}—{% endif %}</td>
+                          <td class="eb-nowrap">{{ t.title }}</td>
+                          <td class="eb-nowrap">{% if t.notes %}{{ t.notes }}{% endif %}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                          <td colspan="4" class="text-muted small">No planned trainings in this week yet.</td>
+                        </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                  </div>
+
                 </div>
               </div>
-
-              <!-- RIGHT: Completed -->
-              <div class="eb-completed-wrap">
-                <div class="card shadow-sm h-100 eb-card eb-completed-card">
-                  <div class="card-body">
-
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                      <h5 class="mb-0">Splits</h5>
-                      <small class="text-muted">Completed</small>
-                    </div>
-
-                    <div class="table-responsive">
-                      <table class="table table-sm align-middle mb-0 eb-completed-table">
-                        <thead class="table-light">
-                          <tr>
-                            <th style="min-width: 240px;">training</th>
-                            <th style="width: 90px;">km</th>
-                            <th style="width: 110px;">min</th>
-                            <th style="min-width: 360px;">pace / intervals</th>
-                            <th style="width: 90px;">avg HR</th>
-                            <th style="width: 90px;">max HR</th>
-                          </tr>
-                        </thead>
-
-                        <tbody>
-                          {% for t in w.planned_trainings.all %}
-                            {% if t.completed_row %}
-                              <tr>
-                                <td>{{ t.title }}</td>
-                                <td>{{ t.completed_row.km }}</td>
-                                <td>{{ t.completed_row.time }}</td>
-                                <td class="eb-intervals-cell">{{ t.completed_row.third }}</td>
-                                <td>{{ t.completed_row.avg_hr|default:"—" }}</td>
-                                <td>{{ t.completed_row.max_hr|default:"—" }}</td>
-                              </tr>
-                            {% else %}
-                              <tr class="text-muted">
-                                <td>{{ t.title }}</td>
-                                <td>—</td>
-                                <td>—</td>
-                                <td>—</td>
-                                <td>—</td>
-                                <td>—</td>
-                              </tr>
-                            {% endif %}
-                          {% empty %}
-                            <tr>
-                              <td colspan="6" class="text-muted small">No rows yet.</td>
-                            </tr>
-                          {% endfor %}
-                        </tbody>
-
-                        <tfoot class="table-light">
-                          <tr>
-                            <th>Total</th>
-                            <th>{{ w.completed_total.km|default:"—" }}</th>
-                            <th>{{ w.completed_total.time|default:"—" }}</th>
-                            <th></th>
-                            <th>{{ w.completed_total.avg_hr|default:"—" }}</th>
-                            <th>{{ w.completed_total.max_hr|default:"—" }}</th>
-                          </tr>
-                        </tfoot>
-                      </table>
-                    </div>
-
-                  </div>
-                </div>
-              </div>
-
             </div>
+
+            <!-- RIGHT: Completed -->
+            <div class="col-12 col-lg-5 eb-col">
+              <div class="card shadow-sm eb-card eb-completed-card">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h5 class="mb-0">Splits</h5>
+                    <small class="text-muted">Completed</small>
+                  </div>
+
+                  <!-- ✅ no extra horizontal scroll here -->
+                  <div class="table-responsive">
+                    <table class="table table-sm align-middle mb-0">
+                      <thead class="table-light">
+                        <tr>
+                          <th style="width: 80px;">km</th>
+                          <th style="width: 90px;">min</th>
+                          <th class="eb-col-intervals">pace / intervals</th>
+                          <th style="width: 90px;">avg HR</th>
+                          <th style="width: 90px;">max HR</th>
+                        </tr>
+                      </thead>
+
+                      <tbody>
+                        {% for t in w.planned_trainings.all %}
+                          {% if t.completed_row %}
+                          <tr>
+                            <td>{{ t.completed_row.km }}</td>
+                            <td>{{ t.completed_row.min }}</td>
+                            <td class="eb-nowrap">{{ t.completed_row.third }}</td>
+                            <td>{{ t.completed_row.avg_hr|default:"—" }}</td>
+                            <td>{{ t.completed_row.max_hr|default:"—" }}</td>
+                          </tr>
+                          {% else %}
+                          <tr class="text-muted">
+                            <td>—</td><td>—</td><td>—</td><td>—</td><td>—</td>
+                          </tr>
+                          {% endif %}
+                        {% empty %}
+                        <tr>
+                          <td colspan="5" class="text-muted small">No rows yet.</td>
+                        </tr>
+                        {% endfor %}
+                      </tbody>
+
+                      <tfoot class="table-light">
+                        <tr>
+                          <th>{{ w.completed_total.km|default:"—" }}</th>
+                          <th>{{ w.completed_total.time|default:"—" }}</th>
+                          <th></th>
+                          <th>{{ w.completed_total.avg_hr|default:"—" }}</th>
+                          <th>{{ w.completed_total.max_hr|default:"—" }}</th>
+                        </tr>
+                      </tfoot>
+                    </table>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+
           </div>
+        </div>
         {% empty %}
-          <div class="text-muted small mb-4">No weeks in this month yet.</div>
+        <div class="text-muted small mb-4">No weeks in this month yet.</div>
         {% endfor %}
 
       </div>
-    {% empty %}
-      <div class="text-muted small">
-        No months yet. Create a TrainingMonth in admin for your user.
-      </div>
-    {% endfor %}
+      {% empty %}
+      <div class="text-muted small">No months yet. Create a TrainingMonth in admin for your user.</div>
+      {% endfor %}
 
+    </div>
   </div>
 
-  <!-- MONTH SWITCHER (sticky bottom) -->
+  <!-- MONTH SWITCHER (fixed bottom) -->
   <div class="eb-month-switcher" id="monthSwitcher">
     <div class="container-fluid">
-      <div class="d-flex gap-2 overflow-auto px-3 py-2">
+      <div class="d-flex gap-2 overflow-auto px-3 py-2 eb-switcher-track" id="monthSwitcherTrack">
         {% for m in month_cards %}
-          <button class="month-btn btn btn-outline-dark btn-sm flex-shrink-0 {% if forloop.first %}is-active{% endif %}"
-                  data-month-id="{{ m.id }}" type="button">
+          <button
+            class="month-btn btn btn-sm flex-shrink-0 {% if forloop.first %}btn-dark is-active{% else %}btn-outline-dark{% endif %}"
+            data-month-id="{{ m.id }}"
+            type="button">
             {{ m.label }}
           </button>
         {% empty %}

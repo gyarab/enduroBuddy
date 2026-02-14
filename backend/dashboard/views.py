@@ -1,19 +1,16 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-from datetime import datetime
-from typing import Optional
+from typing import Any, Optional
 
 from django.contrib.auth.decorators import login_required
 from django.db.models import Prefetch
 from django.shortcuts import render
-from django.utils import timezone
 
-from activities.models import Activity, ActivityInterval
-from training.models import TrainingMonth, TrainingWeek, PlannedTraining
+from training.models import TrainingMonth
+from activities.models import ActivityInterval
 
 
-MONTHS_CS = {
+CZ_MONTHS = {
     1: "Leden",
     2: "Únor",
     3: "Březen",
@@ -29,179 +26,191 @@ MONTHS_CS = {
 }
 
 
-def _fmt_month_label(year: int, month: int) -> str:
-    return f"{MONTHS_CS.get(month, str(month))} {year}"
-
-
-def _fmt_km(distance_m: int | None) -> str:
-    if not distance_m:
+def _fmt_mmss(seconds: Optional[int]) -> str:
+    if seconds is None:
         return "—"
-    return f"{(float(distance_m) / 1000.0):.2f}"
+    m = int(seconds) // 60
+    s = int(seconds) % 60
+    return f"{m}:{s:02d}"
 
 
-def _fmt_minutes(duration_s: int | None) -> str:
-    if not duration_s:
+def _fmt_minutes(duration_s: Optional[int]) -> str:
+    if duration_s is None:
         return "—"
-    mins = int(round(int(duration_s) / 60.0))
+    mins = int(round(duration_s / 60.0))
     return str(mins)
 
 
-def _fmt_pace_mmss(pace_s_per_km: int | None) -> str:
-    if not pace_s_per_km:
+def _fmt_km(distance_m: Optional[int]) -> str:
+    if not distance_m:
         return "—"
-    pace_s_per_km = int(pace_s_per_km)
-    m = pace_s_per_km // 60
-    s = pace_s_per_km % 60
-    return f"{m}:{s:02d}"
+    return f"{distance_m / 1000.0:.2f}"
 
 
-def _fmt_interval_time(duration_s: int | None) -> str | None:
-    if not duration_s:
+def _work_intervals(intervals: list[ActivityInterval]) -> list[ActivityInterval]:
+    # heuristika "work" vs "rest"
+    return [
+        it for it in intervals
+        if (it.distance_m or 0) >= 200 and (it.duration_s or 0) >= 30
+    ]
+
+
+def _fmt_intervals(intervals: list[ActivityInterval]) -> str:
+    work = _work_intervals(intervals)
+    if not work:
+        return "—"
+
+    out = []
+    for it in work:
+        d = it.duration_s or 0
+        if d < 60:
+            out.append(str(d))
+        else:
+            out.append(_fmt_mmss(d))
+    return "(" + ", ".join(out) + ")"
+
+
+def _weighted_avg_hr(intervals: list[ActivityInterval]) -> Optional[int]:
+    work = [it for it in _work_intervals(intervals) if it.avg_hr is not None]
+    if not work:
         return None
-    ds = int(duration_s)
-    if ds < 60:
-        return str(ds)
-    m = ds // 60
-    s = ds % 60
-    return f"{m}:{s:02d}"
 
-
-def _is_pause_interval(it: ActivityInterval) -> bool:
-    # jednoduchá heuristika pauzy (ladíme podle tvých dat)
-    if not it.duration_s:
-        return True
-    if it.duration_s < 25:
-        return True
-    if not it.distance_m:
-        return True
-    if it.distance_m < 120:
-        return True
-    return False
-
-
-def _work_intervals(activity: Activity) -> list[ActivityInterval]:
-    intervals = list(activity.intervals.all())
-    return [it for it in intervals if not _is_pause_interval(it)]
-
-
-def _weighted_avg_hr(intervals: list[ActivityInterval]) -> int | None:
-    num = 0.0
-    den = 0.0
-    for it in intervals:
-        if it.avg_hr is None or it.duration_s is None:
+    total_w = 0
+    total = 0
+    for it in work:
+        w = int(it.duration_s or 0)
+        if w <= 0:
             continue
-        w = float(it.duration_s)
-        num += float(it.avg_hr) * w
-        den += w
-    if den <= 0:
+        total_w += w
+        total += int(it.avg_hr) * w
+
+    if total_w <= 0:
         return None
-    return int(round(num / den))
+    return int(round(total / total_w))
 
 
-def _max_hr_from_activity(activity: Activity) -> int | None:
-    if getattr(activity, "max_hr", None):
-        return activity.max_hr
-    vals = [it.max_hr for it in activity.intervals.all() if getattr(it, "max_hr", None)]
-    return max(vals) if vals else None
+def _activity_to_completed_row(a) -> dict[str, Any]:
+    intervals = list(a.intervals.all().order_by("index"))
+
+    workout_type = a.workout_type or "RUN"
+    km = _fmt_km(a.distance_m)
+    minutes = _fmt_minutes(a.duration_s)
+    max_hr = a.max_hr
+
+    if workout_type == "WORKOUT":
+        third = _fmt_intervals(intervals)
+        avg_hr = _weighted_avg_hr(intervals)
+    else:
+        third = _fmt_mmss(a.avg_pace_s_per_km)
+        avg_hr = a.avg_hr
+
+    return {
+        "workout_type": workout_type,
+        "km": km,
+        "min": minutes,
+        "third": third,
+        "avg_hr": avg_hr,
+        "max_hr": max_hr,
+    }
 
 
-@dataclass
-class MonthCard:
-    id: int
-    label: str
-    weeks: list[TrainingWeek]
+def _sum_week_total(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    km_sum = 0.0
+    min_sum = 0
+    hr_num = 0
+    hr_den = 0
+    max_hr = None
+
+    for r in rows:
+        # km
+        try:
+            km_sum += float(r["km"])
+        except Exception:
+            pass
+
+        # minutes
+        try:
+            m = int(r["min"])
+            min_sum += m
+        except Exception:
+            m = 0
+
+        # avg hr weighted by minutes
+        if r.get("avg_hr") is not None and m > 0:
+            hr_num += int(r["avg_hr"]) * m
+            hr_den += m
+
+        # max hr
+        if r.get("max_hr") is not None:
+            max_hr = max(max_hr or 0, int(r["max_hr"]))
+
+    avg_hr = int(round(hr_num / hr_den)) if hr_den > 0 else None
+
+    return {
+        "km": f"{km_sum:.2f}" if km_sum > 0 else "—",
+        "time": str(min_sum) if min_sum > 0 else "—",
+        "avg_hr": avg_hr,
+        "max_hr": max_hr,
+    }
 
 
 @login_required
 def home(request):
-    user = request.user
-
+    # ✅ Prefetch čistě přes stringy (bez .rel.model hacků)
     months_qs = (
-        TrainingMonth.objects.filter(athlete=user)
+        TrainingMonth.objects
+        .filter(athlete=request.user)
         .prefetch_related(
             Prefetch(
                 "weeks",
-                queryset=TrainingWeek.objects.all().prefetch_related(
-                    Prefetch(
-                        "planned_trainings",
-                        queryset=PlannedTraining.objects.select_related("activity").prefetch_related(
-                            Prefetch("activity__intervals", queryset=ActivityInterval.objects.all().order_by("index"))
-                        ),
+                queryset=(
+                    TrainingMonth._meta.get_field("weeks").related_model.objects
+                    .all()
+                    .prefetch_related(
+                        Prefetch(
+                            "planned_trainings",
+                            queryset=(
+                                TrainingMonth._meta.get_field("weeks").related_model._meta.get_field("planned_trainings").related_model.objects
+                                .select_related("activity")
+                                .prefetch_related(
+                                    Prefetch(
+                                        "activity__intervals",
+                                        queryset=ActivityInterval.objects.order_by("index"),
+                                    )
+                                )
+                                .order_by("date", "id")
+                            ),
+                        )
                     )
+                    .order_by("week_index", "id")
                 ),
             )
         )
         .order_by("year", "month")
     )
 
-    month_cards: list[MonthCard] = []
+    month_cards = []
     for m in months_qs:
-        label = _fmt_month_label(m.year, m.month)
-        month_cards.append(MonthCard(id=m.id, label=label, weeks=list(m.weeks.all())))
+        weeks_out = []
+        for w in list(m.weeks.all()):
+            completed_rows_for_total = []
 
-    # Completed rows + totals per week
-    for m in month_cards:
-        for w in m.weeks:
-            # totals (jen completed aktivity)
-            total_dist_m = 0
-            total_dur_s = 0
-            hrs_for_avg: list[int] = []
-            max_hr_week: int | None = None
+            for t in list(w.planned_trainings.all()):
+                # ⚠️ neukládat do FK fieldů, jen runtime atribut
+                t.completed_row = None
+                if getattr(t, "activity", None):
+                    t.completed_row = _activity_to_completed_row(t.activity)
+                    completed_rows_for_total.append(t.completed_row)
 
-            for t in w.planned_trainings.all():
-                a: Activity | None = getattr(t, "activity", None)
-                if not a:
-                    t.completed_row = None
-                    continue
+            w.completed_total = _sum_week_total(completed_rows_for_total)
+            weeks_out.append(w)
 
-                workout_type = a.workout_type or "UNKNOWN"
-                km = _fmt_km(a.distance_m)
-                minutes = _fmt_minutes(a.duration_s)
-
-                if a.distance_m:
-                    total_dist_m += int(a.distance_m)
-                if a.duration_s:
-                    total_dur_s += int(a.duration_s)
-
-                if workout_type == "RUN":
-                    third = _fmt_pace_mmss(a.avg_pace_s_per_km)
-                    avg_hr = a.avg_hr
-                else:
-                    work_its = _work_intervals(a)
-                    parts = []
-                    for it in work_its:
-                        s = _fmt_interval_time(it.duration_s)
-                        if s:
-                            parts.append(s)
-                    third = f"({', '.join(parts)})" if parts else "—"
-                    avg_hr = _weighted_avg_hr(work_its)
-
-                if avg_hr is not None:
-                    hrs_for_avg.append(int(avg_hr))
-
-                mx = _max_hr_from_activity(a)
-                if mx is not None:
-                    max_hr_week = mx if max_hr_week is None else max(max_hr_week, mx)
-
-                t.completed_row = {
-                    "type": workout_type,  # RUN / WORKOUT / UNKNOWN
-                    "km": km,              # string "8.01"
-                    "min": minutes,        # string "49"
-                    "third": third,        # pace nebo "(intervaly...)"
-                    "avg_hr": avg_hr,
-                    "max_hr": mx,
-                }
-
-            # totals row for the week
-            w.completed_total = {
-                "km": _fmt_km(total_dist_m) if total_dist_m else "—",
-                "min": _fmt_minutes(total_dur_s) if total_dur_s else "—",
-                "avg_hr": int(round(sum(hrs_for_avg) / len(hrs_for_avg))) if hrs_for_avg else None,
-                "max_hr": max_hr_week,
+        month_cards.append(
+            {
+                "id": m.id,
+                "label": f"{CZ_MONTHS.get(m.month, str(m.month))} {m.year}",
+                "weeks": weeks_out,
             }
+        )
 
-    return render(
-        request,
-        "dashboard/dashboard.html",
-        {"month_cards": month_cards},
-    )
+    return render(request, "dashboard/dashboard.html", {"month_cards": month_cards})
