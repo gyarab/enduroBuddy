@@ -1,0 +1,260 @@
+:root{
+  /* Dark mode like Docker Desktop but darker */
+  --bg: #0b1220;
+  --bg2: #08101c;
+
+  --card: rgba(18, 27, 44, 0.72);
+  --card2: rgba(18, 27, 44, 0.55);
+
+  --border: rgba(255,255,255,0.10);
+  --border2: rgba(255,255,255,0.14);
+
+  --text: rgba(255,255,255,0.92);
+  --muted: rgba(255,255,255,0.62);
+  --faint: rgba(255,255,255,0.45);
+
+  --primary: #2f81f7;
+  --primary2:#1f6feb;
+
+  --danger: #ff5c7a;
+}
+
+.eb-auth{
+  min-height: 100vh;
+  background:
+    radial-gradient(1200px 600px at 25% 15%, rgba(47,129,247,0.20), transparent 55%),
+    radial-gradient(900px 500px at 75% 25%, rgba(49,208,255,0.10), transparent 55%),
+    linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%);
+  color: var(--text);
+}
+
+.eb-auth-page{
+  padding-top: 72px;
+  padding-bottom: 72px;
+}
+
+/* Card */
+.eb-card{
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  backdrop-filter: blur(12px);
+  overflow: hidden;
+}
+
+.eb-card-bottom{
+  background: rgba(255,255,255,0.03);
+}
+
+.eb-card-body{
+  padding: 22px;
+}
+
+/* Logo row */
+.eb-logo{
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(47,129,247,0.25);
+  background: rgba(255,255,255,0.03);
+  color: rgba(47,129,247,0.95);
+}
+
+.eb-logo svg{ display:block; color: rgba(47,129,247,0.95); }
+.eb-logo-text{
+  font-weight: 800;
+  letter-spacing: 0.2px;
+  color: rgba(255,255,255,0.92);
+}
+
+/* Title */
+.eb-title{
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+}
+
+.eb-subtitle{
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.35;
+  max-width: 360px;
+  margin: 0 auto;
+}
+
+/* Labels + inputs */
+.eb-label{
+  color: rgba(255,255,255,0.75);
+  font-size: 13px;
+}
+
+.eb-required{
+  color: rgba(255,255,255,0.55);
+  margin-left: 2px;
+}
+
+.eb-input{
+  background: rgba(255,255,255,0.05) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text) !important;
+  border-radius: 10px !important;
+  padding: 11px 12px !important;
+}
+
+.eb-input::placeholder{
+  color: rgba(255,255,255,0.35) !important;
+}
+
+.eb-input:focus{
+  border-color: rgba(47,129,247,0.60) !important;
+  box-shadow: 0 0 0 0.2rem rgba(47,129,247,0.18) !important;
+}
+
+/* Remember me */
+.eb-check .form-check-label{
+  color: var(--muted);
+  font-size: 13px;
+}
+.eb-check .form-check-input{
+  background-color: rgba(255,255,255,0.06);
+  border: 1px solid var(--border);
+}
+.eb-check .form-check-input:checked{
+  background-color: var(--primary);
+  border-color: rgba(47,129,247,0.75);
+}
+
+/* Primary button */
+.eb-btn-primary{
+  border-radius: 10px;
+  border: 1px solid rgba(47,129,247,0.45);
+  background: linear-gradient(180deg, rgba(47,129,247,0.98), rgba(31,111,235,0.98));
+  color: #fff;
+  font-weight: 800;
+}
+
+.eb-btn-primary:hover{
+  filter: brightness(1.06);
+  transform: translateY(-1px);
+}
+
+.eb-btn-primary:active{
+  transform: translateY(0px);
+}
+
+/* OR divider like Docker */
+.eb-or{
+  position: relative;
+  text-align: center;
+  color: rgba(255,255,255,0.55);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+}
+.eb-or:before{
+  content:"";
+  position:absolute;
+  left:0;
+  right:0;
+  top:50%;
+  height:1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.14), transparent);
+}
+.eb-or span{
+  position: relative;
+  z-index: 1;
+  padding: 0 10px;
+  background: rgba(18, 27, 44, 0.70);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 999px;
+}
+
+/* Provider buttons */
+.eb-btn-provider{
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.04);
+  color: rgba(255,255,255,0.88);
+  padding: 10px 12px;
+  text-align: left;
+  font-weight: 650;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.eb-btn-provider:disabled{
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.eb-icon{
+  width: 18px;
+  height: 18px;
+  display: inline-block;
+  border-radius: 4px;
+  background: rgba(255,255,255,0.10);
+  border: 1px solid rgba(255,255,255,0.10);
+}
+
+/* tiny fake icons */
+.eb-icon-google{
+  background:
+    conic-gradient(from 180deg, #34a853 0 25%, #4285f4 0 50%, #fbbc05 0 75%, #ea4335 0 100%);
+  border: none;
+}
+.eb-icon-github{
+  background: rgba(255,255,255,0.85);
+  border: none;
+}
+.eb-icon-sso{
+  background: rgba(47,129,247,0.75);
+  border: none;
+}
+
+/* Links */
+.eb-link{
+  color: rgba(47,129,247,0.95);
+  text-decoration: none;
+  font-weight: 650;
+}
+.eb-link:hover{
+  color: rgba(49,208,255,0.95);
+  text-decoration: underline;
+}
+
+.eb-muted{
+  color: var(--muted);
+}
+
+/* Alerts + field errors */
+.eb-alert{
+  background: rgba(255, 92, 122, 0.10);
+  border: 1px solid rgba(255, 92, 122, 0.30);
+  color: rgba(255,255,255,0.92);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.eb-field-error{
+  color: rgba(255, 92, 122, 0.95);
+  font-size: 12px;
+}
+
+/* Footer */
+.eb-footer{
+  color: rgba(255,255,255,0.55);
+  font-size: 12px;
+}
+.eb-footer-link{
+  color: rgba(47,129,247,0.85);
+  text-decoration: none;
+}
+.eb-footer-link:hover{
+  text-decoration: underline;
+}
+.eb-dotsep{
+  margin: 0 8px;
+  color: rgba(255,255,255,0.35);
+}
