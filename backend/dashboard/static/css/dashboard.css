@@ -1,11 +1,78 @@
-/* backend/static/css/dashboard.css */
+/* ===== HORIZONTAL SCROLL for whole month content ===== */
+.eb-month-scroll {
+  overflow-x: auto;
+  width: 100%;
+  background: #fff;
+  border-radius: 12px;
+  padding-bottom: 8px;
+}
 
 /* aby se obsah neschoval pod spodní switcher */
 .eb-scrollwrap {
-  padding-bottom: 72px;
+  padding-bottom: 90px;
 }
 
-/* sticky bottom month switcher */
+/* ===== WEEK ROW: never wrap, width grows ===== */
+.eb-week-row {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 12px;
+  width: max-content;
+  align-items: stretch;
+}
+
+/* ===== base column wrapper ===== */
+.eb-col {
+  flex: 0 0 auto;
+  display: flex;
+}
+
+/* ===== PLANNED: unify width to widest planned card in the month ===== */
+.eb-col-planned {
+  min-width: 50vw;     /* default: half screen if no data */
+  width: max-content;  /* allow growth */
+}
+.eb-col-planned .card {
+  width: 100%;         /* planned card fills planned column */
+}
+.eb-col-planned table {
+  width: 100%;
+}
+
+/* ===== COMPLETED: unify width to widest completed card in the month ===== */
+.eb-col-completed {
+  min-width: 50vw;     /* default: half screen if no data */
+  width: max-content;  /* allow growth */
+}
+.eb-col-completed .card {
+  width: 100%;         /* completed card fills completed column */
+}
+.eb-col-completed table {
+  width: 100%;         /* IMPORTANT: stretch table to card width */
+}
+
+/* ===== cell behavior ===== */
+.eb-col td,
+.eb-col th {
+  white-space: nowrap; /* default: keep rows in one line */
+}
+
+/* use this class if you ever want wrapping in some column */
+.eb-wrap {
+  white-space: normal;
+}
+
+/* ===== month visibility handled by JS ===== */
+.month-container { display: none; }
+.month-container.is-active { display: block; }
+
+/* ===== active month button ===== */
+.month-btn.is-active {
+  background: #212529;
+  color: #fff;
+}
+
+/* ===== month switcher fixed bottom ===== */
 .eb-month-switcher {
   position: fixed;
   left: 0;
@@ -14,30 +81,5 @@
   background: #fff;
   border-top: 1px solid rgba(0,0,0,.1);
   z-index: 1030;
-}
-
-/* ONE big horizontal scroll (celý měsíc) */
-#monthXScroll {
-  overflow-x: auto;
-  overflow-y: visible;
-}
-
-/* vypni vnitřní scrollbary z table-responsive */
-#monthXScroll .table-responsive {
-  overflow-x: visible !important;
-}
-
-/* tabulky se roztahují podle obsahu */
-#monthXScroll table {
-  width: max-content;
-}
-
-/* track switcheru: bude se hýbat, ale scrollbar nebude vidět */
-#monthSwitcherTrack {
-  overflow-x: auto;
-  overflow-y: hidden;
-  scrollbar-width: none;
-}
-#monthSwitcherTrack::-webkit-scrollbar {
-  display: none;
+  padding: 8px 0;
 }

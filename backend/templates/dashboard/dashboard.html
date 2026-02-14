@@ -4,8 +4,6 @@
 {% block title %}Training view | EnduroBuddy{% endblock %}
 
 {% block content %}
-<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
-
 <div class="container-fluid py-3">
 
   <!-- HEADER -->
@@ -14,11 +12,11 @@
     <button class="btn btn-outline-success btn-sm" disabled>Import training</button>
   </div>
 
-  <!-- ✅ ONE horizontal-scroll area for whole MONTH content -->
-  <div class="eb-month-xscroll" id="monthXScroll">
+  <!-- OUTER wrapper (keeps padding for switcher) -->
+  <div class="eb-scrollwrap">
 
-    <!-- inner must be able to grow wider than viewport -->
-    <div class="eb-month-xscroll-inner">
+    <!-- ONE big horizontal scroll (whole month content) -->
+    <div class="eb-month-scroll border rounded-3 bg-white p-2" id="monthContentArea">
 
       {% for m in month_cards %}
       <div class="month-container {% if forloop.first %}is-active{% endif %}"
@@ -35,12 +33,15 @@
         <!-- Weeks -->
         {% for w in m.weeks %}
         <div class="mb-4">
-          <div class="row g-3 align-items-stretch eb-week-row">
 
-            <!-- LEFT: Planned -->
-            <div class="col-12 col-lg-7 eb-col">
-              <div class="card shadow-sm eb-card eb-planned-card">
+          <!-- THIS ROW MUST NOT WRAP -->
+          <div class="eb-week-row">
+
+            <!-- PLANNED -->
+            <div class="eb-col eb-col-planned">
+              <div class="card shadow-sm h-100">
                 <div class="card-body">
+
                   <div class="d-flex justify-content-between align-items-center mb-2">
                     <h5 class="mb-0">Week {{ w.week_index }}.</h5>
                     <small class="text-muted">Planned</small>
@@ -50,23 +51,25 @@
                     <table class="table table-sm align-middle mb-0">
                       <thead class="table-light">
                         <tr>
-                          <th style="width: 90px;">Date</th>
-                          <th style="width: 90px;">Day</th>
-                          <th class="eb-col-training">Training</th>
-                          <th class="eb-col-notes">Coach notes</th>
+                          <th style="width:90px">Date</th>
+                          <th style="width:90px">Day</th>
+                          <th>Training</th>
+                          <th>Coach notes</th>
                         </tr>
                       </thead>
                       <tbody>
                         {% for t in w.planned_trainings.all %}
                         <tr>
-                          <td>{% if t.date %}{{ t.date|date:"j.n." }}{% else %}—{% endif %}</td>
-                          <td>{% if t.day_label %}{{ t.day_label }}{% else %}—{% endif %}</td>
-                          <td class="eb-nowrap">{{ t.title }}</td>
-                          <td class="eb-nowrap">{% if t.notes %}{{ t.notes }}{% endif %}</td>
+                          <td>{{ t.date|date:"j.n."|default:"—" }}</td>
+                          <td>{{ t.day_label|default:"—" }}</td>
+                          <td>{{ t.title }}</td>
+                          <td>{{ t.notes|default:"" }}</td>
                         </tr>
                         {% empty %}
                         <tr>
-                          <td colspan="4" class="text-muted small">No planned trainings in this week yet.</td>
+                          <td colspan="4" class="text-muted small">
+                            No planned trainings in this week yet.
+                          </td>
                         </tr>
                         {% endfor %}
                       </tbody>
@@ -77,25 +80,25 @@
               </div>
             </div>
 
-            <!-- RIGHT: Completed -->
-            <div class="col-12 col-lg-5 eb-col">
-              <div class="card shadow-sm eb-card eb-completed-card">
+            <!-- COMPLETED -->
+            <div class="eb-col eb-col-completed">
+              <div class="card shadow-sm h-100">
                 <div class="card-body">
+
                   <div class="d-flex justify-content-between align-items-center mb-2">
-                    <h5 class="mb-0">Splits</h5>
-                    <small class="text-muted">Completed</small>
+                    <h5 class="mb-0">Completed</h5>
+                    <small class="text-muted">Splits</small>
                   </div>
 
-                  <!-- ✅ no extra horizontal scroll here -->
                   <div class="table-responsive">
                     <table class="table table-sm align-middle mb-0">
                       <thead class="table-light">
                         <tr>
-                          <th style="width: 80px;">km</th>
-                          <th style="width: 90px;">min</th>
-                          <th class="eb-col-intervals">pace / intervals</th>
-                          <th style="width: 90px;">avg HR</th>
-                          <th style="width: 90px;">max HR</th>
+                          <th style="width:80px;">km</th>
+                          <th style="width:110px;">min</th>
+                          <th style="min-width:420px;">pace / intervals</th>
+                          <th style="width:90px;">avg HR</th>
+                          <th style="width:90px;">max HR</th>
                         </tr>
                       </thead>
 
@@ -104,8 +107,8 @@
                           {% if t.completed_row %}
                           <tr>
                             <td>{{ t.completed_row.km }}</td>
-                            <td>{{ t.completed_row.min }}</td>
-                            <td class="eb-nowrap">{{ t.completed_row.third }}</td>
+                            <td>{{ t.completed_row.time }}</td>
+                            <td>{{ t.completed_row.third }}</td>
                             <td>{{ t.completed_row.avg_hr|default:"—" }}</td>
                             <td>{{ t.completed_row.max_hr|default:"—" }}</td>
                           </tr>
@@ -125,7 +128,7 @@
                         <tr>
                           <th>{{ w.completed_total.km|default:"—" }}</th>
                           <th>{{ w.completed_total.time|default:"—" }}</th>
-                          <th></th>
+                          <th>Total</th>
                           <th>{{ w.completed_total.avg_hr|default:"—" }}</th>
                           <th>{{ w.completed_total.max_hr|default:"—" }}</th>
                         </tr>
@@ -145,25 +148,25 @@
 
       </div>
       {% empty %}
-      <div class="text-muted small">No months yet. Create a TrainingMonth in admin for your user.</div>
+      <div class="text-muted small">
+        No months yet. Create a TrainingMonth in admin for your user.
+      </div>
       {% endfor %}
 
     </div>
   </div>
 
-  <!-- MONTH SWITCHER (fixed bottom) -->
-  <div class="eb-month-switcher" id="monthSwitcher">
+  <!-- MONTH SWITCHER -->
+  <div class="eb-month-switcher">
     <div class="container-fluid">
-      <div class="d-flex gap-2 overflow-auto px-3 py-2 eb-switcher-track" id="monthSwitcherTrack">
+      <div class="d-flex gap-2 overflow-auto px-3">
         {% for m in month_cards %}
-          <button
-            class="month-btn btn btn-sm flex-shrink-0 {% if forloop.first %}btn-dark is-active{% else %}btn-outline-dark{% endif %}"
-            data-month-id="{{ m.id }}"
-            type="button">
-            {{ m.label }}
-          </button>
+        <button class="month-btn btn btn-outline-dark btn-sm flex-shrink-0 {% if forloop.first %}is-active{% endif %}"
+                data-month-id="{{ m.id }}" type="button">
+          {{ m.label }}
+        </button>
         {% empty %}
-          <button class="btn btn-outline-dark btn-sm" disabled>No months</button>
+        <button class="btn btn-outline-dark btn-sm" disabled>No months</button>
         {% endfor %}
       </div>
     </div>
@@ -171,5 +174,6 @@
 
 </div>
 
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
 <script src="{% static 'js/dashboard.js' %}"></script>
 {% endblock %}
