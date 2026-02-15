@@ -6,7 +6,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>{% if CURRENT_LANGUAGE|slice:":2" == "cs" %}Obnova hesla{% else %}Password reset{% endif %} | EnduroBuddy</title>
+  <title>{% if CURRENT_LANGUAGE|slice:":2" == "cs" %}Ověření e-mailu{% else %}Verify Your Email Address{% endif %} | EnduroBuddy</title>
 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="{% static 'css/login.css' %}?v=8">
@@ -24,15 +24,19 @@
             <div class="eb-mark mx-auto mb-3" aria-hidden="true">
               <svg class="eb-mark-icon" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" fill="none">
                 <rect x="11" y="11" width="42" height="42" rx="14" stroke="currentColor" stroke-width="3" opacity="0.28"/>
-                <path d="M18 39c0-9 7-16 16-16h12" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
-                <path d="M18 30c2-7 8-11 16-11h10" stroke="currentColor" stroke-width="3" stroke-linecap="round" opacity="0.75"/>
-                <circle cx="41.5" cy="23" r="3.2" fill="currentColor"/>
-                <path d="M39 40l4 4 8-8" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M16 24h32v18a7 7 0 0 1-7 7H23a7 7 0 0 1-7-7V24Z" stroke="currentColor" stroke-width="3"/>
+                <path d="m16 25 16 12 16-12" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
             </div>
 
-            <h1 class="eb-title mb-2">{% if CURRENT_LANGUAGE|slice:":2" == "cs" %}Zkontroluj e-mail{% else %}Check your email{% endif %}</h1>
-            <p class="eb-subtitle mb-4">{% if CURRENT_LANGUAGE|slice:":2" == "cs" %}Pokud účet s tímto e-mailem existuje, poslali jsme odkaz pro obnovu hesla.{% else %}If an account with that email exists, we sent you a password reset link.{% endif %}</p>
+            <h1 class="eb-title mb-2">{% if CURRENT_LANGUAGE|slice:":2" == "cs" %}Ověř svou e-mailovou adresu{% else %}Verify your email address{% endif %}</h1>
+            <p class="eb-subtitle mb-4">
+              {% if CURRENT_LANGUAGE|slice:":2" == "cs" %}
+                Poslali jsme ti ověřovací e-mail. Dokonči registraci kliknutím na odkaz v e-mailu. Pokud zprávu nevidíš, zkontroluj i spam.
+              {% else %}
+                We have sent an email to you for verification. Follow the link provided to finalize the signup process. If you do not see the verification email in your main inbox, check your spam folder.
+              {% endif %}
+            </p>
 
             <a class="btn eb-btn-provider py-2 w-100" href="{% url 'account_login' %}">{% if CURRENT_LANGUAGE|slice:":2" == "cs" %}Zpět na přihlášení{% else %}Back to sign in{% endif %}</a>
           </div>
