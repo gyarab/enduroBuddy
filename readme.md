@@ -121,8 +121,8 @@ Cílem návrhu je:
 |------|-----------|
 | Backend | Python 3.14 |
 | Framework | Django 5 |
-| Databáze | SQLite (vývoj), PostgreSQL (plán) |
-| Import dat | FIT format, fitparse |
+| Databáze | PostgreSQL |
+| Import dat | FIT format, fitparse, GarminAPI |
 | Frontend | Django templates |
 | Verzování | Git |
 
@@ -154,39 +154,18 @@ Systém vědomě neukládá surová senzorová data s vysokou frekvencí.
 
 ---
 
-## Struktura projektu
-
-```bash
-backend/
-│
-├─ activities/
-│ ├─ models.py
-│ ├─ signals.py
-│ └─ services/
-│ └─ fit_parser.py
-│
-├─ dashboard/
-│ └─ views.py
-│
-├─ training/
-├─ accounts/
-├─ templates/
-│ └─ dashboard/
-│ └─ dashboard.html
-│
-├─ media/
-├─ db.sqlite3
-└─ manage.py
-```
-
----
-
 ## Instalace
 
-### 1. Klonování repozitáře
+### 1.1 Klonování repozitáře přes SHH
 
 ```bash
-git clone <repository-url>
+git clone git@github.com:vojtecholcman/enduroBuddy.git
+cd backend
+```
+### 1.2 Klonování repozitáře přes URL
+
+```bash
+git clone https://github.com/vojtecholcman/enduroBuddy.git
 cd backend
 ```
 ### 2. Virtuální prostředí
