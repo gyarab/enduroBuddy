@@ -18,19 +18,35 @@
   function init() {
     const buttons = Array.from(document.querySelectorAll(".month-btn"));
     const months = Array.from(document.querySelectorAll(".month-container"));
-    if (!months.length) return;
+    if (months.length) {
+      const firstId = buttons.length
+        ? buttons[0].getAttribute("data-month-id")
+        : months[0].getAttribute("data-month-id");
 
-    const firstId = buttons.length
-      ? buttons[0].getAttribute("data-month-id")
-      : months[0].getAttribute("data-month-id");
+      showMonth(firstId);
 
-    showMonth(firstId);
-
-    buttons.forEach((btn) => {
-      btn.addEventListener("click", () => {
-        showMonth(btn.getAttribute("data-month-id"));
+      buttons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          showMonth(btn.getAttribute("data-month-id"));
+        });
       });
-    });
+    }
+
+    const importBtn = document.getElementById("fitImportBtn");
+    const fileInput = document.getElementById("fitFileInput");
+    const form = document.getElementById("fitImportForm");
+
+    if (importBtn && fileInput && form) {
+      importBtn.addEventListener("click", () => {
+        fileInput.click();
+      });
+
+      fileInput.addEventListener("change", () => {
+        if (fileInput.files && fileInput.files.length > 0) {
+          form.submit();
+        }
+      });
+    }
   }
 
   if (document.readyState === "loading") {

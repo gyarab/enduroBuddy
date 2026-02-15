@@ -5,7 +5,7 @@ from unittest import skip
 
 from django.test import SimpleTestCase
 
-from activities.services.fit_parser import parse_fit_file
+from activities.services.fit_parser import _detect_workout_type, parse_fit_file
 
 
 FIXTURES_DIR = Path(__file__).resolve().parent / "fixtures" / "fit"
@@ -32,6 +32,25 @@ class FitWorkoutTypeDetectionTests(SimpleTestCase):
         # bonus: pace by měl být vyplněný aspoň u části intervalů
         paces = [it.get("avg_pace_s_per_km") for it in res.intervals if it.get("avg_pace_s_per_km") is not None]
         self.assertTrue(len(paces) >= 4)
+
+    def test_workout_type_heuristic_does_not_mark_warmup_as_workout(self):
+        laps = [
+            {"duration_s": 600, "distance_m": 1950, "avg_pace_s_per_km": 308},
+            {"duration_s": 620, "distance_m": 2005, "avg_pace_s_per_km": 309},
+            {"duration_s": 605, "distance_m": 1980, "avg_pace_s_per_km": 305},
+        ]
+        t = _detect_workout_type(has_workout_steps=False, laps=laps, is_auto_km_laps=False)
+        self.assertEqual(t, "RUN")
+
+    def test_workout_type_heuristic_marks_varied_work_laps_as_workout(self):
+        laps = [
+            {"duration_s": 220, "distance_m": 1000, "avg_pace_s_per_km": 220},
+            {"duration_s": 180, "distance_m": 500, "avg_pace_s_per_km": 360},
+            {"duration_s": 220, "distance_m": 1000, "avg_pace_s_per_km": 220},
+            {"duration_s": 180, "distance_m": 500, "avg_pace_s_per_km": 360},
+        ]
+        t = _detect_workout_type(has_workout_steps=False, laps=laps, is_auto_km_laps=False)
+        self.assertEqual(t, "WORKOUT")
 
     @skip("debug only")
     def test_debug_z3_print_laps(self):

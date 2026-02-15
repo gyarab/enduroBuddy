@@ -64,6 +64,7 @@ class ActivityFile(models.Model):
     # nově: volitelné (nebudeme to ukládat)
     file = models.FileField(upload_to="activity_files/%Y/%m/", null=True, blank=True)
     original_name = models.CharField(max_length=255, blank=True)
+    checksum_sha256 = models.CharField(max_length=64, blank=True, default="", db_index=True)
 
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
