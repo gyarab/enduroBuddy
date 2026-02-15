@@ -6,8 +6,9 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.utils import timezone
 
-from activities.models import Activity, ActivityInterval, ActivitySample
+from activities.models import Activity, ActivityFile, ActivityInterval, ActivitySample
 from activities.services.fit_importer import import_fit_into_activity
+from training.models import PlannedTraining, TrainingMonth, TrainingWeek
 
 FIXTURES_DIR = Path(__file__).resolve().parent / "fixtures" / "fit"
 
@@ -60,3 +61,48 @@ class FitImportServiceTests(TestCase):
         self.assertGreaterEqual(len(paces), 4)
 
         self.assertGreater(ActivitySample.objects.filter(activity=activity).count(), 100)
+
+    def test_import_with_planned_training_and_activity_file_row(self):
+        month = TrainingMonth.objects.create(
+            athlete=self.user,
+            year=2026,
+            month=1,
+        )
+        week = TrainingWeek.objects.create(
+            training_month=month,
+            week_index=1,
+        )
+        planned = PlannedTraining.objects.create(
+            week=week,
+            day_label="Mon",
+            title="Easy run",
+            order_in_day=1,
+        )
+        activity = Activity.objects.create(
+            athlete=self.user,
+            planned_training=planned,
+            started_at=timezone.now(),
+            title="planned-session",
+        )
+
+        fit_path = FIXTURES_DIR / "Z3.fit"
+        with open(fit_path, "rb") as f:
+            outcome = import_fit_into_activity(
+                activity=activity,
+                fileobj=f,
+                original_name=fit_path.name,
+                create_activity_file_row=True,
+            )
+
+        outcome.activity.refresh_from_db()
+        self.assertEqual(outcome.activity.planned_training_id, planned.id)
+        self.assertEqual(outcome.activity.workout_type, "RUN")
+        self.assertIsNotNone(outcome.activity.duration_s)
+        self.assertIsNotNone(outcome.activity.distance_m)
+        self.assertGreater(ActivityInterval.objects.filter(activity=outcome.activity).count(), 0)
+        self.assertGreater(ActivitySample.objects.filter(activity=outcome.activity).count(), 100)
+
+        af = ActivityFile.objects.get(activity=outcome.activity)
+        self.assertEqual(af.file_type, ActivityFile.FileType.FIT)
+        self.assertEqual(af.original_name, fit_path.name)
+        self.assertFalse(bool(af.file))
