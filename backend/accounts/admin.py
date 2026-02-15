@@ -1,5 +1,13 @@
 from django.contrib import admin
-from .models import CoachAthlete, GarminConnection, GarminSyncAudit, Profile
+from .models import (
+    CoachAthlete,
+    GarminConnection,
+    GarminSyncAudit,
+    Profile,
+    TrainingGroup,
+    TrainingGroupAthlete,
+    TrainingGroupInvite,
+)
 
 @admin.register(Profile)
 class ProfileAdmin(admin.ModelAdmin):
@@ -12,6 +20,28 @@ class CoachAthleteAdmin(admin.ModelAdmin):
     list_display = ('coach', 'athlete', 'created_at')
     list_filter = ('created_at',)
     search_fields = ('coach__username', 'athlete__username')
+
+
+@admin.register(TrainingGroup)
+class TrainingGroupAdmin(admin.ModelAdmin):
+    list_display = ("name", "coach", "created_at")
+    list_filter = ("created_at",)
+    search_fields = ("name", "coach__username", "coach__email")
+
+
+@admin.register(TrainingGroupAthlete)
+class TrainingGroupAthleteAdmin(admin.ModelAdmin):
+    list_display = ("group", "athlete", "created_at")
+    list_filter = ("created_at",)
+    search_fields = ("group__name", "athlete__username", "athlete__email")
+
+
+@admin.register(TrainingGroupInvite)
+class TrainingGroupInviteAdmin(admin.ModelAdmin):
+    list_display = ("group", "created_by", "invited_email", "expires_at", "used_at", "used_by")
+    list_filter = ("created_at", "expires_at", "used_at")
+    search_fields = ("group__name", "created_by__username", "invited_email", "token")
+    readonly_fields = ("created_at",)
 
 
 @admin.register(GarminConnection)

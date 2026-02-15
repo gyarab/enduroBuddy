@@ -33,6 +33,80 @@ class CoachAthlete(models.Model):
             return f"{self.coach.username} -> {self.athlete.username}"
 
 
+class TrainingGroup(models.Model):
+    coach = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="training_groups",
+    )
+    name = models.CharField(max_length=120)
+    description = models.CharField(max_length=255, blank=True, default="")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["name", "id"]
+        constraints = [
+            UniqueConstraint(fields=["coach", "name"], name="uniq_training_group_name_per_coach"),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.name} ({self.coach.username})"
+
+
+class TrainingGroupAthlete(models.Model):
+    group = models.ForeignKey(
+        TrainingGroup,
+        on_delete=models.CASCADE,
+        related_name="memberships",
+    )
+    athlete = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="training_group_memberships",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["group_id", "athlete_id"]
+        constraints = [
+            UniqueConstraint(fields=["group", "athlete"], name="uniq_training_group_member"),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.group.name}: {self.athlete.username}"
+
+
+class TrainingGroupInvite(models.Model):
+    group = models.ForeignKey(
+        TrainingGroup,
+        on_delete=models.CASCADE,
+        related_name="invites",
+    )
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="created_training_group_invites",
+    )
+    token = models.CharField(max_length=128, unique=True, db_index=True)
+    invited_email = models.EmailField(blank=True, default="")
+    expires_at = models.DateTimeField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    used_at = models.DateTimeField(null=True, blank=True)
+    used_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="used_training_group_invites",
+    )
+
+    class Meta:
+        ordering = ["-created_at", "-id"]
+
+    def __str__(self) -> str:
+        return f"Invite {self.group.name} ({self.token[:8]})"
+
+
 class GarminConnection(models.Model):
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,

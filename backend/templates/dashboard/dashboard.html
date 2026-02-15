@@ -78,7 +78,7 @@
             </div>
             <div class="mb-3">
               <label class="form-label form-label-sm mb-1">{% if CURRENT_LANGUAGE == "cs" %}Heslo{% else %}Password{% endif %}</label>
-              <input type="password" class="form-control form-control-sm" name="garmin_password" placeholder="••••••••" required>
+              <input type="password" class="form-control form-control-sm" name="garmin_password" placeholder="********" required>
             </div>
             <button class="btn btn-primary btn-sm w-100" type="submit">{% if CURRENT_LANGUAGE == "cs" %}Připojit Garmin{% else %}Connect Garmin{% endif %}</button>
           </form>
@@ -115,147 +115,7 @@
     </div>
   </div>
 
-  <div class="eb-scrollwrap">
-    <div class="eb-month-scroll border rounded-3 bg-white p-2" id="monthContentArea">
-
-      {% for m in month_cards %}
-      <div class="month-container {% if forloop.first %}is-active{% endif %}" data-month-id="{{ m.id }}">
-
-        <div class="mb-3">
-          <div class="d-flex align-items-center justify-content-between">
-            <h5 class="mb-0">{{ m.label }}</h5>
-          </div>
-        </div>
-
-        {% for w in m.weeks %}
-        <div class="mb-4">
-          <div class="eb-week-row">
-
-            <div class="eb-col eb-col-planned">
-              <div class="card shadow-sm h-100">
-                <div class="card-body">
-
-                  <div class="d-flex justify-content-between align-items-center mb-2">
-                    <h5 class="mb-0">{% if CURRENT_LANGUAGE == "cs" %}Týden{% else %}Week{% endif %} {{ w.week_index }}.</h5>
-                    <small class="text-muted">{% if CURRENT_LANGUAGE == "cs" %}Plán{% else %}Planned{% endif %}</small>
-                  </div>
-
-                  <div class="table-responsive">
-                    <table class="table table-sm align-middle mb-0">
-                      <thead class="table-light">
-                        <tr>
-                          <th style="width:90px">{% if CURRENT_LANGUAGE == "cs" %}Datum{% else %}Date{% endif %}</th>
-                          <th style="width:90px">{% if CURRENT_LANGUAGE == "cs" %}Den{% else %}Day{% endif %}</th>
-                          <th>{% if CURRENT_LANGUAGE == "cs" %}Trénink{% else %}Training{% endif %}</th>
-                          <th>{% if CURRENT_LANGUAGE == "cs" %}Poznámky trenéra{% else %}Coach notes{% endif %}</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {% for t in w.planned_rows %}
-                        <tr>
-                          <td>{{ t.date|date:"j.n."|default:"" }}</td>
-                          <td>{{ t.day_label|default:"" }}</td>
-                          <td>{{ t.title }}</td>
-                          <td>{{ t.notes|default:"" }}</td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                          <td colspan="4" class="text-muted small">
-                            {% if CURRENT_LANGUAGE == "cs" %}V tomto týdnu zatím nejsou žádné plánované tréninky.{% else %}No planned trainings in this week yet.{% endif %}
-                          </td>
-                        </tr>
-                        {% endfor %}
-                      </tbody>
-                    </table>
-                  </div>
-
-                </div>
-              </div>
-            </div>
-
-            <div class="eb-col eb-col-completed">
-              <div class="card shadow-sm h-100">
-                <div class="card-body">
-
-                  <div class="d-flex justify-content-between align-items-center mb-2">
-                    <h5 class="mb-0">{% if CURRENT_LANGUAGE == "cs" %}Splněno{% else %}Completed{% endif %}</h5>
-                    <small class="text-muted">Splits</small>
-                  </div>
-
-                  <div class="table-responsive">
-                    <table class="table table-sm align-middle mb-0">
-                      <thead class="table-light">
-                        <tr>
-                          <th style="width:80px;">km</th>
-                          <th style="width:110px;">min</th>
-                          <th style="min-width:420px;">pace / intervals</th>
-                          <th style="width:90px;">avg HR</th>
-                          <th style="width:90px;">max HR</th>
-                        </tr>
-                      </thead>
-
-                      <tbody>
-                        {% for r in w.completed_rows %}
-                          <tr>
-                            <td>{{ r.km }}</td>
-                            <td>{{ r.min }}</td>
-                            <td>{{ r.third }}</td>
-                            <td>{{ r.avg_hr|default:"-" }}</td>
-                            <td>{{ r.max_hr|default:"-" }}</td>
-                          </tr>
-                        {% empty %}
-                        <tr>
-                          <td colspan="5" class="text-muted small">{% if CURRENT_LANGUAGE == "cs" %}Zatím žádné záznamy.{% else %}No rows yet.{% endif %}</td>
-                        </tr>
-                        {% endfor %}
-                      </tbody>
-
-                      <tfoot class="table-light">
-                        <tr>
-                          <th>{{ w.completed_total.km|default:"-" }}</th>
-                          <th>{{ w.completed_total.time|default:"-" }}</th>
-                          <th>{% if CURRENT_LANGUAGE == "cs" %}Celkem{% else %}Total{% endif %}</th>
-                          <th>{{ w.completed_total.avg_hr|default:"-" }}</th>
-                          <th>{{ w.completed_total.max_hr|default:"-" }}</th>
-                        </tr>
-                      </tfoot>
-                    </table>
-                  </div>
-
-                </div>
-              </div>
-            </div>
-
-          </div>
-        </div>
-        {% empty %}
-        <div class="text-muted small mb-4">{% if CURRENT_LANGUAGE == "cs" %}V tomto měsíci zatím nejsou žádné týdny.{% else %}No weeks in this month yet.{% endif %}</div>
-        {% endfor %}
-
-      </div>
-      {% empty %}
-      <div class="text-muted small">
-        {% if CURRENT_LANGUAGE == "cs" %}Zatím nejsou žádné měsíce. Vytvoř TrainingMonth v administraci.{% else %}No months yet. Create a TrainingMonth in admin for your user.{% endif %}
-      </div>
-      {% endfor %}
-
-    </div>
-  </div>
-
-  <div class="eb-month-switcher">
-    <div class="container-fluid">
-      <div class="d-flex gap-2 overflow-auto px-3">
-        {% for m in month_cards %}
-        <button class="month-btn btn btn-outline-dark btn-sm flex-shrink-0 {% if forloop.first %}is-active{% endif %}" data-month-id="{{ m.id }}" type="button">
-          {{ m.label }}
-        </button>
-        {% empty %}
-        <button class="btn btn-outline-dark btn-sm" disabled>{% if CURRENT_LANGUAGE == "cs" %}Žádné měsíce{% else %}No months{% endif %}</button>
-        {% endfor %}
-      </div>
-    </div>
-  </div>
-
+  {% include "dashboard/_month_cards.html" %}
 </div>
 
 <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">

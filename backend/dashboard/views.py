@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 from calendar import monthrange
 from datetime import date
@@ -6,16 +6,26 @@ from datetime import timedelta
 import hashlib
 from io import BytesIO
 import logging
+import secrets
 from typing import Any, Optional
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Prefetch
+from django.urls import reverse
 from django.shortcuts import redirect, render
 from django.conf import settings
 from django.utils import timezone
 
-from accounts.models import GarminConnection, GarminSyncAudit
+from accounts.models import (
+    CoachAthlete,
+    GarminConnection,
+    GarminSyncAudit,
+    Role,
+    TrainingGroup,
+    TrainingGroupAthlete,
+    TrainingGroupInvite,
+)
 from accounts.services.garmin_secret_store import decrypt_tokenstore, encrypt_tokenstore, GarminSecretStoreError
 from activities.models import Activity, ActivityFile, ActivityInterval
 from activities.services.garmin_importer import GarminImportError, connect_garmin_account, download_garmin_fit_payloads
@@ -26,15 +36,15 @@ from training.models import CompletedTraining, PlannedTraining, TrainingMonth, T
 
 CZ_MONTHS = {
     1: "Leden",
-    2: "Únor",
-    3: "Březen",
+    2: "\u00danor",
+    3: "B\u0159ezen",
     4: "Duben",
-    5: "Květen",
-    6: "Červen",
-    7: "Červenec",
+    5: "Kv\u011bten",
+    6: "\u010cerven",
+    7: "\u010cervenec",
     8: "Srpen",
-    9: "Září",
-    10: "Říjen",
+    9: "Z\u00e1\u0159\u00ed",
+    10: "\u0158\u00edjen",
     11: "Listopad",
     12: "Prosinec",
 }
@@ -525,6 +535,151 @@ def _sync_garmin_for_user(user, *, window: str) -> tuple[int, int, GarminConnect
     return imported, skipped, connection
 
 
+def _is_coach(user) -> bool:
+    profile = getattr(user, "profile", None)
+    return bool(profile and profile.role == Role.COACH)
+
+
+def _display_name(user) -> str:
+    if user.first_name or user.last_name:
+        return f"{user.first_name} {user.last_name}".strip()
+    return user.username
+
+
+def _create_training_group_invite(*, group: TrainingGroup, created_by, invited_email: str = "") -> TrainingGroupInvite:
+    # 32 bytes URL-safe token; collisions are practically negligible.
+    token = secrets.token_urlsafe(32)
+    return TrainingGroupInvite.objects.create(
+        group=group,
+        created_by=created_by,
+        token=token,
+        invited_email=invited_email.strip(),
+        expires_at=timezone.now() + timedelta(days=7),
+    )
+
+
+def _shift_month(year: int, month: int, delta: int) -> tuple[int, int]:
+    total = year * 12 + (month - 1) + delta
+    out_year = total // 12
+    out_month = (total % 12) + 1
+    return out_year, out_month
+
+
+def _build_month_cards_for_athlete(*, athlete, language_code: str) -> list[dict[str, Any]]:
+    months_qs = (
+        TrainingMonth.objects
+        .filter(athlete=athlete)
+        .prefetch_related(
+            Prefetch(
+                "weeks",
+                queryset=(
+                    TrainingWeek.objects
+                    .all()
+                    .prefetch_related(
+                        Prefetch(
+                            "planned_trainings",
+                            queryset=(
+                                PlannedTraining.objects
+                                .select_related("activity")
+                                .prefetch_related(
+                                    Prefetch(
+                                        "activity__intervals",
+                                        queryset=ActivityInterval.objects.order_by("index"),
+                                    )
+                                )
+                                .order_by("date", "id")
+                            ),
+                        )
+                    )
+                    .order_by("week_index", "id")
+                ),
+            )
+        )
+        .order_by("-year", "-month")
+    )
+
+    month_dict = CZ_MONTHS if language_code.startswith("cs") else EN_MONTHS
+    month_cards = []
+    for m in months_qs:
+        weeks_out = []
+        for w in list(m.weeks.all()):
+            planned_items = list(w.planned_trainings.all())
+            w.planned_rows = _build_planned_rows_for_week(planned_items)
+            w.completed_rows = _build_completed_rows_for_week(planned_items)
+            w.completed_total = _sum_week_total(w.completed_rows)
+            weeks_out.append(w)
+
+        month_cards.append(
+            {
+                "id": m.id,
+                "label": f"{month_dict.get(m.month, str(m.month))} {m.year}",
+                "weeks": weeks_out,
+            }
+        )
+    return month_cards
+
+
+def _first_monday_in_month(year: int, month: int) -> date:
+    first_day = date(year, month, 1)
+    shift = (7 - first_day.weekday()) % 7
+    return first_day + timedelta(days=shift)
+
+
+def _add_next_month_for_athlete(*, athlete) -> tuple[bool, int, int]:
+    latest = (
+        TrainingMonth.objects
+        .filter(athlete=athlete)
+        .order_by("-year", "-month")
+        .first()
+    )
+
+    if latest is None:
+        start = timezone.localdate().replace(day=1)
+        target_year, target_month = start.year, start.month
+    else:
+        target_year, target_month = _shift_month(latest.year, latest.month, 1)
+
+    month_obj, month_created = TrainingMonth.objects.get_or_create(
+        athlete=athlete,
+        year=target_year,
+        month=target_month,
+    )
+
+    day_labels = ["Po", "Út", "St", "Čt", "Pá", "So", "Ne"]
+    weeks_created = 0
+    days_created = 0
+
+    monday = _first_monday_in_month(target_year, target_month)
+    week_index = 1
+    while monday.month == target_month:
+        week_obj, week_was_created = TrainingWeek.objects.get_or_create(
+            training_month=month_obj,
+            week_index=week_index,
+        )
+        if week_was_created:
+            weeks_created += 1
+
+        for offset, day_label in enumerate(day_labels):
+            run_day = monday + timedelta(days=offset)
+            _, created = PlannedTraining.objects.get_or_create(
+                week=week_obj,
+                date=run_day,
+                order_in_day=1,
+                defaults={
+                    "day_label": day_label,
+                    "title": "",
+                    "notes": "",
+                },
+            )
+            if created:
+                days_created += 1
+
+        monday += timedelta(days=7)
+        week_index += 1
+
+    return month_created, weeks_created, days_created
+
+
 @login_required
 def home(request):
     if request.method == "POST":
@@ -635,57 +790,7 @@ def home(request):
                 messages.error(request, "FIT import failed.")
         return redirect("dashboard_home")
 
-    months_qs = (
-        TrainingMonth.objects
-        .filter(athlete=request.user)
-        .prefetch_related(
-            Prefetch(
-                "weeks",
-                queryset=(
-                    TrainingWeek.objects
-                    .all()
-                    .prefetch_related(
-                        Prefetch(
-                            "planned_trainings",
-                            queryset=(
-                                PlannedTraining.objects
-                                .select_related("activity")
-                                .prefetch_related(
-                                    Prefetch(
-                                        "activity__intervals",
-                                        queryset=ActivityInterval.objects.order_by("index"),
-                                    )
-                                )
-                                .order_by("date", "id")
-                            ),
-                        )
-                    )
-                    .order_by("week_index", "id")
-                ),
-            )
-        )
-        .order_by("year", "month")
-    )
-
-    month_dict = CZ_MONTHS if request.LANGUAGE_CODE.startswith("cs") else EN_MONTHS
-    month_cards = []
-    for m in months_qs:
-        weeks_out = []
-        for w in list(m.weeks.all()):
-            planned_items = list(w.planned_trainings.all())
-            w.planned_rows = _build_planned_rows_for_week(planned_items)
-            w.completed_rows = _build_completed_rows_for_week(planned_items)
-            w.completed_total = _sum_week_total(w.completed_rows)
-            weeks_out.append(w)
-
-        month_cards.append(
-            {
-                "id": m.id,
-                "label": f"{month_dict.get(m.month, str(m.month))} {m.year}",
-                "weeks": weeks_out,
-            }
-        )
-
+    month_cards = _build_month_cards_for_athlete(athlete=request.user, language_code=request.LANGUAGE_CODE)
     garmin_connection = GarminConnection.objects.filter(user=request.user, is_active=True).first()
     return render(
         request,
@@ -693,5 +798,139 @@ def home(request):
         {
             "month_cards": month_cards,
             "garmin_connection": garmin_connection,
+            "is_coach": _is_coach(request.user),
         },
     )
+
+
+@login_required
+def coach_training_plans(request):
+    if not _is_coach(request.user):
+        messages.error(request, "Coach access only.")
+        return redirect("dashboard_home")
+
+    groups = list(
+        TrainingGroup.objects
+        .filter(coach=request.user)
+        .prefetch_related("memberships__athlete")
+        .order_by("name", "id")
+    )
+    if not groups:
+        groups = [
+            TrainingGroup.objects.create(
+                coach=request.user,
+                name="Moji svěřenci",
+                description="Výchozí skupina pro pozvánky.",
+            )
+        ]
+
+    selected_group = groups[0]
+    selected_athlete = None
+
+    if request.method == "POST" and request.POST.get("action") == "create_invite":
+        invited_email = (request.POST.get("invited_email") or "").strip()
+        _create_training_group_invite(
+            group=selected_group,
+            created_by=request.user,
+            invited_email=invited_email,
+        )
+        messages.success(request, "Pozvánka byla vytvořena.")
+        return redirect("coach_training_plans")
+
+    athletes = [link.athlete for link in request.user.coachded_athletes.select_related("athlete").order_by("athlete__username")]
+    athlete_ids = {a.id for a in athletes}
+    for member in selected_group.memberships.select_related("athlete").all():
+        if member.athlete_id not in athlete_ids:
+            athletes.append(member.athlete)
+            athlete_ids.add(member.athlete_id)
+
+    active_invites = list(
+        selected_group.invites
+        .filter(used_at__isnull=True, expires_at__gt=timezone.now())
+        .order_by("-created_at")
+    )
+
+    if request.method == "POST" and request.POST.get("action") == "bulk_add_next_month":
+        created_months = 0
+        created_weeks = 0
+        created_days = 0
+        for athlete in athletes:
+            month_created, weeks_created, days_created = _add_next_month_for_athlete(athlete=athlete)
+            if month_created:
+                created_months += 1
+            created_weeks += weeks_created
+            created_days += days_created
+
+        messages.success(request, f"Hromadně vytvořeno: měsíce {created_months}, týdny {created_weeks}, dny {created_days}.")
+        return redirect("coach_training_plans")
+
+    athlete_raw = request.GET.get("athlete")
+    if athlete_raw and athlete_raw.isdigit():
+        selected_athlete = next((a for a in athletes if a.id == int(athlete_raw)), None)
+    if selected_athlete is None and athletes:
+        selected_athlete = athletes[0]
+
+    month_cards = []
+    if selected_athlete is not None:
+        month_cards = _build_month_cards_for_athlete(athlete=selected_athlete, language_code=request.LANGUAGE_CODE)
+
+    return render(
+        request,
+        "dashboard/coach_training_plans.html",
+        {
+            "is_coach": True,
+            "selected_group": selected_group,
+            "athletes": athletes,
+            "active_invites": active_invites,
+            "selected_athlete": selected_athlete,
+            "selected_athlete_name": _display_name(selected_athlete) if selected_athlete else "",
+            "month_cards": month_cards,
+        },
+    )
+
+@login_required
+def accept_training_group_invite(request, token: str):
+    invite = (
+        TrainingGroupInvite.objects
+        .select_related("group", "group__coach", "used_by")
+        .filter(token=token)
+        .first()
+    )
+    if invite is None:
+        messages.error(request, "Pozvánka neexistuje.")
+        return redirect("dashboard_home")
+
+    is_expired = invite.expires_at <= timezone.now()
+    is_used = invite.used_at is not None
+
+    if request.method == "POST":
+        if is_used:
+            messages.error(request, "Pozvánka už byla použita.")
+            return redirect("dashboard_home")
+        if is_expired:
+            messages.error(request, "Pozvánka už vypršela.")
+            return redirect("dashboard_home")
+        if request.user.id == invite.group.coach_id:
+            messages.error(request, "Trenér nemůže přijmout vlastní pozvánku.")
+            return redirect("dashboard_home")
+
+        TrainingGroupAthlete.objects.get_or_create(group=invite.group, athlete=request.user)
+        CoachAthlete.objects.get_or_create(coach=invite.group.coach, athlete=request.user)
+        invite.used_at = timezone.now()
+        invite.used_by = request.user
+        invite.save(update_fields=["used_at", "used_by"])
+        messages.success(request, "Byl/a jsi přidán/a do tréninkové skupiny.")
+        return redirect("dashboard_home")
+
+    return render(
+        request,
+        "dashboard/accept_training_group_invite.html",
+        {
+            "invite": invite,
+            "is_expired": is_expired,
+            "is_used": is_used,
+            "is_coach": _is_coach(request.user),
+        },
+    )
+
+

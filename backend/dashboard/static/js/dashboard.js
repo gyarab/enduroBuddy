@@ -1,13 +1,13 @@
 (function () {
-  function showMonth(monthId) {
-    document.querySelectorAll(".month-container").forEach((el) => {
+  function showMonth(widget, monthId) {
+    widget.querySelectorAll(".month-container").forEach((el) => {
       el.classList.remove("is-active");
     });
 
-    const target = document.querySelector(`.month-container[data-month-id="${monthId}"]`);
+    const target = widget.querySelector(`.month-container[data-month-id="${monthId}"]`);
     if (target) target.classList.add("is-active");
 
-    document.querySelectorAll(".month-btn").forEach((btn) => {
+    widget.querySelectorAll(".month-btn").forEach((btn) => {
       const isActive = btn.getAttribute("data-month-id") === String(monthId);
       btn.classList.toggle("is-active", isActive);
       btn.classList.toggle("btn-outline-dark", !isActive);
@@ -15,22 +15,38 @@
     });
   }
 
-  function init() {
-    const buttons = Array.from(document.querySelectorAll(".month-btn"));
-    const months = Array.from(document.querySelectorAll(".month-container"));
-    if (months.length) {
-      const firstId = buttons.length
-        ? buttons[0].getAttribute("data-month-id")
-        : months[0].getAttribute("data-month-id");
+  function initMonthWidget(widget) {
+    const buttons = Array.from(widget.querySelectorAll(".month-btn"));
+    const months = Array.from(widget.querySelectorAll(".month-container"));
+    if (!months.length) return;
 
-      showMonth(firstId);
+    const stateKeyRaw = widget.getAttribute("data-month-state-key");
+    const storageKey = stateKeyRaw ? `eb_month_${stateKeyRaw}` : null;
+    const savedMonthId = storageKey ? window.localStorage.getItem(storageKey) : null;
 
-      buttons.forEach((btn) => {
-        btn.addEventListener("click", () => {
-          showMonth(btn.getAttribute("data-month-id"));
-        });
+    const firstId = buttons.length
+      ? buttons[0].getAttribute("data-month-id")
+      : months[0].getAttribute("data-month-id");
+
+    const useSaved = savedMonthId && months.some((m) => m.getAttribute("data-month-id") === savedMonthId);
+    const activeMonthId = useSaved ? savedMonthId : firstId;
+
+    showMonth(widget, activeMonthId);
+
+    buttons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const monthId = btn.getAttribute("data-month-id");
+        showMonth(widget, monthId);
+        if (storageKey) {
+          window.localStorage.setItem(storageKey, monthId);
+        }
       });
-    }
+    });
+  }
+
+  function init() {
+    const widgets = Array.from(document.querySelectorAll(".eb-month-widget"));
+    widgets.forEach((widget) => initMonthWidget(widget));
 
     const importLink = document.getElementById("fitImportLink");
     const fileInput = document.getElementById("fitFileInput");
