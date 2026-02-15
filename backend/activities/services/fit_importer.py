@@ -8,7 +8,7 @@ from django.db import transaction
 from django.utils import timezone
 
 from activities.models import Activity, ActivityFile, ActivityInterval, ActivitySample
-from activities.services.fit_parser import parse_fit_file
+from activities.services.fit_parser import FitParseResult, parse_fit_file
 
 
 @dataclass(frozen=True)
@@ -25,6 +25,7 @@ def import_fit_into_activity(
     original_name: str | None = None,
     checksum_sha256: str | None = None,
     create_activity_file_row: bool = True,
+    parsed_result: FitParseResult | None = None,
 ) -> FitImportOutcome:
     """
     Rozparsuje FIT a uloží data do DB.
@@ -33,7 +34,7 @@ def import_fit_into_activity(
     """
 
     # parse mimo transakci (rychlé a bez locků)
-    res = parse_fit_file(fileobj)
+    res = parsed_result or parse_fit_file(fileobj)
     s = res.summary or {}
 
     started_at = s.get("started_at")

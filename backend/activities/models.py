@@ -45,6 +45,9 @@ class Activity(models.Model):
 
     class Meta:
         ordering = ["-started_at", "-id"]
+        indexes = [
+            models.Index(fields=["athlete", "started_at"], name="act_athlete_started_idx"),
+        ]
 
     def __str__(self):
         ts = self.started_at.strftime("%Y-%m-%d %H:%M") if self.started_at else "no-date"
@@ -68,6 +71,11 @@ class ActivityFile(models.Model):
 
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        indexes = [
+            models.Index(fields=["activity", "checksum_sha256"], name="actfile_activity_checksum_idx"),
+        ]
+
     def __str__(self):
         name = self.original_name or (self.file.name if self.file else "")
         return f"{self.activity_id} | {self.file_type} | {name}"
@@ -87,7 +95,9 @@ class ActivityInterval(models.Model):
 
     class Meta:
         ordering = ["index"]
-        unique_together = [("activity", "index")]
+        constraints = [
+            models.UniqueConstraint(fields=["activity", "index"], name="uniq_activity_interval_index"),
+        ]
 
     def __str__(self):
         return f"Activity {self.activity_id} | Interval {self.index}"
@@ -120,3 +130,24 @@ class ActivitySample(models.Model):
 
     def __str__(self):
         return f"Activity {self.activity_id} | t={self.t_s}s"
+
+
+class ActivityImportLedger(models.Model):
+    athlete = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="activity_import_ledgers",
+    )
+    checksum_sha256 = models.CharField(max_length=64)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["athlete", "checksum_sha256"], name="uniq_import_ledger_athlete_checksum"),
+        ]
+        indexes = [
+            models.Index(fields=["athlete", "created_at"], name="actledger_athlete_created_idx"),
+        ]
+
+    def __str__(self):
+        return f"{self.athlete_id}:{self.checksum_sha256[:8]}"
