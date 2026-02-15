@@ -1,0 +1,17 @@
+{% load i18n static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{% trans "Too many requests" %} | EnduroBuddy</title>
+  <link rel="stylesheet" href="{% static 'css/auth.css' %}">
+</head>
+<body>
+  <main style="max-width:560px;margin:6rem auto;padding:0 1rem;text-align:center;">
+    <h1>{% trans "Too many requests" %}</h1>
+    <p>{% trans "Please wait a moment and try again." %}</p>
+    <p><a href="{% url 'account_login' %}">{% trans "Back to login" %}</a></p>
+  </main>
+</body>
+</html>

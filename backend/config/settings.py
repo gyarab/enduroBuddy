@@ -73,6 +73,7 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
+    "config.middleware.GoogleOAuthRateLimitMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
 
@@ -180,6 +181,13 @@ ACCOUNT_SIGNUP_FIELDS = ["email*", "password1*", "password2*"]
 ACCOUNT_UNIQUE_EMAIL = True
 ACCOUNT_CONFIRM_EMAIL_ON_GET = True
 ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
+ACCOUNT_RATE_LIMITS = {
+    "login": "30/5m",
+    "login_failed": "10/10m",
+    "signup": "10/1h",
+    "reset_password": "5/1h",
+    "reset_password_from_key": "20/1h",
+}
 
 EMAIL_BACKEND = os.environ.get(
     "DJANGO_EMAIL_BACKEND",
@@ -214,3 +222,14 @@ LOGIN_URL = "/accounts/login/"
 # Avoid cookie collisions when multiple local Django projects run on localhost.
 CSRF_COOKIE_NAME = "endurobuddy_csrftoken"
 SESSION_COOKIE_NAME = "endurobuddy_sessionid"
+
+GOOGLE_AUTH_RATE_LIMIT_MAX_REQUESTS = int(
+    os.environ.get("GOOGLE_AUTH_RATE_LIMIT_MAX_REQUESTS", "30")
+)
+GOOGLE_AUTH_RATE_LIMIT_WINDOW_SECONDS = int(
+    os.environ.get("GOOGLE_AUTH_RATE_LIMIT_WINDOW_SECONDS", "300")
+)
+GOOGLE_AUTH_RATE_LIMIT_PATHS = (
+    "/accounts/google/login/",
+    "/accounts/google/login/callback/",
+)
