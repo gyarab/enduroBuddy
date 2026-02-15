@@ -147,13 +147,11 @@ Systém vědomě neukládá surová senzorová data s vysokou frekvencí.
 
 ```bash
 git clone git@github.com:vojtecholcman/enduroBuddy.git
-cd backend
 ```
 ### 1.2 Klonování repozitáře přes URL
 
 ```bash
 git clone https://github.com/vojtecholcman/enduroBuddy.git
-cd backend
 ```
 ### 2. Virtuální prostředí
 
@@ -170,6 +168,7 @@ source .venv/Scripts/Activate
 ### 4. Instalace závislostí
 ```bash
 pip install -r requirements.txt
+cd backend/
 ```
 
 ### 5. Migrace databáze
