@@ -72,6 +72,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.locale.LocaleMiddleware",
     "django.middleware.common.CommonMiddleware",
     "config.middleware.GoogleOAuthRateLimitMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -142,7 +143,16 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = "cs"
+
+LANGUAGES = [
+    ("cs", "Čeština"),
+    ("en", "English"),
+]
+
+LOCALE_PATHS = [
+    BASE_DIR / "locale",
+]
 
 TIME_ZONE = 'UTC'
 
@@ -233,3 +243,7 @@ GOOGLE_AUTH_RATE_LIMIT_PATHS = (
     "/accounts/google/login/",
     "/accounts/google/login/callback/",
 )
+
+GARMIN_SYNC_LIMIT = int(os.environ.get("GARMIN_SYNC_LIMIT", "20"))
+GARMIN_KMS_KEYS = os.environ.get("GARMIN_KMS_KEYS", "")
+GARMIN_KMS_KEY_ID = os.environ.get("GARMIN_KMS_KEY_ID", "local-kms-v1")

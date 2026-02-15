@@ -3,27 +3,43 @@ from __future__ import annotations
 from io import BytesIO
 from pathlib import Path
 from datetime import date
+from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
 
+from accounts.models import GarminConnection, GarminSyncAudit
+from accounts.services.garmin_secret_store import encrypt_tokenstore
 from dashboard.views import _resolve_week_for_day
 from activities.models import Activity, ActivityFile, ActivityInterval
+from activities.services.garmin_importer import GarminDownloadResult, GarminFitPayload
 from activities.services.fit_parser import parse_fit_file
 from training.models import CompletedTraining, PlannedTraining, TrainingMonth, TrainingWeek
 
 
 FIXTURES_DIR = Path(__file__).resolve().parent.parent / "activities" / "tests" / "fixtures" / "fit"
+TEST_KMS_KEY = "IO1tJrYVYrSgHUy4iJ5wsIXv89hRiYxYEyg2asOlVtE="
 
 
+@override_settings(GARMIN_KMS_KEYS=TEST_KMS_KEY, GARMIN_KMS_KEY_ID="test-kms")
 class DashboardFitImportTests(TestCase):
     def setUp(self):
         User = get_user_model()
         self.user = User.objects.create_user(username="runner", password="runner")
         self.client.login(username="runner", password="runner")
+
+    def _connect_garmin(self, tokenstore: str = "dummy-tokenstore"):
+        return GarminConnection.objects.create(
+            user=self.user,
+            garmin_email="runner@example.com",
+            garmin_display_name="runner",
+            encrypted_tokenstore=encrypt_tokenstore(tokenstore),
+            kms_key_id="test-kms",
+            is_active=True,
+        )
 
     def test_import_training_creates_or_assigns_planned_and_completed(self):
         fit_path = FIXTURES_DIR / "Z3.fit"
@@ -253,3 +269,98 @@ class DashboardFitImportTests(TestCase):
         self.assertEqual(completed_rows[0]["third"], "5:00/km")
         self.assertEqual(completed_rows[1]["km"], "5.00")
         self.assertEqual(completed_rows[1]["third"], "(1:00, 1:20)")
+
+    @patch("dashboard.views.download_garmin_fit_payloads")
+    def test_garmin_sync_imports_activity(self, mocked_download):
+        fit_path = FIXTURES_DIR / "Z3.fit"
+        fit_bytes = fit_path.read_bytes()
+        self._connect_garmin()
+        mocked_download.return_value = GarminDownloadResult(
+            payloads=[GarminFitPayload(activity_id="1001", original_name="garmin_1001.fit", fit_bytes=fit_bytes)],
+            refreshed_tokenstore="new-token",
+        )
+
+        resp = self.client.post(reverse("dashboard_home"), data={"import_source": "garmin_sync"})
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(Activity.objects.filter(athlete=self.user).count(), 1)
+        self.assertEqual(ActivityFile.objects.filter(activity__athlete=self.user).count(), 1)
+        self.assertEqual(CompletedTraining.objects.filter(planned__week__training_month__athlete=self.user).count(), 1)
+
+    @patch("dashboard.views.download_garmin_fit_payloads")
+    def test_garmin_sync_skips_duplicates(self, mocked_download):
+        fit_path = FIXTURES_DIR / "Z3.fit"
+        fit_bytes = fit_path.read_bytes()
+        payload = GarminFitPayload(activity_id="1001", original_name="garmin_1001.fit", fit_bytes=fit_bytes)
+        self._connect_garmin()
+        mocked_download.return_value = GarminDownloadResult(
+            payloads=[payload, payload],
+            refreshed_tokenstore="new-token",
+        )
+
+        resp = self.client.post(reverse("dashboard_home"), data={"import_source": "garmin_sync"})
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(Activity.objects.filter(athlete=self.user).count(), 1)
+        self.assertEqual(ActivityFile.objects.filter(activity__athlete=self.user).count(), 1)
+
+    @patch("dashboard.views.download_garmin_fit_payloads")
+    def test_garmin_sync_uses_selected_range(self, mocked_download):
+        self._connect_garmin()
+        mocked_download.return_value = GarminDownloadResult(payloads=[], refreshed_tokenstore="new-token")
+
+        resp = self.client.post(
+            reverse("dashboard_home"),
+            data={"import_source": "garmin_sync", "garmin_range": "yesterday"},
+        )
+        self.assertEqual(resp.status_code, 302)
+        kwargs = mocked_download.call_args.kwargs
+        self.assertIn("from_day", kwargs)
+        self.assertIn("to_day", kwargs)
+        self.assertEqual(kwargs["from_day"], kwargs["to_day"])
+
+    @patch("dashboard.views.connect_garmin_account")
+    def test_garmin_connect_persists_encrypted_tokens_and_audit(self, mocked_connect):
+        mocked_connect.return_value = type(
+            "Bundle",
+            (),
+            {"tokenstore": "token-value", "display_name": "Runner Name", "full_name": "Runner Name"},
+        )()
+
+        resp = self.client.post(
+            reverse("dashboard_home"),
+            data={
+                "import_source": "garmin_connect",
+                "garmin_email": "runner@example.com",
+                "garmin_password": "secret",
+            },
+        )
+        self.assertEqual(resp.status_code, 302)
+        conn = GarminConnection.objects.get(user=self.user)
+        self.assertTrue(conn.encrypted_tokenstore)
+        self.assertNotEqual(conn.encrypted_tokenstore, "token-value")
+        self.assertEqual(conn.garmin_email, "runner@example.com")
+        self.assertEqual(conn.garmin_display_name, "Runner Name")
+        self.assertTrue(
+            GarminSyncAudit.objects.filter(
+                user=self.user,
+                action=GarminSyncAudit.Action.CONNECT,
+                status=GarminSyncAudit.Status.SUCCESS,
+            ).exists()
+        )
+
+    def test_garmin_revoke_disables_connection_and_creates_audit(self):
+        conn = self._connect_garmin()
+
+        resp = self.client.post(reverse("dashboard_home"), data={"import_source": "garmin_revoke"})
+        self.assertEqual(resp.status_code, 302)
+
+        conn.refresh_from_db()
+        self.assertFalse(conn.is_active)
+        self.assertEqual(conn.encrypted_tokenstore, "")
+        self.assertIsNotNone(conn.revoked_at)
+        self.assertTrue(
+            GarminSyncAudit.objects.filter(
+                user=self.user,
+                action=GarminSyncAudit.Action.REVOKE,
+                status=GarminSyncAudit.Status.SUCCESS,
+            ).exists()
+        )

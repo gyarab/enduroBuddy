@@ -15,7 +15,10 @@ from django.shortcuts import redirect, render
 from django.conf import settings
 from django.utils import timezone
 
+from accounts.models import GarminConnection, GarminSyncAudit
+from accounts.services.garmin_secret_store import decrypt_tokenstore, encrypt_tokenstore, GarminSecretStoreError
 from activities.models import Activity, ActivityFile, ActivityInterval
+from activities.services.garmin_importer import GarminImportError, connect_garmin_account, download_garmin_fit_payloads
 from activities.services.fit_importer import import_fit_into_activity
 from activities.services.fit_parser import parse_fit_file
 from training.models import CompletedTraining, PlannedTraining, TrainingMonth, TrainingWeek
@@ -23,19 +26,34 @@ from training.models import CompletedTraining, PlannedTraining, TrainingMonth, T
 
 CZ_MONTHS = {
     1: "Leden",
-    2: "Unor",
-    3: "Brezen",
+    2: "Únor",
+    3: "Březen",
     4: "Duben",
-    5: "Kveten",
-    6: "Cerven",
-    7: "Cervenec",
+    5: "Květen",
+    6: "Červen",
+    7: "Červenec",
     8: "Srpen",
-    9: "Zari",
-    10: "Rijen",
+    9: "Září",
+    10: "Říjen",
     11: "Listopad",
     12: "Prosinec",
 }
+EN_MONTHS = {
+    1: "January",
+    2: "February",
+    3: "March",
+    4: "April",
+    5: "May",
+    6: "June",
+    7: "July",
+    8: "August",
+    9: "September",
+    10: "October",
+    11: "November",
+    12: "December",
+}
 logger = logging.getLogger(__name__)
+GARMIN_RANGE_OPTIONS = {"today", "yesterday", "this_week", "last_week", "last_30_days", "all"}
 
 
 def _fmt_mmss(seconds: Optional[int]) -> str:
@@ -351,8 +369,7 @@ def _resolve_planned_training(user, run_day: date, fallback_title: str) -> Plann
     )
 
 
-def _import_fit_for_user(user, uploaded_file) -> bool:
-    fit_bytes = uploaded_file.read()
+def _import_fit_bytes_for_user(*, user, fit_bytes: bytes, original_name: str) -> bool:
     checksum = hashlib.sha256(fit_bytes).hexdigest()
     if ActivityFile.objects.filter(activity__athlete=user, checksum_sha256=checksum).exists():
         return False
@@ -381,7 +398,7 @@ def _import_fit_for_user(user, uploaded_file) -> bool:
     outcome = import_fit_into_activity(
         activity=activity,
         fileobj=BytesIO(fit_bytes),
-        original_name=getattr(uploaded_file, "name", "") or "",
+        original_name=original_name or "",
         checksum_sha256=checksum,
         create_activity_file_row=True,
     )
@@ -396,9 +413,210 @@ def _import_fit_for_user(user, uploaded_file) -> bool:
     return True
 
 
+def _import_fit_for_user(user, uploaded_file) -> bool:
+    fit_bytes = uploaded_file.read()
+    return _import_fit_bytes_for_user(
+        user=user,
+        fit_bytes=fit_bytes,
+        original_name=getattr(uploaded_file, "name", "") or "",
+    )
+
+
+def _resolve_garmin_range(window: str) -> tuple[date | None, date | None]:
+    today = timezone.localdate()
+    if window == "today":
+        return today, today
+    if window == "yesterday":
+        d = today - timedelta(days=1)
+        return d, d
+    if window == "this_week":
+        monday = today - timedelta(days=today.weekday())
+        return monday, today
+    if window == "last_week":
+        this_monday = today - timedelta(days=today.weekday())
+        return this_monday - timedelta(days=7), this_monday - timedelta(days=1)
+    if window == "last_30_days":
+        return today - timedelta(days=29), today
+    return None, None
+
+
+def _audit_garmin(
+    *,
+    user,
+    action: str,
+    status: str,
+    connection: GarminConnection | None = None,
+    window: str = "",
+    imported_count: int = 0,
+    skipped_count: int = 0,
+    message: str = "",
+) -> None:
+    GarminSyncAudit.objects.create(
+        user=user,
+        connection=connection,
+        action=action,
+        status=status,
+        window=window,
+        imported_count=imported_count,
+        skipped_count=skipped_count,
+        message=message[:255],
+    )
+
+
+def _connect_garmin_for_user(user, *, email: str, password: str) -> GarminConnection:
+    bundle = connect_garmin_account(email=email, password=password)
+    encrypted = encrypt_tokenstore(bundle.tokenstore)
+    connection, _ = GarminConnection.objects.update_or_create(
+        user=user,
+        defaults={
+            "garmin_email": email,
+            "garmin_display_name": bundle.display_name or bundle.full_name or "",
+            "encrypted_tokenstore": encrypted,
+            "kms_key_id": settings.GARMIN_KMS_KEY_ID,
+            "is_active": True,
+            "revoked_at": None,
+        },
+    )
+    return connection
+
+
+def _revoke_garmin_for_user(user) -> bool:
+    connection = GarminConnection.objects.filter(user=user, is_active=True).first()
+    if not connection:
+        return False
+    connection.is_active = False
+    connection.encrypted_tokenstore = ""
+    connection.revoked_at = timezone.now()
+    connection.save(update_fields=["is_active", "encrypted_tokenstore", "revoked_at", "updated_at"])
+    return True
+
+
+def _sync_garmin_for_user(user, *, window: str) -> tuple[int, int, GarminConnection]:
+    connection = GarminConnection.objects.filter(user=user, is_active=True).first()
+    if connection is None:
+        raise GarminImportError("Garmin account is not connected.")
+
+    from_day, to_day = _resolve_garmin_range(window)
+    tokenstore = decrypt_tokenstore(connection.encrypted_tokenstore)
+    result = download_garmin_fit_payloads(
+        tokenstore=tokenstore,
+        limit=int(settings.GARMIN_SYNC_LIMIT),
+        from_day=from_day,
+        to_day=to_day,
+    )
+
+    imported = 0
+    skipped = 0
+    for payload in result.payloads:
+        did_import = _import_fit_bytes_for_user(
+            user=user,
+            fit_bytes=payload.fit_bytes,
+            original_name=payload.original_name,
+        )
+        if did_import:
+            imported += 1
+        else:
+            skipped += 1
+
+    connection.encrypted_tokenstore = encrypt_tokenstore(result.refreshed_tokenstore)
+    connection.last_sync_at = timezone.now()
+    connection.revoked_at = None
+    connection.save(update_fields=["encrypted_tokenstore", "last_sync_at", "revoked_at", "updated_at"])
+    return imported, skipped, connection
+
+
 @login_required
 def home(request):
     if request.method == "POST":
+        source = request.POST.get("import_source", "fit_upload")
+
+        if source == "garmin_connect":
+            email = (request.POST.get("garmin_email") or "").strip()
+            password = (request.POST.get("garmin_password") or "").strip()
+            if not email or not password:
+                messages.error(request, "Enter Garmin email and password.")
+                return redirect("dashboard_home")
+            try:
+                connection = _connect_garmin_for_user(request.user, email=email, password=password)
+                _audit_garmin(
+                    user=request.user,
+                    connection=connection,
+                    action=GarminSyncAudit.Action.CONNECT,
+                    status=GarminSyncAudit.Status.SUCCESS,
+                    message="Garmin account connected.",
+                )
+                messages.success(request, "Garmin account connected.")
+            except (GarminImportError, GarminSecretStoreError) as exc:
+                _audit_garmin(
+                    user=request.user,
+                    action=GarminSyncAudit.Action.CONNECT,
+                    status=GarminSyncAudit.Status.ERROR,
+                    message=str(exc),
+                )
+                messages.error(request, f"Garmin connect failed: {exc}")
+            except Exception:
+                logger.exception("Garmin connect failed for user_id=%s", request.user.id)
+                _audit_garmin(
+                    user=request.user,
+                    action=GarminSyncAudit.Action.CONNECT,
+                    status=GarminSyncAudit.Status.ERROR,
+                    message="Unexpected Garmin connect error.",
+                )
+                messages.error(request, "Garmin connect failed.")
+            return redirect("dashboard_home")
+
+        if source == "garmin_revoke":
+            revoked = _revoke_garmin_for_user(request.user)
+            _audit_garmin(
+                user=request.user,
+                action=GarminSyncAudit.Action.REVOKE,
+                status=GarminSyncAudit.Status.SUCCESS if revoked else GarminSyncAudit.Status.ERROR,
+                message="Garmin account disconnected." if revoked else "No active Garmin connection.",
+            )
+            if revoked:
+                messages.success(request, "Garmin account disconnected.")
+            else:
+                messages.info(request, "Garmin account is not connected.")
+            return redirect("dashboard_home")
+
+        if source == "garmin_sync":
+            selected_range = request.POST.get("garmin_range", "last_30_days")
+            if selected_range not in GARMIN_RANGE_OPTIONS:
+                selected_range = "last_30_days"
+            try:
+                imported, skipped, connection = _sync_garmin_for_user(request.user, window=selected_range)
+                _audit_garmin(
+                    user=request.user,
+                    connection=connection,
+                    action=GarminSyncAudit.Action.SYNC,
+                    status=GarminSyncAudit.Status.SUCCESS,
+                    window=selected_range,
+                    imported_count=imported,
+                    skipped_count=skipped,
+                    message="Garmin sync finished.",
+                )
+                messages.success(request, f"Garmin sync finished. Imported: {imported}, skipped duplicates: {skipped}.")
+            except (GarminImportError, GarminSecretStoreError) as exc:
+                _audit_garmin(
+                    user=request.user,
+                    action=GarminSyncAudit.Action.SYNC,
+                    status=GarminSyncAudit.Status.ERROR,
+                    window=selected_range,
+                    message=str(exc),
+                )
+                messages.error(request, f"Garmin sync failed: {exc}")
+            except Exception:
+                logger.exception("Garmin sync failed for user_id=%s", request.user.id)
+                _audit_garmin(
+                    user=request.user,
+                    action=GarminSyncAudit.Action.SYNC,
+                    status=GarminSyncAudit.Status.ERROR,
+                    window=selected_range,
+                    message="Unexpected Garmin sync error.",
+                )
+                messages.error(request, "Garmin sync failed.")
+            return redirect("dashboard_home")
+
         uploaded_file = request.FILES.get("fit_file")
         if not uploaded_file:
             messages.error(request, "Please select a FIT file.")
@@ -449,6 +667,7 @@ def home(request):
         .order_by("year", "month")
     )
 
+    month_dict = CZ_MONTHS if request.LANGUAGE_CODE.startswith("cs") else EN_MONTHS
     month_cards = []
     for m in months_qs:
         weeks_out = []
@@ -462,9 +681,17 @@ def home(request):
         month_cards.append(
             {
                 "id": m.id,
-                "label": f"{CZ_MONTHS.get(m.month, str(m.month))} {m.year}",
+                "label": f"{month_dict.get(m.month, str(m.month))} {m.year}",
                 "weeks": weeks_out,
             }
         )
 
-    return render(request, "dashboard/dashboard.html", {"month_cards": month_cards})
+    garmin_connection = GarminConnection.objects.filter(user=request.user, is_active=True).first()
+    return render(
+        request,
+        "dashboard/dashboard.html",
+        {
+            "month_cards": month_cards,
+            "garmin_connection": garmin_connection,
+        },
+    )

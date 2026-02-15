@@ -31,6 +31,63 @@ class CoachAthlete(models.Model):
 
         def __str__(self) -> str:
             return f"{self.coach.username} -> {self.athlete.username}"
+
+
+class GarminConnection(models.Model):
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="garmin_connection",
+    )
+    garmin_email = models.EmailField(blank=True, default="")
+    garmin_display_name = models.CharField(max_length=128, blank=True, default="")
+    encrypted_tokenstore = models.TextField(blank=True, default="")
+    kms_key_id = models.CharField(max_length=128, blank=True, default="")
+    is_active = models.BooleanField(default=True)
+    connected_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    last_sync_at = models.DateTimeField(null=True, blank=True)
+    revoked_at = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.user} | Garmin active={self.is_active}"
+
+
+class GarminSyncAudit(models.Model):
+    class Action(models.TextChoices):
+        CONNECT = "CONNECT", "Connect"
+        SYNC = "SYNC", "Sync"
+        REVOKE = "REVOKE", "Revoke"
+
+    class Status(models.TextChoices):
+        SUCCESS = "SUCCESS", "Success"
+        ERROR = "ERROR", "Error"
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="garmin_sync_audits",
+    )
+    connection = models.ForeignKey(
+        GarminConnection,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="audits",
+    )
+    action = models.CharField(max_length=20, choices=Action.choices)
+    status = models.CharField(max_length=20, choices=Status.choices)
+    window = models.CharField(max_length=20, blank=True, default="")
+    imported_count = models.PositiveIntegerField(default=0)
+    skipped_count = models.PositiveIntegerField(default=0)
+    message = models.CharField(max_length=255, blank=True, default="")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at", "-id"]
+
+    def __str__(self):
+        return f"{self.user} | {self.action} | {self.status}"
         
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
 def create_user_profile(sender, instance, created, **kwargs):

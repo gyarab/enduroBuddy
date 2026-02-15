@@ -1,7 +1,9 @@
 {% extends "base.html" %}
 {% load static %}
+{% load i18n %}
+{% get_current_language as CURRENT_LANGUAGE %}
 
-{% block title %}Training view | EnduroBuddy{% endblock %}
+{% block title %}{% if CURRENT_LANGUAGE == "cs" %}Tréninkový přehled | EnduroBuddy{% else %}Training view | EnduroBuddy{% endif %}{% endblock %}
 
 {% block content %}
 <div class="container-fluid py-3">
@@ -16,12 +18,101 @@
   {% endif %}
 
   <div class="d-flex align-items-center justify-content-between mb-3">
-    <h3 class="mb-0">Training plan</h3>
-    <form method="post" enctype="multipart/form-data" id="fitImportForm" class="m-0">
-      {% csrf_token %}
-      <input type="file" id="fitFileInput" name="fit_file" accept=".fit" class="d-none">
-      <button class="btn btn-outline-success btn-sm" type="button" id="fitImportBtn">Import training</button>
-    </form>
+    <div class="d-flex align-items-center gap-2">
+      <h3 class="mb-0">{% if CURRENT_LANGUAGE == "cs" %}Tréninkový plán{% else %}Training plan{% endif %}</h3>
+      <h3 class="mb-0 text-muted">
+        - {% if CURRENT_LANGUAGE == "cs" %}atlet:{% else %}athlete:{% endif %}
+        {% if user.first_name or user.last_name %}
+          {{ user.first_name }} {{ user.last_name }}
+        {% else %}
+          {{ user.username }}
+        {% endif %}
+      </h3>
+    </div>
+    <button class="btn btn-success btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#importActivitiesModal">
+      {% if CURRENT_LANGUAGE == "cs" %}Import aktivit{% else %}Import activities{% endif %}
+    </button>
+  </div>
+
+  <div class="modal fade" id="importActivitiesModal" tabindex="-1" aria-labelledby="importActivitiesModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="importActivitiesModalLabel">{% if CURRENT_LANGUAGE == "cs" %}Import aktivit{% else %}Import activities{% endif %}</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body eb-import-modal-body">
+          <div class="eb-import-note">
+            {% if CURRENT_LANGUAGE == "cs" %}
+              Garmin heslo se neukládá. Ukládají se pouze šifrované tokeny.
+            {% else %}
+              Garmin password is not stored. Only encrypted tokens are saved.
+            {% endif %}
+          </div>
+
+          {% if garmin_connection %}
+          <div class="eb-import-block eb-import-block-connected">
+            <div class="eb-import-block-head">
+              <div>
+                <div class="eb-import-label">{% if CURRENT_LANGUAGE == "cs" %}Garmin účet{% else %}Garmin account{% endif %}</div>
+                <div class="eb-import-value">{{ garmin_connection.garmin_display_name|default:garmin_connection.garmin_email }}</div>
+              </div>
+            </div>
+            <form method="post" class="m-0 mt-2">
+              {% csrf_token %}
+              <button class="btn btn-outline-danger btn-sm w-100" type="submit" name="import_source" value="garmin_revoke">
+                {% if CURRENT_LANGUAGE == "cs" %}Odpojit Garmin{% else %}Disconnect Garmin{% endif %}
+              </button>
+            </form>
+          </div>
+          {% else %}
+          <form method="post" class="eb-import-block eb-import-block-auth">
+            {% csrf_token %}
+            <input type="hidden" name="import_source" value="garmin_connect">
+            <div class="eb-import-block-head">
+              <div class="eb-import-title">{% if CURRENT_LANGUAGE == "cs" %}Připojit Garmin účet{% else %}Connect Garmin account{% endif %}</div>
+            </div>
+            <div class="mb-2">
+              <label class="form-label form-label-sm mb-1">{% if CURRENT_LANGUAGE == "cs" %}E-mail{% else %}Email{% endif %}</label>
+              <input type="email" class="form-control form-control-sm" name="garmin_email" placeholder="tvuj@email.cz" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label form-label-sm mb-1">{% if CURRENT_LANGUAGE == "cs" %}Heslo{% else %}Password{% endif %}</label>
+              <input type="password" class="form-control form-control-sm" name="garmin_password" placeholder="••••••••" required>
+            </div>
+            <button class="btn btn-primary btn-sm w-100" type="submit">{% if CURRENT_LANGUAGE == "cs" %}Připojit Garmin{% else %}Connect Garmin{% endif %}</button>
+          </form>
+          {% endif %}
+
+          <form method="post" class="eb-import-block eb-import-block-sync">
+            {% csrf_token %}
+            <input type="hidden" name="import_source" value="garmin_sync">
+            <div class="eb-import-block-head">
+              <div class="eb-import-title">{% if CURRENT_LANGUAGE == "cs" %}Synchronizace z Garminu{% else %}Sync from Garmin{% endif %}</div>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+              <select class="form-select form-select-sm" id="garminRangeSelect" name="garmin_range">
+                <option value="today">{% if CURRENT_LANGUAGE == "cs" %}Dnes{% else %}Today{% endif %}</option>
+                <option value="yesterday">{% if CURRENT_LANGUAGE == "cs" %}Včera{% else %}Yesterday{% endif %}</option>
+                <option value="this_week">{% if CURRENT_LANGUAGE == "cs" %}Tento týden{% else %}This week{% endif %}</option>
+                <option value="last_week">{% if CURRENT_LANGUAGE == "cs" %}Minulý týden{% else %}Last week{% endif %}</option>
+                <option value="last_30_days" selected>{% if CURRENT_LANGUAGE == "cs" %}Posledních 30 dní{% else %}Last 30 days{% endif %}</option>
+                <option value="all">{% if CURRENT_LANGUAGE == "cs" %}Vše{% else %}All{% endif %}</option>
+              </select>
+              <button class="btn btn-success btn-sm" type="submit" {% if not garmin_connection %}disabled{% endif %}>Sync Garmin</button>
+            </div>
+          </form>
+
+          <form method="post" enctype="multipart/form-data" id="fitImportForm" class="eb-import-block eb-import-block-fit m-0">
+            {% csrf_token %}
+            <input type="hidden" id="importSourceInput" name="import_source" value="fit_upload">
+            <input type="file" id="fitFileInput" name="fit_file" accept=".fit" class="d-none">
+            <div class="eb-import-title mb-1">{% if CURRENT_LANGUAGE == "cs" %}Import ze souboru{% else %}Import from file{% endif %}</div>
+            <a href="#" id="fitImportLink" class="eb-fit-link">{% if CURRENT_LANGUAGE == "cs" %}Importovat .fit soubor{% else %}Import .fit file{% endif %}</a>
+          </form>
+        </div>
+      </div>
+    </div>
   </div>
 
   <div class="eb-scrollwrap">
@@ -45,18 +136,18 @@
                 <div class="card-body">
 
                   <div class="d-flex justify-content-between align-items-center mb-2">
-                    <h5 class="mb-0">Week {{ w.week_index }}.</h5>
-                    <small class="text-muted">Planned</small>
+                    <h5 class="mb-0">{% if CURRENT_LANGUAGE == "cs" %}Týden{% else %}Week{% endif %} {{ w.week_index }}.</h5>
+                    <small class="text-muted">{% if CURRENT_LANGUAGE == "cs" %}Plán{% else %}Planned{% endif %}</small>
                   </div>
 
                   <div class="table-responsive">
                     <table class="table table-sm align-middle mb-0">
                       <thead class="table-light">
                         <tr>
-                          <th style="width:90px">Date</th>
-                          <th style="width:90px">Day</th>
-                          <th>Training</th>
-                          <th>Coach notes</th>
+                          <th style="width:90px">{% if CURRENT_LANGUAGE == "cs" %}Datum{% else %}Date{% endif %}</th>
+                          <th style="width:90px">{% if CURRENT_LANGUAGE == "cs" %}Den{% else %}Day{% endif %}</th>
+                          <th>{% if CURRENT_LANGUAGE == "cs" %}Trénink{% else %}Training{% endif %}</th>
+                          <th>{% if CURRENT_LANGUAGE == "cs" %}Poznámky trenéra{% else %}Coach notes{% endif %}</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -70,7 +161,7 @@
                         {% empty %}
                         <tr>
                           <td colspan="4" class="text-muted small">
-                            No planned trainings in this week yet.
+                            {% if CURRENT_LANGUAGE == "cs" %}V tomto týdnu zatím nejsou žádné plánované tréninky.{% else %}No planned trainings in this week yet.{% endif %}
                           </td>
                         </tr>
                         {% endfor %}
@@ -87,7 +178,7 @@
                 <div class="card-body">
 
                   <div class="d-flex justify-content-between align-items-center mb-2">
-                    <h5 class="mb-0">Completed</h5>
+                    <h5 class="mb-0">{% if CURRENT_LANGUAGE == "cs" %}Splněno{% else %}Completed{% endif %}</h5>
                     <small class="text-muted">Splits</small>
                   </div>
 
@@ -114,7 +205,7 @@
                           </tr>
                         {% empty %}
                         <tr>
-                          <td colspan="5" class="text-muted small">No rows yet.</td>
+                          <td colspan="5" class="text-muted small">{% if CURRENT_LANGUAGE == "cs" %}Zatím žádné záznamy.{% else %}No rows yet.{% endif %}</td>
                         </tr>
                         {% endfor %}
                       </tbody>
@@ -123,7 +214,7 @@
                         <tr>
                           <th>{{ w.completed_total.km|default:"-" }}</th>
                           <th>{{ w.completed_total.time|default:"-" }}</th>
-                          <th>Total</th>
+                          <th>{% if CURRENT_LANGUAGE == "cs" %}Celkem{% else %}Total{% endif %}</th>
                           <th>{{ w.completed_total.avg_hr|default:"-" }}</th>
                           <th>{{ w.completed_total.max_hr|default:"-" }}</th>
                         </tr>
@@ -138,13 +229,13 @@
           </div>
         </div>
         {% empty %}
-        <div class="text-muted small mb-4">No weeks in this month yet.</div>
+        <div class="text-muted small mb-4">{% if CURRENT_LANGUAGE == "cs" %}V tomto měsíci zatím nejsou žádné týdny.{% else %}No weeks in this month yet.{% endif %}</div>
         {% endfor %}
 
       </div>
       {% empty %}
       <div class="text-muted small">
-        No months yet. Create a TrainingMonth in admin for your user.
+        {% if CURRENT_LANGUAGE == "cs" %}Zatím nejsou žádné měsíce. Vytvoř TrainingMonth v administraci.{% else %}No months yet. Create a TrainingMonth in admin for your user.{% endif %}
       </div>
       {% endfor %}
 
@@ -159,7 +250,7 @@
           {{ m.label }}
         </button>
         {% empty %}
-        <button class="btn btn-outline-dark btn-sm" disabled>No months</button>
+        <button class="btn btn-outline-dark btn-sm" disabled>{% if CURRENT_LANGUAGE == "cs" %}Žádné měsíce{% else %}No months{% endif %}</button>
         {% endfor %}
       </div>
     </div>

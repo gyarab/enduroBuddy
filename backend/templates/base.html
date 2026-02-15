@@ -1,6 +1,7 @@
-{% load static %}
+{% load static i18n %}
+{% get_current_language as CURRENT_LANGUAGE %}
 <!doctype html>
-<html lang="en">
+<html lang="{{ CURRENT_LANGUAGE }}">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -19,17 +20,31 @@
     <a class="navbar-brand fw-bold" href="/">EnduroBuddy</a>
 
     <div class="d-flex gap-2 align-items-center">
-      <a class="btn btn-sm btn-outline-dark" href="/">Training view</a>
+      <a class="btn btn-sm btn-outline-dark" href="/">
+        {% if CURRENT_LANGUAGE == "cs" %}Tréninkový přehled{% else %}Training view{% endif %}
+      </a>
     </div>
 
-    <div class="ms-auto">
+    <div class="ms-auto d-flex align-items-center gap-2">
+      <form action="{% url 'set_language' %}" method="post" class="m-0">
+        {% csrf_token %}
+        <input name="next" type="hidden" value="{{ request.path }}">
+        <input type="hidden" name="language" value="{% if CURRENT_LANGUAGE == 'cs' %}en{% else %}cs{% endif %}">
+        <button type="submit" class="btn btn-sm btn-outline-secondary" title="{% if CURRENT_LANGUAGE == 'cs' %}Switch to English{% else %}Přepnout do češtiny{% endif %}">
+          {% if CURRENT_LANGUAGE == "cs" %}🇨🇿{% else %}🇬🇧{% endif %}
+        </button>
+      </form>
       {% if user.is_authenticated %}
         <form method="post" action="{% url 'account_logout' %}" class="m-0">
           {% csrf_token %}
-          <button type="submit" class="btn btn-sm btn-dark">Sign out</button>
+          <button type="submit" class="btn btn-sm btn-dark">
+            {% if CURRENT_LANGUAGE == "cs" %}Odhlásit{% else %}Sign out{% endif %}
+          </button>
         </form>
       {% else %}
-        <a class="btn btn-sm btn-outline-dark" href="{% url 'account_login' %}">Login</a>
+        <a class="btn btn-sm btn-outline-dark" href="{% url 'account_login' %}">
+          {% if CURRENT_LANGUAGE == "cs" %}Přihlásit{% else %}Login{% endif %}
+        </a>
       {% endif %}
     </div>
   </div>
