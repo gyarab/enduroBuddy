@@ -115,19 +115,6 @@ Cílem návrhu je:
 
 ---
 
-## Použité technologie
-
-| Oblast | Technologie |
-|------|-----------|
-| Backend | Python 3.14 |
-| Framework | Django 5 |
-| Databáze | PostgreSQL |
-| Import dat | FIT format, fitparse, GarminAPI |
-| Frontend | Django templates |
-| Verzování | Git |
-
----
-
 ## Datový model (zjednodušený)
 
 ### Activity
