@@ -42,7 +42,7 @@ Cílem návrhu je:
 |------|-----------|
 | Backend | Python 3.14 |
 | Framework | Django 5 |
-| Databáze | SQLite (vývoj), PostgreSQL (plán) |
+| Databáze | PostgreSQL |
 | Import dat | FIT format, fitparse |
 | Frontend | Django templates |
 | Verzování | Git |
