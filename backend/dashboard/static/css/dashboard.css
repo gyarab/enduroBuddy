@@ -11,6 +11,9 @@
 .eb-scrollwrap {
   padding-bottom: 90px;
 }
+.eb-scrollwrap--embedded {
+  padding-bottom: 8px;
+}
 
 /* ===== WEEK ROW: never wrap, width grows ===== */
 .eb-week-row {
@@ -83,6 +86,16 @@
   z-index: 1030;
   padding: 8px 0;
 }
+.eb-month-switcher--embedded {
+  position: static;
+  left: auto;
+  right: auto;
+  bottom: auto;
+  border: 1px solid rgba(0, 0, 0, .1);
+  border-radius: 12px;
+  margin-top: 10px;
+  flex: 0 0 auto;
+}
 
 /* ===== import modal ===== */
 .eb-import-modal-body {
@@ -151,4 +164,143 @@
 
 .eb-fit-link:hover {
   text-decoration: underline;
+}
+
+.eb-coach-section-title {
+  font-size: 0.92rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #4b5563;
+}
+
+.eb-coach-shell {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 14px;
+  align-items: stretch;
+  height: calc(100vh - 112px);
+  overflow: hidden;
+}
+
+.eb-coach-sidebar {
+  position: static;
+  overflow-y: auto;
+  max-height: 100%;
+}
+
+.eb-coach-sidebar .btn {
+  padding-top: 0.28rem;
+  padding-bottom: 0.28rem;
+}
+
+.eb-coach-main .card {
+  border-color: #e5e7eb;
+}
+
+.eb-coach-main {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  padding-right: 4px;
+}
+
+.eb-coach-main .eb-month-widget {
+  flex: 1 1 auto;
+  height: auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.eb-coach-main .eb-scrollwrap--embedded {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding-bottom: 0;
+}
+
+.eb-coach-main .eb-month-scroll {
+  height: 100%;
+}
+
+body.eb-coach-page {
+  overflow: hidden;
+}
+
+body.eb-coach-page main {
+  height: calc(100vh - 56px);
+  overflow: hidden;
+}
+
+.eb-invite-row {
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #f8fafc;
+  padding: 10px 12px;
+}
+
+.eb-coach-toast-stack {
+  position: fixed;
+  top: 64px;
+  right: 14px;
+  z-index: 1080;
+  width: min(460px, calc(100vw - 28px));
+  pointer-events: none;
+}
+
+.eb-coach-toast {
+  pointer-events: auto;
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.18);
+}
+
+@media (max-width: 991.98px) {
+  body.eb-coach-page {
+    overflow: auto;
+  }
+
+  body.eb-coach-page main {
+    height: auto;
+    overflow: visible;
+  }
+
+  .eb-coach-shell {
+    grid-template-columns: 1fr;
+    height: auto;
+    overflow: visible;
+  }
+
+  .eb-coach-sidebar {
+    position: static;
+    max-height: none;
+    overflow: visible;
+  }
+
+  .eb-coach-main {
+    overflow: visible;
+    min-height: auto;
+    padding-right: 0;
+    display: block;
+  }
+
+  .eb-coach-main .eb-month-widget {
+    height: auto;
+    display: block;
+  }
+
+  .eb-coach-main .eb-scrollwrap--embedded {
+    overflow: visible;
+  }
+
+  .eb-coach-main .eb-month-scroll {
+    height: auto;
+  }
+
+  .eb-coach-toast-stack {
+    position: static;
+    width: 100%;
+    margin-bottom: 10px;
+    pointer-events: auto;
+  }
 }

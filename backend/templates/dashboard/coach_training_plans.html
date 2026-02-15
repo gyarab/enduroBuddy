@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% load static %}
+{% load i18n %}
+{% get_current_language as CURRENT_LANGUAGE %}
+
+{% block title %}{% if CURRENT_LANGUAGE == "cs" %}Spr&aacute;va tr&eacute;ninkov&yacute;ch pl&aacute;n&#367; | EnduroBuddy{% else %}Manage training plans | EnduroBuddy{% endif %}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-3">
+  {% if messages %}
+    <div class="eb-coach-toast-stack">
+      {% for message in messages %}
+        <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} py-2 mb-2 eb-coach-toast" role="alert">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <div class="eb-coach-shell">
+    <aside class="eb-coach-sidebar">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <div class="d-flex align-items-center justify-content-between mb-2">
+            <h5 class="mb-0">{% if CURRENT_LANGUAGE == "cs" %}Sv&#283;&#345;enci{% else %}Athletes{% endif %}</h5>
+            <div class="d-flex align-items-center gap-1">
+              <form method="post" class="m-0">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="bulk_add_next_month">
+                <button class="btn btn-sm btn-outline-primary" type="submit" title="{% if CURRENT_LANGUAGE == 'cs' %}P&#345;idat n&aacute;sleduj&iacute;c&iacute; m&#283;s&iacute;c a t&yacute;dny v&#353;em sv&#283;&#345;enc&#367;m{% else %}Add next month and weeks for all athletes{% endif %}">
+                  M+
+                </button>
+              </form>
+              <button class="btn btn-sm btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#coachInviteModal" title="{% if CURRENT_LANGUAGE == 'cs' %}Vytvo&#345;it pozv&aacute;nku{% else %}Create invite{% endif %}">
+                +
+              </button>
+            </div>
+          </div>
+
+          <div class="d-grid gap-2">
+            {% for athlete in athletes %}
+              <a href="{% url 'coach_training_plans' %}?athlete={{ athlete.id }}" class="btn btn-sm text-start {% if selected_athlete and selected_athlete.id == athlete.id %}btn-dark{% else %}btn-outline-dark{% endif %}">
+                {% if athlete.first_name or athlete.last_name %}
+                  {{ athlete.first_name }} {{ athlete.last_name }}
+                {% else %}
+                  {{ athlete.username }}
+                {% endif %}
+              </a>
+            {% empty %}
+              <span class="text-muted small">{% if CURRENT_LANGUAGE == "cs" %}Zat&iacute;m nem&aacute;&scaron; &zcaron;&aacute;dn&eacute; sv&#283;&#345;ence.{% else %}No athletes yet.{% endif %}</span>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <section class="eb-coach-main">
+      {% if selected_athlete %}
+        <div class="d-flex align-items-center gap-2 mb-3">
+          <h4 class="mb-0">{% if CURRENT_LANGUAGE == "cs" %}Dashboard atleta{% else %}Athlete dashboard{% endif %}</h4>
+          <h4 class="mb-0 text-muted">- {{ selected_athlete_name }}</h4>
+        </div>
+        {% include "dashboard/_month_cards.html" with month_switcher_embedded=True month_state_key=selected_athlete.id %}
+      {% else %}
+        <div class="alert alert-info py-2">
+          {% if CURRENT_LANGUAGE == "cs" %}Vyber sv&#283;&#345;ence ze seznamu vlevo.{% else %}Choose an athlete from the left list.{% endif %}
+        </div>
+      {% endif %}
+    </section>
+  </div>
+
+  <div class="modal fade" id="coachInviteModal" tabindex="-1" aria-labelledby="coachInviteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="coachInviteModalLabel">{% if CURRENT_LANGUAGE == "cs" %}Nov&aacute; pozv&aacute;nka{% else %}New invite{% endif %}</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form method="post" class="d-grid gap-2">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="create_invite">
+            <label class="form-label form-label-sm mb-0">{% if CURRENT_LANGUAGE == "cs" %}E-mail atleta (voliteln&#283;){% else %}Athlete email (optional){% endif %}</label>
+            <input type="email" class="form-control form-control-sm" name="invited_email" placeholder="athlete@email.com">
+            <button type="submit" class="btn btn-primary btn-sm">{% if CURRENT_LANGUAGE == "cs" %}Vytvo&#345;it pozv&aacute;nku{% else %}Create invite{% endif %}</button>
+          </form>
+          {% if active_invites %}
+            <hr>
+            <div class="small text-muted mb-2">{% if CURRENT_LANGUAGE == "cs" %}Aktivn&iacute; pozv&aacute;nky{% else %}Active invites{% endif %}</div>
+            <div class="d-grid gap-2">
+              {% for invite in active_invites|slice:":5" %}
+                <div class="eb-invite-row">
+                  <div class="small text-muted mb-1">
+                    {% if CURRENT_LANGUAGE == "cs" %}Plat&iacute; do{% else %}Valid until{% endif %} {{ invite.expires_at|date:"j.n.Y H:i" }}
+                  </div>
+                  <code>{{ request.scheme }}://{{ request.get_host }}{% url 'training_group_invite_accept' invite.token %}</code>
+                </div>
+              {% endfor %}
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<script>
+  document.body.classList.add("eb-coach-page");
+</script>
+<script src="{% static 'js/dashboard.js' %}?v=2"></script>
+{% endblock %}
