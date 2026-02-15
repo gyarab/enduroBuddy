@@ -1,4 +1,4 @@
-{% load static i18n %}
+{% load static i18n socialaccount %}
 
 <!doctype html>
 <html lang="en">
@@ -96,6 +96,10 @@
                   <button type="submit" class="btn eb-btn-primary w-100 py-2 mb-3">
                     {% trans "Continue" %}
                   </button>
+
+                  <a class="btn btn-outline-dark w-100 py-2 mb-3" href="{% provider_login_url 'google' %}">
+                    {% trans "Continue with Google" %}
+                  </a>
 
                   <p class="eb-muted text-center mb-0">
                     {% trans "Don't have an account?" %}

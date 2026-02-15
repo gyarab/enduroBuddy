@@ -188,3 +188,68 @@ class DashboardFitImportTests(TestCase):
         self.assertEqual(row["km"], "10.00")
         self.assertEqual(row["min"], "50")
         self.assertEqual(row["third"], "5:00/km | (1:00, 1:40) | 5:20/km")
+
+    def test_two_phase_day_renders_two_rows_in_planned_and_completed(self):
+        run_day = date(2026, 3, 4)
+        week = _resolve_week_for_day(self.user, run_day)
+        tz = timezone.get_current_timezone()
+
+        p1 = PlannedTraining.objects.create(
+            week=week,
+            date=run_day,
+            day_label="Wed",
+            title="Morning run",
+            order_in_day=1,
+            is_two_phase_day=True,
+        )
+        p2 = PlannedTraining.objects.create(
+            week=week,
+            date=run_day,
+            day_label="Wed",
+            title="Evening workout",
+            order_in_day=2,
+            is_two_phase_day=True,
+        )
+
+        Activity.objects.create(
+            athlete=self.user,
+            planned_training=p1,
+            workout_type=Activity.WorkoutType.RUN,
+            started_at=timezone.make_aware(timezone.datetime(2026, 3, 4, 7, 0, 0), tz),
+            distance_m=3000,
+            duration_s=900,
+            avg_pace_s_per_km=300,
+            avg_hr=140,
+            max_hr=150,
+        )
+        a2 = Activity.objects.create(
+            athlete=self.user,
+            planned_training=p2,
+            workout_type=Activity.WorkoutType.WORKOUT,
+            started_at=timezone.make_aware(timezone.datetime(2026, 3, 4, 18, 0, 0), tz),
+            distance_m=5000,
+            duration_s=1500,
+            avg_hr=165,
+            max_hr=180,
+        )
+        ActivityInterval.objects.create(activity=a2, index=1, duration_s=60, distance_m=400, avg_hr=170, max_hr=178)
+        ActivityInterval.objects.create(activity=a2, index=2, duration_s=80, distance_m=500, avg_hr=172, max_hr=180)
+
+        resp = self.client.get(reverse("dashboard_home"))
+        self.assertEqual(resp.status_code, 200)
+
+        week_ctx = resp.context["month_cards"][0]["weeks"][0]
+        planned_rows = week_ctx.planned_rows
+        completed_rows = week_ctx.completed_rows
+
+        self.assertEqual(len(planned_rows), 2)
+        self.assertEqual(planned_rows[0]["title"], "Morning run")
+        self.assertEqual(planned_rows[1]["title"], "Evening workout")
+        self.assertIsNone(planned_rows[1]["date"])
+        self.assertEqual(planned_rows[1]["day_label"], "")
+
+        self.assertEqual(len(completed_rows), 2)
+        self.assertEqual(completed_rows[0]["km"], "3.00")
+        self.assertEqual(completed_rows[0]["third"], "5:00/km")
+        self.assertEqual(completed_rows[1]["km"], "5.00")
+        self.assertEqual(completed_rows[1]["third"], "(1:00, 1:20)")

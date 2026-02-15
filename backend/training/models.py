@@ -41,6 +41,7 @@ class PlannedTraining(models.Model):
     planned_distance_km = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     notes = models.TextField(blank=True)
     order_in_day = models.PositiveIntegerField(default=1)
+    is_two_phase_day = models.BooleanField(default=False)
 
     class Meta:
         ordering = ("week__week_index", "date", "order_in_day")

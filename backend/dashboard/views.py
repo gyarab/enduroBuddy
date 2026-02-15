@@ -166,70 +166,92 @@ def _build_planned_rows_for_week(planned_items: list[PlannedTraining]) -> list[d
     rows: list[dict[str, Any]] = []
     for key in sorted(grouped.keys(), key=sort_key):
         items = sorted(grouped[key], key=lambda x: (x.order_in_day, x.id))
-        first = items[0]
-        titles = [x.title for x in items if x.title]
-        notes = [x.notes for x in items if x.notes]
-        rows.append(
-            {
-                "date": first.date,
-                "day_label": first.day_label,
+        is_two_phase = any(x.is_two_phase_day for x in items)
+
+        def planned_row_from(subitems: list[PlannedTraining], *, show_date: bool) -> dict[str, Any]:
+            if not subitems:
+                return {
+                    "date": items[0].date if show_date else None,
+                    "day_label": items[0].day_label if show_date else "",
+                    "title": "-",
+                    "notes": "",
+                }
+            first = subitems[0]
+            titles = [x.title for x in subitems if x.title]
+            notes = [x.notes for x in subitems if x.notes]
+            return {
+                "date": first.date if show_date else None,
+                "day_label": first.day_label if show_date else "",
                 "title": " | ".join(titles) if titles else "-",
                 "notes": " | ".join(notes) if notes else "",
             }
-        )
+
+        if is_two_phase:
+            rows.append(planned_row_from(items[:1], show_date=True))
+            rows.append(planned_row_from(items[1:], show_date=False))
+        else:
+            rows.append(planned_row_from(items, show_date=True))
     return rows
 
 
-def _build_completed_rows_for_week(planned_items: list[PlannedTraining]) -> list[dict[str, Any]]:
-    grouped: dict[Optional[date], list[Activity]] = {}
+def _build_completed_row_from_activities(activities: list[Activity]) -> dict[str, Any]:
+    activities = sorted(
+        activities,
+        key=lambda a: (a.started_at is None, a.started_at),
+    )
 
+    total_distance_m = sum(int(a.distance_m or 0) for a in activities)
+    total_duration_s = sum(int(a.duration_s or 0) for a in activities)
+
+    hr_num = 0
+    hr_den = 0
+    max_hr = None
+    third_parts: list[str] = []
+
+    for a in activities:
+        dur = int(a.duration_s or 0)
+        if a.avg_hr is not None and dur > 0:
+            hr_num += int(a.avg_hr) * dur
+            hr_den += dur
+        if a.max_hr is not None:
+            max_hr = max(max_hr or 0, int(a.max_hr))
+
+        seg = _activity_segment(a)
+        if seg != "-":
+            third_parts.append(seg)
+
+    km = f"{total_distance_m / 1000.0:.2f}" if total_distance_m > 0 else "-"
+    minutes = str(int(round(total_duration_s / 60.0))) if total_duration_s > 0 else "-"
+    avg_hr = int(round(hr_num / hr_den)) if hr_den > 0 else None
+
+    return {
+        "km": km,
+        "min": minutes,
+        "third": " | ".join(third_parts) if third_parts else "-",
+        "avg_hr": avg_hr,
+        "max_hr": max_hr,
+    }
+
+
+def _build_completed_rows_for_week(planned_items: list[PlannedTraining]) -> list[dict[str, Any]]:
+    grouped: dict[Any, list[PlannedTraining]] = {}
     for t in planned_items:
-        a = getattr(t, "activity", None)
-        if a is None:
-            continue
-        key = _activity_day_key(t, a)
-        grouped.setdefault(key, []).append(a)
+        key = ("dated", t.date) if t.date is not None else ("undated", t.id)
+        grouped.setdefault(key, []).append(t)
 
     rows: list[dict[str, Any]] = []
-    for day_key in sorted(grouped.keys(), key=lambda d: (d is None, d)):
-        activities = sorted(
-            grouped[day_key],
-            key=lambda a: (a.started_at is None, a.started_at),
-        )
+    for key in sorted(grouped.keys(), key=lambda x: (x[0] == "undated", x[1])):
+        items = sorted(grouped[key], key=lambda x: (x.order_in_day, x.id))
+        is_two_phase = any(x.is_two_phase_day for x in items)
 
-        total_distance_m = sum(int(a.distance_m or 0) for a in activities)
-        total_duration_s = sum(int(a.duration_s or 0) for a in activities)
-
-        hr_num = 0
-        hr_den = 0
-        max_hr = None
-        third_parts: list[str] = []
-
-        for a in activities:
-            dur = int(a.duration_s or 0)
-            if a.avg_hr is not None and dur > 0:
-                hr_num += int(a.avg_hr) * dur
-                hr_den += dur
-            if a.max_hr is not None:
-                max_hr = max(max_hr or 0, int(a.max_hr))
-
-            seg = _activity_segment(a)
-            if seg != "-":
-                third_parts.append(seg)
-
-        km = f"{total_distance_m / 1000.0:.2f}" if total_distance_m > 0 else "-"
-        minutes = str(int(round(total_duration_s / 60.0))) if total_duration_s > 0 else "-"
-        avg_hr = int(round(hr_num / hr_den)) if hr_den > 0 else None
-
-        rows.append(
-            {
-                "km": km,
-                "min": minutes,
-                "third": " | ".join(third_parts) if third_parts else "-",
-                "avg_hr": avg_hr,
-                "max_hr": max_hr,
-            }
-        )
+        if is_two_phase:
+            phase_1_activities = [x.activity for x in items[:1] if getattr(x, "activity", None)]
+            phase_2_activities = [x.activity for x in items[1:] if getattr(x, "activity", None)]
+            rows.append(_build_completed_row_from_activities(phase_1_activities))
+            rows.append(_build_completed_row_from_activities(phase_2_activities))
+        else:
+            day_activities = [x.activity for x in items if getattr(x, "activity", None)]
+            rows.append(_build_completed_row_from_activities(day_activities))
 
     return rows
 
