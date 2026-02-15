@@ -1,5 +1,6 @@
-from django.db import models
 from django.conf import settings
+from django.db import models
+
 
 class TrainingMonth(models.Model):
     athlete = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="training_months")
@@ -7,7 +8,9 @@ class TrainingMonth(models.Model):
     month = models.PositiveIntegerField()
 
     class Meta:
-        unique_together = ("athlete", "year", "month")
+        constraints = [
+            models.UniqueConstraint(fields=["athlete", "year", "month"], name="uniq_training_month_athlete_year_month"),
+        ]
         ordering = ["-year", "-month"]
         verbose_name = "Training Month"
         verbose_name_plural = "Training Months"
@@ -21,7 +24,9 @@ class TrainingWeek(models.Model):
     week_index = models.PositiveIntegerField()
 
     class Meta:
-        unique_together = ("training_month", "week_index")
+        constraints = [
+            models.UniqueConstraint(fields=["training_month", "week_index"], name="uniq_training_week_month_index"),
+        ]
         ordering = ["week_index"]
         verbose_name = "Training Week"
         verbose_name_plural = "Training Weeks"
@@ -32,10 +37,7 @@ class TrainingWeek(models.Model):
 
 class PlannedTraining(models.Model):
     week = models.ForeignKey(TrainingWeek, on_delete=models.CASCADE, related_name="planned_trainings")
-
-    # ⚠️ doporučuji přidat datum (jinak se to bude párovat blbě)
     date = models.DateField(null=True, blank=True)
-
     day_label = models.CharField(max_length=20)
     title = models.CharField(max_length=100)
     planned_distance_km = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
@@ -45,6 +47,9 @@ class PlannedTraining(models.Model):
 
     class Meta:
         ordering = ("week__week_index", "date", "order_in_day")
+        indexes = [
+            models.Index(fields=["week", "date", "order_in_day"], name="trn_week_date_order_idx"),
+        ]
         verbose_name = "Planned training"
         verbose_name_plural = "Planned trainings"
 
@@ -58,8 +63,6 @@ class CompletedTraining(models.Model):
         on_delete=models.CASCADE,
         related_name="completed",
     )
-
-    # ✅ VARIANTA B: CompletedTraining → Activity
     activity = models.OneToOneField(
         "activities.Activity",
         on_delete=models.SET_NULL,
@@ -67,14 +70,11 @@ class CompletedTraining(models.Model):
         blank=True,
         related_name="completed_training",
     )
-
-    # jednoduché MVP – souhrn
     time_seconds = models.PositiveIntegerField(null=True, blank=True)
     distance_m = models.PositiveIntegerField(null=True, blank=True)
     avg_hr = models.PositiveIntegerField(null=True, blank=True)
     feel = models.CharField(max_length=50, blank=True, default="")
     note = models.TextField(blank=True, default="")
-
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

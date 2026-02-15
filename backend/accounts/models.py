@@ -17,7 +17,7 @@ class Profile(models.Model):
             return f"{self.user.username} ({self.role})"
 
 class CoachAthlete(models.Model):
-    coach = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='coachded_athletes')
+    coach = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='coached_athletes')
     athlete = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='athlete_coaches')
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -29,8 +29,8 @@ class CoachAthlete(models.Model):
             UniqueConstraint(fields=["coach", "athlete"], name="uniq_coach_athlete_pair"), models.CheckConstraint(check=~Q(coach=models.F("athlete")),name="coach_cannot_be_same_as_athlete",),
         ]
 
-        def __str__(self) -> str:
-            return f"{self.coach.username} -> {self.athlete.username}"
+    def __str__(self) -> str:
+        return f"{self.coach.username} -> {self.athlete.username}"
 
 
 class TrainingGroup(models.Model):
