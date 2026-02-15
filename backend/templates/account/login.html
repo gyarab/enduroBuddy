@@ -7,148 +7,116 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>{% trans "Sign in" %} | EnduroBuddy</title>
 
-  <!-- Bootstrap -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-
-  <!-- Custom CSS -->
-  <link rel="stylesheet" href="{% static 'css/login.css' %}">
+  <link rel="stylesheet" href="{% static 'css/login.css' %}?v=3">
 </head>
 
 <body class="eb-auth">
+  <div class="eb-glow eb-glow-left" aria-hidden="true"></div>
+  <div class="eb-glow eb-glow-right" aria-hidden="true"></div>
 
   <main class="container eb-auth-page">
     <div class="row justify-content-center">
-      <div class="col-12 col-sm-10 col-md-7 col-lg-5 col-xl-4">
+      <div class="col-12 col-xl-10">
+        <section class="eb-shell shadow-lg">
+          <div class="row g-0">
+            <aside class="col-lg-5 eb-brand-panel">
+              <div class="eb-brand-content">
+                <p class="eb-brand-name mb-4">EnduroBuddy</p>
 
-        <div class="eb-card shadow-lg">
-          <div class="eb-card-body">
+                <h1 class="eb-brand-title mb-3">{% trans "Run faster. Recover faster." %}</h1>
+                <p class="eb-brand-copy mb-4">
+                  {% trans "Build your running form with clear training blocks, fatigue tracking, and race-ready insights." %}
+                </p>
 
-            <!-- Logo -->
-            <div class="text-center mb-3">
-              <div class="eb-logo mx-auto mb-2" aria-hidden="true">
-                <!-- Simple "whale" placeholder shape -->
-                <svg viewBox="0 0 120 40" width="120" height="40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M18 22c0-8 10-14 24-14h35c10 0 18 6 18 14 0 8-8 14-18 14H42C28 36 18 30 18 22Z" fill="currentColor" opacity="0.95"/>
-                  <path d="M92 14c6 0 10-3 10-7 0-2 1-3 3-3 2 0 3 1 3 3 0 7-7 13-16 13" stroke="currentColor" stroke-width="3" stroke-linecap="round" opacity="0.9"/>
-                  <circle cx="40" cy="20" r="2.5" fill="#0b1220"/>
-                </svg>
-                <span class="eb-logo-text">EnduroBuddy</span>
-              </div>
-
-              <h1 class="eb-title mb-2">{% trans "Sign in" %}</h1>
-              <p class="eb-subtitle mb-0">
-                {% trans "Using EnduroBuddy for work? We recommend signing in with your work account." %}
-              </p>
-            </div>
-
-            {% if form.non_field_errors %}
-              <div class="alert eb-alert mb-3" role="alert">
-                {{ form.non_field_errors }}
-              </div>
-            {% endif %}
-
-            <!-- Form -->
-            <form method="post" action="{% url 'account_login' %}" novalidate>
-              {% csrf_token %}
-
-              <div class="mb-3">
-                <label class="form-label eb-label" for="id_login">{% trans "Username or email address" %}<span class="eb-required">*</span></label>
-                {{ form.login }}
-                {% if form.login.errors %}
-                  <div class="eb-field-error mt-1">{{ form.login.errors }}</div>
-                {% endif %}
-              </div>
-
-              <div class="mb-2">
-                <label class="form-label eb-label" for="id_password">{% trans "Password" %}<span class="eb-required">*</span></label>
-                {{ form.password }}
-                {% if form.password.errors %}
-                  <div class="eb-field-error mt-1">{{ form.password.errors }}</div>
-                {% endif %}
-              </div>
-
-              <div class="d-flex align-items-center justify-content-between mb-3">
-                <div class="form-check eb-check">
-                  {% if form.remember %}
-                    {{ form.remember }}
-                    <label class="form-check-label" for="id_remember">{% trans "Remember me" %}</label>
-                  {% else %}
-                    <input class="form-check-input" type="checkbox" id="id_remember_fake" disabled>
-                    <label class="form-check-label" for="id_remember_fake">{% trans "Remember me" %}</label>
-                  {% endif %}
+                <div class="eb-track-motion mb-4" aria-hidden="true">
+                  <span class="eb-track-lane eb-track-lane-1"></span>
+                  <span class="eb-track-lane eb-track-lane-2"></span>
+                  <span class="eb-track-lane eb-track-lane-3"></span>
                 </div>
 
-                <a class="eb-link" href="{% url 'account_reset_password' %}">{% trans "Forgot password?" %}</a>
+                <ul class="eb-feature-list list-unstyled m-0">
+                  <li>{% trans "Pace splits and progression in one timeline" %}</li>
+                  <li>{% trans "Cadence and effort trends you can act on" %}</li>
+                  <li>{% trans "Smart planning for intervals and race days" %}</li>
+                </ul>
               </div>
+            </aside>
 
-              {% if redirect_field_value %}
-                <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}">
-              {% endif %}
+            <div class="col-lg-7 eb-form-panel">
+              <div class="eb-card-body">
+                <div class="mb-4">
+                  <p class="eb-kicker mb-2">{% trans "Runner access" %}</p>
+                  <h2 class="eb-title mb-2">{% trans "Sign in" %}</h2>
+                  <p class="eb-subtitle mb-0">{% trans "Log in to continue to your training dashboard." %}</p>
+                </div>
 
-              <button type="submit" class="btn eb-btn-primary w-100 py-2">
-                {% trans "Continue" %}
-              </button>
+                {% if form.non_field_errors %}
+                  <div class="alert eb-alert mb-3" role="alert">
+                    {{ form.non_field_errors }}
+                  </div>
+                {% endif %}
 
-              <!-- OR divider -->
-              <div class="eb-or my-3">
-                <span>OR</span>
+                <form method="post" action="{% url 'account_login' %}" novalidate>
+                  {% csrf_token %}
+
+                  <div class="mb-3">
+                    <label class="form-label eb-label" for="id_login">{% trans "Username or email address" %}<span class="eb-required">*</span></label>
+                    {{ form.login }}
+                    {% if form.login.errors %}
+                      <div class="eb-field-error mt-1">{{ form.login.errors }}</div>
+                    {% endif %}
+                  </div>
+
+                  <div class="mb-2">
+                    <label class="form-label eb-label" for="id_password">{% trans "Password" %}<span class="eb-required">*</span></label>
+                    {{ form.password }}
+                    {% if form.password.errors %}
+                      <div class="eb-field-error mt-1">{{ form.password.errors }}</div>
+                    {% endif %}
+                  </div>
+
+                  <div class="d-flex align-items-center justify-content-between mb-4">
+                    <div class="form-check eb-check">
+                      {% if form.remember %}
+                        {{ form.remember }}
+                        <label class="form-check-label" for="id_remember">{% trans "Remember me" %}</label>
+                      {% else %}
+                        <input class="form-check-input" type="checkbox" id="id_remember_fake" disabled>
+                        <label class="form-check-label" for="id_remember_fake">{% trans "Remember me" %}</label>
+                      {% endif %}
+                    </div>
+                    <a class="eb-link" href="{% url 'account_reset_password' %}">{% trans "Forgot password?" %}</a>
+                  </div>
+
+                  {% if redirect_field_value %}
+                    <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}">
+                  {% endif %}
+
+                  <button type="submit" class="btn eb-btn-primary w-100 py-2 mb-3">
+                    {% trans "Continue" %}
+                  </button>
+
+                  <p class="eb-muted text-center mb-0">
+                    {% trans "Don't have an account?" %}
+                    <a class="eb-link" href="{% url 'account_signup' %}">{% trans "Sign up" %}</a>
+                  </p>
+                </form>
               </div>
-
-              <!-- Provider buttons (UI only for now) -->
-              <div class="d-grid gap-2">
-                <button class="btn eb-btn-provider" type="button" disabled>
-                  <span class="eb-icon eb-icon-google" aria-hidden="true"></span>
-                  Continue with Google
-                </button>
-
-                <button class="btn eb-btn-provider" type="button" disabled>
-                  <span class="eb-icon eb-icon-github" aria-hidden="true"></span>
-                  Continue with GitHub
-                </button>
-
-                <button class="btn eb-btn-provider" type="button" disabled>
-                  <span class="eb-icon eb-icon-sso" aria-hidden="true"></span>
-                  Continue with SSO
-                </button>
-              </div>
-
-            </form>
-
+            </div>
           </div>
-        </div>
-
-        <!-- Bottom small card -->
-        <div class="eb-card eb-card-bottom mt-3">
-          <div class="eb-card-body py-3 text-center">
-            <span class="eb-muted">
-              {% trans "Don't have an account?" %}
-              <a class="eb-link" href="{% url 'account_signup' %}">{% trans "Sign up" %}</a>
-            </span>
-          </div>
-        </div>
+        </section>
 
         <div class="text-center mt-4 eb-footer">
           <a class="eb-footer-link" href="#" tabindex="-1" aria-disabled="true">Privacy Policy</a>
-          <span class="eb-dotsep">•</span>
+          <span class="eb-dotsep">&bull;</span>
           <a class="eb-footer-link" href="#" tabindex="-1" aria-disabled="true">Terms of Service</a>
         </div>
-
       </div>
     </div>
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
-  <!-- Make Django widgets match the design (no widget_tweaks needed) -->
-  <script>
-    document.querySelectorAll('.eb-card input').forEach((el) => {
-      if (el.type === 'checkbox') return;
-      el.classList.add('form-control', 'eb-input');
-    });
-
-    document.querySelectorAll('.eb-card input[type="checkbox"]').forEach((el) => {
-      el.classList.add('form-check-input');
-    });
-  </script>
+  <script src="{% static 'js/login.js' %}?v=1"></script>
 </body>
 </html>
