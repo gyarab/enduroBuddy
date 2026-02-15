@@ -188,10 +188,12 @@ AUTHENTICATION_BACKENDS = [
 
 ACCOUNT_EMAIL_VERIFICATION = "mandatory"
 ACCOUNT_LOGIN_METHODS = {"email"}
-ACCOUNT_SIGNUP_FIELDS = ["email*", "password1*", "password2*"]
+ACCOUNT_SIGNUP_FIELDS = ["first_name*", "last_name*", "email*", "password1*", "password2*"]
+ACCOUNT_EMAIL_SUBJECT_PREFIX = "[EnduroBuddy] "
 ACCOUNT_UNIQUE_EMAIL = True
 ACCOUNT_CONFIRM_EMAIL_ON_GET = True
 ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
+ACCOUNT_FORMS = {"signup": "accounts.forms.EnduroSignupForm"}
 ACCOUNT_RATE_LIMITS = {
     "login": "30/5m",
     "login_failed": "10/10m",

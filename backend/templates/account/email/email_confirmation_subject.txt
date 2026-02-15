@@ -1,0 +1,5 @@
+{% load i18n %}
+{% get_current_language as CURRENT_LANGUAGE %}
+{% autoescape off %}
+{% if CURRENT_LANGUAGE|slice:":2" == "cs" %}EnduroBuddy - potvrzení e-mailu{% else %}EnduroBuddy - confirm your email{% endif %}
+{% endautoescape %}

@@ -1,11 +1,12 @@
 {% load static i18n socialaccount %}
+{% get_current_language as CURRENT_LANGUAGE %}
 
 <!doctype html>
-<html lang="en">
+<html lang="{{ CURRENT_LANGUAGE }}">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>{% trans "Sign in" %} | EnduroBuddy</title>
+  <title>{% if CURRENT_LANGUAGE|slice:":2" == "cs" %}Přihlášení{% else %}Sign in{% endif %} | EnduroBuddy</title>
 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="{% static 'css/login.css' %}?v=8">
@@ -30,8 +31,8 @@
                   <path d="M39 40l4 4 8-8" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
               </div>
-              <h1 class="eb-title mb-2">{% trans "Sign in to EnduroBuddy" %}</h1>
-              <p class="eb-subtitle mb-0">{% trans "Training plans for runners, built around every week and every split." %}</p>
+              <h1 class="eb-title mb-2">{% if CURRENT_LANGUAGE|slice:":2" == "cs" %}Přihlášení do EnduroBuddy{% else %}Sign in to EnduroBuddy{% endif %}</h1>
+              <p class="eb-subtitle mb-0">{% if CURRENT_LANGUAGE|slice:":2" == "cs" %}Tréninkové plány pro běžce, postavené kolem každého týdne a každého splitu.{% else %}Training plans for runners, built around every week and every split.{% endif %}</p>
             </div>
 
             {% if form.non_field_errors %}
@@ -42,17 +43,17 @@
 
             <div class="d-grid gap-2 mb-3">
               <a class="btn eb-btn-provider py-2" href="{% provider_login_url 'google' %}">
-                {% trans "Continue with Google" %}
+                {% if CURRENT_LANGUAGE|slice:":2" == "cs" %}Pokračovat přes Google{% else %}Continue with Google{% endif %}
               </a>
             </div>
 
-            <div class="eb-divider mb-3"><span>or</span></div>
+            <div class="eb-divider mb-3"><span>{% if CURRENT_LANGUAGE|slice:":2" == "cs" %}nebo{% else %}or{% endif %}</span></div>
 
             <form method="post" action="{% url 'account_login' %}" novalidate>
               {% csrf_token %}
 
               <div class="mb-3">
-                <label class="form-label eb-label" for="id_login">{% trans "Username or email address" %}<span class="eb-required">*</span></label>
+                <label class="form-label eb-label" for="id_login">{% if CURRENT_LANGUAGE|slice:":2" == "cs" %}Uživatelské jméno nebo e-mail{% else %}Username or email address{% endif %}<span class="eb-required">*</span></label>
                 {{ form.login }}
                 {% if form.login.errors %}
                   <div class="eb-field-error mt-1">{{ form.login.errors }}</div>
@@ -61,8 +62,8 @@
 
               <div class="mb-2">
                 <div class="d-flex justify-content-between align-items-center mb-1">
-                  <label class="form-label eb-label mb-0" for="id_password">{% trans "Password" %}<span class="eb-required">*</span></label>
-                  <a class="eb-link" href="{% url 'account_reset_password' %}">{% trans "Forgot password?" %}</a>
+                  <label class="form-label eb-label mb-0" for="id_password">{% if CURRENT_LANGUAGE|slice:":2" == "cs" %}Heslo{% else %}Password{% endif %}<span class="eb-required">*</span></label>
+                  <a class="eb-link" href="{% url 'account_reset_password' %}">{% if CURRENT_LANGUAGE|slice:":2" == "cs" %}Zapomenuté heslo?{% else %}Forgot password?{% endif %}</a>
                 </div>
                 {{ form.password }}
                 {% if form.password.errors %}
@@ -73,10 +74,10 @@
               <div class="form-check eb-check mb-4">
                 {% if form.remember %}
                   {{ form.remember }}
-                  <label class="form-check-label" for="id_remember">{% trans "Remember me" %}</label>
+                  <label class="form-check-label" for="id_remember">{% if CURRENT_LANGUAGE|slice:":2" == "cs" %}Zapamatovat si mě{% else %}Remember me{% endif %}</label>
                 {% else %}
                   <input class="form-check-input" type="checkbox" id="id_remember_fake" disabled>
-                  <label class="form-check-label" for="id_remember_fake">{% trans "Remember me" %}</label>
+                  <label class="form-check-label" for="id_remember_fake">{% if CURRENT_LANGUAGE|slice:":2" == "cs" %}Zapamatovat si mě{% else %}Remember me{% endif %}</label>
                 {% endif %}
               </div>
 
@@ -85,22 +86,18 @@
               {% endif %}
 
               <button type="submit" class="btn eb-btn-primary w-100 py-2 mb-3">
-                {% trans "Sign in" %}
+                {% if CURRENT_LANGUAGE|slice:":2" == "cs" %}Přihlásit se{% else %}Sign in{% endif %}
               </button>
 
               <p class="eb-muted text-center mb-0">
-                {% trans "Don't have an account?" %}
-                <a class="eb-link" href="{% url 'account_signup' %}">{% trans "Sign up" %}</a>
+                {% if CURRENT_LANGUAGE|slice:":2" == "cs" %}Nemáš účet?{% else %}Don't have an account?{% endif %}
+                <a class="eb-link" href="{% url 'account_signup' %}">{% if CURRENT_LANGUAGE|slice:":2" == "cs" %}Registrovat se{% else %}Sign up{% endif %}</a>
               </p>
             </form>
           </div>
         </section>
 
-        <div class="text-center mt-4 eb-footer">
-          <a class="eb-footer-link" href="#" tabindex="-1" aria-disabled="true">Privacy Policy</a>
-          <span class="eb-dotsep">&bull;</span>
-          <a class="eb-footer-link" href="#" tabindex="-1" aria-disabled="true">Terms of Service</a>
-        </div>
+        {% include "account/_language_switcher.html" %}
       </div>
     </div>
   </main>
