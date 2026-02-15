@@ -156,7 +156,7 @@ Systém vědomě neukládá surová senzorová data s vysokou frekvencí.
 
 ## Struktura projektu
 
-´´´bash
+```bash
 backend/
 │
 ├─ activities/
@@ -177,7 +177,7 @@ backend/
 ├─ media/
 ├─ db.sqlite3
 └─ manage.py
-
+```
 
 ---
 
@@ -188,27 +188,35 @@ backend/
 ```bash
 git clone <repository-url>
 cd backend
-
+```
 ### 2. Virtuální prostředí
-´´´bash
+
+```bash
 py -3 -m .venv venv
+```
 
-#### Aktivate
-´´´bash
+### 3. Aktivate virtuálního prostředí
+
+```bash
 source .venv/Scripts/Activate
+```
 
-### 3. Instalace závislostí
-´´´bash
+### 4. Instalace závislostí
+```bash
 pip install -r requirements.txt
-
-### 4. Migrace databáze
-´´´bash
-python manage.py migrate
+```
 
 ### 5. Migrace databáze
-´´´bash
-python manage.py createsuperuser
+```bash
+python manage.py migrate
+```
 
-### 6. Spuštění serveru
-´´´bash
+### 6. Migrace databáze
+```bash
+python manage.py createsuperuser
+```
+
+### 7. Spuštění serveru
+```bash
 python manage.py runserver
+```
