@@ -8,106 +8,91 @@
   <title>{% trans "Sign in" %} | EnduroBuddy</title>
 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="{% static 'css/login.css' %}?v=3">
+  <link rel="stylesheet" href="{% static 'css/login.css' %}?v=8">
 </head>
 
 <body class="eb-auth">
-  <div class="eb-glow eb-glow-left" aria-hidden="true"></div>
-  <div class="eb-glow eb-glow-right" aria-hidden="true"></div>
+  <div class="eb-shape eb-shape-top" aria-hidden="true"></div>
+  <div class="eb-shape eb-shape-bottom" aria-hidden="true"></div>
 
   <main class="container eb-auth-page">
     <div class="row justify-content-center">
-      <div class="col-12 col-xl-10">
-        <section class="eb-shell shadow-lg">
-          <div class="row g-0">
-            <aside class="col-lg-5 eb-brand-panel">
-              <div class="eb-brand-content">
-                <p class="eb-brand-name mb-4">EnduroBuddy</p>
-
-                <h1 class="eb-brand-title mb-3">{% trans "Run faster. Recover faster." %}</h1>
-                <p class="eb-brand-copy mb-4">
-                  {% trans "Build your running form with clear training blocks, fatigue tracking, and race-ready insights." %}
-                </p>
-
-                <div class="eb-track-motion mb-4" aria-hidden="true">
-                  <span class="eb-track-lane eb-track-lane-1"></span>
-                  <span class="eb-track-lane eb-track-lane-2"></span>
-                  <span class="eb-track-lane eb-track-lane-3"></span>
-                </div>
-
-                <ul class="eb-feature-list list-unstyled m-0">
-                  <li>{% trans "Pace splits and progression in one timeline" %}</li>
-                  <li>{% trans "Cadence and effort trends you can act on" %}</li>
-                  <li>{% trans "Smart planning for intervals and race days" %}</li>
-                </ul>
+      <div class="col-12 col-md-10 col-lg-7 col-xl-5">
+        <section class="eb-shell">
+          <div class="eb-card-body">
+            <div class="text-center mb-4">
+              <div class="eb-mark mx-auto mb-3" aria-hidden="true">
+                <svg class="eb-mark-icon" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" fill="none">
+                  <rect x="11" y="11" width="42" height="42" rx="14" stroke="currentColor" stroke-width="3" opacity="0.28"/>
+                  <path d="M18 39c0-9 7-16 16-16h12" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                  <path d="M18 30c2-7 8-11 16-11h10" stroke="currentColor" stroke-width="3" stroke-linecap="round" opacity="0.75"/>
+                  <circle cx="41.5" cy="23" r="3.2" fill="currentColor"/>
+                  <path d="M39 40l4 4 8-8" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
               </div>
-            </aside>
-
-            <div class="col-lg-7 eb-form-panel">
-              <div class="eb-card-body">
-                <div class="mb-4">
-                  <p class="eb-kicker mb-2">{% trans "Runner access" %}</p>
-                  <h2 class="eb-title mb-2">{% trans "Sign in" %}</h2>
-                  <p class="eb-subtitle mb-0">{% trans "Log in to continue to your training dashboard." %}</p>
-                </div>
-
-                {% if form.non_field_errors %}
-                  <div class="alert eb-alert mb-3" role="alert">
-                    {{ form.non_field_errors }}
-                  </div>
-                {% endif %}
-
-                <form method="post" action="{% url 'account_login' %}" novalidate>
-                  {% csrf_token %}
-
-                  <div class="mb-3">
-                    <label class="form-label eb-label" for="id_login">{% trans "Username or email address" %}<span class="eb-required">*</span></label>
-                    {{ form.login }}
-                    {% if form.login.errors %}
-                      <div class="eb-field-error mt-1">{{ form.login.errors }}</div>
-                    {% endif %}
-                  </div>
-
-                  <div class="mb-2">
-                    <label class="form-label eb-label" for="id_password">{% trans "Password" %}<span class="eb-required">*</span></label>
-                    {{ form.password }}
-                    {% if form.password.errors %}
-                      <div class="eb-field-error mt-1">{{ form.password.errors }}</div>
-                    {% endif %}
-                  </div>
-
-                  <div class="d-flex align-items-center justify-content-between mb-4">
-                    <div class="form-check eb-check">
-                      {% if form.remember %}
-                        {{ form.remember }}
-                        <label class="form-check-label" for="id_remember">{% trans "Remember me" %}</label>
-                      {% else %}
-                        <input class="form-check-input" type="checkbox" id="id_remember_fake" disabled>
-                        <label class="form-check-label" for="id_remember_fake">{% trans "Remember me" %}</label>
-                      {% endif %}
-                    </div>
-                    <a class="eb-link" href="{% url 'account_reset_password' %}">{% trans "Forgot password?" %}</a>
-                  </div>
-
-                  {% if redirect_field_value %}
-                    <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}">
-                  {% endif %}
-
-                  <button type="submit" class="btn eb-btn-primary w-100 py-2 mb-3">
-                    {% trans "Continue" %}
-                  </button>
-
-                  <a class="btn btn-outline-dark w-100 py-2 mb-3" href="{% provider_login_url 'google' %}">
-                    {% trans "Continue with Google" %}
-                  </a>
-
-                  <p class="eb-muted text-center mb-0">
-                    {% trans "Don't have an account?" %}
-                    <a class="eb-link" href="{% url 'account_signup' %}">{% trans "Sign up" %}</a>
-                  </p>
-                </form>
-              </div>
+              <h1 class="eb-title mb-2">{% trans "Sign in to EnduroBuddy" %}</h1>
+              <p class="eb-subtitle mb-0">{% trans "Training plans for runners, built around every week and every split." %}</p>
             </div>
+
+            {% if form.non_field_errors %}
+              <div class="alert eb-alert mb-3" role="alert">
+                {{ form.non_field_errors }}
+              </div>
+            {% endif %}
+
+            <div class="d-grid gap-2 mb-3">
+              <a class="btn eb-btn-provider py-2" href="{% provider_login_url 'google' %}">
+                {% trans "Continue with Google" %}
+              </a>
+            </div>
+
+            <div class="eb-divider mb-3"><span>or</span></div>
+
+            <form method="post" action="{% url 'account_login' %}" novalidate>
+              {% csrf_token %}
+
+              <div class="mb-3">
+                <label class="form-label eb-label" for="id_login">{% trans "Username or email address" %}<span class="eb-required">*</span></label>
+                {{ form.login }}
+                {% if form.login.errors %}
+                  <div class="eb-field-error mt-1">{{ form.login.errors }}</div>
+                {% endif %}
+              </div>
+
+              <div class="mb-2">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                  <label class="form-label eb-label mb-0" for="id_password">{% trans "Password" %}<span class="eb-required">*</span></label>
+                  <a class="eb-link" href="{% url 'account_reset_password' %}">{% trans "Forgot password?" %}</a>
+                </div>
+                {{ form.password }}
+                {% if form.password.errors %}
+                  <div class="eb-field-error mt-1">{{ form.password.errors }}</div>
+                {% endif %}
+              </div>
+
+              <div class="form-check eb-check mb-4">
+                {% if form.remember %}
+                  {{ form.remember }}
+                  <label class="form-check-label" for="id_remember">{% trans "Remember me" %}</label>
+                {% else %}
+                  <input class="form-check-input" type="checkbox" id="id_remember_fake" disabled>
+                  <label class="form-check-label" for="id_remember_fake">{% trans "Remember me" %}</label>
+                {% endif %}
+              </div>
+
+              {% if redirect_field_value %}
+                <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}">
+              {% endif %}
+
+              <button type="submit" class="btn eb-btn-primary w-100 py-2 mb-3">
+                {% trans "Sign in" %}
+              </button>
+
+              <p class="eb-muted text-center mb-0">
+                {% trans "Don't have an account?" %}
+                <a class="eb-link" href="{% url 'account_signup' %}">{% trans "Sign up" %}</a>
+              </p>
+            </form>
           </div>
         </section>
 
