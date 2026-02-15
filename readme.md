@@ -176,7 +176,7 @@ cd backend/
 python manage.py migrate
 ```
 
-### 6. Migrace databáze
+### 6. Vytvoření admina
 ```bash
 python manage.py createsuperuser
 ```
