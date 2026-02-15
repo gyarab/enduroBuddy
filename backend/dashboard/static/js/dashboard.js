@@ -32,17 +32,21 @@
       });
     }
 
-    const importBtn = document.getElementById("fitImportBtn");
+    const importLink = document.getElementById("fitImportLink");
     const fileInput = document.getElementById("fitFileInput");
     const form = document.getElementById("fitImportForm");
+    const importSourceInput = document.getElementById("importSourceInput");
 
-    if (importBtn && fileInput && form) {
-      importBtn.addEventListener("click", () => {
+    if (importLink && fileInput && form && importSourceInput) {
+      importLink.addEventListener("click", (event) => {
+        event.preventDefault();
+        importSourceInput.value = "fit_upload";
         fileInput.click();
       });
 
       fileInput.addEventListener("change", () => {
         if (fileInput.files && fileInput.files.length > 0) {
+          importSourceInput.value = "fit_upload";
           form.submit();
         }
       });
