@@ -5,10 +5,23 @@
 
 {% block content %}
 <div class="container-fluid py-3">
+  {% if messages %}
+    <div class="mb-3">
+      {% for message in messages %}
+        <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} py-2 mb-2" role="alert">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
 
   <div class="d-flex align-items-center justify-content-between mb-3">
     <h3 class="mb-0">Training plan</h3>
-    <button class="btn btn-outline-success btn-sm" disabled>Import training</button>
+    <form method="post" enctype="multipart/form-data" id="fitImportForm" class="m-0">
+      {% csrf_token %}
+      <input type="file" id="fitFileInput" name="fit_file" accept=".fit" class="d-none">
+      <button class="btn btn-outline-success btn-sm" type="button" id="fitImportBtn">Import training</button>
+    </form>
   </div>
 
   <div class="eb-scrollwrap">
@@ -47,7 +60,7 @@
                         </tr>
                       </thead>
                       <tbody>
-                        {% for t in w.planned_trainings.all %}
+                        {% for t in w.planned_rows %}
                         <tr>
                           <td>{{ t.date|date:"j.n."|default:"-" }}</td>
                           <td>{{ t.day_label|default:"-" }}</td>
@@ -91,23 +104,14 @@
                       </thead>
 
                       <tbody>
-                        {% for t in w.planned_trainings.all %}
-                          {% if t.completed_row %}
+                        {% for r in w.completed_rows %}
                           <tr>
-                            <td>{{ t.completed_row.km }}</td>
-                            <td>{{ t.completed_row.min }}</td>
-                            <td>
-                              {{ t.completed_row.third }}
-                              {% if t.completed_row.workout_type != "WORKOUT" and t.completed_row.third != "-" %}/km{% endif %}
-                            </td>
-                            <td>{{ t.completed_row.avg_hr|default:"-" }}</td>
-                            <td>{{ t.completed_row.max_hr|default:"-" }}</td>
+                            <td>{{ r.km }}</td>
+                            <td>{{ r.min }}</td>
+                            <td>{{ r.third }}</td>
+                            <td>{{ r.avg_hr|default:"-" }}</td>
+                            <td>{{ r.max_hr|default:"-" }}</td>
                           </tr>
-                          {% else %}
-                          <tr class="text-muted">
-                            <td>-</td><td>-</td><td>-</td><td>-</td><td>-</td>
-                          </tr>
-                          {% endif %}
                         {% empty %}
                         <tr>
                           <td colspan="5" class="text-muted small">No rows yet.</td>
@@ -164,5 +168,5 @@
 </div>
 
 <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
-<script src="{% static 'js/dashboard.js' %}"></script>
+<script src="{% static 'js/dashboard.js' %}?v=2"></script>
 {% endblock %}

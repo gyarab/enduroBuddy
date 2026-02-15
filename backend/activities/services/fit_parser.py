@@ -71,6 +71,32 @@ def _is_work_interval(it: dict[str, Any]) -> bool:
     return True
 
 
+def _detect_workout_type(*, has_workout_steps: bool, laps: list[dict[str, Any]], is_auto_km_laps: bool) -> str:
+    if has_workout_steps:
+        return "WORKOUT"
+
+    if not laps:
+        return "RUN"
+
+    if is_auto_km_laps:
+        return "RUN"
+
+    work_laps = [it for it in laps if _is_work_interval(it)]
+    if len(work_laps) < 2:
+        return "RUN"
+
+    dists = [int(it["distance_m"]) for it in work_laps if it.get("distance_m") is not None]
+    if len(dists) < 2:
+        return "RUN"
+
+    mn, mx = min(dists), max(dists)
+    # workout expected when there is clear lap distance structure variability
+    if mx - mn >= 250:
+        return "WORKOUT"
+
+    return "RUN"
+
+
 def parse_fit_file(source: SourceType) -> FitParseResult:
     fit = FitFile(source)
     fit.parse()
@@ -178,7 +204,11 @@ def parse_fit_file(source: SourceType) -> FitParseResult:
             if near_1k / max(len(dists), 1) >= 0.8:
                 is_auto_km_laps = True
 
-    workout_type = "WORKOUT" if (has_workout_steps or (len(laps) >= 2 and not is_auto_km_laps)) else "RUN"
+    workout_type = _detect_workout_type(
+        has_workout_steps=has_workout_steps,
+        laps=laps,
+        is_auto_km_laps=is_auto_km_laps,
+    )
 
     # --- label WORK/REST + work_avg_hr ---
     work_avg_hr = None

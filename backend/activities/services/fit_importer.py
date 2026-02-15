@@ -23,6 +23,7 @@ def import_fit_into_activity(
     activity: Activity,
     fileobj: BinaryIO,
     original_name: str | None = None,
+    checksum_sha256: str | None = None,
     create_activity_file_row: bool = True,
 ) -> FitImportOutcome:
     """
@@ -47,6 +48,7 @@ def import_fit_into_activity(
                 file_type=ActivityFile.FileType.FIT,
                 file=None,
                 original_name=original_name or "",
+                checksum_sha256=checksum_sha256 or "",
             )
 
         # update Activity summary
