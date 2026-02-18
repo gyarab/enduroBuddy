@@ -156,7 +156,7 @@ git clone https://github.com/vojtecholcman/enduroBuddy.git
 ### 2. Virtuální prostředí
 
 ```bash
-py -3 -m .venv venv
+py -3 -m venv .venv
 ```
 
 ### 3. Aktivate virtuálního prostředí
