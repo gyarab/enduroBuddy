@@ -185,4 +185,3 @@ python manage.py createsuperuser
 ```bash
 python manage.py runserver
 ```
-test2 tranfer to org
