@@ -39,7 +39,7 @@ class PlannedTraining(models.Model):
     week = models.ForeignKey(TrainingWeek, on_delete=models.CASCADE, related_name="planned_trainings")
     date = models.DateField(null=True, blank=True)
     day_label = models.CharField(max_length=20)
-    title = models.CharField(max_length=100)
+    title = models.TextField(blank=True, default="")
     planned_distance_km = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     notes = models.TextField(blank=True)
     order_in_day = models.PositiveIntegerField(default=1)

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from datetime import date, timedelta
 
 from django.contrib.auth import get_user_model
@@ -153,3 +154,59 @@ class CoachTrainingPlansTests(TestCase):
         self.assertEqual(invite.used_by_id, self.athlete2.id)
         self.assertIsNotNone(invite.used_at)
 
+    def test_coach_can_inline_update_planned_training_title_and_notes(self):
+        planned = PlannedTraining.objects.filter(week__training_month__athlete=self.athlete).first()
+        self.assertIsNotNone(planned)
+
+        self.client.login(username="coach", password="coach")
+        resp_title = self.client.post(
+            reverse("coach_update_planned_training"),
+            data=json.dumps({"planned_id": planned.id, "field": "title", "value": "Intervals 8x400"}),
+            content_type="application/json",
+        )
+        self.assertEqual(resp_title.status_code, 200)
+        planned.refresh_from_db()
+        self.assertEqual(planned.title, "Intervals 8x400")
+
+        resp_notes = self.client.post(
+            reverse("coach_update_planned_training"),
+            data=json.dumps({"planned_id": planned.id, "field": "notes", "value": "Keep HR under threshold."}),
+            content_type="application/json",
+        )
+        self.assertEqual(resp_notes.status_code, 200)
+        planned.refresh_from_db()
+        self.assertEqual(planned.notes, "Keep HR under threshold.")
+
+    def test_other_coach_cannot_inline_update_foreign_athlete_planned_training(self):
+        week = _resolve_week_for_day(self.athlete2, date(2026, 3, 6))
+        planned = PlannedTraining.objects.create(
+            week=week,
+            date=date(2026, 3, 6),
+            day_label="Fri",
+            title="Tempo",
+            notes="",
+            order_in_day=1,
+        )
+        self.assertIsNotNone(planned)
+
+        self.client.login(username="coach2", password="coach2")
+        resp = self.client.post(
+            reverse("coach_update_planned_training"),
+            data=json.dumps({"planned_id": planned.id, "field": "title", "value": "Hacked"}),
+            content_type="application/json",
+        )
+        self.assertEqual(resp.status_code, 403)
+        planned.refresh_from_db()
+        self.assertNotEqual(planned.title, "Hacked")
+
+    def test_inline_update_rejects_invalid_field(self):
+        planned = PlannedTraining.objects.filter(week__training_month__athlete=self.athlete).first()
+        self.assertIsNotNone(planned)
+
+        self.client.login(username="coach", password="coach")
+        resp = self.client.post(
+            reverse("coach_update_planned_training"),
+            data=json.dumps({"planned_id": planned.id, "field": "date", "value": "2026-03-10"}),
+            content_type="application/json",
+        )
+        self.assertEqual(resp.status_code, 400)

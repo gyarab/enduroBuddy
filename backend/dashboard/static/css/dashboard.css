@@ -60,6 +60,39 @@
   white-space: nowrap; /* default: keep rows in one line */
 }
 
+/* keep training/notes on one line; table can grow horizontally */
+.eb-col-planned th.eb-planned-training-col,
+.eb-col-planned td.eb-planned-training-col,
+.eb-col-planned th.eb-planned-notes-col,
+.eb-col-planned td.eb-planned-notes-col {
+  white-space: nowrap;
+  vertical-align: top;
+}
+
+.eb-col-planned th.eb-planned-date-col,
+.eb-col-planned td.eb-planned-date-col {
+  min-width: 110px;
+  padding-right: 0.9rem;
+}
+
+.eb-col-planned th.eb-planned-day-col,
+.eb-col-planned td.eb-planned-day-col {
+  min-width: 120px;
+  padding-right: 1rem;
+}
+
+.eb-col-planned th.eb-planned-training-col,
+.eb-col-planned td.eb-planned-training-col {
+  width: 75%;
+  min-width: 320px;
+}
+
+.eb-col-planned th.eb-planned-notes-col,
+.eb-col-planned td.eb-planned-notes-col {
+  width: 25%;
+  min-width: 180px;
+}
+
 /* use this class if you ever want wrapping in some column */
 .eb-wrap {
   white-space: normal;
@@ -253,6 +286,29 @@ body.eb-coach-page main {
 .eb-coach-toast {
   pointer-events: auto;
   box-shadow: 0 10px 26px rgba(15, 23, 42, 0.18);
+}
+
+.eb-inline-edit {
+  min-height: 1.35rem;
+  padding: 0.1rem 0.2rem;
+  border-radius: 0.25rem;
+  outline: none;
+  cursor: text;
+  white-space: nowrap;
+}
+
+.eb-inline-edit:focus {
+  background: #fff8dd;
+  box-shadow: inset 0 0 0 1px #f1d87a;
+}
+
+.eb-inline-edit.is-saving {
+  background: #eef7ff;
+}
+
+.eb-inline-edit.is-error {
+  background: #fde8e8;
+  box-shadow: inset 0 0 0 1px #f59e9e;
 }
 
 @media (max-width: 991.98px) {
