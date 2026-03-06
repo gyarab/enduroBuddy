@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import logging
 import secrets
 from datetime import timedelta
@@ -7,8 +8,11 @@ from datetime import timedelta
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+from django.urls import reverse
 from django.shortcuts import redirect, render
 from django.utils import timezone
+from django.views.decorators.http import require_POST
 
 from accounts.models import (
     CoachAthlete,
@@ -34,6 +38,7 @@ from dashboard.services.month_cards import (
     resolve_week_for_day,
 )
 from dashboard.services.tasks import run_fit_import, run_garmin_sync
+from training.models import PlannedTraining
 
 
 logger = logging.getLogger(__name__)
@@ -259,8 +264,50 @@ def coach_training_plans(request):
             "selected_athlete": selected_athlete,
             "selected_athlete_name": display_name(selected_athlete) if selected_athlete else "",
             "month_cards": month_cards,
+            "coach_plan_update_url": reverse("coach_update_planned_training"),
         },
     )
+
+
+@login_required
+@require_POST
+def coach_update_planned_training(request):
+    if not is_coach(request.user):
+        return JsonResponse({"ok": False, "error": "Coach access only."}, status=403)
+
+    try:
+        payload = json.loads(request.body.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        return JsonResponse({"ok": False, "error": "Invalid JSON body."}, status=400)
+
+    planned_id = payload.get("planned_id")
+    field = payload.get("field")
+    value = payload.get("value", "")
+
+    if not isinstance(planned_id, int):
+        return JsonResponse({"ok": False, "error": "Invalid planned_id."}, status=400)
+    if field not in {"title", "notes"}:
+        return JsonResponse({"ok": False, "error": "Invalid field."}, status=400)
+    if not isinstance(value, str):
+        return JsonResponse({"ok": False, "error": "Invalid value."}, status=400)
+
+    planned = (
+        PlannedTraining.objects.select_related("week__training_month")
+        .filter(id=planned_id)
+        .first()
+    )
+    if planned is None:
+        return JsonResponse({"ok": False, "error": "Planned training not found."}, status=404)
+
+    athlete_id = planned.week.training_month.athlete_id
+    has_direct_link = CoachAthlete.objects.filter(coach=request.user, athlete_id=athlete_id).exists()
+    has_group_link = TrainingGroupAthlete.objects.filter(group__coach=request.user, athlete_id=athlete_id).exists()
+    if not (has_direct_link or has_group_link):
+        return JsonResponse({"ok": False, "error": "Forbidden for this athlete."}, status=403)
+
+    setattr(planned, field, value)
+    planned.save(update_fields=[field])
+    return JsonResponse({"ok": True, "planned_id": planned.id, "field": field, "value": value})
 
 
 @login_required

@@ -4,6 +4,7 @@
 <div
   class="eb-month-widget"
   {% if month_state_key %}data-month-state-key="{{ month_state_key }}"{% endif %}
+  {% if coach_editable and coach_plan_update_url %}data-inline-editable="1" data-plan-update-url="{{ coach_plan_update_url }}"{% endif %}
 >
 <div class="eb-scrollwrap {% if month_switcher_embedded %}eb-scrollwrap--embedded{% endif %}">
   <div class="eb-month-scroll border rounded-3 bg-white p-2" id="monthContentArea">
@@ -22,32 +23,60 @@
             <div class="card shadow-sm h-100">
               <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-2">
-                  <h5 class="mb-0">{% if CURRENT_LANGUAGE == "cs" %}Týden{% else %}Week{% endif %} {{ w.week_index }}.</h5>
-                  <small class="text-muted">{% if CURRENT_LANGUAGE == "cs" %}Plán{% else %}Planned{% endif %}</small>
+                  <h5 class="mb-0">{% if CURRENT_LANGUAGE == "cs" %}T&yacute;den{% else %}Week{% endif %} {{ w.week_index }}.</h5>
+                  <small class="text-muted">{% if CURRENT_LANGUAGE == "cs" %}Pl&aacute;n{% else %}Planned{% endif %}</small>
                 </div>
 
                 <div class="table-responsive">
                   <table class="table table-sm align-middle mb-0">
+                    <colgroup>
+                      <col style="width:110px">
+                      <col style="width:120px">
+                      <col style="width:75%">
+                      <col style="width:25%">
+                    </colgroup>
                     <thead class="table-light">
                       <tr>
-                        <th style="width:90px">{% if CURRENT_LANGUAGE == "cs" %}Datum{% else %}Date{% endif %}</th>
-                        <th style="width:90px">{% if CURRENT_LANGUAGE == "cs" %}Den{% else %}Day{% endif %}</th>
-                        <th>{% if CURRENT_LANGUAGE == "cs" %}Trénink{% else %}Training{% endif %}</th>
-                        <th>{% if CURRENT_LANGUAGE == "cs" %}Poznámky trenéra{% else %}Coach notes{% endif %}</th>
+                        <th class="eb-planned-date-col" style="width:110px">{% if CURRENT_LANGUAGE == "cs" %}Datum{% else %}Date{% endif %}</th>
+                        <th class="eb-planned-day-col" style="width:120px">{% if CURRENT_LANGUAGE == "cs" %}Den{% else %}Day{% endif %}</th>
+                        <th class="eb-planned-training-col">{% if CURRENT_LANGUAGE == "cs" %}Tr&eacute;nink{% else %}Training{% endif %}</th>
+                        <th class="eb-planned-notes-col">{% if CURRENT_LANGUAGE == "cs" %}Pozn&aacute;mky tren&eacute;ra{% else %}Coach notes{% endif %}</th>
                       </tr>
                     </thead>
                     <tbody>
                       {% for t in w.planned_rows %}
                       <tr>
-                        <td>{{ t.date|date:"j.n."|default:"" }}</td>
-                        <td>{{ t.day_label|default:"" }}</td>
-                        <td>{{ t.title }}</td>
-                        <td>{{ t.notes|default:"" }}</td>
+                        <td class="eb-planned-date-col">{{ t.date|date:"j.n."|default:"" }}</td>
+                        <td class="eb-planned-day-col">{{ t.day_label|default:"" }}</td>
+                        <td class="eb-planned-training-col">
+                          {% if coach_editable and t.planned_id and t.item_count == 1 %}
+                            <div
+                              class="eb-inline-edit"
+                              contenteditable="true"
+                              data-training-id="{{ t.planned_id }}"
+                              data-field="title"
+                            >{{ t.title_raw }}</div>
+                          {% else %}
+                            {{ t.title }}
+                          {% endif %}
+                        </td>
+                        <td class="eb-planned-notes-col">
+                          {% if coach_editable and t.planned_id and t.item_count == 1 %}
+                            <div
+                              class="eb-inline-edit"
+                              contenteditable="true"
+                              data-training-id="{{ t.planned_id }}"
+                              data-field="notes"
+                            >{{ t.notes_raw|default:"" }}</div>
+                          {% else %}
+                            {{ t.notes|default:"" }}
+                          {% endif %}
+                        </td>
                       </tr>
                       {% empty %}
                       <tr>
                         <td colspan="4" class="text-muted small">
-                          {% if CURRENT_LANGUAGE == "cs" %}V tomto týdnu zatím nejsou žádné plánované tréninky.{% else %}No planned trainings in this week yet.{% endif %}
+                          {% if CURRENT_LANGUAGE == "cs" %}V tomto t&yacute;dnu zat&iacute;m nejsou &#382;&aacute;dn&eacute; pl&aacute;novan&eacute; tr&eacute;ninky.{% else %}No planned trainings in this week yet.{% endif %}
                         </td>
                       </tr>
                       {% endfor %}
@@ -62,7 +91,7 @@
             <div class="card shadow-sm h-100">
               <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-2">
-                  <h5 class="mb-0">{% if CURRENT_LANGUAGE == "cs" %}Splněno{% else %}Completed{% endif %}</h5>
+                  <h5 class="mb-0">{% if CURRENT_LANGUAGE == "cs" %}Spln&#283;no{% else %}Completed{% endif %}</h5>
                   <small class="text-muted">Splits</small>
                 </div>
 
@@ -88,7 +117,7 @@
                       </tr>
                       {% empty %}
                       <tr>
-                        <td colspan="5" class="text-muted small">{% if CURRENT_LANGUAGE == "cs" %}Zatím žádné záznamy.{% else %}No rows yet.{% endif %}</td>
+                        <td colspan="5" class="text-muted small">{% if CURRENT_LANGUAGE == "cs" %}Zat&iacute;m &#382;&aacute;dn&eacute; z&aacute;znamy.{% else %}No rows yet.{% endif %}</td>
                       </tr>
                       {% endfor %}
                     </tbody>
@@ -109,12 +138,12 @@
         </div>
       </div>
       {% empty %}
-      <div class="text-muted small mb-4">{% if CURRENT_LANGUAGE == "cs" %}V tomto měsíci zatím nejsou žádné týdny.{% else %}No weeks in this month yet.{% endif %}</div>
+      <div class="text-muted small mb-4">{% if CURRENT_LANGUAGE == "cs" %}V tomto m&#283;s&iacute;ci zat&iacute;m nejsou &#382;&aacute;dn&eacute; t&yacute;dny.{% else %}No weeks in this month yet.{% endif %}</div>
       {% endfor %}
     </div>
     {% empty %}
     <div class="text-muted small">
-      {% if CURRENT_LANGUAGE == "cs" %}Zatím nejsou žádné měsíce. Vytvoř TrainingMonth v administraci.{% else %}No months yet. Create a TrainingMonth in admin for your user.{% endif %}
+      {% if CURRENT_LANGUAGE == "cs" %}Zat&iacute;m nejsou &#382;&aacute;dn&eacute; m&#283;s&iacute;ce. Vytvo&#345; TrainingMonth v administraci.{% else %}No months yet. Create a TrainingMonth in admin for your user.{% endif %}
     </div>
     {% endfor %}
   </div>
@@ -128,7 +157,7 @@
         {{ m.label }}
       </button>
       {% empty %}
-      <button class="btn btn-outline-dark btn-sm" disabled>{% if CURRENT_LANGUAGE == "cs" %}Žádné měsíce{% else %}No months{% endif %}</button>
+      <button class="btn btn-outline-dark btn-sm" disabled>{% if CURRENT_LANGUAGE == "cs" %}&#381;&aacute;dn&eacute; m&#283;s&iacute;ce{% else %}No months{% endif %}</button>
       {% endfor %}
     </div>
   </div>

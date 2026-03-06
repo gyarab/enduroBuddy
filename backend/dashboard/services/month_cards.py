@@ -99,19 +99,29 @@ def _build_planned_rows_for_week(planned_items: list[PlannedTraining]) -> list[d
         def planned_row_from(subitems: list[PlannedTraining], *, show_date: bool) -> dict[str, Any]:
             if not subitems:
                 return {
+                    "planned_id": None,
+                    "item_count": 0,
                     "date": items[0].date if show_date else None,
                     "day_label": items[0].day_label if show_date else "",
                     "title": "-",
+                    "title_raw": "",
                     "notes": "",
+                    "notes_raw": "",
                 }
             first = subitems[0]
             titles = [x.title for x in subitems if x.title]
             notes = [x.notes for x in subitems if x.notes]
+            joined_titles = " | ".join(titles) if titles else ""
+            joined_notes = " | ".join(notes) if notes else ""
             return {
+                "planned_id": first.id,
+                "item_count": len(subitems),
                 "date": first.date if show_date else None,
                 "day_label": first.day_label if show_date else "",
-                "title": " | ".join(titles) if titles else "-",
-                "notes": " | ".join(notes) if notes else "",
+                "title": joined_titles if joined_titles else "-",
+                "title_raw": joined_titles,
+                "notes": joined_notes,
+                "notes_raw": joined_notes,
             }
 
         if is_two_phase:

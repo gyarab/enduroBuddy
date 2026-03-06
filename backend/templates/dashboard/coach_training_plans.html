@@ -60,7 +60,7 @@
           <h4 class="mb-0">{% if CURRENT_LANGUAGE == "cs" %}Dashboard atleta{% else %}Athlete dashboard{% endif %}</h4>
           <h4 class="mb-0 text-muted">- {{ selected_athlete_name }}</h4>
         </div>
-        {% include "dashboard/_month_cards.html" with month_switcher_embedded=True month_state_key=selected_athlete.id %}
+        {% include "dashboard/_month_cards.html" with month_switcher_embedded=True month_state_key=selected_athlete.id coach_editable=True coach_plan_update_url=coach_plan_update_url %}
       {% else %}
         <div class="alert alert-info py-2">
           {% if CURRENT_LANGUAGE == "cs" %}Vyber sv&#283;&#345;ence ze seznamu vlevo.{% else %}Choose an athlete from the left list.{% endif %}
@@ -104,9 +104,11 @@
   </div>
 </div>
 
-<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}?v=3">
 <script>
   document.body.classList.add("eb-coach-page");
 </script>
-<script src="{% static 'js/dashboard.js' %}?v=2"></script>
+<script src="{% static 'js/dashboard.js' %}?v=9"></script>
 {% endblock %}
+
+
