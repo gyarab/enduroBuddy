@@ -22,22 +22,42 @@ from .month_cards import resolve_week_for_day
 GARMIN_RANGE_OPTIONS = {"today", "yesterday", "this_week", "last_week", "last_30_days", "all"}
 
 
+def _enable_two_phase_for_day(day_items: list[PlannedTraining]) -> None:
+    updates = []
+    for item in day_items:
+        if not item.is_two_phase_day:
+            item.is_two_phase_day = True
+            updates.append(item)
+    if updates:
+        PlannedTraining.objects.bulk_update(updates, ["is_two_phase_day"])
+
+
 def _resolve_planned_training(user, run_day: date, fallback_title: str) -> PlannedTraining:
     week_obj = resolve_week_for_day(user, run_day)
     day_qs = PlannedTraining.objects.filter(week=week_obj, date=run_day).order_by("order_in_day", "id")
+    day_items = list(day_qs)
 
     available = day_qs.filter(activity__isnull=True).first()
     if available:
+        if len(day_items) >= 2:
+            _enable_two_phase_for_day(day_items)
         return available
 
-    max_order = day_qs.order_by("-order_in_day").values_list("order_in_day", flat=True).first() or 0
-    return PlannedTraining.objects.create(
+    max_order = day_items[-1].order_in_day if day_items else 0
+    created = PlannedTraining.objects.create(
         week=week_obj,
         date=run_day,
         day_label=run_day.strftime("%a"),
         title=fallback_title or "Imported activity",
         order_in_day=max_order + 1,
+        is_two_phase_day=len(day_items) >= 1,
     )
+    if len(day_items) == 1:
+        first = day_items[0]
+        if not first.is_two_phase_day:
+            first.is_two_phase_day = True
+            first.save(update_fields=["is_two_phase_day"])
+    return created
 
 
 def import_fit_bytes_for_user(*, user, fit_bytes: bytes, original_name: str) -> bool:

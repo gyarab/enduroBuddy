@@ -224,6 +224,20 @@ class CoachTrainingPlansTests(TestCase):
         planned.refresh_from_db()
         self.assertEqual(planned.notes, "Keep HR under threshold.")
 
+    def test_inline_title_update_stores_planned_distance_from_title(self):
+        planned = PlannedTraining.objects.filter(week__training_month__athlete=self.athlete).first()
+        self.assertIsNotNone(planned)
+
+        self.client.login(username="coach", password="coach")
+        resp = self.client.post(
+            reverse("coach_update_planned_training"),
+            data=json.dumps({"planned_id": planned.id, "field": "title", "value": "Easy run 11,7 km"}),
+            content_type="application/json",
+        )
+        self.assertEqual(resp.status_code, 200)
+        planned.refresh_from_db()
+        self.assertEqual(str(planned.planned_distance_km), "11.70")
+
     def test_coach_can_inline_update_own_planned_training(self):
         own_week = _resolve_week_for_day(self.coach, date(2026, 3, 8))
         own_planned = PlannedTraining.objects.create(
@@ -378,6 +392,27 @@ class CoachTrainingPlansTests(TestCase):
         planned.refresh_from_db()
         self.assertEqual(planned.title, "Own edit")
 
+    def test_athlete_can_add_second_phase_for_own_day(self):
+        planned = PlannedTraining.objects.filter(week__training_month__athlete=self.athlete).first()
+        self.assertIsNotNone(planned)
+
+        self.client.login(username="athlete", password="athlete")
+        resp = self.client.post(
+            reverse("athlete_add_second_phase_training"),
+            data=json.dumps({"planned_id": planned.id}),
+            content_type="application/json",
+        )
+        self.assertEqual(resp.status_code, 200)
+        planned.refresh_from_db()
+        self.assertTrue(planned.is_two_phase_day)
+
+        day_items = list(
+            PlannedTraining.objects.filter(week=planned.week, date=planned.date).order_by("order_in_day", "id")
+        )
+        self.assertEqual(len(day_items), 2)
+        self.assertTrue(all(item.is_two_phase_day for item in day_items))
+        self.assertEqual(day_items[1].order_in_day, 2)
+
     def test_athlete_cannot_inline_update_foreign_planned_training(self):
         foreign_week = _resolve_week_for_day(self.athlete2, date(2026, 3, 7))
         foreign = PlannedTraining.objects.create(
@@ -395,6 +430,127 @@ class CoachTrainingPlansTests(TestCase):
             content_type="application/json",
         )
         self.assertEqual(resp.status_code, 403)
+
+    def test_athlete_cannot_add_second_phase_for_foreign_day(self):
+        foreign_week = _resolve_week_for_day(self.athlete2, date(2026, 3, 7))
+        foreign = PlannedTraining.objects.create(
+            week=foreign_week,
+            date=date(2026, 3, 7),
+            day_label="Sat",
+            title="Foreign",
+            order_in_day=1,
+        )
+
+        self.client.login(username="athlete", password="athlete")
+        resp = self.client.post(
+            reverse("athlete_add_second_phase_training"),
+            data=json.dumps({"planned_id": foreign.id}),
+            content_type="application/json",
+        )
+        self.assertEqual(resp.status_code, 403)
+
+    def test_coach_can_add_second_phase_for_accessible_athlete(self):
+        planned = PlannedTraining.objects.filter(week__training_month__athlete=self.athlete).first()
+        self.assertIsNotNone(planned)
+        self.client.login(username="coach", password="coach")
+
+        resp = self.client.post(
+            reverse("coach_add_second_phase_training"),
+            data=json.dumps({"planned_id": planned.id}),
+            content_type="application/json",
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(PlannedTraining.objects.filter(week=planned.week, date=planned.date).count(), 2)
+
+    def test_coach_cannot_add_second_phase_for_inaccessible_athlete(self):
+        week = _resolve_week_for_day(self.athlete2, date(2026, 3, 9))
+        planned = PlannedTraining.objects.create(
+            week=week,
+            date=date(2026, 3, 9),
+            day_label="Mon",
+            title="Hard day",
+            order_in_day=1,
+        )
+        self.client.login(username="coach", password="coach")
+
+        resp = self.client.post(
+            reverse("coach_add_second_phase_training"),
+            data=json.dumps({"planned_id": planned.id}),
+            content_type="application/json",
+        )
+        self.assertEqual(resp.status_code, 403)
+
+    def test_add_second_phase_rejects_duplicate_second_phase(self):
+        planned = PlannedTraining.objects.filter(week__training_month__athlete=self.athlete).first()
+        self.assertIsNotNone(planned)
+        self.client.login(username="athlete", password="athlete")
+
+        first = self.client.post(
+            reverse("athlete_add_second_phase_training"),
+            data=json.dumps({"planned_id": planned.id}),
+            content_type="application/json",
+        )
+        second = self.client.post(
+            reverse("athlete_add_second_phase_training"),
+            data=json.dumps({"planned_id": planned.id}),
+            content_type="application/json",
+        )
+        self.assertEqual(first.status_code, 200)
+        self.assertEqual(second.status_code, 400)
+
+    def test_athlete_can_remove_second_phase_and_bottom_row_is_deleted(self):
+        planned = PlannedTraining.objects.filter(week__training_month__athlete=self.athlete).first()
+        self.assertIsNotNone(planned)
+        self.client.login(username="athlete", password="athlete")
+        create = self.client.post(
+            reverse("athlete_add_second_phase_training"),
+            data=json.dumps({"planned_id": planned.id}),
+            content_type="application/json",
+        )
+        self.assertEqual(create.status_code, 200)
+        second_id = create.json()["second_phase_planned_id"]
+
+        remove = self.client.post(
+            reverse("athlete_remove_second_phase_training"),
+            data=json.dumps({"planned_id": planned.id}),
+            content_type="application/json",
+        )
+        self.assertEqual(remove.status_code, 200)
+        self.assertEqual(remove.json()["removed_planned_id"], second_id)
+        self.assertFalse(PlannedTraining.objects.filter(id=second_id).exists())
+        planned.refresh_from_db()
+        self.assertFalse(planned.is_two_phase_day)
+        self.assertEqual(planned.order_in_day, 1)
+
+    def test_remove_second_phase_requires_existing_two_phase_day(self):
+        planned = PlannedTraining.objects.filter(week__training_month__athlete=self.athlete).first()
+        self.assertIsNotNone(planned)
+        self.client.login(username="athlete", password="athlete")
+        resp = self.client.post(
+            reverse("athlete_remove_second_phase_training"),
+            data=json.dumps({"planned_id": planned.id}),
+            content_type="application/json",
+        )
+        self.assertEqual(resp.status_code, 400)
+
+    def test_coach_can_remove_second_phase_for_accessible_athlete(self):
+        planned = PlannedTraining.objects.filter(week__training_month__athlete=self.athlete).first()
+        self.assertIsNotNone(planned)
+        self.client.login(username="coach", password="coach")
+        create = self.client.post(
+            reverse("coach_add_second_phase_training"),
+            data=json.dumps({"planned_id": planned.id}),
+            content_type="application/json",
+        )
+        self.assertEqual(create.status_code, 200)
+
+        remove = self.client.post(
+            reverse("coach_remove_second_phase_training"),
+            data=json.dumps({"planned_id": planned.id}),
+            content_type="application/json",
+        )
+        self.assertEqual(remove.status_code, 200)
+        self.assertEqual(PlannedTraining.objects.filter(week=planned.week, date=planned.date).count(), 1)
 
     def test_coach_can_inline_update_completed_training(self):
         planned = PlannedTraining.objects.filter(week__training_month__athlete=self.athlete).first()

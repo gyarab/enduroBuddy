@@ -3,6 +3,7 @@ from __future__ import annotations
 import secrets
 from datetime import timedelta
 
+from django.db import transaction
 from django.utils import timezone
 
 from accounts.models import CoachAthlete, Profile, Role, TrainingGroup, TrainingGroupAthlete, TrainingGroupInvite
@@ -96,6 +97,72 @@ def _resolve_coach_from_code(raw_code: str):
         return None
     profile = Profile.objects.select_related("user").filter(role=Role.COACH, coach_join_code=normalized).first()
     return profile.user if profile else None
+
+
+def _create_second_phase_for_planned(*, planned: PlannedTraining) -> PlannedTraining:
+    if planned.date is None:
+        raise ValueError("Cannot create a second phase for undated training.")
+
+    with transaction.atomic():
+        day_items = list(
+            PlannedTraining.objects.select_for_update()
+            .filter(week=planned.week, date=planned.date)
+            .order_by("order_in_day", "id")
+        )
+        if not day_items:
+            raise ValueError("Planned training day not found.")
+        if len(day_items) > 1:
+            raise ValueError("Second phase already exists for this day.")
+
+        source = day_items[0]
+        if source.is_two_phase_day:
+            raise ValueError("Second phase already exists for this day.")
+
+        source.is_two_phase_day = True
+        source.save(update_fields=["is_two_phase_day"])
+
+        return PlannedTraining.objects.create(
+            week=source.week,
+            date=source.date,
+            day_label=source.day_label,
+            title="",
+            notes="",
+            order_in_day=int(source.order_in_day) + 1,
+            is_two_phase_day=True,
+        )
+
+
+def _remove_second_phase_for_planned(*, planned: PlannedTraining) -> int:
+    if planned.date is None:
+        raise ValueError("Cannot remove a second phase for undated training.")
+
+    with transaction.atomic():
+        day_items = list(
+            PlannedTraining.objects.select_for_update()
+            .filter(week=planned.week, date=planned.date)
+            .order_by("order_in_day", "id")
+        )
+        if len(day_items) < 2:
+            raise ValueError("Second phase does not exist for this day.")
+
+        removed = day_items[-1]
+        remaining = day_items[:-1]
+        removed_id = removed.id
+        removed.delete()
+
+        if len(remaining) == 1:
+            first = remaining[0]
+            changed_fields = []
+            if first.is_two_phase_day:
+                first.is_two_phase_day = False
+                changed_fields.append("is_two_phase_day")
+            if first.order_in_day != 1:
+                first.order_in_day = 1
+                changed_fields.append("order_in_day")
+            if changed_fields:
+                first.save(update_fields=changed_fields)
+
+        return removed_id
 
 def _update_completed_training_for_planned(*, planned: PlannedTraining, field: str, value):
     completed, _ = CompletedTraining.objects.get_or_create(planned=planned)

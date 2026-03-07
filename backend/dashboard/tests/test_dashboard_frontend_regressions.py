@@ -50,6 +50,8 @@ class DashboardFrontendRegressionTests(SimpleTestCase):
         self.assertIn('event.key === "ArrowRight"', js)
         self.assertIn('event.key === "z" || event.key === "Z"', js)
         self.assertIn('event.key === "y" || event.key === "Y"', js)
+        self.assertIn('isCtrlOrMeta && event.key === "Enter"', js)
+        self.assertIn('isCtrlOrMeta && event.shiftKey && event.key === "Enter"', js)
         self.assertIn("clearSelectedCellsIfAny()", js)
 
     def test_js_contains_column_width_equalization_for_month(self):
@@ -116,5 +118,8 @@ class DashboardFrontendRegressionTests(SimpleTestCase):
     def test_month_cards_template_contains_planned_footer_row_for_alignment(self):
         month_cards_html = MONTH_CARDS_TEMPLATE_PATH.read_text(encoding="utf-8")
         self.assertIn('tfoot class="table-light eb-planned-week-footer"', month_cards_html)
+        self.assertIn("eb-planned-week-total-km", month_cards_html)
         self.assertIn('data-completed-inline-editable="1"', month_cards_html)
+        self.assertIn('data-add-phase-url="{{ add_phase_url }}"', month_cards_html)
+        self.assertIn('data-remove-phase-url="{{ remove_phase_url }}"', month_cards_html)
         self.assertIn("eb-completed-inline-edit", month_cards_html)

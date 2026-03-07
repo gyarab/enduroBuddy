@@ -26,6 +26,8 @@
 
     function initCompletedInlineEditing(widget, scheduleEqualize) {
       const updateUrl = widget.getAttribute("data-completed-update-url");
+      const addPhaseUrl = widget.getAttribute("data-add-phase-url");
+      const removePhaseUrl = widget.getAttribute("data-remove-phase-url");
       if (!updateUrl) return;
 
       const csrfToken = getCsrfToken();
@@ -46,6 +48,147 @@
         },
       });
       const monthTableCache = new WeakMap();
+
+      async function addSecondPhase(node) {
+        if (!addPhaseUrl) return false;
+        if (node.dataset.addingPhase === "1") return false;
+        const trainingId = Number(node.getAttribute("data-training-id"));
+        if (!trainingId) return false;
+
+        const sourceCompletedRow = node.closest("tr");
+        const weekRow = sourceCompletedRow ? sourceCompletedRow.closest(".eb-week-row") : null;
+        if (!sourceCompletedRow || !weekRow) return false;
+
+        const plannedBody = weekRow.querySelector(".eb-col-planned tbody");
+        const completedBody = weekRow.querySelector(".eb-col-completed tbody");
+        if (!plannedBody || !completedBody) return false;
+
+        node.dataset.addingPhase = "1";
+        node.classList.add("is-saving");
+        try {
+          const payload = await postJson(
+            addPhaseUrl,
+            {
+              planned_id: trainingId,
+            },
+            csrfToken
+          );
+          if (!payload || !payload.ok || !payload.second_phase_planned_id) {
+            throw new Error((payload && payload.error) || "Add second phase failed.");
+          }
+          const newPlannedId = Number(payload.second_phase_planned_id);
+          if (!newPlannedId) throw new Error("Invalid second phase id.");
+
+          const completedRows = Array.from(completedBody.querySelectorAll("tr"));
+          const rowIndex = completedRows.indexOf(sourceCompletedRow);
+          if (rowIndex === -1) return false;
+
+          const plannedRows = Array.from(plannedBody.querySelectorAll("tr"));
+          const anchorPlannedRow = plannedRows[rowIndex] || null;
+          const newPlannedRow = document.createElement("tr");
+          newPlannedRow.innerHTML = `
+            <td class="eb-planned-date-col"></td>
+            <td class="eb-planned-day-col"></td>
+            <td class="eb-planned-training-col"><div class="eb-inline-edit" contenteditable="true" data-training-id="${newPlannedId}" data-field="title"></div></td>
+            <td class="eb-planned-notes-col"><div class="eb-inline-edit" contenteditable="true" data-training-id="${newPlannedId}" data-field="notes"></div></td>
+          `;
+          if (anchorPlannedRow) anchorPlannedRow.insertAdjacentElement("afterend", newPlannedRow);
+          else plannedBody.appendChild(newPlannedRow);
+
+          const newCompletedRow = document.createElement("tr");
+          newCompletedRow.innerHTML = `
+            <td><div class="eb-completed-inline-edit" contenteditable="true" data-training-id="${newPlannedId}" data-field="km">-</div></td>
+            <td><div class="eb-completed-inline-edit" contenteditable="true" data-training-id="${newPlannedId}" data-field="min">-</div></td>
+            <td><div class="eb-completed-inline-edit" contenteditable="true" data-training-id="${newPlannedId}" data-field="third">-</div></td>
+            <td><div class="eb-completed-inline-edit" contenteditable="true" data-training-id="${newPlannedId}" data-field="avg_hr">-</div></td>
+            <td><div class="eb-completed-inline-edit" contenteditable="true" data-training-id="${newPlannedId}" data-field="max_hr">-</div></td>
+          `;
+          sourceCompletedRow.insertAdjacentElement("afterend", newCompletedRow);
+
+          const month = node.closest(".month-container");
+          if (month) {
+            monthTableCache.delete(month);
+            widget.dispatchEvent(new CustomEvent("eb:rows-changed", { detail: { month } }));
+          }
+          scheduleEqualize(widget, { dirty: true });
+
+          const field = node.getAttribute("data-field") || "km";
+          const nextNode = newCompletedRow.querySelector(`.eb-completed-inline-edit[data-field="${field}"]`);
+          if (nextNode) {
+            nextNode.focus();
+            placeCaretToEnd(nextNode);
+          }
+          return true;
+        } catch (err) {
+          console.error(err);
+          node.classList.add("is-error");
+          return false;
+        } finally {
+          node.dataset.addingPhase = "0";
+          node.classList.remove("is-saving");
+        }
+      }
+
+      async function removeSecondPhase(node) {
+        if (!removePhaseUrl) return false;
+        if (node.dataset.removingPhase === "1") return false;
+        const trainingId = Number(node.getAttribute("data-training-id"));
+        if (!trainingId) return false;
+
+        const weekRow = node.closest(".eb-week-row");
+        if (!weekRow) return false;
+        const plannedBody = weekRow.querySelector(".eb-col-planned tbody");
+        const completedBody = weekRow.querySelector(".eb-col-completed tbody");
+        if (!plannedBody || !completedBody) return false;
+
+        node.dataset.removingPhase = "1";
+        node.classList.add("is-saving");
+        try {
+          const payload = await postJson(
+            removePhaseUrl,
+            {
+              planned_id: trainingId,
+            },
+            csrfToken
+          );
+          if (!payload || !payload.ok || !payload.removed_planned_id) {
+            throw new Error((payload && payload.error) || "Remove second phase failed.");
+          }
+          const removedId = Number(payload.removed_planned_id);
+          if (!removedId) throw new Error("Invalid removed phase id.");
+
+          const completedRemovedNode = completedBody.querySelector(`.eb-completed-inline-edit[data-training-id="${removedId}"]`);
+          const completedRemovedRow = completedRemovedNode ? completedRemovedNode.closest("tr") : null;
+          if (completedRemovedRow) completedRemovedRow.remove();
+
+          const plannedRemovedNode = plannedBody.querySelector(`.eb-inline-edit[data-training-id="${removedId}"]`);
+          const plannedRemovedRow = plannedRemovedNode ? plannedRemovedNode.closest("tr") : null;
+          if (plannedRemovedRow) plannedRemovedRow.remove();
+
+          const month = node.closest(".month-container");
+          if (month) {
+            monthTableCache.delete(month);
+            widget.dispatchEvent(new CustomEvent("eb:rows-changed", { detail: { month } }));
+          }
+          scheduleEqualize(widget, { dirty: true });
+
+          const field = node.getAttribute("data-field") || "km";
+          const fallback = completedBody.querySelector(`.eb-completed-inline-edit[data-training-id="${trainingId}"][data-field="${field}"]`)
+            || completedBody.querySelector(`.eb-completed-inline-edit[data-training-id="${trainingId}"]`);
+          if (fallback) {
+            fallback.focus();
+            placeCaretToEnd(fallback);
+          }
+          return true;
+        } catch (err) {
+          console.error(err);
+          node.classList.add("is-error");
+          return false;
+        } finally {
+          node.dataset.removingPhase = "0";
+          node.classList.remove("is-saving");
+        }
+      }
 
       async function saveCompletedField(node) {
         if (node.dataset.saving === "1") {
@@ -307,6 +450,20 @@
         const node = getNodeFromEvent(event);
         if (!node) return;
         const isCtrlOrMeta = event.ctrlKey || event.metaKey;
+        if (isCtrlOrMeta && event.shiftKey && event.key === "Enter") {
+          event.preventDefault();
+          clearInlineSelection();
+          saveCompletedField(node);
+          removeSecondPhase(node);
+          return;
+        }
+        if (isCtrlOrMeta && event.key === "Enter") {
+          event.preventDefault();
+          clearInlineSelection();
+          saveCompletedField(node);
+          addSecondPhase(node);
+          return;
+        }
         if (isCtrlOrMeta && (event.key === "z" || event.key === "Z")) {
           event.preventDefault();
           if (event.shiftKey) history.redo();
@@ -426,6 +583,12 @@
           inputTimers.delete(node);
         }
         saveCompletedField(node);
+      });
+
+      widget.addEventListener("eb:rows-changed", (event) => {
+        const month = event && event.detail ? event.detail.month : null;
+        if (!month) return;
+        monthTableCache.delete(month);
       });
     }
 
