@@ -24,13 +24,6 @@
           <div class="d-flex align-items-center justify-content-between mb-2">
             <h5 class="mb-0">{% if CURRENT_LANGUAGE == "cs" %}Sv&#283;&#345;enci{% else %}Athletes{% endif %}</h5>
             <div class="d-flex align-items-center gap-1">
-              <form method="post" class="m-0">
-                {% csrf_token %}
-                <input type="hidden" name="action" value="bulk_add_next_month">
-                <button class="btn btn-sm btn-outline-primary" type="submit" title="{% if CURRENT_LANGUAGE == 'cs' %}P&#345;idat n&aacute;sleduj&iacute;c&iacute; m&#283;s&iacute;c a t&yacute;dny v&#353;em sv&#283;&#345;enc&#367;m{% else %}Add next month and weeks for all athletes{% endif %}">
-                  M+
-                </button>
-              </form>
               <button class="btn btn-sm btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#coachInviteModal" title="{% if CURRENT_LANGUAGE == 'cs' %}Vytvo&#345;it pozv&aacute;nku{% else %}Create invite{% endif %}">
                 +
               </button>
@@ -43,10 +36,12 @@
             data-reorder-url="{{ coach_athlete_reorder_url }}"
           >
             {% for athlete in athletes %}
-              <div class="eb-athlete-item" draggable="true" data-athlete-id="{{ athlete.id }}">
+              <div class="eb-athlete-item" {% if not athlete.is_self_plan %}draggable="true" data-reorderable="1"{% else %}data-reorderable="0"{% endif %} data-athlete-id="{{ athlete.id }}">
                 <a href="{% url 'coach_training_plans' %}?athlete={{ athlete.id }}" draggable="false" class="btn btn-sm text-start {% if selected_athlete and selected_athlete.id == athlete.id %}btn-dark{% else %}btn-outline-dark{% endif %}">
                   <span class="eb-athlete-row-label">
-                    <span class="eb-athlete-drag-handle" draggable="false" title="{% if CURRENT_LANGUAGE == 'cs' %}Přesunout{% else %}Reorder{% endif %}">::</span>
+                    {% if not athlete.is_self_plan %}
+                      <span class="eb-athlete-drag-handle" draggable="false" title="{% if CURRENT_LANGUAGE == 'cs' %}Přesunout{% else %}Reorder{% endif %}">::</span>
+                    {% endif %}
                     <span class="eb-athlete-name">
                       {% if athlete.first_name or athlete.last_name %}
                         {{ athlete.first_name }} {{ athlete.last_name }}
@@ -74,20 +69,22 @@
       {% if selected_athlete %}
         <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
           <h4 class="mb-0">{% if CURRENT_LANGUAGE == "cs" %}Tr&eacute;ninkov&yacute; pl&aacute;n{% else %}Training plan{% endif %} - {{ selected_athlete_name }}</h4>
-          <div class="d-flex align-items-center gap-2">
-            <label class="small text-muted mb-0" for="coachAthleteFocusInput">{% if CURRENT_LANGUAGE == "cs" %}Zam&#283;&#345;en&iacute;:{% else %}Focus:{% endif %}</label>
-            <input
-              id="coachAthleteFocusInput"
-              class="form-control form-control-sm eb-athlete-focus-input"
-              type="text"
-              value="{{ selected_athlete_focus }}"
-              data-athlete-id="{{ selected_athlete.id }}"
-              data-focus-update-url="{{ coach_athlete_focus_update_url }}"
-              maxlength="30"
-            >
-          </div>
+          {% if not selected_athlete_is_self %}
+            <div class="d-flex align-items-center gap-2">
+              <label class="small text-muted mb-0" for="coachAthleteFocusInput">{% if CURRENT_LANGUAGE == "cs" %}Zam&#283;&#345;en&iacute;:{% else %}Focus:{% endif %}</label>
+              <input
+                id="coachAthleteFocusInput"
+                class="form-control form-control-sm eb-athlete-focus-input"
+                type="text"
+                value="{{ selected_athlete_focus }}"
+                data-athlete-id="{{ selected_athlete.id }}"
+                data-focus-update-url="{{ coach_athlete_focus_update_url }}"
+                maxlength="30"
+              >
+            </div>
+          {% endif %}
         </div>
-        {% include "dashboard/_month_cards.html" with month_switcher_embedded=True month_state_key=selected_athlete.id coach_editable=True coach_plan_update_url=coach_plan_update_url %}
+        {% include "dashboard/_month_cards.html" with month_switcher_embedded=True month_state_key=selected_athlete.id plan_editable=plan_editable plan_update_url=plan_update_url completed_editable=completed_editable completed_update_url=completed_update_url add_month_enabled=add_month_enabled add_month_action=add_month_action add_month_athlete_id=add_month_athlete_id %}
       {% else %}
         <div class="alert alert-info py-2">
           {% if CURRENT_LANGUAGE == "cs" %}Vyber sv&#283;&#345;ence ze seznamu vlevo.{% else %}Choose an athlete from the left list.{% endif %}
@@ -131,11 +128,11 @@
   </div>
 </div>
 
-<link rel="stylesheet" href="{% static 'css/dashboard.css' %}?v=16">
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}?v=17">
 <script>
   document.body.classList.add("eb-coach-page");
 </script>
-<script src="{% static 'js/dashboard.js' %}?v=24"></script>
+<script src="{% static 'js/dashboard.js' %}?v=27"></script>
 {% endblock %}
 
 

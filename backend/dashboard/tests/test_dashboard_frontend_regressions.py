@@ -80,3 +80,5 @@ class DashboardFrontendRegressionTests(SimpleTestCase):
     def test_month_cards_template_contains_planned_footer_row_for_alignment(self):
         month_cards_html = MONTH_CARDS_TEMPLATE_PATH.read_text(encoding="utf-8")
         self.assertIn('tfoot class="table-light eb-planned-week-footer"', month_cards_html)
+        self.assertIn('data-completed-inline-editable="1"', month_cards_html)
+        self.assertIn("eb-completed-inline-edit", month_cards_html)
