@@ -54,6 +54,27 @@
       col.style.flexBasis = "";
     });
 
+    month.style.removeProperty("--eb-planned-training-col-width");
+    month.style.removeProperty("--eb-planned-notes-col-width");
+
+    const trainingNodes = Array.from(
+      month.querySelectorAll(".eb-col-planned th.eb-planned-training-col, .eb-col-planned td.eb-planned-training-col")
+    );
+    const notesNodes = Array.from(
+      month.querySelectorAll(".eb-col-planned th.eb-planned-notes-col, .eb-col-planned td.eb-planned-notes-col")
+    );
+
+    const measureNodesMaxWidth = (nodes, minWidth) => {
+      if (!nodes.length) return minWidth;
+      const measured = nodes.map((node) => Math.max(node.scrollWidth, node.offsetWidth));
+      return Math.max(minWidth, ...measured);
+    };
+
+    const trainingWidth = Math.ceil(measureNodesMaxWidth(trainingNodes, 320));
+    const notesWidth = Math.ceil(measureNodesMaxWidth(notesNodes, 180));
+    month.style.setProperty("--eb-planned-training-col-width", `${trainingWidth}px`);
+    month.style.setProperty("--eb-planned-notes-col-width", `${notesWidth}px`);
+
     const plannedWidth = Math.max(...plannedCols.map((col) => Math.max(col.scrollWidth, col.offsetWidth)));
     const completedWidth = Math.max(...completedCols.map((col) => Math.max(col.scrollWidth, col.offsetWidth)));
 
@@ -68,6 +89,45 @@
       col.style.width = px;
       col.style.minWidth = px;
       col.style.flexBasis = px;
+    });
+
+    // Keep planned/completed table rows visually aligned within each week.
+    const weekRows = Array.from(month.querySelectorAll(".eb-week-row"));
+    weekRows.forEach((weekRow) => {
+      const plannedBodyRows = Array.from(weekRow.querySelectorAll(".eb-col-planned tbody tr"));
+      const completedBodyRows = Array.from(weekRow.querySelectorAll(".eb-col-completed tbody tr"));
+      plannedBodyRows.forEach((row) => {
+        row.style.height = "";
+      });
+      completedBodyRows.forEach((row) => {
+        row.style.height = "";
+      });
+
+      const bodyRowCount = Math.max(plannedBodyRows.length, completedBodyRows.length);
+      for (let i = 0; i < bodyRowCount; i += 1) {
+        const plannedRow = plannedBodyRows[i] || null;
+        const completedRow = completedBodyRows[i] || null;
+        const plannedHeight = plannedRow ? Math.max(plannedRow.offsetHeight, plannedRow.scrollHeight) : 0;
+        const completedHeight = completedRow ? Math.max(completedRow.offsetHeight, completedRow.scrollHeight) : 0;
+        const targetHeight = Math.max(plannedHeight, completedHeight);
+        if (!targetHeight) continue;
+        if (plannedRow) plannedRow.style.height = `${targetHeight}px`;
+        if (completedRow) completedRow.style.height = `${targetHeight}px`;
+      }
+
+      const plannedFooterRow = weekRow.querySelector(".eb-col-planned tfoot tr");
+      const completedFooterRow = weekRow.querySelector(".eb-col-completed tfoot tr");
+      if (plannedFooterRow && completedFooterRow) {
+        plannedFooterRow.style.height = "";
+        completedFooterRow.style.height = "";
+        const plannedFooterHeight = Math.max(plannedFooterRow.offsetHeight, plannedFooterRow.scrollHeight);
+        const completedFooterHeight = Math.max(completedFooterRow.offsetHeight, completedFooterRow.scrollHeight);
+        const targetFooterHeight = Math.max(plannedFooterHeight, completedFooterHeight);
+        if (targetFooterHeight) {
+          plannedFooterRow.style.height = `${targetFooterHeight}px`;
+          completedFooterRow.style.height = `${targetFooterHeight}px`;
+        }
+      }
     });
   }
 
@@ -218,6 +278,10 @@
 
     const csrfToken = getCsrfToken();
     const editableNodes = Array.from(widget.querySelectorAll(".eb-inline-edit[contenteditable='true']"));
+    let inlineSelection = null;
+    const undoStack = [];
+    const redoStack = [];
+    const historyLimit = 100;
 
     function placeCaretToEnd(el) {
       const selection = window.getSelection();
@@ -269,10 +333,236 @@
       return true;
     }
 
+    function getMonthGrid(month) {
+      if (!month) return { rows: [] };
+      const titleNodes = Array.from(month.querySelectorAll(".eb-inline-edit[data-field='title'][contenteditable='true']"));
+      const rows = titleNodes.map((titleNode) => {
+        const row = titleNode.closest("tr");
+        const notesNode = row ? row.querySelector(".eb-inline-edit[data-field='notes'][contenteditable='true']") : null;
+        return { title: titleNode, notes: notesNode };
+      });
+      return { rows };
+    }
+
+    function getNodePosition(node) {
+      const month = node.closest(".month-container");
+      const grid = getMonthGrid(month);
+      const rowIndex = grid.rows.findIndex((row) => row.title === node || row.notes === node);
+      if (rowIndex === -1) return null;
+      const colIndex = grid.rows[rowIndex].notes === node ? 1 : 0;
+      return { month, rowIndex, colIndex };
+    }
+
+    function getNodeAt(month, rowIndex, colIndex) {
+      const grid = getMonthGrid(month);
+      if (rowIndex < 0 || rowIndex >= grid.rows.length) return null;
+      if (colIndex < 0 || colIndex > 1) return null;
+      const row = grid.rows[rowIndex];
+      return colIndex === 0 ? row.title : row.notes;
+    }
+
+    function clearInlineSelection() {
+      const selected = widget.querySelectorAll(".eb-inline-edit.is-selected, .eb-inline-edit.is-selection-anchor");
+      selected.forEach((el) => {
+        el.classList.remove("is-selected");
+        el.classList.remove("is-selection-anchor");
+      });
+      inlineSelection = null;
+    }
+
+    function updateInlineSelection(anchorNode, focusNode) {
+      const anchorPos = getNodePosition(anchorNode);
+      const focusPos = getNodePosition(focusNode);
+      if (!anchorPos || !focusPos) return;
+      if (anchorPos.month !== focusPos.month) return;
+
+      clearInlineSelection();
+
+      const rowStart = Math.min(anchorPos.rowIndex, focusPos.rowIndex);
+      const rowEnd = Math.max(anchorPos.rowIndex, focusPos.rowIndex);
+      const colStart = Math.min(anchorPos.colIndex, focusPos.colIndex);
+      const colEnd = Math.max(anchorPos.colIndex, focusPos.colIndex);
+
+      const cells = [];
+      for (let row = rowStart; row <= rowEnd; row += 1) {
+        for (let col = colStart; col <= colEnd; col += 1) {
+          const cell = getNodeAt(anchorPos.month, row, col);
+          if (cell) {
+            cell.classList.add("is-selected");
+            cells.push(cell);
+          }
+        }
+      }
+
+      anchorNode.classList.add("is-selection-anchor");
+      inlineSelection = {
+        month: anchorPos.month,
+        anchorNode,
+        focusNode,
+        rowStart,
+        rowEnd,
+        colStart,
+        colEnd,
+        cells,
+      };
+    }
+
+    function moveByArrow(node, key) {
+      const pos = getNodePosition(node);
+      if (!pos) return null;
+
+      let nextRow = pos.rowIndex;
+      let nextCol = pos.colIndex;
+      if (key === "ArrowUp") nextRow -= 1;
+      if (key === "ArrowDown") nextRow += 1;
+      if (key === "ArrowLeft") nextCol -= 1;
+      if (key === "ArrowRight") nextCol += 1;
+
+      const target = getNodeAt(pos.month, nextRow, nextCol);
+      return target || null;
+    }
+
+    function hasActiveSelectionForNode(node) {
+      if (!inlineSelection || !inlineSelection.cells || inlineSelection.cells.length < 2) return false;
+      return inlineSelection.cells.includes(node);
+    }
+
+    function getSelectionAsTsv() {
+      if (!inlineSelection || !inlineSelection.cells || !inlineSelection.cells.length) return "";
+      const lines = [];
+      for (let row = inlineSelection.rowStart; row <= inlineSelection.rowEnd; row += 1) {
+        const cols = [];
+        for (let col = inlineSelection.colStart; col <= inlineSelection.colEnd; col += 1) {
+          const node = getNodeAt(inlineSelection.month, row, col);
+          cols.push(node ? (node.textContent || "") : "");
+        }
+        lines.push(cols.join("\t"));
+      }
+      return lines.join("\n");
+    }
+
+    function applyPastedMatrix(startNode, text) {
+      const startPos = getNodePosition(startNode);
+      if (!startPos) return [];
+
+      const normalized = String(text || "").replace(/\r/g, "");
+      const rawRows = normalized.split("\n");
+      if (rawRows.length && rawRows[rawRows.length - 1] === "") {
+        rawRows.pop();
+      }
+      if (!rawRows.length) return [];
+
+      const matrix = rawRows.map((line) => line.split("\t"));
+      const changes = [];
+      matrix.forEach((rowValues, rOffset) => {
+        rowValues.forEach((value, cOffset) => {
+          const target = getNodeAt(startPos.month, startPos.rowIndex + rOffset, startPos.colIndex + cOffset);
+          if (!target) return;
+          const before = target.textContent || "";
+          if (before === value) return;
+          target.textContent = value;
+          changes.push({ node: target, before, after: value });
+          saveInlineField(target, updateUrl, csrfToken, widget);
+        });
+      });
+      scheduleEqualize(widget);
+      return changes;
+    }
+
+    function pushHistory(changes) {
+      if (!changes || !changes.length) return;
+      undoStack.push(changes);
+      if (undoStack.length > historyLimit) {
+        undoStack.shift();
+      }
+      redoStack.length = 0;
+    }
+
+    function applyHistory(changes, direction) {
+      if (!changes || !changes.length) return;
+      changes.forEach((change) => {
+        if (!change.node) return;
+        const nextValue = direction === "undo" ? change.before : change.after;
+        change.node.textContent = nextValue;
+        saveInlineField(change.node, updateUrl, csrfToken, widget);
+      });
+      scheduleEqualize(widget);
+    }
+
+    function runUndo() {
+      const action = undoStack.pop();
+      if (!action) return;
+      applyHistory(action, "undo");
+      redoStack.push(action);
+    }
+
+    function runRedo() {
+      const action = redoStack.pop();
+      if (!action) return;
+      applyHistory(action, "redo");
+      undoStack.push(action);
+    }
+
+    function clearSelectedCellsIfAny() {
+      if (!inlineSelection || !inlineSelection.cells || inlineSelection.cells.length < 2) return false;
+      const changes = [];
+      inlineSelection.cells.forEach((selectedNode) => {
+        const before = selectedNode.textContent || "";
+        if (!before) return;
+        selectedNode.textContent = "";
+        changes.push({ node: selectedNode, before, after: "" });
+        saveInlineField(selectedNode, updateUrl, csrfToken, widget);
+      });
+      pushHistory(changes);
+      clearInlineSelection();
+      scheduleEqualize(widget);
+      return true;
+    }
+
+    function focusNextEditableInRowOrder(currentNode) {
+      const month = currentNode.closest(".month-container");
+      if (!month) return false;
+      const allEditables = Array.from(month.querySelectorAll(".eb-inline-edit[contenteditable='true']"));
+      const currentIndex = allEditables.indexOf(currentNode);
+      if (currentIndex === -1 || currentIndex + 1 >= allEditables.length) return false;
+
+      const nextEditable = allEditables[currentIndex + 1];
+      nextEditable.focus();
+      placeCaretToEnd(nextEditable);
+      return true;
+    }
+
+    function focusPrevEditableInRowOrder(currentNode) {
+      const month = currentNode.closest(".month-container");
+      if (!month) return false;
+      const allEditables = Array.from(month.querySelectorAll(".eb-inline-edit[contenteditable='true']"));
+      const currentIndex = allEditables.indexOf(currentNode);
+      if (currentIndex <= 0) return false;
+
+      const prevEditable = allEditables[currentIndex - 1];
+      prevEditable.focus();
+      placeCaretToEnd(prevEditable);
+      return true;
+    }
+
     editableNodes.forEach((node) => {
       node.dataset.originalValue = node.textContent || "";
 
       node.addEventListener("copy", (event) => {
+        if (hasActiveSelectionForNode(node)) {
+          const text = getSelectionAsTsv();
+          if (event.clipboardData) {
+            event.preventDefault();
+            event.clipboardData.setData("text/plain", text);
+            return;
+          }
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            event.preventDefault();
+            navigator.clipboard.writeText(text).catch(() => {});
+            return;
+          }
+        }
+
         const text = node.textContent || "";
         if (event.clipboardData) {
           event.preventDefault();
@@ -287,16 +577,93 @@
 
       node.addEventListener("focus", () => {
         node.dataset.originalValue = node.textContent || "";
+        if (!hasActiveSelectionForNode(node)) {
+          clearInlineSelection();
+        }
+      });
+
+      node.addEventListener("paste", (event) => {
+        const text = event.clipboardData ? event.clipboardData.getData("text/plain") : "";
+        if (typeof text !== "string") return;
+        event.preventDefault();
+        const changes = applyPastedMatrix(node, text);
+        pushHistory(changes);
+        clearInlineSelection();
       });
 
       node.addEventListener("keydown", (event) => {
+        const isCtrlOrMeta = event.ctrlKey || event.metaKey;
+        if (isCtrlOrMeta && (event.key === "z" || event.key === "Z")) {
+          event.preventDefault();
+          if (event.shiftKey) {
+            runRedo();
+          } else {
+            runUndo();
+          }
+          clearInlineSelection();
+          return;
+        }
+
+        if (isCtrlOrMeta && (event.key === "y" || event.key === "Y")) {
+          event.preventDefault();
+          runRedo();
+          clearInlineSelection();
+          return;
+        }
+
+        if (event.shiftKey && (event.key === "ArrowUp" || event.key === "ArrowDown" || event.key === "ArrowLeft" || event.key === "ArrowRight")) {
+          event.preventDefault();
+          const selectionAnchor = inlineSelection && inlineSelection.anchorNode ? inlineSelection.anchorNode : node;
+          const baseFocus = inlineSelection && inlineSelection.focusNode ? inlineSelection.focusNode : node;
+          const nextFocus = moveByArrow(baseFocus, event.key);
+          if (!nextFocus) return;
+          updateInlineSelection(selectionAnchor, nextFocus);
+          nextFocus.focus();
+          placeCaretToEnd(nextFocus);
+          return;
+        }
+
         if (event.key === "Enter") {
           event.preventDefault();
+          clearInlineSelection();
           saveInlineField(node, updateUrl, csrfToken, widget);
           if (!focusNextEditableInColumn(node)) {
             node.blur();
           }
           return;
+        }
+
+        if (event.key === "Tab") {
+          event.preventDefault();
+          clearInlineSelection();
+          saveInlineField(node, updateUrl, csrfToken, widget);
+          const moved = event.shiftKey
+            ? focusPrevEditableInRowOrder(node)
+            : focusNextEditableInRowOrder(node);
+          if (!moved) {
+            node.blur();
+          }
+          return;
+        }
+
+        if (event.key === "Delete") {
+          event.preventDefault();
+          if (!clearSelectedCellsIfAny()) {
+            const before = node.textContent || "";
+            if (!before) return;
+            node.textContent = "";
+            saveInlineField(node, updateUrl, csrfToken, widget);
+            pushHistory([{ node, before, after: "" }]);
+            scheduleEqualize(widget);
+          }
+          return;
+        }
+
+        if (event.key === "Backspace") {
+          if (clearSelectedCellsIfAny()) {
+            event.preventDefault();
+            return;
+          }
         }
 
         if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) {
@@ -305,6 +672,7 @@
 
         if (event.key === "ArrowDown") {
           event.preventDefault();
+          clearInlineSelection();
           saveInlineField(node, updateUrl, csrfToken, widget);
           focusNextEditableInColumn(node);
           return;
@@ -312,6 +680,7 @@
 
         if (event.key === "ArrowUp") {
           event.preventDefault();
+          clearInlineSelection();
           saveInlineField(node, updateUrl, csrfToken, widget);
           focusPrevEditableInColumn(node);
           return;
@@ -320,6 +689,7 @@
         if (event.key === "ArrowRight") {
           if (node.getAttribute("data-field") === "title") {
             event.preventDefault();
+            clearInlineSelection();
             saveInlineField(node, updateUrl, csrfToken, widget);
             focusSiblingFieldInRow(node, "notes");
           }
@@ -329,6 +699,7 @@
         if (event.key === "ArrowLeft") {
           if (node.getAttribute("data-field") === "notes") {
             event.preventDefault();
+            clearInlineSelection();
             saveInlineField(node, updateUrl, csrfToken, widget);
             focusSiblingFieldInRow(node, "title");
           }

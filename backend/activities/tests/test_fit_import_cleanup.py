@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import tempfile
+import shutil
 from pathlib import Path
 
 from django.contrib.auth import get_user_model
@@ -34,7 +35,8 @@ class FitImportAndCleanupTests(TestCase):
             content_type="application/octet-stream",
         )
 
-        with tempfile.TemporaryDirectory() as tmp_media:
+        tmp_media = tempfile.mkdtemp()
+        try:
             with override_settings(MEDIA_ROOT=tmp_media):
                 url = reverse("admin:activities_activityfile_add")
                 resp = self.client.post(
@@ -62,6 +64,8 @@ class FitImportAndCleanupTests(TestCase):
                 # na disku nesmí zůstat žádný fit
                 media_fits = list(Path(tmp_media).rglob("*.fit"))
                 self.assertEqual(media_fits, [])
+        finally:
+            shutil.rmtree(tmp_media, ignore_errors=True)
 
     def test_easy_run_is_run_and_file_deleted(self):
         self._admin_upload_fit("Z3.fit", "RUN")

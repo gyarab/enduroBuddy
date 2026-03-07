@@ -83,14 +83,14 @@
 
 .eb-col-planned th.eb-planned-training-col,
 .eb-col-planned td.eb-planned-training-col {
-  width: 75%;
-  min-width: 320px;
+  width: var(--eb-planned-training-col-width);
+  min-width: var(--eb-planned-training-col-width);
 }
 
 .eb-col-planned th.eb-planned-notes-col,
 .eb-col-planned td.eb-planned-notes-col {
-  width: 25%;
-  min-width: 180px;
+  width: var(--eb-planned-notes-col-width);
+  min-width: var(--eb-planned-notes-col-width);
 }
 
 /* use this class if you ever want wrapping in some column */
@@ -99,7 +99,11 @@
 }
 
 /* ===== month visibility handled by JS ===== */
-.month-container { display: none; }
+.month-container {
+  --eb-planned-training-col-width: 320px;
+  --eb-planned-notes-col-width: 180px;
+  display: none;
+}
 .month-container.is-active { display: block; }
 
 /* ===== active month button ===== */
@@ -400,6 +404,16 @@ body.eb-coach-page main {
 .eb-inline-edit.is-error {
   background: #fde8e8;
   box-shadow: inset 0 0 0 1px #f59e9e;
+}
+
+.eb-inline-edit.is-selected {
+  background: #e8f1ff;
+  box-shadow: inset 0 0 0 1px #9ec5ff;
+}
+
+.eb-inline-edit.is-selection-anchor {
+  background: #dce9ff;
+  box-shadow: inset 0 0 0 2px #6ea8fe;
 }
 
 @media (max-width: 991.98px) {
