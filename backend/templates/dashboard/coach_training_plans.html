@@ -17,15 +17,30 @@
     </div>
   {% endif %}
 
-  <div class="eb-coach-shell">
+  <div class="eb-coach-shell" id="coachShell">
     <aside class="eb-coach-sidebar">
       <div class="card shadow-sm">
         <div class="card-body">
-          <div class="d-flex align-items-center justify-content-between mb-2">
+          <div class="d-flex align-items-center justify-content-between mb-3 eb-sidebar-header-row">
             <h5 class="mb-0">{% if CURRENT_LANGUAGE == "cs" %}Sv&#283;&#345;enci{% else %}Athletes{% endif %}</h5>
-            <div class="d-flex align-items-center gap-1">
-              <button class="btn btn-sm btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#coachInviteModal" title="{% if CURRENT_LANGUAGE == 'cs' %}Vytvo&#345;it pozv&aacute;nku{% else %}Create invite{% endif %}">
-                +
+            <div class="d-flex align-items-center gap-1 eb-sidebar-controls">
+              <button class="btn btn-sm btn-outline-dark eb-gear-btn" type="button" data-bs-toggle="modal" data-bs-target="#coachManageModal" title="{% if CURRENT_LANGUAGE == 'cs' %}Spr&aacute;va sv&#283;&#345;enc&#367;{% else %}Athlete settings{% endif %}">
+                <svg class="eb-gear-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                  <path d="M6.7 1.7h2.6l.3 1.4c.4.1.8.3 1.2.5l1.3-.7 1.3 1.3-.7 1.3c.2.4.4.8.5 1.2l1.4.3v2.6l-1.4.3c-.1.4-.3.8-.5 1.2l.7 1.3-1.3 1.3-1.3-.7c-.4.2-.8.4-1.2.5l-.3 1.4H6.7l-.3-1.4c-.4-.1-.8-.3-1.2-.5l-1.3.7-1.3-1.3.7-1.3c-.2-.4-.4-.8-.5-1.2L1.4 9.3V6.7l1.4-.3c.1-.4.3-.8.5-1.2l-.7-1.3 1.3-1.3 1.3.7c.4-.2.8-.4 1.2-.5l.3-1.4Z" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>
+                  <circle cx="8" cy="8" r="2.2" fill="none" stroke="currentColor" stroke-width="1.2"/>
+                </svg>
+              </button>
+              <button
+                id="coachAthletesToggleBtnSidebar"
+                type="button"
+                class="btn btn-sm btn-outline-dark eb-sidebar-collapse-btn"
+                data-athlete-sidebar-toggle="1"
+                data-title-expand="{% if CURRENT_LANGUAGE == 'cs' %}Schovat sv&#283;&#345;ence{% else %}Hide athletes{% endif %}"
+                data-title-collapse="{% if CURRENT_LANGUAGE == 'cs' %}Zobrazit sv&#283;&#345;ence{% else %}Show athletes{% endif %}"
+                aria-controls="coachShell"
+                aria-expanded="true"
+              >
+                <span aria-hidden="true">&#9776;</span>
               </button>
             </div>
           </div>
@@ -36,23 +51,23 @@
             data-reorder-url="{{ coach_athlete_reorder_url }}"
           >
             {% for athlete in athletes %}
-              <div class="eb-athlete-item" {% if not athlete.is_self_plan %}draggable="true" data-reorderable="1"{% else %}data-reorderable="0"{% endif %} data-athlete-id="{{ athlete.id }}">
-                <a href="{% url 'coach_training_plans' %}?athlete={{ athlete.id }}" draggable="false" class="btn btn-sm text-start {% if selected_athlete and selected_athlete.id == athlete.id %}btn-dark{% else %}btn-outline-dark{% endif %}">
+              {% if not athlete.is_self_plan and forloop.counter == 2 %}
+                <div class="eb-athlete-section-label">{% if CURRENT_LANGUAGE == "cs" %}Sv&#283;&#345;enci{% else %}Athletes{% endif %}</div>
+              {% endif %}
+              <div class="eb-athlete-item {% if athlete.is_self_plan %}eb-athlete-item--self{% else %}eb-athlete-item--member{% endif %}" {% if not athlete.is_self_plan %}draggable="true" data-reorderable="1"{% else %}data-reorderable="0"{% endif %} data-athlete-id="{{ athlete.id }}">
+                <a href="{% url 'coach_training_plans' %}?athlete={{ athlete.id }}" draggable="false" class="btn btn-sm text-start eb-athlete-switch-item {% if selected_athlete and selected_athlete.id == athlete.id %}btn-dark active{% else %}btn-outline-dark{% endif %}">
                   <span class="eb-athlete-row-label">
-                    {% if not athlete.is_self_plan %}
-                      <span class="eb-athlete-drag-handle" draggable="false" title="{% if CURRENT_LANGUAGE == 'cs' %}Přesunout{% else %}Reorder{% endif %}">::</span>
+                    {% if athlete.is_self_plan %}
+                      <span class="eb-athlete-self-badge">{% if CURRENT_LANGUAGE == "cs" %}M&#367;j pl&aacute;n{% else %}My plan{% endif %}</span>
                     {% endif %}
-                    <span class="eb-athlete-name">
-                      {% if athlete.first_name or athlete.last_name %}
-                        {{ athlete.first_name }} {{ athlete.last_name }}
-                      {% else %}
-                        {{ athlete.username }}
-                      {% endif %}
-                    </span>
-                    {% if athlete.coach_focus %}
-                      <span class="eb-athlete-focus" data-athlete-focus>- {{ athlete.coach_focus }}</span>
-                    {% else %}
-                      <span class="eb-athlete-focus" data-athlete-focus></span>
+                    <span
+                      class="eb-athlete-summary"
+                      data-athlete-summary
+                      data-athlete-name="{{ athlete.display_name_short|default:athlete.username }}"
+                      data-empty-focus-label="{{ athlete.sidebar_empty_focus_label|default:'' }}"
+                    >{{ athlete.sidebar_summary|default:athlete.username }}</span>
+                    {% if not athlete.is_self_plan %}
+                      <span class="eb-athlete-drag-handle" draggable="false" title="{% if CURRENT_LANGUAGE == 'cs' %}P&#345;esunout{% else %}Reorder{% endif %}">&#8801;</span>
                     {% endif %}
                   </span>
                 </a>
@@ -66,73 +81,257 @@
     </aside>
 
     <section class="eb-coach-main">
-      {% if selected_athlete %}
-        <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
-          <h4 class="mb-0">{% if CURRENT_LANGUAGE == "cs" %}Tr&eacute;ninkov&yacute; pl&aacute;n{% else %}Training plan{% endif %} - {{ selected_athlete_name }}</h4>
-          {% if not selected_athlete_is_self %}
-            <div class="d-flex align-items-center gap-2">
-              <label class="small text-muted mb-0" for="coachAthleteFocusInput">{% if CURRENT_LANGUAGE == "cs" %}Zam&#283;&#345;en&iacute;:{% else %}Focus:{% endif %}</label>
-              <input
-                id="coachAthleteFocusInput"
-                class="form-control form-control-sm eb-athlete-focus-input"
-                type="text"
-                value="{{ selected_athlete_focus }}"
-                data-athlete-id="{{ selected_athlete.id }}"
-                data-focus-update-url="{{ coach_athlete_focus_update_url }}"
-                maxlength="30"
-              >
+      <div class="d-flex align-items-center justify-content-between gap-2 mb-3 eb-coach-main-toolbar">
+        <div class="d-flex align-items-center eb-coach-main-title-row">
+          <div class="card shadow-sm eb-collapsed-summary-card eb-collapsed-only">
+            <div class="card-body py-2 px-2">
+              <div class="d-flex align-items-center justify-content-between eb-sidebar-header-row mb-0">
+                <h5 class="mb-0">{% if CURRENT_LANGUAGE == "cs" %}Sv&#283;&#345;enci{% else %}Athletes{% endif %}</h5>
+                <div class="d-flex align-items-center gap-1 eb-sidebar-controls">
+                  <button class="btn btn-sm btn-outline-dark eb-gear-btn" type="button" data-bs-toggle="modal" data-bs-target="#coachManageModal" title="{% if CURRENT_LANGUAGE == 'cs' %}Spr&aacute;va sv&#283;&#345;enc&#367;{% else %}Athlete settings{% endif %}">
+                    <svg class="eb-gear-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                      <path d="M6.7 1.7h2.6l.3 1.4c.4.1.8.3 1.2.5l1.3-.7 1.3 1.3-.7 1.3c.2.4.4.8.5 1.2l1.4.3v2.6l-1.4.3c-.1.4-.3.8-.5 1.2l.7 1.3-1.3 1.3-1.3-.7c-.4.2-.8.4-1.2.5l-.3 1.4H6.7l-.3-1.4c-.4-.1-.8-.3-1.2-.5l-1.3.7-1.3-1.3.7-1.3c-.2-.4-.4-.8-.5-1.2L1.4 9.3V6.7l1.4-.3c.1-.4.3-.8.5-1.2l-.7-1.3 1.3-1.3 1.3.7c.4-.2.8-.4 1.2-.5l.3-1.4Z" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>
+                      <circle cx="8" cy="8" r="2.2" fill="none" stroke="currentColor" stroke-width="1.2"/>
+                    </svg>
+                  </button>
+                  <button
+                    id="coachAthletesToggleBtnMain"
+                    type="button"
+                    class="btn btn-sm btn-outline-dark eb-sidebar-collapse-btn"
+                    data-athlete-sidebar-toggle="1"
+                    data-title-expand="{% if CURRENT_LANGUAGE == 'cs' %}Schovat sv&#283;&#345;ence{% else %}Hide athletes{% endif %}"
+                    data-title-collapse="{% if CURRENT_LANGUAGE == 'cs' %}Zobrazit sv&#283;&#345;ence{% else %}Show athletes{% endif %}"
+                    aria-controls="coachShell"
+                    aria-expanded="true"
+                  >
+                    <span aria-hidden="true">&#9776;</span>
+                  </button>
+                </div>
+              </div>
             </div>
+          </div>
+          {% if selected_athlete %}
+            <h4 class="mb-0">{% if CURRENT_LANGUAGE == "cs" %}Tr&eacute;ninkov&yacute; pl&aacute;n{% else %}Training plan{% endif %} - {{ selected_athlete_name }}</h4>
           {% endif %}
         </div>
+        {% if selected_athlete %}
+          <div class="d-flex align-items-center gap-3">
+            {% if not selected_athlete_is_self %}
+              <div class="d-flex align-items-center gap-2">
+                <label class="small text-muted mb-0" for="coachAthleteFocusInput">{% if CURRENT_LANGUAGE == "cs" %}Zam&#283;&#345;en&iacute;:{% else %}Focus:{% endif %}</label>
+                <input
+                  id="coachAthleteFocusInput"
+                  class="form-control form-control-sm eb-athlete-focus-input"
+                  type="text"
+                  value="{{ selected_athlete_focus }}"
+                  data-athlete-id="{{ selected_athlete.id }}"
+                  data-focus-update-url="{{ coach_athlete_focus_update_url }}"
+                  maxlength="10"
+                >
+              </div>
+            {% endif %}
+          </div>
+        {% endif %}
+      </div>
+      {% if selected_athlete %}
         {% include "dashboard/_month_cards.html" with month_switcher_embedded=True month_state_key=selected_athlete.id plan_editable=plan_editable plan_update_url=plan_update_url completed_editable=completed_editable completed_update_url=completed_update_url add_month_enabled=add_month_enabled add_month_action=add_month_action add_month_athlete_id=add_month_athlete_id %}
       {% else %}
         <div class="alert alert-info py-2">
-          {% if CURRENT_LANGUAGE == "cs" %}Vyber sv&#283;&#345;ence ze seznamu vlevo.{% else %}Choose an athlete from the left list.{% endif %}
+          {% if CURRENT_LANGUAGE == "cs" %}Vyber sv&#283;&#345;ence ze sloupce vlevo.{% else %}Choose an athlete from the left column.{% endif %}
         </div>
       {% endif %}
     </section>
   </div>
 
-  <div class="modal fade" id="coachInviteModal" tabindex="-1" aria-labelledby="coachInviteModalLabel" aria-hidden="true">
+  <div class="modal fade eb-coach-manage-modal" id="coachManageModal" tabindex="-1" aria-labelledby="coachManageModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="coachManageModalLabel">{% if CURRENT_LANGUAGE == "cs" %}Spr&aacute;va sv&#283;&#345;enc&#367;{% else %}Athlete management{% endif %}</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body eb-coach-manage-body">
+          <div class="row g-0">
+            <div class="col-md-4 eb-manage-left">
+              <div class="nav flex-column nav-pills" id="coachManageTabs" role="tablist" aria-orientation="vertical">
+                <button class="nav-link active" id="coachManageAthletesTab" data-bs-toggle="pill" data-bs-target="#coachManageAthletesPane" type="button" role="tab" aria-controls="coachManageAthletesPane" aria-selected="true">
+                  {% if CURRENT_LANGUAGE == "cs" %}Sv&#283;&#345;enci{% else %}Athletes{% endif %}
+                </button>
+                <button class="nav-link" id="coachManageInvitesTab" data-bs-toggle="pill" data-bs-target="#coachManageInvitesPane" type="button" role="tab" aria-controls="coachManageInvitesPane" aria-selected="false">
+                  {% if CURRENT_LANGUAGE == "cs" %}K&oacute;d tren&eacute;ra{% else %}Coach code{% endif %}
+                </button>
+                <button class="nav-link" id="coachManageSettingsTab" data-bs-toggle="pill" data-bs-target="#coachManageSettingsPane" type="button" role="tab" aria-controls="coachManageSettingsPane" aria-selected="false">
+                  {% if CURRENT_LANGUAGE == "cs" %}Nastaven&iacute;{% else %}Settings{% endif %}
+                </button>
+              </div>
+            </div>
+            <div class="col-md-8 eb-manage-right">
+              <div class="tab-content" id="coachManageTabContent">
+                <div class="tab-pane fade show active" id="coachManageAthletesPane" role="tabpanel" aria-labelledby="coachManageAthletesTab" tabindex="0">
+                  <div class="small text-muted mb-2">{% if CURRENT_LANGUAGE == "cs" %}Spr&aacute;va sv&#283;&#345;enc&#367;{% else %}Athlete management{% endif %}</div>
+                  <div class="d-grid gap-2">
+                    {% for athlete in managed_athletes %}
+                      <div class="eb-manage-athlete-row{% if athlete.is_hidden_from_plans %} is-hidden{% endif %}">
+                        <div class="d-flex align-items-center justify-content-between gap-2">
+                          <div class="fw-semibold">
+                            {% if athlete.first_name or athlete.last_name %}
+                              {{ athlete.first_name }} {{ athlete.last_name }}
+                            {% else %}
+                              {{ athlete.username }}
+                            {% endif %}
+                          </div>
+                          <div class="d-flex align-items-center gap-2">
+                            <form method="post" class="m-0" data-athlete-visibility-form="1">
+                              {% csrf_token %}
+                              <input type="hidden" name="athlete_id" value="{{ athlete.id }}">
+                              <input type="hidden" name="action" value="{% if athlete.is_hidden_from_plans %}show_athlete{% else %}hide_athlete{% endif %}">
+                              <button
+                                type="submit"
+                                class="btn btn-sm eb-icon-btn eb-visibility-btn"
+                                data-label-show="{% if CURRENT_LANGUAGE == 'cs' %}Zobrazit v p&#345;ehledu{% else %}Show in plan list{% endif %}"
+                                data-label-hide="{% if CURRENT_LANGUAGE == 'cs' %}Skr&yacute;t v p&#345;ehledu{% else %}Hide from plan list{% endif %}"
+                                title="{% if athlete.is_hidden_from_plans %}{% if CURRENT_LANGUAGE == 'cs' %}Zobrazit v p&#345;ehledu{% else %}Show in plan list{% endif %}{% else %}{% if CURRENT_LANGUAGE == 'cs' %}Skr&yacute;t v p&#345;ehledu{% else %}Hide from plan list{% endif %}{% endif %}"
+                                aria-label="{% if athlete.is_hidden_from_plans %}{% if CURRENT_LANGUAGE == 'cs' %}Zobrazit v p&#345;ehledu{% else %}Show in plan list{% endif %}{% else %}{% if CURRENT_LANGUAGE == 'cs' %}Skr&yacute;t v p&#345;ehledu{% else %}Hide from plan list{% endif %}{% endif %}"
+                              >
+                                {% if athlete.is_hidden_from_plans %}
+                                  <svg class="eb-icon-svg" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                                    <path d="M1.2 8s2.4-4 6.8-4 6.8 4 6.8 4-2.4 4-6.8 4-6.8-4-6.8-4Z" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
+                                    <circle cx="8" cy="8" r="1.8" fill="none" stroke="currentColor" stroke-width="1.3"/>
+                                    <path d="M3 13 13 3" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+                                  </svg>
+                                {% else %}
+                                  <svg class="eb-icon-svg" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                                    <path d="M1.2 8s2.4-4 6.8-4 6.8 4 6.8 4-2.4 4-6.8 4-6.8-4-6.8-4Z" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
+                                    <circle cx="8" cy="8" r="1.8" fill="none" stroke="currentColor" stroke-width="1.3"/>
+                                  </svg>
+                                {% endif %}
+                              </button>
+                            </form>
+                            <button
+                              type="button"
+                              class="btn btn-sm eb-icon-btn eb-icon-btn--danger"
+                              data-bs-toggle="modal"
+                              data-bs-target="#coachRemoveAthleteModal"
+                              data-remove-athlete-id="{{ athlete.id }}"
+                              data-remove-athlete-name="{% if athlete.first_name or athlete.last_name %}{{ athlete.first_name }} {{ athlete.last_name }}{% else %}{{ athlete.username }}{% endif %}"
+                              title="{% if CURRENT_LANGUAGE == 'cs' %}P&#345;estat tr&eacute;novat{% else %}Stop coaching{% endif %}"
+                              aria-label="{% if CURRENT_LANGUAGE == 'cs' %}P&#345;estat tr&eacute;novat{% else %}Stop coaching{% endif %}"
+                            >
+                              <svg class="eb-icon-svg" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                                <path d="M3.3 4.2h9.4M6.2 4.2V3.1h3.6v1.1M5.1 4.2l.6 8.2h4.6l.6-8.2" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+                              </svg>
+                            </button>
+                          </div>
+                        </div>
+                        {% if athlete.coach_focus %}
+                          <div class="small text-muted">{{ athlete.coach_focus }}</div>
+                        {% endif %}
+                      </div>
+                    {% empty %}
+                      <div class="text-muted small">{% if CURRENT_LANGUAGE == "cs" %}Zat&iacute;m nem&aacute;&scaron; &zcaron;&aacute;dn&eacute; sv&#283;&#345;ence.{% else %}No athletes yet.{% endif %}</div>
+                    {% endfor %}
+                  </div>
+                  {% if pending_join_requests %}
+                    <hr>
+                    <div class="small text-muted mb-2">{% if CURRENT_LANGUAGE == "cs" %}&Ccaron;ekaj&iacute;c&iacute; &zcaron;&aacute;dosti o p&#345;ipojen&iacute;{% else %}Pending join requests{% endif %}</div>
+                    <div class="d-grid gap-2">
+                      {% for req in pending_join_requests %}
+                        <div class="eb-invite-row">
+                          <div class="fw-semibold mb-1">
+                            {% if req.athlete.first_name or req.athlete.last_name %}
+                              {{ req.athlete.first_name }} {{ req.athlete.last_name }}
+                            {% else %}
+                              {{ req.athlete.username }}
+                            {% endif %}
+                          </div>
+                          <div class="d-flex gap-2">
+                            <form method="post">
+                              {% csrf_token %}
+                              <input type="hidden" name="action" value="approve_join_request">
+                              <input type="hidden" name="join_request_id" value="{{ req.id }}">
+                              <button type="submit" class="btn btn-success btn-sm">{% if CURRENT_LANGUAGE == "cs" %}Schv&aacute;lit{% else %}Approve{% endif %}</button>
+                            </form>
+                            <form method="post">
+                              {% csrf_token %}
+                              <input type="hidden" name="action" value="reject_join_request">
+                              <input type="hidden" name="join_request_id" value="{{ req.id }}">
+                              <button type="submit" class="btn btn-outline-danger btn-sm">{% if CURRENT_LANGUAGE == "cs" %}Zam&iacute;tnout{% else %}Reject{% endif %}</button>
+                            </form>
+                          </div>
+                        </div>
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+                </div>
+
+                <div class="tab-pane fade" id="coachManageInvitesPane" role="tabpanel" aria-labelledby="coachManageInvitesTab" tabindex="0">
+                  <div class="small text-muted mb-2">{% if CURRENT_LANGUAGE == "cs" %}Tv&#367;j tren&eacute;rsk&yacute; k&oacute;d{% else %}Your coach code{% endif %}</div>
+                  <div class="eb-invite-row mb-2">
+                    <code>{{ coach_join_code }}</code>
+                  </div>
+                  <div class="small text-muted mb-2">{% if CURRENT_LANGUAGE == "cs" %}Sv&#283;&#345;enci tento k&oacute;d zadaj&iacute; ve sv&eacute;m dashboardu a ty jejich &zcaron;&aacute;dosti schv&aacute;l&iacute;&scaron; v z&aacute;lo&#382;ce Sv&#283;&#345;enci.{% else %}Athletes enter this code in their dashboard and you approve requests in the Athletes tab.{% endif %}</div>
+                </div>
+
+                <div class="tab-pane fade" id="coachManageSettingsPane" role="tabpanel" aria-labelledby="coachManageSettingsTab" tabindex="0">
+                  <div class="small text-muted mb-2">{% if CURRENT_LANGUAGE == "cs" %}Nastaven&iacute; spr&aacute;vy{% else %}Management settings{% endif %}</div>
+                  <div class="eb-manage-setting-item">
+                    {% if CURRENT_LANGUAGE == "cs" %}
+                      Po&#345;ad&iacute; sv&#283;&#345;enc&#367; m&#367;&zcaron;e&scaron; m&#283;nit p&#345;eta&zcaron;en&iacute;m v lev&eacute;m sloupci.
+                    {% else %}
+                      You can reorder athletes by drag and drop in the left sidebar.
+                    {% endif %}
+                  </div>
+                  <div class="eb-manage-setting-item">
+                    {% if CURRENT_LANGUAGE == "cs" %}
+                      Mezi sv&#283;&#345;enci m&#367;&zcaron;e&scaron; p&#345;ep&iacute;nat i kl&aacute;vesovou zkratkou Ctrl + &uarr;/&darr;.
+                    {% else %}
+                      You can switch athletes with Ctrl + Up/Down.
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="coachRemoveAthleteModal" tabindex="-1" aria-labelledby="coachRemoveAthleteModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="coachInviteModalLabel">{% if CURRENT_LANGUAGE == "cs" %}Nov&aacute; pozv&aacute;nka{% else %}New invite{% endif %}</h5>
+          <h5 class="modal-title" id="coachRemoveAthleteModalLabel">{% if CURRENT_LANGUAGE == "cs" %}Potvrdit odebr&aacute;n&iacute; sv&#283;&#345;ence{% else %}Confirm athlete removal{% endif %}</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <div class="modal-body">
-          <form method="post" class="d-grid gap-2">
+        <form method="post" id="coachRemoveAthleteForm">
+          <div class="modal-body d-grid gap-2">
             {% csrf_token %}
-            <input type="hidden" name="action" value="create_invite">
-            <label class="form-label form-label-sm mb-0">{% if CURRENT_LANGUAGE == "cs" %}E-mail atleta (voliteln&#283;){% else %}Athlete email (optional){% endif %}</label>
-            <input type="email" class="form-control form-control-sm" name="invited_email" placeholder="athlete@email.com">
-            <button type="submit" class="btn btn-primary btn-sm">{% if CURRENT_LANGUAGE == "cs" %}Vytvo&#345;it pozv&aacute;nku{% else %}Create invite{% endif %}</button>
-          </form>
-          {% if active_invites %}
-            <hr>
-            <div class="small text-muted mb-2">{% if CURRENT_LANGUAGE == "cs" %}Aktivn&iacute; pozv&aacute;nky{% else %}Active invites{% endif %}</div>
-            <div class="d-grid gap-2">
-              {% for invite in active_invites|slice:":5" %}
-                <div class="eb-invite-row">
-                  <div class="small text-muted mb-1">
-                    {% if CURRENT_LANGUAGE == "cs" %}Plat&iacute; do{% else %}Valid until{% endif %} {{ invite.expires_at|date:"j.n.Y H:i" }}
-                  </div>
-                  <code>{{ request.scheme }}://{{ request.get_host }}{% url 'training_group_invite_accept' invite.token %}</code>
-                </div>
-              {% endfor %}
+            <input type="hidden" name="action" value="remove_athlete">
+            <input type="hidden" name="athlete_id" id="coachRemoveAthleteIdInput" value="">
+            <div class="small text-muted">
+              {% if CURRENT_LANGUAGE == "cs" %}
+                Pro potvrzen&iacute; napi&scaron; p&#345;esn&#283; jm&eacute;no sv&#283;&#345;ence:
+              {% else %}
+                To confirm, type the athlete name exactly:
+              {% endif %}
             </div>
-          {% endif %}
-        </div>
+            <div class="fw-semibold" id="coachRemoveAthleteExpectedName"></div>
+            <input type="text" class="form-control" id="coachRemoveAthleteConfirmInput" name="confirm_name" autocomplete="off" required>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">{% if CURRENT_LANGUAGE == "cs" %}Zru&scaron;it{% else %}Cancel{% endif %}</button>
+            <button type="submit" class="btn btn-danger btn-sm" id="coachRemoveAthleteSubmitBtn" disabled>{% if CURRENT_LANGUAGE == "cs" %}Odebrat sv&#283;&#345;ence{% else %}Remove athlete{% endif %}</button>
+          </div>
+        </form>
       </div>
     </div>
   </div>
 </div>
 
-<link rel="stylesheet" href="{% static 'css/dashboard.css' %}?v=17">
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}?v=46">
 <script>
   document.body.classList.add("eb-coach-page");
 </script>
-<script src="{% static 'js/dashboard.js' %}?v=27"></script>
+<script src="{% static 'js/dashboard.js' %}?v=43"></script>
 {% endblock %}
-
-

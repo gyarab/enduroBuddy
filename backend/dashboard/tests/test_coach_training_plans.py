@@ -8,7 +8,7 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
-from accounts.models import CoachAthlete, Role, TrainingGroup, TrainingGroupAthlete, TrainingGroupInvite
+from accounts.models import CoachAthlete, CoachJoinRequest, Role, TrainingGroup, TrainingGroupAthlete, TrainingGroupInvite
 from dashboard.views import _resolve_week_for_day
 from training.models import CompletedTraining, PlannedTraining, TrainingMonth, TrainingWeek
 
@@ -155,6 +155,42 @@ class CoachTrainingPlansTests(TestCase):
         self.assertEqual(invite.used_by_id, self.athlete2.id)
         self.assertIsNotNone(invite.used_at)
 
+    def test_athlete_can_request_coach_by_code(self):
+        self.coach.profile.coach_join_code = "ABC123"
+        self.coach.profile.save(update_fields=["coach_join_code"])
+
+        self.client.login(username="athlete2", password="athlete2")
+        resp = self.client.post(
+            reverse("dashboard_home"),
+            data={
+                "action": "request_coach_by_code",
+                "coach_code": "abc123",
+            },
+        )
+        self.assertEqual(resp.status_code, 302)
+        req = CoachJoinRequest.objects.filter(coach=self.coach, athlete=self.athlete2, status=CoachJoinRequest.Status.PENDING).first()
+        self.assertIsNotNone(req)
+
+    def test_coach_can_approve_join_request(self):
+        join_request = CoachJoinRequest.objects.create(
+            coach=self.coach,
+            athlete=self.athlete2,
+            status=CoachJoinRequest.Status.PENDING,
+        )
+
+        self.client.login(username="coach", password="coach")
+        resp = self.client.post(
+            reverse("coach_training_plans"),
+            data={
+                "action": "approve_join_request",
+                "join_request_id": str(join_request.id),
+            },
+        )
+        self.assertEqual(resp.status_code, 302)
+        join_request.refresh_from_db()
+        self.assertEqual(join_request.status, CoachJoinRequest.Status.APPROVED)
+        self.assertTrue(CoachAthlete.objects.filter(coach=self.coach, athlete=self.athlete2).exists())
+
     def test_coach_can_inline_update_planned_training_title_and_notes(self):
         planned = PlannedTraining.objects.filter(week__training_month__athlete=self.athlete).first()
         self.assertIsNotNone(planned)
@@ -243,7 +279,7 @@ class CoachTrainingPlansTests(TestCase):
         )
         self.assertEqual(resp.status_code, 200)
         link = CoachAthlete.objects.get(coach=self.coach, athlete=self.athlete)
-        self.assertEqual(link.focus, "Silnicni maraton")
+        self.assertEqual(link.focus, "Silnicni m")
 
     def test_other_coach_cannot_update_athlete_focus(self):
         CoachAthlete.objects.get_or_create(coach=self.coach, athlete=self.athlete)
@@ -272,6 +308,36 @@ class CoachTrainingPlansTests(TestCase):
         self.assertGreaterEqual(len(ordered_ids), 3)
         self.assertEqual(ordered_ids[0], self.coach.id)
         self.assertEqual(ordered_ids[1:3], [self.athlete2.id, self.athlete.id])
+
+    def test_coach_can_toggle_athlete_visibility_over_ajax(self):
+        CoachAthlete.objects.get_or_create(coach=self.coach, athlete=self.athlete)
+        self.client.login(username="coach", password="coach")
+
+        hide_resp = self.client.post(
+            reverse("coach_training_plans"),
+            data={"action": "hide_athlete", "athlete_id": str(self.athlete.id)},
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+        self.assertEqual(hide_resp.status_code, 200)
+        self.assertJSONEqual(
+            hide_resp.content,
+            {"ok": True, "hidden": True, "athlete_id": self.athlete.id},
+        )
+        link = CoachAthlete.objects.get(coach=self.coach, athlete=self.athlete)
+        self.assertTrue(link.hidden_from_plans)
+
+        show_resp = self.client.post(
+            reverse("coach_training_plans"),
+            data={"action": "show_athlete", "athlete_id": str(self.athlete.id)},
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+        self.assertEqual(show_resp.status_code, 200)
+        self.assertJSONEqual(
+            show_resp.content,
+            {"ok": True, "hidden": False, "athlete_id": self.athlete.id},
+        )
+        link.refresh_from_db()
+        self.assertFalse(link.hidden_from_plans)
 
     def test_athlete_can_inline_update_own_planned_training(self):
         planned = PlannedTraining.objects.filter(week__training_month__athlete=self.athlete).first()

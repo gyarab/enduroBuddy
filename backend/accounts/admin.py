@@ -1,6 +1,7 @@
 from django.contrib import admin
 from .models import (
     CoachAthlete,
+    CoachJoinRequest,
     GarminConnection,
     GarminSyncAudit,
     Profile,
@@ -17,9 +18,16 @@ class ProfileAdmin(admin.ModelAdmin):
 
 @admin.register(CoachAthlete)
 class CoachAthleteAdmin(admin.ModelAdmin):
-    list_display = ('coach', 'athlete', 'created_at')
-    list_filter = ('created_at',)
+    list_display = ('coach', 'athlete', 'hidden_from_plans', 'created_at')
+    list_filter = ('hidden_from_plans', 'created_at',)
     search_fields = ('coach__username', 'athlete__username')
+
+
+@admin.register(CoachJoinRequest)
+class CoachJoinRequestAdmin(admin.ModelAdmin):
+    list_display = ("coach", "athlete", "status", "created_at", "decided_at")
+    list_filter = ("status", "created_at", "decided_at")
+    search_fields = ("coach__username", "athlete__username", "coach__email", "athlete__email")
 
 
 @admin.register(TrainingGroup)
