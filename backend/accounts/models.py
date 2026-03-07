@@ -19,6 +19,8 @@ class Profile(models.Model):
 class CoachAthlete(models.Model):
     coach = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='coached_athletes')
     athlete = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='athlete_coaches')
+    focus = models.CharField(max_length=30, blank=True, default="")
+    sort_order = models.PositiveIntegerField(default=0, db_index=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
 

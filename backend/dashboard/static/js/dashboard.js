@@ -114,6 +114,47 @@
     });
   }
 
+  function initMonthSwitcherScroll(widget) {
+    const track = widget.querySelector(".eb-month-switcher-track");
+    if (!track) return;
+
+    let wheelDeltaBuffer = 0;
+    let wheelRafId = null;
+
+    function normalizeWheelDelta(event) {
+      // DOM_DELTA_PIXEL = 0, DOM_DELTA_LINE = 1, DOM_DELTA_PAGE = 2
+      const raw = Math.abs(event.deltaX) > 0 ? event.deltaX : event.deltaY;
+      if (!raw) return 0;
+      if (event.deltaMode === 1) return raw * 16;
+      if (event.deltaMode === 2) return raw * track.clientWidth;
+      return raw;
+    }
+
+    function flushWheelDelta() {
+      wheelRafId = null;
+      if (!wheelDeltaBuffer) return;
+      track.scrollLeft += wheelDeltaBuffer;
+      wheelDeltaBuffer = 0;
+    }
+
+    track.addEventListener(
+      "wheel",
+      (event) => {
+        if (track.scrollWidth <= track.clientWidth) return;
+        const delta = normalizeWheelDelta(event);
+        if (!delta) return;
+
+        // Slightly dampen wheel movement to avoid jumpy stepping on classic mouse wheels.
+        wheelDeltaBuffer += delta * 0.65;
+        if (!wheelRafId) {
+          wheelRafId = window.requestAnimationFrame(flushWheelDelta);
+        }
+        event.preventDefault();
+      },
+      { passive: false }
+    );
+  }
+
   async function saveInlineField(node, updateUrl, csrfToken, widget) {
     if (node.dataset.saving === "1") {
       node.dataset.queued = "1";
@@ -314,14 +355,197 @@
     });
   }
 
+  function initCoachAthleteFocus() {
+    const input = document.getElementById("coachAthleteFocusInput");
+    if (!input) return;
+
+    const updateUrl = input.getAttribute("data-focus-update-url");
+    const athleteId = Number(input.getAttribute("data-athlete-id"));
+    if (!updateUrl || !athleteId) return;
+
+    const csrfToken = getCsrfToken();
+    input.dataset.savedValue = input.value || "";
+
+    function applyFocusToSidebar(value) {
+      const row = document.querySelector(`.eb-athlete-item[data-athlete-id="${athleteId}"] [data-athlete-focus]`);
+      if (!row) return;
+      row.textContent = value ? `- ${value}` : "";
+    }
+
+    async function saveFocus() {
+      const raw = (input.value || "").slice(0, 30);
+      if (input.value !== raw) {
+        input.value = raw;
+      }
+      if (raw === (input.dataset.savedValue || "")) return;
+
+      input.classList.add("is-saving");
+      try {
+        const response = await fetch(updateUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": csrfToken || "",
+            "X-Requested-With": "XMLHttpRequest",
+          },
+          body: JSON.stringify({
+            athlete_id: athleteId,
+            focus: raw,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`Focus save failed with status ${response.status}`);
+        }
+        const payload = await response.json();
+        if (!payload.ok) {
+          throw new Error(payload.error || "Focus save failed.");
+        }
+
+        input.dataset.savedValue = payload.focus || "";
+        input.value = payload.focus || "";
+        input.classList.remove("is-error");
+        applyFocusToSidebar(payload.focus || "");
+      } catch (err) {
+        input.classList.add("is-error");
+        input.value = input.dataset.savedValue || "";
+        console.error(err);
+      } finally {
+        input.classList.remove("is-saving");
+      }
+    }
+
+    let timerId = null;
+    input.addEventListener("input", () => {
+      if ((input.value || "").length > 30) {
+        input.value = (input.value || "").slice(0, 30);
+      }
+      if (timerId) clearTimeout(timerId);
+      timerId = setTimeout(() => {
+        timerId = null;
+        saveFocus();
+      }, 450);
+    });
+
+    input.addEventListener("blur", () => {
+      if (timerId) {
+        clearTimeout(timerId);
+        timerId = null;
+      }
+      saveFocus();
+    });
+
+    input.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        input.blur();
+      }
+    });
+  }
+
+  function initCoachAthleteReorder() {
+    const list = document.getElementById("coachAthleteList");
+    if (!list) return;
+
+    const reorderUrl = list.getAttribute("data-reorder-url");
+    if (!reorderUrl) return;
+    const csrfToken = getCsrfToken();
+
+    let draggedItem = null;
+    let hasOrderChanged = false;
+
+    list.querySelectorAll(".eb-athlete-item a").forEach((anchor) => {
+      anchor.addEventListener("dragstart", (event) => {
+        event.preventDefault();
+      });
+    });
+
+    function getDragAfterElement(container, y) {
+      const candidates = Array.from(container.querySelectorAll(".eb-athlete-item:not(.is-dragging)"));
+      let closest = { offset: Number.NEGATIVE_INFINITY, element: null };
+      candidates.forEach((item) => {
+        const box = item.getBoundingClientRect();
+        const offset = y - box.top - box.height / 2;
+        if (offset < 0 && offset > closest.offset) {
+          closest = { offset, element: item };
+        }
+      });
+      return closest.element;
+    }
+
+    async function persistOrder() {
+      const ids = Array.from(list.querySelectorAll(".eb-athlete-item"))
+        .map((item) => Number(item.getAttribute("data-athlete-id")))
+        .filter((id) => !!id);
+
+      try {
+        const response = await fetch(reorderUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": csrfToken || "",
+            "X-Requested-With": "XMLHttpRequest",
+          },
+          body: JSON.stringify({ athlete_ids: ids }),
+        });
+        if (!response.ok) {
+          throw new Error(`Reorder failed with status ${response.status}`);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    list.querySelectorAll(".eb-athlete-item").forEach((item) => {
+      item.addEventListener("dragstart", (event) => {
+        draggedItem = item;
+        hasOrderChanged = false;
+        item.classList.add("is-dragging");
+        if (event.dataTransfer) {
+          event.dataTransfer.effectAllowed = "move";
+          event.dataTransfer.setData("text/plain", item.getAttribute("data-athlete-id") || "");
+        }
+      });
+
+      item.addEventListener("dragend", () => {
+        item.classList.remove("is-dragging");
+        const changed = hasOrderChanged;
+        draggedItem = null;
+        if (changed) {
+          persistOrder();
+        }
+      });
+    });
+
+    list.addEventListener("dragover", (event) => {
+      if (!draggedItem) return;
+      event.preventDefault();
+      const afterElement = getDragAfterElement(list, event.clientY);
+      if (!afterElement) {
+        if (list.lastElementChild !== draggedItem) {
+          list.appendChild(draggedItem);
+          hasOrderChanged = true;
+        }
+      } else {
+        if (afterElement !== draggedItem.nextElementSibling) {
+          list.insertBefore(draggedItem, afterElement);
+          hasOrderChanged = true;
+        }
+      }
+    });
+  }
+
   function init() {
     const widgets = Array.from(document.querySelectorAll(".eb-month-widget"));
     widgets.forEach((widget) => {
       initMonthWidget(widget);
+      initMonthSwitcherScroll(widget);
       if (widget.getAttribute("data-inline-editable") === "1") {
         initCoachInlineEditing(widget);
       }
     });
+    initCoachAthleteFocus();
+    initCoachAthleteReorder();
 
     const importLink = document.getElementById("fitImportLink");
     const fileInput = document.getElementById("fitFileInput");

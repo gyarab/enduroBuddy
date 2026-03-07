@@ -220,12 +220,34 @@ def coach_training_plans(request):
         messages.success(request, "Pozv\u00e1nka byla vytvo\u0159ena.")
         return redirect("coach_training_plans")
 
-    athletes = [link.athlete for link in request.user.coached_athletes.select_related("athlete").order_by("athlete__username")]
-    athlete_ids = {a.id for a in athletes}
+    coach_links = {
+        link.athlete_id: link
+        for link in request.user.coached_athletes.select_related("athlete").order_by("sort_order", "id")
+    }
+    athlete_by_id = {athlete_id: link.athlete for athlete_id, link in coach_links.items()}
+
     for member in selected_group.memberships.select_related("athlete").all():
-        if member.athlete_id not in athlete_ids:
-            athletes.append(member.athlete)
-            athlete_ids.add(member.athlete_id)
+        athlete_by_id.setdefault(member.athlete_id, member.athlete)
+
+    # Ensure every athlete in the sidebar has a coach-athlete link for persisted focus and ordering.
+    current_max_order = max((link.sort_order for link in coach_links.values()), default=0)
+    for athlete_id, athlete in athlete_by_id.items():
+        if athlete_id in coach_links:
+            continue
+        current_max_order += 1
+        link = CoachAthlete.objects.create(
+            coach=request.user,
+            athlete=athlete,
+            sort_order=current_max_order,
+        )
+        coach_links[athlete_id] = link
+
+    ordered_links = sorted(coach_links.values(), key=lambda link: (link.sort_order, link.id))
+    athletes = []
+    for link in ordered_links:
+        athlete = athlete_by_id.get(link.athlete_id) or link.athlete
+        athlete.coach_focus = (link.focus or "")[:30]
+        athletes.append(athlete)
 
     active_invites = list(selected_group.invites.filter(used_at__isnull=True, expires_at__gt=timezone.now()).order_by("-created_at"))
 
@@ -250,8 +272,12 @@ def coach_training_plans(request):
         selected_athlete = athletes[0]
 
     month_cards = []
+    selected_athlete_focus = ""
     if selected_athlete is not None:
         month_cards = build_month_cards_for_athlete(athlete=selected_athlete, language_code=request.LANGUAGE_CODE)
+        selected_link = coach_links.get(selected_athlete.id)
+        if selected_link is not None:
+            selected_athlete_focus = (selected_link.focus or "")[:30]
 
     return render(
         request,
@@ -263,8 +289,11 @@ def coach_training_plans(request):
             "active_invites": active_invites,
             "selected_athlete": selected_athlete,
             "selected_athlete_name": display_name(selected_athlete) if selected_athlete else "",
+            "selected_athlete_focus": selected_athlete_focus,
             "month_cards": month_cards,
             "coach_plan_update_url": reverse("coach_update_planned_training"),
+            "coach_athlete_focus_update_url": reverse("coach_update_athlete_focus"),
+            "coach_athlete_reorder_url": reverse("coach_reorder_athletes"),
         },
     )
 
@@ -308,6 +337,66 @@ def coach_update_planned_training(request):
     setattr(planned, field, value)
     planned.save(update_fields=[field])
     return JsonResponse({"ok": True, "planned_id": planned.id, "field": field, "value": value})
+
+
+@login_required
+@require_POST
+def coach_update_athlete_focus(request):
+    if not is_coach(request.user):
+        return JsonResponse({"ok": False, "error": "Coach access only."}, status=403)
+
+    try:
+        payload = json.loads(request.body.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        return JsonResponse({"ok": False, "error": "Invalid JSON body."}, status=400)
+
+    athlete_id = payload.get("athlete_id")
+    focus = payload.get("focus", "")
+
+    if not isinstance(athlete_id, int):
+        return JsonResponse({"ok": False, "error": "Invalid athlete_id."}, status=400)
+    if not isinstance(focus, str):
+        return JsonResponse({"ok": False, "error": "Invalid focus value."}, status=400)
+    focus = focus.strip()[:30]
+
+    link = CoachAthlete.objects.filter(coach=request.user, athlete_id=athlete_id).first()
+    if link is None:
+        return JsonResponse({"ok": False, "error": "Athlete link not found."}, status=404)
+
+    link.focus = focus
+    link.save(update_fields=["focus"])
+    return JsonResponse({"ok": True, "athlete_id": athlete_id, "focus": link.focus})
+
+
+@login_required
+@require_POST
+def coach_reorder_athletes(request):
+    if not is_coach(request.user):
+        return JsonResponse({"ok": False, "error": "Coach access only."}, status=403)
+
+    try:
+        payload = json.loads(request.body.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        return JsonResponse({"ok": False, "error": "Invalid JSON body."}, status=400)
+
+    athlete_ids = payload.get("athlete_ids")
+    if not isinstance(athlete_ids, list) or not all(isinstance(x, int) for x in athlete_ids):
+        return JsonResponse({"ok": False, "error": "athlete_ids must be a list of integers."}, status=400)
+    if len(set(athlete_ids)) != len(athlete_ids):
+        return JsonResponse({"ok": False, "error": "Duplicate athlete ids are not allowed."}, status=400)
+
+    links = {
+        link.athlete_id: link
+        for link in CoachAthlete.objects.filter(coach=request.user, athlete_id__in=athlete_ids)
+    }
+    if len(links) != len(athlete_ids):
+        return JsonResponse({"ok": False, "error": "One or more athletes are not linked to this coach."}, status=403)
+
+    for index, athlete_id in enumerate(athlete_ids, start=1):
+        links[athlete_id].sort_order = index
+
+    CoachAthlete.objects.bulk_update(list(links.values()), ["sort_order"])
+    return JsonResponse({"ok": True})
 
 
 @login_required

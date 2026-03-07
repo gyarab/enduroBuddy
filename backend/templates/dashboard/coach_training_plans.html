@@ -37,15 +37,31 @@
             </div>
           </div>
 
-          <div class="d-grid gap-2">
+          <div
+            class="d-grid gap-2 eb-athlete-list"
+            id="coachAthleteList"
+            data-reorder-url="{{ coach_athlete_reorder_url }}"
+          >
             {% for athlete in athletes %}
-              <a href="{% url 'coach_training_plans' %}?athlete={{ athlete.id }}" class="btn btn-sm text-start {% if selected_athlete and selected_athlete.id == athlete.id %}btn-dark{% else %}btn-outline-dark{% endif %}">
-                {% if athlete.first_name or athlete.last_name %}
-                  {{ athlete.first_name }} {{ athlete.last_name }}
-                {% else %}
-                  {{ athlete.username }}
-                {% endif %}
-              </a>
+              <div class="eb-athlete-item" draggable="true" data-athlete-id="{{ athlete.id }}">
+                <a href="{% url 'coach_training_plans' %}?athlete={{ athlete.id }}" draggable="false" class="btn btn-sm text-start {% if selected_athlete and selected_athlete.id == athlete.id %}btn-dark{% else %}btn-outline-dark{% endif %}">
+                  <span class="eb-athlete-row-label">
+                    <span class="eb-athlete-drag-handle" draggable="false" title="{% if CURRENT_LANGUAGE == 'cs' %}Přesunout{% else %}Reorder{% endif %}">::</span>
+                    <span class="eb-athlete-name">
+                      {% if athlete.first_name or athlete.last_name %}
+                        {{ athlete.first_name }} {{ athlete.last_name }}
+                      {% else %}
+                        {{ athlete.username }}
+                      {% endif %}
+                    </span>
+                    {% if athlete.coach_focus %}
+                      <span class="eb-athlete-focus" data-athlete-focus>- {{ athlete.coach_focus }}</span>
+                    {% else %}
+                      <span class="eb-athlete-focus" data-athlete-focus></span>
+                    {% endif %}
+                  </span>
+                </a>
+              </div>
             {% empty %}
               <span class="text-muted small">{% if CURRENT_LANGUAGE == "cs" %}Zat&iacute;m nem&aacute;&scaron; &zcaron;&aacute;dn&eacute; sv&#283;&#345;ence.{% else %}No athletes yet.{% endif %}</span>
             {% endfor %}
@@ -56,9 +72,20 @@
 
     <section class="eb-coach-main">
       {% if selected_athlete %}
-        <div class="d-flex align-items-center gap-2 mb-3">
-          <h4 class="mb-0">{% if CURRENT_LANGUAGE == "cs" %}Dashboard atleta{% else %}Athlete dashboard{% endif %}</h4>
-          <h4 class="mb-0 text-muted">- {{ selected_athlete_name }}</h4>
+        <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
+          <h4 class="mb-0">{% if CURRENT_LANGUAGE == "cs" %}Tr&eacute;ninkov&yacute; pl&aacute;n{% else %}Training plan{% endif %} - {{ selected_athlete_name }}</h4>
+          <div class="d-flex align-items-center gap-2">
+            <label class="small text-muted mb-0" for="coachAthleteFocusInput">{% if CURRENT_LANGUAGE == "cs" %}Zam&#283;&#345;en&iacute;:{% else %}Focus:{% endif %}</label>
+            <input
+              id="coachAthleteFocusInput"
+              class="form-control form-control-sm eb-athlete-focus-input"
+              type="text"
+              value="{{ selected_athlete_focus }}"
+              data-athlete-id="{{ selected_athlete.id }}"
+              data-focus-update-url="{{ coach_athlete_focus_update_url }}"
+              maxlength="30"
+            >
+          </div>
         </div>
         {% include "dashboard/_month_cards.html" with month_switcher_embedded=True month_state_key=selected_athlete.id coach_editable=True coach_plan_update_url=coach_plan_update_url %}
       {% else %}
@@ -104,11 +131,11 @@
   </div>
 </div>
 
-<link rel="stylesheet" href="{% static 'css/dashboard.css' %}?v=3">
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}?v=14">
 <script>
   document.body.classList.add("eb-coach-page");
 </script>
-<script src="{% static 'js/dashboard.js' %}?v=9"></script>
+<script src="{% static 'js/dashboard.js' %}?v=16"></script>
 {% endblock %}
 
 
