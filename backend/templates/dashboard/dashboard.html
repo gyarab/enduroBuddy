@@ -163,6 +163,5 @@
   {% include "dashboard/_month_cards.html" with month_state_key=month_state_key add_month_enabled=add_month_enabled add_month_action=add_month_action add_month_athlete_id=add_month_athlete_id plan_editable=plan_editable plan_update_url=plan_update_url completed_editable=completed_editable completed_update_url=completed_update_url %}
 </div>
 
-<link rel="stylesheet" href="{% static 'css/dashboard.css' %}?v=46">
-<script src="{% static 'js/dashboard.js' %}?v=43"></script>
+{% include "dashboard/_assets.html" %}
 {% endblock %}

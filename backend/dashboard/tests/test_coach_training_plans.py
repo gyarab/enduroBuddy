@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from datetime import date, timedelta
+from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
 from django.test import TestCase
@@ -56,6 +57,15 @@ class CoachTrainingPlansTests(TestCase):
         self.assertEqual(resp.context["selected_athlete"].id, self.coach.id)
         self.assertTrue(resp.context["selected_athlete_is_self"])
         self.assertGreaterEqual(len(resp.context["month_cards"]), 0)
+
+    def test_group_member_without_link_gets_coach_link_on_page_load(self):
+        self.assertFalse(CoachAthlete.objects.filter(coach=self.coach, athlete=self.athlete).exists())
+        self.client.login(username="coach", password="coach")
+
+        resp = self.client.get(reverse("coach_training_plans"))
+
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue(CoachAthlete.objects.filter(coach=self.coach, athlete=self.athlete).exists())
 
     def test_coach_cannot_select_foreign_group(self):
         self.client.login(username="coach", password="coach")
@@ -309,6 +319,21 @@ class CoachTrainingPlansTests(TestCase):
         self.assertEqual(ordered_ids[0], self.coach.id)
         self.assertEqual(ordered_ids[1:3], [self.athlete2.id, self.athlete.id])
 
+    def test_coach_reorder_noop_skips_bulk_update(self):
+        CoachAthlete.objects.update_or_create(coach=self.coach, athlete=self.athlete, defaults={"sort_order": 1})
+        CoachAthlete.objects.update_or_create(coach=self.coach, athlete=self.athlete2, defaults={"sort_order": 2})
+
+        self.client.login(username="coach", password="coach")
+        with patch("dashboard.views.CoachAthlete.objects.bulk_update") as bulk_update_mock:
+            resp = self.client.post(
+                reverse("coach_reorder_athletes"),
+                data=json.dumps({"athlete_ids": [self.athlete.id, self.athlete2.id]}),
+                content_type="application/json",
+            )
+
+        self.assertEqual(resp.status_code, 200)
+        bulk_update_mock.assert_not_called()
+
     def test_coach_can_toggle_athlete_visibility_over_ajax(self):
         CoachAthlete.objects.get_or_create(coach=self.coach, athlete=self.athlete)
         self.client.login(username="coach", password="coach")
@@ -400,6 +425,28 @@ class CoachTrainingPlansTests(TestCase):
 
         completed = CompletedTraining.objects.get(planned=planned)
         self.assertEqual(completed.note, "easy + strides")
+
+    def test_completed_update_noop_value_skips_save(self):
+        planned = PlannedTraining.objects.filter(week__training_month__athlete=self.athlete).first()
+        self.assertIsNotNone(planned)
+
+        self.client.login(username="athlete", password="athlete")
+        first = self.client.post(
+            reverse("athlete_update_completed_training"),
+            data=json.dumps({"planned_id": planned.id, "field": "km", "value": "8.50"}),
+            content_type="application/json",
+        )
+        self.assertEqual(first.status_code, 200)
+
+        with patch("dashboard.views.CompletedTraining.save") as save_mock:
+            second = self.client.post(
+                reverse("athlete_update_completed_training"),
+                data=json.dumps({"planned_id": planned.id, "field": "km", "value": "8.50"}),
+                content_type="application/json",
+            )
+
+        self.assertEqual(second.status_code, 200)
+        save_mock.assert_not_called()
 
     def test_athlete_can_add_next_month_from_dashboard(self):
         self.client.login(username="athlete", password="athlete")
