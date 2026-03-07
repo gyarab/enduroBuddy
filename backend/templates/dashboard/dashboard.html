@@ -3,7 +3,7 @@
 {% load i18n %}
 {% get_current_language as CURRENT_LANGUAGE %}
 
-{% block title %}{% if CURRENT_LANGUAGE == "cs" %}Tréninkový přehled | EnduroBuddy{% else %}Training view | EnduroBuddy{% endif %}{% endblock %}
+{% block title %}{% if CURRENT_LANGUAGE == "cs" %}Tr&eacute;ninkov&yacute; p&#345;ehled | EnduroBuddy{% else %}Training view | EnduroBuddy{% endif %}{% endblock %}
 
 {% block content %}
 <div class="container-fluid py-3">
@@ -19,7 +19,7 @@
 
   <div class="d-flex align-items-center justify-content-between mb-3">
     <div class="d-flex align-items-center gap-2">
-      <h3 class="mb-0">{% if CURRENT_LANGUAGE == "cs" %}Tréninkový plán{% else %}Training plan{% endif %}</h3>
+      <h3 class="mb-0">{% if CURRENT_LANGUAGE == "cs" %}Tr&eacute;ninkov&yacute; pl&aacute;n{% else %}Training plan{% endif %}</h3>
       <h3 class="mb-0 text-muted">
         - {% if CURRENT_LANGUAGE == "cs" %}atlet:{% else %}athlete:{% endif %}
         {% if user.first_name or user.last_name %}
@@ -29,9 +29,54 @@
         {% endif %}
       </h3>
     </div>
-    <button class="btn btn-success btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#importActivitiesModal">
-      {% if CURRENT_LANGUAGE == "cs" %}Import aktivit{% else %}Import activities{% endif %}
-    </button>
+    <div class="d-flex align-items-center gap-2">
+      <button class="btn btn-outline-dark btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#coachCodeModal">
+        {% if CURRENT_LANGUAGE == "cs" %}P&#345;idat tren&eacute;ra{% else %}Join coach{% endif %}
+      </button>
+      <button class="btn btn-success btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#importActivitiesModal">
+        {% if CURRENT_LANGUAGE == "cs" %}Import aktivit{% else %}Import activities{% endif %}
+      </button>
+    </div>
+  </div>
+
+  <div class="modal fade" id="coachCodeModal" tabindex="-1" aria-labelledby="coachCodeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="coachCodeModalLabel">{% if CURRENT_LANGUAGE == "cs" %}P&#345;ipojit tren&eacute;ra{% else %}Join coach{% endif %}</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body d-grid gap-2">
+          <form method="post" class="d-grid gap-2">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="request_coach_by_code">
+            <label class="form-label form-label-sm mb-0">{% if CURRENT_LANGUAGE == "cs" %}K&oacute;d tren&eacute;ra{% else %}Coach code{% endif %}</label>
+            <input type="text" class="form-control form-control-sm text-uppercase" name="coach_code" placeholder="AB7K9Q2M5T8R" maxlength="12" required>
+            <button type="submit" class="btn btn-primary btn-sm">{% if CURRENT_LANGUAGE == "cs" %}Odeslat &zcaron;&aacute;dost{% else %}Send request{% endif %}</button>
+          </form>
+
+          {% if pending_coach_requests %}
+            <div class="small text-muted">{% if CURRENT_LANGUAGE == "cs" %}&Ccaron;ekaj&iacute;c&iacute; &zcaron;&aacute;dosti{% else %}Pending requests{% endif %}</div>
+            <div class="d-grid gap-2">
+              {% for req in pending_coach_requests %}
+                <div class="eb-invite-row py-2">
+                  {% if CURRENT_LANGUAGE == "cs" %}Tren&eacute;r{% else %}Coach{% endif %}: <strong>{{ req.coach.username }}</strong>
+                </div>
+              {% endfor %}
+            </div>
+          {% endif %}
+
+          {% if approved_coach_links %}
+            <div class="small text-muted mt-1">{% if CURRENT_LANGUAGE == "cs" %}Aktivn&iacute; tren&eacute;&#345;i{% else %}Active coaches{% endif %}</div>
+            <div class="d-grid gap-2">
+              {% for link in approved_coach_links %}
+                <div class="eb-invite-row py-2"><strong>{{ link.coach.username }}</strong></div>
+              {% endfor %}
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
   </div>
 
   <div class="modal fade" id="importActivitiesModal" tabindex="-1" aria-labelledby="importActivitiesModalLabel" aria-hidden="true">
@@ -44,7 +89,7 @@
         <div class="modal-body eb-import-modal-body">
           <div class="eb-import-note">
             {% if CURRENT_LANGUAGE == "cs" %}
-              Garmin heslo se neukládá. Ukládají se pouze šifrované tokeny.
+              Garmin heslo se neukl&aacute;d&aacute;. Ukl&aacute;daj&iacute; se pouze &scaron;ifrovan&eacute; tokeny.
             {% else %}
               Garmin password is not stored. Only encrypted tokens are saved.
             {% endif %}
@@ -54,7 +99,7 @@
           <div class="eb-import-block eb-import-block-connected">
             <div class="eb-import-block-head">
               <div>
-                <div class="eb-import-label">{% if CURRENT_LANGUAGE == "cs" %}Garmin účet{% else %}Garmin account{% endif %}</div>
+                <div class="eb-import-label">{% if CURRENT_LANGUAGE == "cs" %}Garmin &uacute;&ccaron;et{% else %}Garmin account{% endif %}</div>
                 <div class="eb-import-value">{{ garmin_connection.garmin_display_name|default:garmin_connection.garmin_email }}</div>
               </div>
             </div>
@@ -70,7 +115,7 @@
             {% csrf_token %}
             <input type="hidden" name="import_source" value="garmin_connect">
             <div class="eb-import-block-head">
-              <div class="eb-import-title">{% if CURRENT_LANGUAGE == "cs" %}Připojit Garmin účet{% else %}Connect Garmin account{% endif %}</div>
+              <div class="eb-import-title">{% if CURRENT_LANGUAGE == "cs" %}P&#345;ipojit Garmin &uacute;&ccaron;et{% else %}Connect Garmin account{% endif %}</div>
             </div>
             <div class="mb-2">
               <label class="form-label form-label-sm mb-1">{% if CURRENT_LANGUAGE == "cs" %}E-mail{% else %}Email{% endif %}</label>
@@ -80,7 +125,7 @@
               <label class="form-label form-label-sm mb-1">{% if CURRENT_LANGUAGE == "cs" %}Heslo{% else %}Password{% endif %}</label>
               <input type="password" class="form-control form-control-sm" name="garmin_password" placeholder="********" required>
             </div>
-            <button class="btn btn-primary btn-sm w-100" type="submit">{% if CURRENT_LANGUAGE == "cs" %}Připojit Garmin{% else %}Connect Garmin{% endif %}</button>
+            <button class="btn btn-primary btn-sm w-100" type="submit">{% if CURRENT_LANGUAGE == "cs" %}P&#345;ipojit Garmin{% else %}Connect Garmin{% endif %}</button>
           </form>
           {% endif %}
 
@@ -93,11 +138,11 @@
             <div class="d-flex align-items-center gap-2">
               <select class="form-select form-select-sm" id="garminRangeSelect" name="garmin_range">
                 <option value="today">{% if CURRENT_LANGUAGE == "cs" %}Dnes{% else %}Today{% endif %}</option>
-                <option value="yesterday">{% if CURRENT_LANGUAGE == "cs" %}Včera{% else %}Yesterday{% endif %}</option>
-                <option value="this_week">{% if CURRENT_LANGUAGE == "cs" %}Tento týden{% else %}This week{% endif %}</option>
-                <option value="last_week">{% if CURRENT_LANGUAGE == "cs" %}Minulý týden{% else %}Last week{% endif %}</option>
-                <option value="last_30_days" selected>{% if CURRENT_LANGUAGE == "cs" %}Posledních 30 dní{% else %}Last 30 days{% endif %}</option>
-                <option value="all">{% if CURRENT_LANGUAGE == "cs" %}Vše{% else %}All{% endif %}</option>
+                <option value="yesterday">{% if CURRENT_LANGUAGE == "cs" %}V&ccaron;era{% else %}Yesterday{% endif %}</option>
+                <option value="this_week">{% if CURRENT_LANGUAGE == "cs" %}Tento t&yacute;den{% else %}This week{% endif %}</option>
+                <option value="last_week">{% if CURRENT_LANGUAGE == "cs" %}Minul&yacute; t&yacute;den{% else %}Last week{% endif %}</option>
+                <option value="last_30_days" selected>{% if CURRENT_LANGUAGE == "cs" %}Posledn&iacute;ch 30 dn&iacute;{% else %}Last 30 days{% endif %}</option>
+                <option value="all">{% if CURRENT_LANGUAGE == "cs" %}V&scaron;e{% else %}All{% endif %}</option>
               </select>
               <button class="btn btn-success btn-sm" type="submit" {% if not garmin_connection %}disabled{% endif %}>Sync Garmin</button>
             </div>
@@ -118,8 +163,6 @@
   {% include "dashboard/_month_cards.html" with month_state_key=month_state_key add_month_enabled=add_month_enabled add_month_action=add_month_action add_month_athlete_id=add_month_athlete_id plan_editable=plan_editable plan_update_url=plan_update_url completed_editable=completed_editable completed_update_url=completed_update_url %}
 </div>
 
-<link rel="stylesheet" href="{% static 'css/dashboard.css' %}?v=17">
-<script src="{% static 'js/dashboard.js' %}?v=27"></script>
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}?v=46">
+<script src="{% static 'js/dashboard.js' %}?v=43"></script>
 {% endblock %}
-
-

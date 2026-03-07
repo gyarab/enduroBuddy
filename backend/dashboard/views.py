@@ -8,6 +8,7 @@ from datetime import timedelta
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.db import models
 from django.http import JsonResponse
 from django.urls import reverse
 from django.shortcuts import redirect, render
@@ -16,8 +17,11 @@ from django.views.decorators.http import require_POST
 
 from accounts.models import (
     CoachAthlete,
+    CoachJoinRequest,
     GarminConnection,
     GarminSyncAudit,
+    Profile,
+    Role,
     TrainingGroup,
     TrainingGroupAthlete,
     TrainingGroupInvite,
@@ -106,10 +110,46 @@ def _create_training_group_invite(*, group: TrainingGroup, created_by, invited_e
     )
 
 
+def _resolve_coach_from_code(raw_code: str):
+    normalized = (raw_code or "").strip().upper()
+    if not normalized:
+        return None
+    profile = Profile.objects.select_related("user").filter(role=Role.COACH, coach_join_code=normalized).first()
+    return profile.user if profile else None
+
+
 @login_required
 def home(request):
     if request.method == "POST":
         action = request.POST.get("action", "")
+        if action == "request_coach_by_code":
+            coach_code = (request.POST.get("coach_code") or "").strip().upper()
+            coach_user = _resolve_coach_from_code(coach_code)
+            if coach_user is None:
+                messages.error(request, "Kod trenera nebyl nalezen.")
+                return redirect("dashboard_home")
+            if coach_user.id == request.user.id:
+                messages.error(request, "Nemuzes zadat vlastni kod trenera.")
+                return redirect("dashboard_home")
+            if CoachAthlete.objects.filter(coach=coach_user, athlete=request.user).exists():
+                messages.info(request, "Uz jsi u tohoto trenera prirazeny.")
+                return redirect("dashboard_home")
+            already_pending = CoachJoinRequest.objects.filter(
+                coach=coach_user,
+                athlete=request.user,
+                status=CoachJoinRequest.Status.PENDING,
+            ).exists()
+            if already_pending:
+                messages.info(request, "Pozadavek uz ceka na schvaleni.")
+                return redirect("dashboard_home")
+            CoachJoinRequest.objects.create(
+                coach=coach_user,
+                athlete=request.user,
+                status=CoachJoinRequest.Status.PENDING,
+            )
+            messages.success(request, "Pozadavek byl odeslan trenerovi ke schvaleni.")
+            return redirect("dashboard_home")
+
         if action == "add_next_month_self":
             month_created, weeks_created, days_created = add_next_month_for_athlete(athlete=request.user)
             if month_created:
@@ -233,6 +273,16 @@ def home(request):
 
     month_cards = build_month_cards_for_athlete(athlete=request.user, language_code=request.LANGUAGE_CODE)
     garmin_connection = GarminConnection.objects.filter(user=request.user, is_active=True).first()
+    pending_coach_requests = list(
+        CoachJoinRequest.objects.select_related("coach")
+        .filter(athlete=request.user, status=CoachJoinRequest.Status.PENDING)
+        .order_by("-created_at")
+    )
+    approved_coach_links = list(
+        CoachAthlete.objects.select_related("coach")
+        .filter(athlete=request.user)
+        .order_by("coach__username", "coach__id")
+    )
     return render(
         request,
         "dashboard/dashboard.html",
@@ -248,6 +298,8 @@ def home(request):
             "add_month_enabled": True,
             "add_month_action": "add_next_month_self",
             "add_month_athlete_id": None,
+            "pending_coach_requests": pending_coach_requests,
+            "approved_coach_links": approved_coach_links,
         },
     )
 
@@ -274,6 +326,12 @@ def coach_training_plans(request):
 
     selected_group = groups[0]
     selected_athlete = None
+    if request.user.profile.role == Role.COACH:
+        request.user.profile.ensure_coach_join_code()
+    sidebar_name_limit = 18
+    sidebar_focus_limit = 10
+    sidebar_summary_limit = sidebar_name_limit + 3 + sidebar_focus_limit
+    empty_focus_label = ""
 
     if request.method == "POST" and request.POST.get("action") == "create_invite":
         invited_email = (request.POST.get("invited_email") or "").strip()
@@ -283,6 +341,98 @@ def coach_training_plans(request):
             invited_email=invited_email,
         )
         messages.success(request, "Pozv\u00e1nka byla vytvo\u0159ena.")
+        return redirect("coach_training_plans")
+
+    if request.method == "POST" and request.POST.get("action") in {"approve_join_request", "reject_join_request"}:
+        action = request.POST.get("action")
+        join_request_id_raw = request.POST.get("join_request_id")
+        if not join_request_id_raw or not join_request_id_raw.isdigit():
+            messages.error(request, "Neplatny pozadavek.")
+            return redirect("coach_training_plans")
+        join_request = (
+            CoachJoinRequest.objects.select_related("athlete")
+            .filter(id=int(join_request_id_raw), coach=request.user, status=CoachJoinRequest.Status.PENDING)
+            .first()
+        )
+        if join_request is None:
+            messages.error(request, "Pozadavek nebyl nalezen nebo uz byl vyrizen.")
+            return redirect("coach_training_plans")
+
+        if action == "approve_join_request":
+            default_group = groups[0]
+            TrainingGroupAthlete.objects.get_or_create(group=default_group, athlete=join_request.athlete)
+            max_order = CoachAthlete.objects.filter(coach=request.user).aggregate(max_order=models.Max("sort_order")).get("max_order") or 0
+            CoachAthlete.objects.get_or_create(
+                coach=request.user,
+                athlete=join_request.athlete,
+                defaults={"sort_order": int(max_order) + 1},
+            )
+            join_request.status = CoachJoinRequest.Status.APPROVED
+            join_request.decided_at = timezone.now()
+            join_request.save(update_fields=["status", "decided_at"])
+            messages.success(request, "Zadost byla schvalena.")
+        else:
+            join_request.status = CoachJoinRequest.Status.REJECTED
+            join_request.decided_at = timezone.now()
+            join_request.save(update_fields=["status", "decided_at"])
+            messages.info(request, "Zadost byla zamitnuta.")
+        return redirect("coach_training_plans")
+
+    if request.method == "POST" and request.POST.get("action") in {"hide_athlete", "show_athlete"}:
+        action = request.POST.get("action")
+        is_ajax = request.headers.get("X-Requested-With") == "XMLHttpRequest"
+        athlete_id_raw = request.POST.get("athlete_id")
+        if not athlete_id_raw or not athlete_id_raw.isdigit():
+            if is_ajax:
+                return JsonResponse({"ok": False, "error": "Neplatny atlet."}, status=400)
+            messages.error(request, "Neplatny atlet.")
+            return redirect("coach_training_plans")
+        athlete_id = int(athlete_id_raw)
+        if athlete_id == request.user.id:
+            if is_ajax:
+                return JsonResponse({"ok": False, "error": "Nelze skryt vlastni plan."}, status=400)
+            messages.error(request, "Nelze skryt vlastni plan.")
+            return redirect("coach_training_plans")
+        link = CoachAthlete.objects.filter(coach=request.user, athlete_id=athlete_id).first()
+        if link is None:
+            if is_ajax:
+                return JsonResponse({"ok": False, "error": "Atlet nebyl nalezen."}, status=404)
+            messages.error(request, "Atlet nebyl nalezen.")
+            return redirect("coach_training_plans")
+        link.hidden_from_plans = action == "hide_athlete"
+        link.save(update_fields=["hidden_from_plans"])
+        if is_ajax:
+            return JsonResponse({"ok": True, "hidden": link.hidden_from_plans, "athlete_id": athlete_id})
+        messages.success(request, "Nastaveni bylo ulozeno.")
+        return redirect("coach_training_plans")
+
+    if request.method == "POST" and request.POST.get("action") == "remove_athlete":
+        athlete_id_raw = request.POST.get("athlete_id")
+        confirm_name = (request.POST.get("confirm_name") or "").strip()
+        if not athlete_id_raw or not athlete_id_raw.isdigit():
+            messages.error(request, "Neplatny atlet.")
+            return redirect("coach_training_plans")
+        athlete_id = int(athlete_id_raw)
+        if athlete_id == request.user.id:
+            messages.error(request, "Nelze odebrat vlastni plan.")
+            return redirect("coach_training_plans")
+
+        link = CoachAthlete.objects.select_related("athlete").filter(coach=request.user, athlete_id=athlete_id).first()
+        if link is None:
+            messages.error(request, "Atlet nebyl nalezen.")
+            return redirect("coach_training_plans")
+        expected_name = display_name(link.athlete).strip()
+        if confirm_name != expected_name:
+            messages.error(request, "Potvrzovaci jmeno nesouhlasi.")
+            return redirect("coach_training_plans")
+
+        TrainingGroupAthlete.objects.filter(group__coach=request.user, athlete_id=athlete_id).delete()
+        link.delete()
+        CoachJoinRequest.objects.filter(coach=request.user, athlete_id=athlete_id, status=CoachJoinRequest.Status.PENDING).update(
+            status=CoachJoinRequest.Status.REJECTED,
+            decided_at=timezone.now(),
+        )
+        messages.success(request, "Sverenec byl odebran.")
         return redirect("coach_training_plans")
 
     coach_links = {
@@ -308,21 +458,50 @@ def coach_training_plans(request):
         coach_links[athlete_id] = link
 
     ordered_links = sorted(coach_links.values(), key=lambda link: (link.sort_order, link.id))
+    visible_ordered_links = [link for link in ordered_links if not bool(getattr(link, "hidden_from_plans", False))]
     athletes = []
+    managed_athletes = []
 
     request.user.coach_focus = ""
     request.user.is_self_plan = True
+    request.user.display_name = display_name(request.user)
+    request.user.display_name_short = request.user.display_name[:sidebar_name_limit]
+    request.user.sidebar_empty_focus_label = empty_focus_label
+    request.user.sidebar_summary = (
+        f"{request.user.display_name_short} - {empty_focus_label}" if empty_focus_label else request.user.display_name_short
+    )[:sidebar_summary_limit]
     athletes.append(request.user)
 
     for link in ordered_links:
         if link.athlete_id == request.user.id:
             continue
         athlete = athlete_by_id.get(link.athlete_id) or link.athlete
-        athlete.coach_focus = (link.focus or "")[:30]
+        athlete.display_name = display_name(athlete)
+        athlete.display_name_short = athlete.display_name[:sidebar_name_limit]
+        athlete.coach_focus = (link.focus or "")[:sidebar_focus_limit]
         athlete.is_self_plan = False
-        athletes.append(athlete)
+        athlete.sidebar_empty_focus_label = empty_focus_label
+        athlete_focus_text = (athlete.coach_focus or empty_focus_label).strip()
+        athlete.sidebar_summary = (
+            f"{athlete.display_name_short} - {athlete_focus_text}" if athlete_focus_text else athlete.display_name_short
+        )[:sidebar_summary_limit]
+        athlete.is_hidden_from_plans = bool(getattr(link, "hidden_from_plans", False))
+        managed_athletes.append(athlete)
+
+    managed_by_id = {athlete.id: athlete for athlete in managed_athletes}
+    for link in visible_ordered_links:
+        if link.athlete_id == request.user.id:
+            continue
+        athlete = managed_by_id.get(link.athlete_id)
+        if athlete is not None:
+            athletes.append(athlete)
 
     active_invites = list(selected_group.invites.filter(used_at__isnull=True, expires_at__gt=timezone.now()).order_by("-created_at"))
+    pending_join_requests = list(
+        CoachJoinRequest.objects.select_related("athlete")
+        .filter(coach=request.user, status=CoachJoinRequest.Status.PENDING)
+        .order_by("-created_at")
+    )
 
     if request.method == "POST" and request.POST.get("action") == "add_next_month_selected":
         athlete_raw = request.POST.get("athlete_id")
@@ -368,7 +547,7 @@ def coach_training_plans(request):
         month_cards = build_month_cards_for_athlete(athlete=selected_athlete, language_code=request.LANGUAGE_CODE)
         selected_link = coach_links.get(selected_athlete.id) if not selected_athlete_is_self else None
         if selected_link is not None:
-            selected_athlete_focus = (selected_link.focus or "")[:30]
+            selected_athlete_focus = (selected_link.focus or "")[:sidebar_focus_limit]
 
     return render(
         request,
@@ -393,6 +572,9 @@ def coach_training_plans(request):
             "coach_plan_update_url": reverse("coach_update_planned_training"),
             "coach_athlete_focus_update_url": reverse("coach_update_athlete_focus"),
             "coach_athlete_reorder_url": reverse("coach_reorder_athletes"),
+            "coach_join_code": request.user.profile.coach_join_code or "",
+            "pending_join_requests": pending_join_requests,
+            "managed_athletes": managed_athletes,
         },
     )
 
@@ -600,7 +782,7 @@ def coach_update_athlete_focus(request):
         return JsonResponse({"ok": False, "error": "Invalid athlete_id."}, status=400)
     if not isinstance(focus, str):
         return JsonResponse({"ok": False, "error": "Invalid focus value."}, status=400)
-    focus = focus.strip()[:30]
+    focus = focus.strip()[:10]
 
     link = CoachAthlete.objects.filter(coach=request.user, athlete_id=athlete_id).first()
     if link is None:

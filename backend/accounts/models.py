@@ -4,6 +4,8 @@ from django.db.models import Q
 from django.db.models.constraints import UniqueConstraint
 from django.dispatch import receiver
 from django.db.models.signals import post_save
+import secrets
+import string
 
 class Role(models.TextChoices):
         COACH = 'COACH', 'Coach'
@@ -12,15 +14,32 @@ class Role(models.TextChoices):
 class Profile(models.Model):
         user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
         role = models.CharField(max_length=20, choices=Role.choices, default=Role.ATHLETE)
+        coach_join_code = models.CharField(max_length=12, unique=True, null=True, blank=True, db_index=True)
 
         def __str__(self):
             return f"{self.user.username} ({self.role})"
+
+        def ensure_coach_join_code(self) -> str:
+            if self.coach_join_code and len(self.coach_join_code) >= 12:
+                return self.coach_join_code
+            alphabet = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ"
+            for _ in range(20):
+                code = "".join(secrets.choice(alphabet) for _ in range(12))
+                if not Profile.objects.filter(coach_join_code=code).exists():
+                    self.coach_join_code = code
+                    self.save(update_fields=["coach_join_code"])
+                    return code
+            code = "".join(secrets.choice(string.ascii_uppercase + string.digits) for _ in range(12))
+            self.coach_join_code = code
+            self.save(update_fields=["coach_join_code"])
+            return code
 
 class CoachAthlete(models.Model):
     coach = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='coached_athletes')
     athlete = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='athlete_coaches')
     focus = models.CharField(max_length=30, blank=True, default="")
     sort_order = models.PositiveIntegerField(default=0, db_index=True)
+    hidden_from_plans = models.BooleanField(default=False, db_index=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -107,6 +126,41 @@ class TrainingGroupInvite(models.Model):
 
     def __str__(self) -> str:
         return f"Invite {self.group.name} ({self.token[:8]})"
+
+
+class CoachJoinRequest(models.Model):
+    class Status(models.TextChoices):
+        PENDING = "PENDING", "Pending"
+        APPROVED = "APPROVED", "Approved"
+        REJECTED = "REJECTED", "Rejected"
+
+    coach = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="incoming_coach_join_requests",
+    )
+    athlete = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="outgoing_coach_join_requests",
+    )
+    status = models.CharField(max_length=12, choices=Status.choices, default=Status.PENDING, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    decided_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["-created_at", "-id"]
+        constraints = [
+            models.CheckConstraint(check=~Q(coach=models.F("athlete")), name="coach_join_request_no_self"),
+            UniqueConstraint(
+                fields=["coach", "athlete", "status"],
+                condition=Q(status="PENDING"),
+                name="uniq_pending_coach_join_request",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.athlete.username} -> {self.coach.username} ({self.status})"
 
 
 class GarminConnection(models.Model):
