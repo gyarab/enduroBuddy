@@ -8,7 +8,7 @@ from django.utils import timezone
 
 from accounts.models import Role
 from activities.models import Activity, ActivityInterval
-from training.models import PlannedTraining, TrainingMonth, TrainingWeek
+from training.models import CompletedTraining, PlannedTraining, TrainingMonth, TrainingWeek
 
 
 CZ_MONTHS = {
@@ -176,19 +176,64 @@ def _build_completed_rows_for_week(planned_items: list[PlannedTraining]) -> list
         key = ("dated", t.date) if t.date is not None else ("undated", t.id)
         grouped.setdefault(key, []).append(t)
 
+    def _apply_manual_overrides(row: dict[str, Any], completed: CompletedTraining | None) -> None:
+        if completed is None:
+            return
+
+        if completed.distance_m is not None:
+            distance_m = int(completed.distance_m)
+            row["_distance_m"] = distance_m
+            row["km"] = f"{distance_m / 1000.0:.2f}" if distance_m > 0 else "-"
+
+        if completed.time_seconds is not None:
+            duration_min = int(round(int(completed.time_seconds) / 60.0))
+            row["_duration_min"] = duration_min
+            row["min"] = str(duration_min) if duration_min > 0 else "-"
+
+        if completed.avg_hr is not None:
+            row["avg_hr"] = int(completed.avg_hr)
+
+        if completed.note:
+            row["third"] = completed.note
+
+        if completed.feel:
+            feel = completed.feel.strip()
+            if feel.isdigit():
+                row["max_hr"] = int(feel)
+
     rows: list[dict[str, Any]] = []
     for key in sorted(grouped.keys(), key=lambda x: (x[0] == "undated", x[1])):
         items = sorted(grouped[key], key=lambda x: (x.order_in_day, x.id))
         is_two_phase = any(x.is_two_phase_day for x in items)
 
         if is_two_phase:
-            phase_1_activities = [x.activity for x in items[:1] if getattr(x, "activity", None)]
-            phase_2_activities = [x.activity for x in items[1:] if getattr(x, "activity", None)]
-            rows.append(_build_completed_row_from_activities(phase_1_activities))
-            rows.append(_build_completed_row_from_activities(phase_2_activities))
+            phase_1_items = items[:1]
+            phase_2_items = items[1:]
+
+            phase_1_activities = [x.activity for x in phase_1_items if getattr(x, "activity", None)]
+            phase_2_activities = [x.activity for x in phase_2_items if getattr(x, "activity", None)]
+
+            phase_1_row = _build_completed_row_from_activities(phase_1_activities)
+            phase_1_row["planned_id"] = phase_1_items[0].id if len(phase_1_items) == 1 else None
+            phase_1_row["item_count"] = len(phase_1_items)
+            if len(phase_1_items) == 1:
+                _apply_manual_overrides(phase_1_row, getattr(phase_1_items[0], "completed", None))
+            rows.append(phase_1_row)
+
+            phase_2_row = _build_completed_row_from_activities(phase_2_activities)
+            phase_2_row["planned_id"] = phase_2_items[0].id if len(phase_2_items) == 1 else None
+            phase_2_row["item_count"] = len(phase_2_items)
+            if len(phase_2_items) == 1:
+                _apply_manual_overrides(phase_2_row, getattr(phase_2_items[0], "completed", None))
+            rows.append(phase_2_row)
         else:
             day_activities = [x.activity for x in items if getattr(x, "activity", None)]
-            rows.append(_build_completed_row_from_activities(day_activities))
+            row = _build_completed_row_from_activities(day_activities)
+            row["planned_id"] = items[0].id if len(items) == 1 else None
+            row["item_count"] = len(items)
+            if len(items) == 1:
+                _apply_manual_overrides(row, getattr(items[0], "completed", None))
+            rows.append(row)
 
     return rows
 
@@ -267,7 +312,7 @@ def build_month_cards_for_athlete(*, athlete, language_code: str) -> list[dict[s
                         Prefetch(
                             "planned_trainings",
                             queryset=(
-                                PlannedTraining.objects.select_related("activity")
+                                PlannedTraining.objects.select_related("activity", "completed")
                                 .prefetch_related(
                                     Prefetch(
                                         "activity__intervals",

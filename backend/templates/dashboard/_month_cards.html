@@ -4,7 +4,8 @@
 <div
   class="eb-month-widget"
   {% if month_state_key %}data-month-state-key="{{ month_state_key }}"{% endif %}
-  {% if coach_editable and coach_plan_update_url %}data-inline-editable="1" data-plan-update-url="{{ coach_plan_update_url }}"{% endif %}
+  {% if plan_editable and plan_update_url %}data-inline-editable="1" data-plan-update-url="{{ plan_update_url }}"{% endif %}
+  {% if completed_editable and completed_update_url %}data-completed-inline-editable="1" data-completed-update-url="{{ completed_update_url }}"{% endif %}
 >
 <div class="eb-scrollwrap {% if month_switcher_embedded %}eb-scrollwrap--embedded{% endif %}">
   <div class="eb-month-scroll border rounded-3 bg-white p-2" id="monthContentArea">
@@ -49,7 +50,7 @@
                         <td class="eb-planned-date-col">{{ t.date|date:"j.n."|default:"" }}</td>
                         <td class="eb-planned-day-col">{{ t.day_label|default:"" }}</td>
                         <td class="eb-planned-training-col">
-                          {% if coach_editable and t.planned_id and t.item_count == 1 %}
+                          {% if plan_editable and t.planned_id and t.item_count == 1 %}
                             <div
                               class="eb-inline-edit"
                               contenteditable="true"
@@ -61,7 +62,7 @@
                           {% endif %}
                         </td>
                         <td class="eb-planned-notes-col">
-                          {% if coach_editable and t.planned_id and t.item_count == 1 %}
+                          {% if plan_editable and t.planned_id and t.item_count == 1 %}
                             <div
                               class="eb-inline-edit"
                               contenteditable="true"
@@ -114,11 +115,41 @@
                     <tbody>
                       {% for r in w.completed_rows %}
                       <tr>
-                        <td>{{ r.km }}</td>
-                        <td>{{ r.min }}</td>
-                        <td>{{ r.third }}</td>
-                        <td>{{ r.avg_hr|default:"-" }}</td>
-                        <td>{{ r.max_hr|default:"-" }}</td>
+                        <td>
+                          {% if completed_editable and r.planned_id and r.item_count == 1 %}
+                            <div class="eb-completed-inline-edit" contenteditable="true" data-training-id="{{ r.planned_id }}" data-field="km">{{ r.km }}</div>
+                          {% else %}
+                            {{ r.km }}
+                          {% endif %}
+                        </td>
+                        <td>
+                          {% if completed_editable and r.planned_id and r.item_count == 1 %}
+                            <div class="eb-completed-inline-edit" contenteditable="true" data-training-id="{{ r.planned_id }}" data-field="min">{{ r.min }}</div>
+                          {% else %}
+                            {{ r.min }}
+                          {% endif %}
+                        </td>
+                        <td>
+                          {% if completed_editable and r.planned_id and r.item_count == 1 %}
+                            <div class="eb-completed-inline-edit" contenteditable="true" data-training-id="{{ r.planned_id }}" data-field="third">{{ r.third }}</div>
+                          {% else %}
+                            {{ r.third }}
+                          {% endif %}
+                        </td>
+                        <td>
+                          {% if completed_editable and r.planned_id and r.item_count == 1 %}
+                            <div class="eb-completed-inline-edit" contenteditable="true" data-training-id="{{ r.planned_id }}" data-field="avg_hr">{{ r.avg_hr|default:"-" }}</div>
+                          {% else %}
+                            {{ r.avg_hr|default:"-" }}
+                          {% endif %}
+                        </td>
+                        <td>
+                          {% if completed_editable and r.planned_id and r.item_count == 1 %}
+                            <div class="eb-completed-inline-edit" contenteditable="true" data-training-id="{{ r.planned_id }}" data-field="max_hr">{{ r.max_hr|default:"-" }}</div>
+                          {% else %}
+                            {{ r.max_hr|default:"-" }}
+                          {% endif %}
+                        </td>
                       </tr>
                       {% empty %}
                       <tr>
@@ -157,6 +188,23 @@
 <div class="eb-month-switcher {% if month_switcher_embedded %}eb-month-switcher--embedded{% endif %}">
   <div class="container-fluid">
     <div class="d-flex gap-2 px-3 eb-month-switcher-track">
+      {% if add_month_enabled and add_month_action %}
+      <form method="post" class="m-0 flex-shrink-0 eb-add-month-form">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="{{ add_month_action }}">
+        {% if add_month_athlete_id %}
+        <input type="hidden" name="athlete_id" value="{{ add_month_athlete_id }}">
+        {% endif %}
+        <button
+          class="btn btn-primary btn-sm eb-add-month-btn flex-shrink-0"
+          type="submit"
+          title="{% if CURRENT_LANGUAGE == 'cs' %}P&#345;idat m&#283;s&iacute;c{% else %}Add month{% endif %}"
+          aria-label="{% if CURRENT_LANGUAGE == 'cs' %}P&#345;idat m&#283;s&iacute;c{% else %}Add month{% endif %}"
+        >
+          +
+        </button>
+      </form>
+      {% endif %}
       {% for m in month_cards %}
       <button class="month-btn btn btn-outline-dark btn-sm flex-shrink-0 {% if forloop.first %}is-active{% endif %}" data-month-id="{{ m.id }}" type="button">
         {{ m.label }}

@@ -38,13 +38,61 @@ from dashboard.services.month_cards import (
     resolve_week_for_day,
 )
 from dashboard.services.tasks import run_fit_import, run_garmin_sync
-from training.models import PlannedTraining
+from training.models import CompletedTraining, PlannedTraining
 
 
 logger = logging.getLogger(__name__)
 
 # Backward-compatibility for tests importing this helper from dashboard.views.
 _resolve_week_for_day = resolve_week_for_day
+
+
+def _coach_can_access_athlete(*, coach_user, athlete_id: int) -> bool:
+    if coach_user.id == athlete_id:
+        return True
+    has_direct_link = CoachAthlete.objects.filter(coach=coach_user, athlete_id=athlete_id).exists()
+    has_group_link = TrainingGroupAthlete.objects.filter(group__coach=coach_user, athlete_id=athlete_id).exists()
+    return bool(has_direct_link or has_group_link)
+
+
+def _parse_optional_int(value):
+    if value is None:
+        return None
+    if isinstance(value, int):
+        return value
+    if isinstance(value, str):
+        raw = value.strip()
+        if raw in {"", "-"}:
+            return None
+        if raw.isdigit():
+            return int(raw)
+    raise ValueError("Invalid integer value.")
+
+
+def _parse_optional_distance_m(value):
+    if value is None:
+        return None
+    if isinstance(value, str):
+        raw = value.strip().replace(",", ".")
+        if raw in {"", "-"}:
+            return None
+        km = float(raw)
+    elif isinstance(value, (int, float)):
+        km = float(value)
+    else:
+        raise ValueError("Invalid km value.")
+    if km < 0:
+        raise ValueError("Invalid km value.")
+    return int(round(km * 1000))
+
+
+def _parse_optional_minutes_to_seconds(value):
+    minutes = _parse_optional_int(value)
+    if minutes is None:
+        return None
+    if minutes < 0:
+        raise ValueError("Invalid minutes value.")
+    return int(minutes) * 60
 
 
 def _create_training_group_invite(*, group: TrainingGroup, created_by, invited_email: str = "") -> TrainingGroupInvite:
@@ -61,6 +109,15 @@ def _create_training_group_invite(*, group: TrainingGroup, created_by, invited_e
 @login_required
 def home(request):
     if request.method == "POST":
+        action = request.POST.get("action", "")
+        if action == "add_next_month_self":
+            month_created, weeks_created, days_created = add_next_month_for_athlete(athlete=request.user)
+            if month_created:
+                messages.success(request, f"Přidán nový měsíc: týdny {weeks_created}, dny {days_created}.")
+            else:
+                messages.info(request, f"Měsíc už existoval, doplněno: týdny {weeks_created}, dny {days_created}.")
+            return redirect("dashboard_home")
+
         source = request.POST.get("import_source", "fit_upload")
 
         if source == "garmin_connect":
@@ -181,8 +238,16 @@ def home(request):
         "dashboard/dashboard.html",
         {
             "month_cards": month_cards,
+            "month_state_key": request.user.id,
             "garmin_connection": garmin_connection,
             "is_coach": is_coach(request.user),
+            "plan_editable": True,
+            "plan_update_url": reverse("athlete_update_planned_training"),
+            "completed_editable": True,
+            "completed_update_url": reverse("athlete_update_completed_training"),
+            "add_month_enabled": True,
+            "add_month_action": "add_next_month_self",
+            "add_month_athlete_id": None,
         },
     )
 
@@ -244,12 +309,37 @@ def coach_training_plans(request):
 
     ordered_links = sorted(coach_links.values(), key=lambda link: (link.sort_order, link.id))
     athletes = []
+
+    request.user.coach_focus = ""
+    request.user.is_self_plan = True
+    athletes.append(request.user)
+
     for link in ordered_links:
+        if link.athlete_id == request.user.id:
+            continue
         athlete = athlete_by_id.get(link.athlete_id) or link.athlete
         athlete.coach_focus = (link.focus or "")[:30]
+        athlete.is_self_plan = False
         athletes.append(athlete)
 
     active_invites = list(selected_group.invites.filter(used_at__isnull=True, expires_at__gt=timezone.now()).order_by("-created_at"))
+
+    if request.method == "POST" and request.POST.get("action") == "add_next_month_selected":
+        athlete_raw = request.POST.get("athlete_id")
+        target_athlete = None
+        if athlete_raw and athlete_raw.isdigit():
+            athlete_id = int(athlete_raw)
+            target_athlete = next((a for a in athletes if a.id == athlete_id), None)
+        if target_athlete is None:
+            messages.error(request, "Neplatný výběr atleta.")
+            return redirect("coach_training_plans")
+
+        month_created, weeks_created, days_created = add_next_month_for_athlete(athlete=target_athlete)
+        if month_created:
+            messages.success(request, f"Přidán nový měsíc: týdny {weeks_created}, dny {days_created}.")
+        else:
+            messages.info(request, f"Měsíc už existoval, doplněno: týdny {weeks_created}, dny {days_created}.")
+        return redirect(f"{reverse('coach_training_plans')}?athlete={target_athlete.id}")
 
     if request.method == "POST" and request.POST.get("action") == "bulk_add_next_month":
         created_months = 0
@@ -273,9 +363,10 @@ def coach_training_plans(request):
 
     month_cards = []
     selected_athlete_focus = ""
+    selected_athlete_is_self = bool(selected_athlete and selected_athlete.id == request.user.id)
     if selected_athlete is not None:
         month_cards = build_month_cards_for_athlete(athlete=selected_athlete, language_code=request.LANGUAGE_CODE)
-        selected_link = coach_links.get(selected_athlete.id)
+        selected_link = coach_links.get(selected_athlete.id) if not selected_athlete_is_self else None
         if selected_link is not None:
             selected_athlete_focus = (selected_link.focus or "")[:30]
 
@@ -290,7 +381,15 @@ def coach_training_plans(request):
             "selected_athlete": selected_athlete,
             "selected_athlete_name": display_name(selected_athlete) if selected_athlete else "",
             "selected_athlete_focus": selected_athlete_focus,
+            "selected_athlete_is_self": selected_athlete_is_self,
             "month_cards": month_cards,
+            "plan_editable": True,
+            "plan_update_url": reverse("coach_update_planned_training"),
+            "completed_editable": True,
+            "completed_update_url": reverse("coach_update_completed_training"),
+            "add_month_enabled": selected_athlete is not None,
+            "add_month_action": "add_next_month_selected",
+            "add_month_athlete_id": selected_athlete.id if selected_athlete else None,
             "coach_plan_update_url": reverse("coach_update_planned_training"),
             "coach_athlete_focus_update_url": reverse("coach_update_athlete_focus"),
             "coach_athlete_reorder_url": reverse("coach_reorder_athletes"),
@@ -329,14 +428,158 @@ def coach_update_planned_training(request):
         return JsonResponse({"ok": False, "error": "Planned training not found."}, status=404)
 
     athlete_id = planned.week.training_month.athlete_id
-    has_direct_link = CoachAthlete.objects.filter(coach=request.user, athlete_id=athlete_id).exists()
-    has_group_link = TrainingGroupAthlete.objects.filter(group__coach=request.user, athlete_id=athlete_id).exists()
-    if not (has_direct_link or has_group_link):
+    if not _coach_can_access_athlete(coach_user=request.user, athlete_id=athlete_id):
         return JsonResponse({"ok": False, "error": "Forbidden for this athlete."}, status=403)
 
     setattr(planned, field, value)
     planned.save(update_fields=[field])
     return JsonResponse({"ok": True, "planned_id": planned.id, "field": field, "value": value})
+
+
+@login_required
+@require_POST
+def athlete_update_planned_training(request):
+    try:
+        payload = json.loads(request.body.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        return JsonResponse({"ok": False, "error": "Invalid JSON body."}, status=400)
+
+    planned_id = payload.get("planned_id")
+    field = payload.get("field")
+    value = payload.get("value", "")
+
+    if not isinstance(planned_id, int):
+        return JsonResponse({"ok": False, "error": "Invalid planned_id."}, status=400)
+    if field not in {"title", "notes"}:
+        return JsonResponse({"ok": False, "error": "Invalid field."}, status=400)
+    if not isinstance(value, str):
+        return JsonResponse({"ok": False, "error": "Invalid value."}, status=400)
+
+    planned = (
+        PlannedTraining.objects.select_related("week__training_month")
+        .filter(id=planned_id)
+        .first()
+    )
+    if planned is None:
+        return JsonResponse({"ok": False, "error": "Planned training not found."}, status=404)
+
+    if planned.week.training_month.athlete_id != request.user.id:
+        return JsonResponse({"ok": False, "error": "Forbidden for this athlete."}, status=403)
+
+    setattr(planned, field, value)
+    planned.save(update_fields=[field])
+    return JsonResponse({"ok": True, "planned_id": planned.id, "field": field, "value": value})
+
+
+def _update_completed_training_for_planned(*, planned: PlannedTraining, field: str, value):
+    completed, _ = CompletedTraining.objects.get_or_create(planned=planned)
+
+    if field == "km":
+        completed.distance_m = _parse_optional_distance_m(value)
+        completed.save(update_fields=["distance_m"])
+        return "-" if completed.distance_m is None else f"{completed.distance_m / 1000.0:.2f}"
+
+    if field == "min":
+        completed.time_seconds = _parse_optional_minutes_to_seconds(value)
+        completed.save(update_fields=["time_seconds"])
+        if completed.time_seconds is None:
+            return "-"
+        return str(int(round(completed.time_seconds / 60.0)))
+
+    if field == "third":
+        if not isinstance(value, str):
+            raise ValueError("Invalid text value.")
+        completed.note = value
+        completed.save(update_fields=["note"])
+        return value or "-"
+
+    if field == "avg_hr":
+        avg_hr = _parse_optional_int(value)
+        if avg_hr is not None and avg_hr < 0:
+            raise ValueError("Invalid avg_hr value.")
+        completed.avg_hr = avg_hr
+        completed.save(update_fields=["avg_hr"])
+        return completed.avg_hr
+
+    if field == "max_hr":
+        max_hr = _parse_optional_int(value)
+        if max_hr is not None and max_hr < 0:
+            raise ValueError("Invalid max_hr value.")
+        completed.feel = "" if max_hr is None else str(max_hr)
+        completed.save(update_fields=["feel"])
+        if getattr(planned, "activity", None):
+            planned.activity.max_hr = max_hr
+            planned.activity.save(update_fields=["max_hr"])
+        return max_hr
+
+    raise ValueError("Invalid field.")
+
+
+@login_required
+@require_POST
+def coach_update_completed_training(request):
+    if not is_coach(request.user):
+        return JsonResponse({"ok": False, "error": "Coach access only."}, status=403)
+
+    try:
+        payload = json.loads(request.body.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        return JsonResponse({"ok": False, "error": "Invalid JSON body."}, status=400)
+
+    planned_id = payload.get("planned_id")
+    field = payload.get("field")
+    value = payload.get("value", "")
+
+    if not isinstance(planned_id, int):
+        return JsonResponse({"ok": False, "error": "Invalid planned_id."}, status=400)
+    if field not in {"km", "min", "third", "avg_hr", "max_hr"}:
+        return JsonResponse({"ok": False, "error": "Invalid field."}, status=400)
+
+    planned = PlannedTraining.objects.select_related("week__training_month", "activity").filter(id=planned_id).first()
+    if planned is None:
+        return JsonResponse({"ok": False, "error": "Planned training not found."}, status=404)
+
+    athlete_id = planned.week.training_month.athlete_id
+    if not _coach_can_access_athlete(coach_user=request.user, athlete_id=athlete_id):
+        return JsonResponse({"ok": False, "error": "Forbidden for this athlete."}, status=403)
+
+    try:
+        normalized = _update_completed_training_for_planned(planned=planned, field=field, value=value)
+    except ValueError as exc:
+        return JsonResponse({"ok": False, "error": str(exc)}, status=400)
+
+    return JsonResponse({"ok": True, "planned_id": planned.id, "field": field, "value": normalized})
+
+
+@login_required
+@require_POST
+def athlete_update_completed_training(request):
+    try:
+        payload = json.loads(request.body.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        return JsonResponse({"ok": False, "error": "Invalid JSON body."}, status=400)
+
+    planned_id = payload.get("planned_id")
+    field = payload.get("field")
+    value = payload.get("value", "")
+
+    if not isinstance(planned_id, int):
+        return JsonResponse({"ok": False, "error": "Invalid planned_id."}, status=400)
+    if field not in {"km", "min", "third", "avg_hr", "max_hr"}:
+        return JsonResponse({"ok": False, "error": "Invalid field."}, status=400)
+
+    planned = PlannedTraining.objects.select_related("week__training_month", "activity").filter(id=planned_id).first()
+    if planned is None:
+        return JsonResponse({"ok": False, "error": "Planned training not found."}, status=404)
+    if planned.week.training_month.athlete_id != request.user.id:
+        return JsonResponse({"ok": False, "error": "Forbidden for this athlete."}, status=403)
+
+    try:
+        normalized = _update_completed_training_for_planned(planned=planned, field=field, value=value)
+    except ValueError as exc:
+        return JsonResponse({"ok": False, "error": str(exc)}, status=400)
+
+    return JsonResponse({"ok": True, "planned_id": planned.id, "field": field, "value": normalized})
 
 
 @login_required

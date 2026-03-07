@@ -10,7 +10,7 @@ from django.utils import timezone
 
 from accounts.models import CoachAthlete, Role, TrainingGroup, TrainingGroupAthlete, TrainingGroupInvite
 from dashboard.views import _resolve_week_for_day
-from training.models import PlannedTraining, TrainingMonth, TrainingWeek
+from training.models import CompletedTraining, PlannedTraining, TrainingMonth, TrainingWeek
 
 
 class CoachTrainingPlansTests(TestCase):
@@ -53,8 +53,9 @@ class CoachTrainingPlansTests(TestCase):
         resp = self.client.get(reverse("coach_training_plans"))
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.context["selected_group"].id, self.group.id)
-        self.assertEqual(resp.context["selected_athlete"].id, self.athlete.id)
-        self.assertGreaterEqual(len(resp.context["month_cards"]), 1)
+        self.assertEqual(resp.context["selected_athlete"].id, self.coach.id)
+        self.assertTrue(resp.context["selected_athlete_is_self"])
+        self.assertGreaterEqual(len(resp.context["month_cards"]), 0)
 
     def test_coach_cannot_select_foreign_group(self):
         self.client.login(username="coach", password="coach")
@@ -177,6 +178,27 @@ class CoachTrainingPlansTests(TestCase):
         planned.refresh_from_db()
         self.assertEqual(planned.notes, "Keep HR under threshold.")
 
+    def test_coach_can_inline_update_own_planned_training(self):
+        own_week = _resolve_week_for_day(self.coach, date(2026, 3, 8))
+        own_planned = PlannedTraining.objects.create(
+            week=own_week,
+            date=date(2026, 3, 8),
+            day_label="Sun",
+            title="Coach base run",
+            notes="",
+            order_in_day=1,
+        )
+
+        self.client.login(username="coach", password="coach")
+        resp = self.client.post(
+            reverse("coach_update_planned_training"),
+            data=json.dumps({"planned_id": own_planned.id, "field": "title", "value": "Coach updated"}),
+            content_type="application/json",
+        )
+        self.assertEqual(resp.status_code, 200)
+        own_planned.refresh_from_db()
+        self.assertEqual(own_planned.title, "Coach updated")
+
     def test_other_coach_cannot_inline_update_foreign_athlete_planned_training(self):
         week = _resolve_week_for_day(self.athlete2, date(2026, 3, 6))
         planned = PlannedTraining.objects.create(
@@ -247,5 +269,87 @@ class CoachTrainingPlansTests(TestCase):
 
         resp = self.client.get(reverse("coach_training_plans"))
         ordered_ids = [a.id for a in resp.context["athletes"]]
-        self.assertGreaterEqual(len(ordered_ids), 2)
-        self.assertEqual(ordered_ids[:2], [self.athlete2.id, self.athlete.id])
+        self.assertGreaterEqual(len(ordered_ids), 3)
+        self.assertEqual(ordered_ids[0], self.coach.id)
+        self.assertEqual(ordered_ids[1:3], [self.athlete2.id, self.athlete.id])
+
+    def test_athlete_can_inline_update_own_planned_training(self):
+        planned = PlannedTraining.objects.filter(week__training_month__athlete=self.athlete).first()
+        self.assertIsNotNone(planned)
+
+        self.client.login(username="athlete", password="athlete")
+        resp = self.client.post(
+            reverse("athlete_update_planned_training"),
+            data=json.dumps({"planned_id": planned.id, "field": "title", "value": "Own edit"}),
+            content_type="application/json",
+        )
+        self.assertEqual(resp.status_code, 200)
+        planned.refresh_from_db()
+        self.assertEqual(planned.title, "Own edit")
+
+    def test_athlete_cannot_inline_update_foreign_planned_training(self):
+        foreign_week = _resolve_week_for_day(self.athlete2, date(2026, 3, 7))
+        foreign = PlannedTraining.objects.create(
+            week=foreign_week,
+            date=date(2026, 3, 7),
+            day_label="Sat",
+            title="Foreign",
+            order_in_day=1,
+        )
+
+        self.client.login(username="athlete", password="athlete")
+        resp = self.client.post(
+            reverse("athlete_update_planned_training"),
+            data=json.dumps({"planned_id": foreign.id, "field": "title", "value": "Hack"}),
+            content_type="application/json",
+        )
+        self.assertEqual(resp.status_code, 403)
+
+    def test_coach_can_inline_update_completed_training(self):
+        planned = PlannedTraining.objects.filter(week__training_month__athlete=self.athlete).first()
+        self.assertIsNotNone(planned)
+
+        self.client.login(username="coach", password="coach")
+        resp = self.client.post(
+            reverse("coach_update_completed_training"),
+            data=json.dumps({"planned_id": planned.id, "field": "km", "value": "8.50"}),
+            content_type="application/json",
+        )
+        self.assertEqual(resp.status_code, 200)
+
+        completed = CompletedTraining.objects.get(planned=planned)
+        self.assertEqual(completed.distance_m, 8500)
+
+    def test_athlete_can_inline_update_own_completed_training(self):
+        planned = PlannedTraining.objects.filter(week__training_month__athlete=self.athlete).first()
+        self.assertIsNotNone(planned)
+
+        self.client.login(username="athlete", password="athlete")
+        resp = self.client.post(
+            reverse("athlete_update_completed_training"),
+            data=json.dumps({"planned_id": planned.id, "field": "third", "value": "easy + strides"}),
+            content_type="application/json",
+        )
+        self.assertEqual(resp.status_code, 200)
+
+        completed = CompletedTraining.objects.get(planned=planned)
+        self.assertEqual(completed.note, "easy + strides")
+
+    def test_athlete_can_add_next_month_from_dashboard(self):
+        self.client.login(username="athlete", password="athlete")
+        before = TrainingMonth.objects.filter(athlete=self.athlete).count()
+        resp = self.client.post(reverse("dashboard_home"), data={"action": "add_next_month_self"})
+        self.assertEqual(resp.status_code, 302)
+        after = TrainingMonth.objects.filter(athlete=self.athlete).count()
+        self.assertGreaterEqual(after, before + 1)
+
+    def test_coach_can_add_next_month_for_selected_athlete(self):
+        self.client.login(username="coach", password="coach")
+        before = TrainingMonth.objects.filter(athlete=self.athlete).count()
+        resp = self.client.post(
+            reverse("coach_training_plans"),
+            data={"action": "add_next_month_selected", "athlete_id": str(self.athlete.id)},
+        )
+        self.assertEqual(resp.status_code, 302)
+        after = TrainingMonth.objects.filter(athlete=self.athlete).count()
+        self.assertGreaterEqual(after, before + 1)
