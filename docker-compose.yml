@@ -20,6 +20,9 @@ services:
     restart: unless-stopped
     depends_on:
       - db
+    environment:
+      POSTGRES_HOST: db
+      DJANGO_DEBUG: "true"
     env_file:
       - .env
     ports:
