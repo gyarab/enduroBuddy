@@ -5,6 +5,8 @@
   class="eb-month-widget"
   {% if month_state_key %}data-month-state-key="{{ month_state_key }}"{% endif %}
   {% if plan_editable and plan_update_url %}data-inline-editable="1" data-plan-update-url="{{ plan_update_url }}"{% endif %}
+  {% if add_phase_url %}data-add-phase-url="{{ add_phase_url }}"{% endif %}
+  {% if remove_phase_url %}data-remove-phase-url="{{ remove_phase_url }}"{% endif %}
   {% if completed_editable and completed_update_url %}data-completed-inline-editable="1" data-completed-update-url="{{ completed_update_url }}"{% endif %}
 >
 <div class="eb-scrollwrap {% if month_switcher_embedded %}eb-scrollwrap--embedded{% endif %}">
@@ -84,7 +86,9 @@
                     </tbody>
                     <tfoot class="table-light eb-planned-week-footer">
                       <tr>
-                        <th colspan="4">&nbsp;</th>
+                        <th colspan="2">&nbsp;</th>
+                        <th class="eb-planned-week-total-km">{{ w.planned_total_km_text }}</th>
+                        <th>&nbsp;</th>
                       </tr>
                     </tfoot>
                   </table>

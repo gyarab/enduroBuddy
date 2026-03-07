@@ -193,6 +193,8 @@ def home(request):
             "is_coach": is_coach(request.user),
             "plan_editable": True,
             "plan_update_url": reverse("athlete_update_planned_training"),
+            "add_phase_url": reverse("athlete_add_second_phase_training"),
+            "remove_phase_url": reverse("athlete_remove_second_phase_training"),
             "completed_editable": True,
             "completed_update_url": reverse("athlete_update_completed_training"),
             "add_month_enabled": True,

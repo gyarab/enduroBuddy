@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from decimal import Decimal
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -13,9 +14,12 @@ from django.views.decorators.http import require_POST
 
 from accounts.models import CoachAthlete, CoachJoinRequest, Role, TrainingGroup, TrainingGroupAthlete
 from dashboard.services.month_cards import add_next_month_for_athlete, build_month_cards_for_athlete, display_name, is_coach
+from dashboard.services.planned_km import estimate_running_km_from_title
 from training.models import PlannedTraining
 from .views_shared import (
     _coach_can_access_athlete,
+    _create_second_phase_for_planned,
+    _remove_second_phase_for_planned,
     _create_training_group_invite,
     _get_cached_coach_accessible_ids,
     _update_completed_training_for_planned,
@@ -294,6 +298,8 @@ def coach_training_plans(request):
             "month_cards": month_cards,
             "plan_editable": True,
             "plan_update_url": reverse("coach_update_planned_training"),
+            "add_phase_url": reverse("coach_add_second_phase_training"),
+            "remove_phase_url": reverse("coach_remove_second_phase_training"),
             "completed_editable": True,
             "completed_update_url": reverse("coach_update_completed_training"),
             "add_month_enabled": selected_athlete is not None,
@@ -350,7 +356,14 @@ def coach_update_planned_training(request):
         return JsonResponse({"ok": False, "error": "Forbidden for this athlete."}, status=403)
 
     setattr(planned, field, value)
-    planned.save(update_fields=[field])
+    update_fields = [field]
+    if field == "title":
+        estimated = estimate_running_km_from_title(value)
+        if estimated is not None:
+            estimated = min(estimated, _MAX_PLANNED_DISTANCE_KM)
+        planned.planned_distance_km = estimated
+        update_fields.append("planned_distance_km")
+    planned.save(update_fields=update_fields)
     return JsonResponse({"ok": True, "planned_id": planned.id, "field": field, "value": value})
 
 
@@ -394,6 +407,98 @@ def coach_update_completed_training(request):
         return JsonResponse({"ok": False, "error": str(exc)}, status=400)
 
     return JsonResponse({"ok": True, "planned_id": planned.id, "field": field, "value": normalized})
+
+
+@login_required
+@require_POST
+def coach_add_second_phase_training(request):
+    if not is_coach(request.user):
+        return JsonResponse({"ok": False, "error": "Coach access only."}, status=403)
+
+    try:
+        payload = json.loads(request.body.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        return JsonResponse({"ok": False, "error": "Invalid JSON body."}, status=400)
+
+    planned_id = payload.get("planned_id")
+    if not isinstance(planned_id, int):
+        return JsonResponse({"ok": False, "error": "Invalid planned_id."}, status=400)
+
+    planned = (
+        PlannedTraining.objects.select_related("week__training_month")
+        .filter(id=planned_id)
+        .first()
+    )
+    if planned is None:
+        return JsonResponse({"ok": False, "error": "Planned training not found."}, status=404)
+
+    athlete_id = planned.week.training_month.athlete_id
+    accessible_ids = _get_cached_coach_accessible_ids(request)
+    if not _coach_can_access_athlete(
+        coach_user=request.user,
+        athlete_id=athlete_id,
+        accessible_ids=accessible_ids,
+    ):
+        return JsonResponse({"ok": False, "error": "Forbidden for this athlete."}, status=403)
+
+    try:
+        created = _create_second_phase_for_planned(planned=planned)
+    except ValueError as exc:
+        return JsonResponse({"ok": False, "error": str(exc)}, status=400)
+
+    return JsonResponse(
+        {
+            "ok": True,
+            "planned_id": planned.id,
+            "second_phase_planned_id": created.id,
+        }
+    )
+
+
+@login_required
+@require_POST
+def coach_remove_second_phase_training(request):
+    if not is_coach(request.user):
+        return JsonResponse({"ok": False, "error": "Coach access only."}, status=403)
+
+    try:
+        payload = json.loads(request.body.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        return JsonResponse({"ok": False, "error": "Invalid JSON body."}, status=400)
+
+    planned_id = payload.get("planned_id")
+    if not isinstance(planned_id, int):
+        return JsonResponse({"ok": False, "error": "Invalid planned_id."}, status=400)
+
+    planned = (
+        PlannedTraining.objects.select_related("week__training_month")
+        .filter(id=planned_id)
+        .first()
+    )
+    if planned is None:
+        return JsonResponse({"ok": False, "error": "Planned training not found."}, status=404)
+
+    athlete_id = planned.week.training_month.athlete_id
+    accessible_ids = _get_cached_coach_accessible_ids(request)
+    if not _coach_can_access_athlete(
+        coach_user=request.user,
+        athlete_id=athlete_id,
+        accessible_ids=accessible_ids,
+    ):
+        return JsonResponse({"ok": False, "error": "Forbidden for this athlete."}, status=403)
+
+    try:
+        removed_planned_id = _remove_second_phase_for_planned(planned=planned)
+    except ValueError as exc:
+        return JsonResponse({"ok": False, "error": str(exc)}, status=400)
+
+    return JsonResponse(
+        {
+            "ok": True,
+            "planned_id": planned.id,
+            "removed_planned_id": removed_planned_id,
+        }
+    )
 
 
 
@@ -461,3 +566,4 @@ def coach_reorder_athletes(request):
     return JsonResponse({"ok": True})
 
 
+_MAX_PLANNED_DISTANCE_KM = Decimal("999.99")

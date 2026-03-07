@@ -9,6 +9,7 @@ from django.utils import timezone
 from accounts.models import Role
 from activities.models import Activity, ActivityInterval
 from training.models import CompletedTraining, PlannedTraining, TrainingMonth, TrainingWeek
+from .planned_km import estimate_running_km_from_title, format_week_km_label
 
 
 CZ_MONTHS = {
@@ -267,6 +268,15 @@ def _sum_week_total(rows: list[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
+def _sum_planned_week_km(planned_items: list[PlannedTraining]) -> float:
+    total = 0.0
+    for planned in planned_items:
+        extracted = estimate_running_km_from_title(planned.title)
+        if extracted is not None:
+            total += float(extracted)
+    return total
+
+
 def _week_index_in_month(d: date) -> int:
     first_day = d.replace(day=1)
     shift = (7 - first_day.weekday()) % 7
@@ -337,6 +347,7 @@ def build_month_cards_for_athlete(*, athlete, language_code: str) -> list[dict[s
         for w in list(m.weeks.all()):
             planned_items = list(w.planned_trainings.all())
             w.planned_rows = _build_planned_rows_for_week(planned_items)
+            w.planned_total_km_text = format_week_km_label(_sum_planned_week_km(planned_items), language_code)
             w.completed_rows = _build_completed_rows_for_week(planned_items)
             w.completed_total = _sum_week_total(w.completed_rows)
             weeks_out.append(w)

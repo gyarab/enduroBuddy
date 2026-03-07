@@ -16,6 +16,7 @@ from accounts.services.garmin_secret_store import encrypt_tokenstore
 from activities.models import Activity, ActivityFile, ActivityInterval
 from activities.services.garmin_importer import GarminDownloadResult, GarminFitPayload
 from activities.services.fit_parser import parse_fit_file
+from dashboard.services.imports import _resolve_planned_training
 from dashboard.views import _resolve_week_for_day
 from training.models import CompletedTraining, PlannedTraining, TrainingMonth, TrainingWeek
 
@@ -267,6 +268,35 @@ class DashboardFitImportTests(TestCase):
         self.assertEqual(completed_rows[0]["third"], "5:00/km")
         self.assertEqual(completed_rows[1]["km"], "5.00")
         self.assertEqual(completed_rows[1]["third"], "(1:00, 1:20)")
+
+    def test_import_resolver_marks_day_as_two_phase_when_creating_second_training(self):
+        run_day = date(2026, 3, 6)
+        week = _resolve_week_for_day(self.user, run_day)
+        first = PlannedTraining.objects.create(
+            week=week,
+            date=run_day,
+            day_label="Fri",
+            title="AM run",
+            order_in_day=1,
+            is_two_phase_day=False,
+        )
+        Activity.objects.create(
+            athlete=self.user,
+            planned_training=first,
+            workout_type=Activity.WorkoutType.RUN,
+            started_at=timezone.now(),
+            distance_m=5000,
+            duration_s=1500,
+        )
+
+        second = _resolve_planned_training(self.user, run_day, "PM run")
+        first.refresh_from_db()
+        second.refresh_from_db()
+
+        self.assertNotEqual(first.id, second.id)
+        self.assertEqual(second.order_in_day, 2)
+        self.assertTrue(first.is_two_phase_day)
+        self.assertTrue(second.is_two_phase_day)
 
     @patch("dashboard.services.imports.download_garmin_fit_payloads")
     def test_garmin_sync_imports_activity(self, mocked_download):
