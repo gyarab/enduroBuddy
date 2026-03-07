@@ -130,6 +130,18 @@
   flex: 0 0 auto;
 }
 
+.eb-month-switcher-track {
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.eb-month-switcher-track::-webkit-scrollbar {
+  display: none;
+}
+
 /* ===== import modal ===== */
 .eb-import-modal-body {
   display: grid;
@@ -209,7 +221,7 @@
 
 .eb-coach-shell {
   display: grid;
-  grid-template-columns: 260px 1fr;
+  grid-template-columns: calc(34ch + 1rem) 1fr;
   gap: 14px;
   align-items: stretch;
   height: calc(100vh - 112px);
@@ -220,11 +232,90 @@
   position: static;
   overflow-y: auto;
   max-height: 100%;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.eb-coach-sidebar::-webkit-scrollbar {
+  display: none;
 }
 
 .eb-coach-sidebar .btn {
+  width: 100%;
+  min-height: 2.1rem;
   padding-top: 0.28rem;
   padding-bottom: 0.28rem;
+  padding-left: 0.45rem;
+  padding-right: 0.45rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
+}
+
+.eb-athlete-item {
+  cursor: grab;
+}
+
+.eb-athlete-item.is-dragging {
+  opacity: 0.65;
+}
+
+.eb-athlete-row-label {
+  display: inline-flex;
+  min-width: 0;
+  width: 100%;
+  overflow: hidden;
+  gap: 0.35rem;
+  align-items: center;
+}
+
+.eb-athlete-drag-handle {
+  flex: 0 0 auto;
+  opacity: 0.5;
+  font-weight: 700;
+  letter-spacing: -1px;
+  cursor: grab;
+  user-select: none;
+}
+
+.eb-athlete-item.is-dragging .eb-athlete-drag-handle {
+  cursor: grabbing;
+}
+
+.eb-athlete-name {
+  flex: 0 0 auto;
+  max-width: 11ch;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.eb-athlete-focus {
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 30ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  opacity: 0.75;
+  font-size: 0.82rem;
+}
+
+.eb-athlete-focus-input {
+  width: 30ch;
+  min-width: 30ch;
+  max-width: 30ch;
+}
+
+.eb-athlete-focus-input.is-saving {
+  background: #eef7ff;
+}
+
+.eb-athlete-focus-input.is-error {
+  background: #fde8e8;
 }
 
 .eb-coach-main .card {

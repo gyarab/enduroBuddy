@@ -151,7 +151,7 @@
 
 <div class="eb-month-switcher {% if month_switcher_embedded %}eb-month-switcher--embedded{% endif %}">
   <div class="container-fluid">
-    <div class="d-flex gap-2 overflow-auto px-3">
+    <div class="d-flex gap-2 px-3 eb-month-switcher-track">
       {% for m in month_cards %}
       <button class="month-btn btn btn-outline-dark btn-sm flex-shrink-0 {% if forloop.first %}is-active{% endif %}" data-month-id="{{ m.id }}" type="button">
         {{ m.label }}

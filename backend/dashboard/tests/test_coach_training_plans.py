@@ -210,3 +210,42 @@ class CoachTrainingPlansTests(TestCase):
             content_type="application/json",
         )
         self.assertEqual(resp.status_code, 400)
+
+    def test_coach_can_update_athlete_focus(self):
+        CoachAthlete.objects.get_or_create(coach=self.coach, athlete=self.athlete)
+        self.client.login(username="coach", password="coach")
+        resp = self.client.post(
+            reverse("coach_update_athlete_focus"),
+            data=json.dumps({"athlete_id": self.athlete.id, "focus": "Silnicni maraton"}),
+            content_type="application/json",
+        )
+        self.assertEqual(resp.status_code, 200)
+        link = CoachAthlete.objects.get(coach=self.coach, athlete=self.athlete)
+        self.assertEqual(link.focus, "Silnicni maraton")
+
+    def test_other_coach_cannot_update_athlete_focus(self):
+        CoachAthlete.objects.get_or_create(coach=self.coach, athlete=self.athlete)
+        self.client.login(username="coach2", password="coach2")
+        resp = self.client.post(
+            reverse("coach_update_athlete_focus"),
+            data=json.dumps({"athlete_id": self.athlete.id, "focus": "Test"}),
+            content_type="application/json",
+        )
+        self.assertEqual(resp.status_code, 404)
+
+    def test_coach_can_reorder_athletes_and_order_is_used_in_sidebar(self):
+        CoachAthlete.objects.get_or_create(coach=self.coach, athlete=self.athlete, defaults={"sort_order": 1})
+        CoachAthlete.objects.get_or_create(coach=self.coach, athlete=self.athlete2, defaults={"sort_order": 2})
+
+        self.client.login(username="coach", password="coach")
+        reorder = self.client.post(
+            reverse("coach_reorder_athletes"),
+            data=json.dumps({"athlete_ids": [self.athlete2.id, self.athlete.id]}),
+            content_type="application/json",
+        )
+        self.assertEqual(reorder.status_code, 200)
+
+        resp = self.client.get(reverse("coach_training_plans"))
+        ordered_ids = [a.id for a in resp.context["athletes"]]
+        self.assertGreaterEqual(len(ordered_ids), 2)
+        self.assertEqual(ordered_ids[:2], [self.athlete2.id, self.athlete.id])
