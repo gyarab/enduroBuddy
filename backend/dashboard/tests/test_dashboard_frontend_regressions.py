@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import re
 from pathlib import Path
 
 from django.test import SimpleTestCase
@@ -8,15 +7,38 @@ from django.test import SimpleTestCase
 
 BACKEND_DIR = Path(__file__).resolve().parents[2]
 JS_PATH = BACKEND_DIR / "dashboard" / "static" / "js" / "dashboard.js"
+JS_CORE_PATH = BACKEND_DIR / "dashboard" / "static" / "js" / "dashboard_core.js"
+JS_METRICS_PATH = BACKEND_DIR / "dashboard" / "static" / "js" / "dashboard_metrics.js"
+JS_API_PATH = BACKEND_DIR / "dashboard" / "static" / "js" / "dashboard_api.js"
+JS_INLINE_SHARED_PATH = BACKEND_DIR / "dashboard" / "static" / "js" / "dashboard_inline_shared.js"
+JS_MONTH_PATH = BACKEND_DIR / "dashboard" / "static" / "js" / "dashboard_month.js"
+JS_PLANNED_PATH = BACKEND_DIR / "dashboard" / "static" / "js" / "dashboard_editor_planned.js"
+JS_COMPLETED_PATH = BACKEND_DIR / "dashboard" / "static" / "js" / "dashboard_editor_completed.js"
+JS_COACH_PATH = BACKEND_DIR / "dashboard" / "static" / "js" / "dashboard_coach.js"
 CSS_PATH = BACKEND_DIR / "dashboard" / "static" / "css" / "dashboard.css"
 DASHBOARD_TEMPLATE_PATH = BACKEND_DIR / "templates" / "dashboard" / "dashboard.html"
 COACH_TEMPLATE_PATH = BACKEND_DIR / "templates" / "dashboard" / "coach_training_plans.html"
 MONTH_CARDS_TEMPLATE_PATH = BACKEND_DIR / "templates" / "dashboard" / "_month_cards.html"
+ASSETS_TEMPLATE_PATH = BACKEND_DIR / "templates" / "dashboard" / "_assets.html"
 
 
 class DashboardFrontendRegressionTests(SimpleTestCase):
+    def _combined_js(self) -> str:
+        parts = [
+            JS_PATH.read_text(encoding="utf-8"),
+            JS_CORE_PATH.read_text(encoding="utf-8"),
+            JS_METRICS_PATH.read_text(encoding="utf-8"),
+            JS_API_PATH.read_text(encoding="utf-8"),
+            JS_INLINE_SHARED_PATH.read_text(encoding="utf-8"),
+            JS_MONTH_PATH.read_text(encoding="utf-8"),
+            JS_PLANNED_PATH.read_text(encoding="utf-8"),
+            JS_COMPLETED_PATH.read_text(encoding="utf-8"),
+            JS_COACH_PATH.read_text(encoding="utf-8"),
+        ]
+        return "\n".join(parts)
+
     def test_js_contains_keyboard_navigation_and_selection_handlers(self):
-        js = JS_PATH.read_text(encoding="utf-8")
+        js = self._combined_js()
 
         self.assertIn('event.key === "Enter"', js)
         self.assertIn('event.key === "Tab"', js)
@@ -31,7 +53,7 @@ class DashboardFrontendRegressionTests(SimpleTestCase):
         self.assertIn("clearSelectedCellsIfAny()", js)
 
     def test_js_contains_column_width_equalization_for_month(self):
-        js = JS_PATH.read_text(encoding="utf-8")
+        js = self._combined_js()
 
         self.assertIn('--eb-planned-training-col-width', js)
         self.assertIn('--eb-planned-notes-col-width', js)
@@ -52,30 +74,44 @@ class DashboardFrontendRegressionTests(SimpleTestCase):
         self.assertIn("width: var(--eb-planned-training-col-width);", css)
         self.assertIn("width: var(--eb-planned-notes-col-width);", css)
 
-    def test_dashboard_and_coach_templates_use_same_asset_versions(self):
+    def test_dashboard_and_coach_templates_use_shared_asset_version_token(self):
         dashboard_html = DASHBOARD_TEMPLATE_PATH.read_text(encoding="utf-8")
         coach_html = COACH_TEMPLATE_PATH.read_text(encoding="utf-8")
+        assets_html = ASSETS_TEMPLATE_PATH.read_text(encoding="utf-8")
 
-        js_pattern = re.compile(r"js/dashboard\.js' %}\?v=(\d+)")
-        css_pattern = re.compile(r"css/dashboard\.css' %}\?v=(\d+)")
+        expected_suffix = "?v={{ dashboard_asset_version }}"
+        self.assertIn('{% include "dashboard/_assets.html" %}', dashboard_html)
+        self.assertIn('{% include "dashboard/_assets.html" %}', coach_html)
+        self.assertIn(f"css/dashboard.css' %}}{expected_suffix}", assets_html)
+        self.assertIn(f"js/dashboard.js' %}}{expected_suffix}", assets_html)
 
-        dashboard_js_match = js_pattern.search(dashboard_html)
-        coach_js_match = js_pattern.search(coach_html)
-        dashboard_css_match = css_pattern.search(dashboard_html)
-        coach_css_match = css_pattern.search(coach_html)
+    def test_dashboard_and_coach_templates_include_module_chain(self):
+        dashboard_html = DASHBOARD_TEMPLATE_PATH.read_text(encoding="utf-8")
+        coach_html = COACH_TEMPLATE_PATH.read_text(encoding="utf-8")
+        assets_html = ASSETS_TEMPLATE_PATH.read_text(encoding="utf-8")
 
-        self.assertIsNotNone(dashboard_js_match)
-        self.assertIsNotNone(coach_js_match)
-        self.assertIsNotNone(dashboard_css_match)
-        self.assertIsNotNone(coach_css_match)
+        required_assets = [
+            "js/dashboard_core.js",
+            "js/dashboard_metrics.js",
+            "js/dashboard_api.js",
+            "js/dashboard_inline_shared.js",
+            "js/dashboard_month.js",
+            "js/dashboard_editor_planned.js",
+            "js/dashboard_editor_completed.js",
+            "js/dashboard_coach.js",
+            "js/dashboard.js",
+        ]
 
-        dashboard_js_version = int(dashboard_js_match.group(1))
-        coach_js_version = int(coach_js_match.group(1))
-        dashboard_css_version = int(dashboard_css_match.group(1))
-        coach_css_version = int(coach_css_match.group(1))
+        for asset in required_assets:
+            self.assertIn(asset, assets_html)
+            self.assertIn(f"{asset}' %}}?v={{{{ dashboard_asset_version }}}}", assets_html)
+        self.assertIn('{% include "dashboard/_assets.html" %}', dashboard_html)
+        self.assertIn('{% include "dashboard/_assets.html" %}', coach_html)
 
-        self.assertEqual(dashboard_js_version, coach_js_version)
-        self.assertEqual(dashboard_css_version, coach_css_version)
+    def test_dashboard_bootstrap_uses_fail_fast_dependency_guards(self):
+        js = JS_PATH.read_text(encoding="utf-8")
+        self.assertIn("requiredFn(", js)
+        self.assertIn("EB module dependency is missing", js)
 
     def test_month_cards_template_contains_planned_footer_row_for_alignment(self):
         month_cards_html = MONTH_CARDS_TEMPLATE_PATH.read_text(encoding="utf-8")

@@ -66,8 +66,8 @@ def _fmt_intervals(intervals: list[ActivityInterval]) -> str:
 
 
 def _activity_segment(a: Activity) -> str:
-    intervals = list(a.intervals.all())
     if (a.workout_type or "RUN") == "WORKOUT":
+        intervals = list(a.intervals.all())
         return _fmt_intervals(intervals)
 
     pace = _fmt_mmss(a.avg_pace_s_per_km)
@@ -316,7 +316,7 @@ def build_month_cards_for_athlete(*, athlete, language_code: str) -> list[dict[s
                                 .prefetch_related(
                                     Prefetch(
                                         "activity__intervals",
-                                        queryset=ActivityInterval.objects.order_by("index"),
+                                        queryset=ActivityInterval.objects.filter(activity__workout_type="WORKOUT").order_by("index"),
                                     )
                                 )
                                 .order_by("date", "id")
@@ -374,34 +374,70 @@ def add_next_month_for_athlete(*, athlete) -> tuple[bool, int, int]:
     )
 
     day_labels = ["Po", "\u00dat", "St", "\u010ct", "P\u00e1", "So", "Ne"]
-    weeks_created = 0
-    days_created = 0
 
     monday = _first_monday_in_month(target_year, target_month)
+    week_starts: list[tuple[int, date]] = []
     week_index = 1
     while monday.month == target_month:
-        week_obj, week_was_created = TrainingWeek.objects.get_or_create(
-            training_month=month_obj,
-            week_index=week_index,
-        )
-        if week_was_created:
-            weeks_created += 1
-
-        for offset, day_label in enumerate(day_labels):
-            run_day = monday + timedelta(days=offset)
-            _, created = PlannedTraining.objects.get_or_create(
-                week=week_obj,
-                date=run_day,
-                order_in_day=1,
-                defaults={"day_label": day_label, "title": "", "notes": ""},
-            )
-            if created:
-                days_created += 1
-
+        week_starts.append((week_index, monday))
         monday += timedelta(days=7)
         week_index += 1
 
-    return month_created, weeks_created, days_created
+    existing_weeks = {
+        w.week_index: w
+        for w in TrainingWeek.objects.filter(
+            training_month=month_obj,
+            week_index__in=[idx for idx, _ in week_starts],
+        )
+    }
+
+    new_weeks = [
+        TrainingWeek(training_month=month_obj, week_index=idx)
+        for idx, _ in week_starts
+        if idx not in existing_weeks
+    ]
+    if new_weeks:
+        TrainingWeek.objects.bulk_create(new_weeks, batch_size=50)
+
+    weeks_by_index = {
+        w.week_index: w
+        for w in TrainingWeek.objects.filter(
+            training_month=month_obj,
+            week_index__in=[idx for idx, _ in week_starts],
+        )
+    }
+
+    existing_days = set(
+        PlannedTraining.objects.filter(
+            week__training_month=month_obj,
+            week__week_index__in=[idx for idx, _ in week_starts],
+            order_in_day=1,
+            date__isnull=False,
+        ).values_list("week__week_index", "date")
+    )
+
+    missing_days = []
+    for idx, week_start in week_starts:
+        for offset, day_label in enumerate(day_labels):
+            run_day = week_start + timedelta(days=offset)
+            day_key = (idx, run_day)
+            if day_key in existing_days:
+                continue
+            missing_days.append(
+                PlannedTraining(
+                    week=weeks_by_index[idx],
+                    date=run_day,
+                    order_in_day=1,
+                    day_label=day_label,
+                    title="",
+                    notes="",
+                )
+            )
+
+    if missing_days:
+        PlannedTraining.objects.bulk_create(missing_days, batch_size=200)
+
+    return month_created, len(new_weeks), len(missing_days)
 
 
 def is_coach(user) -> bool:

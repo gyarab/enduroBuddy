@@ -329,9 +329,8 @@
   </div>
 </div>
 
-<link rel="stylesheet" href="{% static 'css/dashboard.css' %}?v=46">
 <script>
   document.body.classList.add("eb-coach-page");
 </script>
-<script src="{% static 'js/dashboard.js' %}?v=43"></script>
+{% include "dashboard/_assets.html" %}
 {% endblock %}

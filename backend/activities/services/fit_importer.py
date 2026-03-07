@@ -26,13 +26,24 @@ def import_fit_into_activity(
     checksum_sha256: str | None = None,
     create_activity_file_row: bool = True,
     parsed_result: FitParseResult | None = None,
+    force_reimport: bool = False,
 ) -> FitImportOutcome:
     """
     Rozparsuje FIT a uloží data do DB.
     Soubor se nikam neukládá (parsujeme z fileobj).
     Vrací FitImportOutcome kvůli testům a diagnostice.
     """
-
+    if create_activity_file_row and checksum_sha256 and not force_reimport:
+        already_imported = ActivityFile.objects.filter(
+            activity=activity,
+            checksum_sha256=checksum_sha256,
+        ).exists()
+        if already_imported:
+            return FitImportOutcome(
+                activity=activity,
+                intervals_created=ActivityInterval.objects.filter(activity=activity).count(),
+                samples_created=ActivitySample.objects.filter(activity=activity).count(),
+            )
     # parse mimo transakci (rychlé a bez locků)
     res = parsed_result or parse_fit_file(fileobj)
     s = res.summary or {}
@@ -106,3 +117,4 @@ def import_fit_into_activity(
         intervals_created=len(intervals),
         samples_created=len(samples),
     )
+
