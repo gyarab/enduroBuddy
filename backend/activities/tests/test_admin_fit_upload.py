@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import tempfile
+import shutil
 from pathlib import Path
 
 from django.contrib.auth import get_user_model
@@ -46,7 +47,8 @@ class AdminFitUploadTests(TestCase):
         uploaded = self._load_fixture("2x1km, 4x500m.fit")
 
         # 3) dočasný MEDIA_ROOT – testujeme, že se nic nevytvoří
-        with tempfile.TemporaryDirectory() as tmp_media:
+        tmp_media = tempfile.mkdtemp()
+        try:
             with override_settings(MEDIA_ROOT=tmp_media):
                 url = reverse("admin:activities_activityfile_add")
 
@@ -93,3 +95,5 @@ class AdminFitUploadTests(TestCase):
                 # 7) v MEDIA_ROOT nesmí vzniknout žádný .fit
                 media_fits = list(Path(tmp_media).rglob("*.fit"))
                 self.assertEqual(media_fits, [])
+        finally:
+            shutil.rmtree(tmp_media, ignore_errors=True)
