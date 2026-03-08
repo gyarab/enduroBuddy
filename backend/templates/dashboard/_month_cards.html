@@ -1,4 +1,4 @@
-﻿{% load i18n %}
+{% load i18n %}
 {% get_current_language as CURRENT_LANGUAGE %}
 
 <div
@@ -12,17 +12,13 @@
 <div class="alert alert-info py-2 px-3 mb-2 d-none eb-plan-rules-onboarding" role="alert">
   <div class="d-flex align-items-center justify-content-between gap-2">
     <div class="small mb-0">
-      {% if CURRENT_LANGUAGE == "cs" %}
-        Pro pÅ™esn&eacute; sÄ&iacute;t&aacute;n&iacute; km pi&scaron; vzd&aacute;lenosti jako <code>8 km</code>, <code>6-8 km</code>, <code>6x300m</code>, <code>2R/2V</code>.
-      {% else %}
-        For accurate planned km total, write distances like <code>8 km</code>, <code>6-8 km</code>, <code>6x300m</code>, <code>2R/2V</code>.
-      {% endif %}
+      
+        Pro přesné sčítání km piš vzdálenosti jako <code>8 km</code>, <code>6-8 km</code>, <code>6x300m</code>, <code>2R/2V</code>.
+      
     </div>
     <div class="d-flex align-items-center gap-2">
-      <button type="button" class="btn btn-link btn-sm p-0 eb-plan-rules-open" data-bs-toggle="modal" data-bs-target="#ebPlannedKmRulesModal">
-        {% if CURRENT_LANGUAGE == "cs" %}PÅ™Ã­klady{% else %}Examples{% endif %}
-      </button>
-      <button type="button" class="btn-close eb-plan-rules-dismiss" aria-label="Close"></button>
+      <button type="button" class="btn btn-link btn-sm p-0 eb-plan-rules-open" data-bs-toggle="modal" data-bs-target="#ebPlannedKmRulesModal">`n        Příklady`n      </button>
+      <button type="button" class="btn-close eb-plan-rules-dismiss" aria-label="Zavřít"></button>
     </div>
   </div>
 </div>
@@ -43,8 +39,8 @@
             <div class="card shadow-sm h-100">
               <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-2">
-                  <h5 class="mb-0">{% if CURRENT_LANGUAGE == "cs" %}T&yacute;den{% else %}Week{% endif %} {{ w.week_index }}.</h5>
-                  <small class="text-muted">{% if CURRENT_LANGUAGE == "cs" %}Pl&aacute;n{% else %}Planned{% endif %}</small>
+                  <h5 class="mb-0">T&yacute;den {{ w.week_index }}.</h5>
+                  <small class="text-muted">Pl&aacute;n</small>
                 </div>
 
                 <div class="table-responsive">
@@ -58,24 +54,24 @@
                     </colgroup>
                     <thead class="table-light">
                       <tr>
-                        <th class="eb-planned-date-col" style="width:110px">{% if CURRENT_LANGUAGE == "cs" %}Datum{% else %}Date{% endif %}</th>
-                        <th class="eb-planned-day-col" style="width:120px">{% if CURRENT_LANGUAGE == "cs" %}Den{% else %}Day{% endif %}</th>
-                        <th class="eb-planned-type-col">{% if CURRENT_LANGUAGE == "cs" %}Typ{% else %}Type{% endif %}</th>
+                        <th class="eb-planned-date-col" style="width:110px">Datum</th>
+                        <th class="eb-planned-day-col" style="width:120px">Den</th>
+                        <th class="eb-planned-type-col">Typ</th>
                         <th class="eb-planned-training-col">
                           <span class="d-inline-flex align-items-center gap-1">
-                            <span>{% if CURRENT_LANGUAGE == "cs" %}Tr&eacute;nink{% else %}Training{% endif %}</span>
+                            <span>Tr&eacute;nink</span>
                             <button
                               type="button"
                               class="btn btn-outline-secondary btn-sm rounded-circle p-0 d-inline-flex align-items-center justify-content-center"
                               style="width: 18px; height: 18px; font-size: 11px;"
                               data-bs-toggle="modal"
                               data-bs-target="#ebPlannedKmRulesModal"
-                              aria-label="{% if CURRENT_LANGUAGE == 'cs' %}Jak ps&aacute;t pl&aacute;n{% else %}How to write plan{% endif %}"
-                              title="{% if CURRENT_LANGUAGE == 'cs' %}Jak ps&aacute;t pl&aacute;n{% else %}How to write plan{% endif %}"
+                              aria-label="Jak ps&aacute;t pl&aacute;n"
+                              title="Jak ps&aacute;t pl&aacute;n"
                             >?</button>
                           </span>
                         </th>
-                        <th class="eb-planned-notes-col">{% if CURRENT_LANGUAGE == "cs" %}Pozn&aacute;mky tren&eacute;ra{% else %}Coach notes{% endif %}</th>
+                        <th class="eb-planned-notes-col">Pozn&aacute;mky tren&eacute;ra</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -86,11 +82,11 @@
                         <td class="eb-planned-type-col">
                           {% if plan_editable and t.planned_id %}
                             <select class="form-select form-select-sm eb-inline-select" data-training-id="{{ t.planned_id }}" data-field="session_type">
-                              <option value="RUN" {% if t.session_type == "RUN" %}selected{% endif %}>Run</option>
-                              <option value="WORKOUT" {% if t.session_type == "WORKOUT" %}selected{% endif %}>Workout</option>
+                              <option value="RUN" {% if t.session_type == "RUN" %}selected{% endif %}>Běh</option>
+                              <option value="WORKOUT" {% if t.session_type == "WORKOUT" %}selected{% endif %}>Trénink</option>
                             </select>
                           {% else %}
-                            {% if t.session_type == "WORKOUT" %}Workout{% else %}Run{% endif %}
+                            {% if t.session_type == "WORKOUT" %}Trénink{% else %}Běh{% endif %}
                           {% endif %}
                         </td>
                         <td class="eb-planned-training-col">
@@ -109,16 +105,16 @@
                               <button
                                 type="button"
                                 class="eb-planned-row-km-dot"
-                                aria-label="{% if CURRENT_LANGUAGE == 'cs' %}Detail odhadu km{% else %}Planned km detail{% endif %}"
+                                aria-label="Detail odhadu km"
                               ></button>
                               <div class="eb-planned-row-km-popover d-none">
                                 <div class="eb-planned-row-km-popover-head">
-                                  {% if CURRENT_LANGUAGE == "cs" %}Kontrola km{% else %}Planned km check{% endif %}
+                                  Kontrola km
                                 </div>
                                 <div class="eb-planned-row-km-popover-body">
-                                  <div class="eb-planned-km-line"><strong>{% if CURRENT_LANGUAGE == "cs" %}Km:{% else %}Km:{% endif %}</strong> {{ t.planned_km_line_km }}</div>
-                                  <div class="eb-planned-km-line"><strong>{% if CURRENT_LANGUAGE == "cs" %}Důvod:{% else %}Reason:{% endif %}</strong> {{ t.planned_km_line_reason }}</div>
-                                  <div class="eb-planned-km-line"><strong>{% if CURRENT_LANGUAGE == "cs" %}Kde:{% else %}Where:{% endif %}</strong> {% if t.planned_km_line_where %}{{ t.planned_km_line_where }}{% else %}-{% endif %}</div>
+                                  <div class="eb-planned-km-line"><strong>Km:</strong> {{ t.planned_km_line_km }}</div>
+                                  <div class="eb-planned-km-line"><strong>Důvod:</strong> {{ t.planned_km_line_reason }}</div>
+                                  <div class="eb-planned-km-line"><strong>Kde:</strong> {% if t.planned_km_line_where %}{{ t.planned_km_line_where }}{% else %}-{% endif %}</div>
                                 </div>
                               </div>
                             </div>
@@ -140,7 +136,7 @@
                       {% empty %}
                       <tr>
                         <td colspan="5" class="text-muted small">
-                          {% if CURRENT_LANGUAGE == "cs" %}V tomto t&yacute;dnu zat&iacute;m nejsou &#382;&aacute;dn&eacute; pl&aacute;novan&eacute; tr&eacute;ninky.{% else %}No planned trainings in this week yet.{% endif %}
+                          V tomto t&yacute;dnu zat&iacute;m nejsou &#382;&aacute;dn&eacute; pl&aacute;novan&eacute; tr&eacute;ninky.
                         </td>
                       </tr>
                       {% endfor %}
@@ -162,7 +158,7 @@
             <div class="card shadow-sm h-100">
               <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-2">
-                  <h5 class="mb-0">{% if CURRENT_LANGUAGE == "cs" %}Spln&#283;no{% else %}Completed{% endif %}</h5>
+                  <h5 class="mb-0">Spln&#283;no</h5>
                   <small class="text-muted">Splits</small>
                 </div>
 
@@ -218,7 +214,7 @@
                       </tr>
                       {% empty %}
                       <tr>
-                        <td colspan="5" class="text-muted small">{% if CURRENT_LANGUAGE == "cs" %}Zat&iacute;m &#382;&aacute;dn&eacute; z&aacute;znamy.{% else %}No rows yet.{% endif %}</td>
+                        <td colspan="5" class="text-muted small">Zat&iacute;m &#382;&aacute;dn&eacute; z&aacute;znamy.</td>
                       </tr>
                       {% endfor %}
                     </tbody>
@@ -226,7 +222,7 @@
                       <tr>
                         <th>{{ w.completed_total.km|default:"-" }}</th>
                         <th>{{ w.completed_total.time|default:"-" }}</th>
-                        <th>{% if CURRENT_LANGUAGE == "cs" %}Celkem{% else %}Total{% endif %}</th>
+                        <th>Celkem</th>
                         <th>{{ w.completed_total.avg_hr|default:"-" }}</th>
                         <th>{{ w.completed_total.max_hr|default:"-" }}</th>
                       </tr>
@@ -239,12 +235,12 @@
         </div>
       </div>
       {% empty %}
-      <div class="text-muted small mb-4">{% if CURRENT_LANGUAGE == "cs" %}V tomto m&#283;s&iacute;ci zat&iacute;m nejsou &#382;&aacute;dn&eacute; t&yacute;dny.{% else %}No weeks in this month yet.{% endif %}</div>
+      <div class="text-muted small mb-4">V tomto m&#283;s&iacute;ci zat&iacute;m nejsou &#382;&aacute;dn&eacute; t&yacute;dny.</div>
       {% endfor %}
     </div>
     {% empty %}
     <div class="text-muted small">
-      {% if CURRENT_LANGUAGE == "cs" %}Zat&iacute;m nejsou &#382;&aacute;dn&eacute; m&#283;s&iacute;ce. Vytvo&#345; TrainingMonth v administraci.{% else %}No months yet. Create a TrainingMonth in admin for your user.{% endif %}
+      Zat&iacute;m nejsou &#382;&aacute;dn&eacute; m&#283;s&iacute;ce. Vytvo&#345; TrainingMonth v administraci.
     </div>
     {% endfor %}
   </div>
@@ -263,8 +259,8 @@
         <button
           class="btn btn-primary btn-sm eb-add-month-btn flex-shrink-0"
           type="submit"
-          title="{% if CURRENT_LANGUAGE == 'cs' %}P&#345;idat m&#283;s&iacute;c{% else %}Add month{% endif %}"
-          aria-label="{% if CURRENT_LANGUAGE == 'cs' %}P&#345;idat m&#283;s&iacute;c{% else %}Add month{% endif %}"
+          title="P&#345;idat m&#283;s&iacute;c"
+          aria-label="P&#345;idat m&#283;s&iacute;c"
         >
           +
         </button>
@@ -275,7 +271,7 @@
         {{ m.label }}
       </button>
       {% empty %}
-      <button class="btn btn-outline-dark btn-sm" disabled>{% if CURRENT_LANGUAGE == "cs" %}&#381;&aacute;dn&eacute; m&#283;s&iacute;ce{% else %}No months{% endif %}</button>
+      <button class="btn btn-outline-dark btn-sm" disabled>&#381;&aacute;dn&eacute; m&#283;s&iacute;ce</button>
       {% endfor %}
     </div>
   </div>
@@ -285,69 +281,40 @@
   <div class="modal-dialog modal-lg modal-dialog-scrollable">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">{% if CURRENT_LANGUAGE == "cs" %}Pravidla z&aacute;pisu pro sÄ&iacute;t&aacute;n&iacute; km{% else %}Writing rules for planned km total{% endif %}</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <h5 class="modal-title">Pravidla zápisu pro sčítání km</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Zavřít"></button>
       </div>
       <div class="modal-body small">
-        {% if CURRENT_LANGUAGE == "cs" %}
+        
           <p class="mb-2"><strong>Z&aacute;klad:</strong> pi&scaron; vzd&aacute;lenosti s jednotkou (<code>km</code>/<code>m</code>) a rozklus/v&yacute;klus jako <code>2R</code>/<code>2V</code>.</p>
-          <p class="mb-1"><strong>PoÄ&iacute;t&aacute; se:</strong></p>
+          <p class="mb-1"><strong>Počítá se:</strong></p>
           <ul>
             <li><code>8 km</code>, <code>6-8 km</code></li>
             <li><code>6x300m</code>, <code>2x(1000-800-600-400-200)</code></li>
             <li><code>2R 8 km fartlek ... 2V</code></li>
           </ul>
-          <p class="mb-1"><strong>NepoÄ&iacute;t&aacute; se jako bÄ›h:</strong></p>
+          <p class="mb-1"><strong>Nepočítá se jako běh:</strong></p>
           <ul>
-            <li><code>MCH</code>, <code>chÅ¯ze</code></li>
+            <li><code>MCH</code>, <code>chůze</code></li>
             <li><code>volno</code></li>
-            <li>silov&aacute;/mobilita ÄÃ¡st bez bÄ›Å¾eck&eacute; vzd&aacute;lenosti</li>
+            <li>silová/mobilita část bez běžecké vzdálenosti</li>
           </ul>
-          <p class="mb-0"><strong>DoporuÄen&iacute;:</strong> u dlouh&eacute;ho bÄ›hu napi&scaron; rozsah, napÅ™. <code>17-19 km voln&yacute; bÄ›h</code>.</p>
+          <p class="mb-0"><strong>Doporučení:</strong> u dlouhého běhu napiš rozsah, např. <code>17-19 km volný běh</code>.</p>
           <hr>
           <p class="mb-1"><strong>Spr&aacute;vn&eacute; z&aacute;pisy:</strong></p>
           <ul>
             <li><code>2R 4x(1200 - 400), p=1,5' po 1200 a 3' po s&eacute;rii, tempo 10K - 3K (1500) 2V</code></li>
             <li><code>3R 2x5x300m, p=60s, po s&eacute;rii 5', tempo 1500m 2-3V</code></li>
             <li><code>2R mobilita, plyometrie, prud&scaron;&iacute; kopce 6-8x100m s MCH 5V</code></li>
-            <li><code>voln&yacute; bÄ›h 17-19 km</code></li>
+            <li><code>volný běh 17-19 km</code></li>
           </ul>
-          <p class="mb-1"><strong>Nejasn&eacute; z&aacute;pisy (nedoporuÄeno):</strong></p>
+          <p class="mb-1"><strong>Nejasné zápisy (nedoporučeno):</strong></p>
           <ul class="mb-0">
             <li><code>del&scaron;&iacute; klus na pocit</code> (bez km)</li>
             <li><code>400 v tempu</code> (chyb&iacute; jednotka a kontext)</li>
-            <li><code>s&iacute;la + mobilita</code> (bez bÄ›Å¾eck&eacute; vzd&aacute;lenosti)</li>
+            <li><code>síla + mobilita</code> (bez běžecké vzdálenosti)</li>
           </ul>
-        {% else %}
-          <p class="mb-2"><strong>Basics:</strong> write distances with unit (<code>km</code>/<code>m</code>) and warm-up/cool-down as <code>2R</code>/<code>2V</code>.</p>
-          <p class="mb-1"><strong>Counted:</strong></p>
-          <ul>
-            <li><code>8 km</code>, <code>6-8 km</code></li>
-            <li><code>6x300m</code>, <code>2x(1000-800-600-400-200)</code></li>
-            <li><code>2R 8 km fartlek ... 2V</code></li>
-          </ul>
-          <p class="mb-1"><strong>Not counted as running:</strong></p>
-          <ul>
-            <li><code>MCH</code>, <code>walk</code></li>
-            <li><code>rest day</code></li>
-            <li>strength/mobility part without running distance</li>
-          </ul>
-          <p class="mb-0"><strong>Recommendation:</strong> for long runs include distance range, e.g. <code>17-19 km easy run</code>.</p>
-          <hr>
-          <p class="mb-1"><strong>Good examples:</strong></p>
-          <ul>
-            <li><code>2R 4x(1200 - 400), p=1.5' after 1200 and 3' after set, pace 10K - 3K (1500) 2V</code></li>
-            <li><code>3R 2x5x300m, p=60s, after set 5', pace 1500m 2-3V</code></li>
-            <li><code>2R mobility, plyometrics, steeper hills 6-8x100m with MCH 5V</code></li>
-            <li><code>easy run 17-19 km</code></li>
-          </ul>
-          <p class="mb-1"><strong>Ambiguous examples (avoid):</strong></p>
-          <ul class="mb-0">
-            <li><code>long run by feel</code> (missing km)</li>
-            <li><code>400 in pace</code> (missing unit/context)</li>
-            <li><code>strength + mobility</code> (no running distance)</li>
-          </ul>
-        {% endif %}
+        
       </div>
     </div>
   </div>

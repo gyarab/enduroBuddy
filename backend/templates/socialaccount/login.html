@@ -1,11 +1,11 @@
 {% load static i18n %}
 
 <!doctype html>
-<html lang="en">
+<html lang="cs">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>{% trans "Social Sign In" %} | EnduroBuddy</title>
+  <title>Přihlášení přes sociální účet | EnduroBuddy</title>
 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="{% static 'css/login.css' %}?v=8">
@@ -32,11 +32,11 @@
               </div>
 
               {% if process == "connect" %}
-                <h1 class="eb-title mb-2">{% blocktrans with provider.name as provider_name %}Connect {{ provider_name }}{% endblocktrans %}</h1>
-                <p class="eb-subtitle mb-0">{% blocktrans with provider.name as provider_name %}You are about to connect a new third-party account from {{ provider_name }}.{% endblocktrans %}</p>
+                <h1 class="eb-title mb-2">Připojit {{ provider.name }}</h1>
+                <p class="eb-subtitle mb-0">Chystáte se připojit nový účet třetí strany od poskytovatele {{ provider.name }}.</p>
               {% else %}
-                <h1 class="eb-title mb-2">{% blocktrans with provider.name as provider_name %}Continue with {{ provider_name }}{% endblocktrans %}</h1>
-                <p class="eb-subtitle mb-0">{% blocktrans with provider.name as provider_name %}You are about to sign in using your {{ provider_name }} account.{% endblocktrans %}</p>
+                <h1 class="eb-title mb-2">Pokračovat přes {{ provider.name }}</h1>
+                <p class="eb-subtitle mb-0">Chystáte se přihlásit pomocí účtu {{ provider.name }}.</p>
               {% endif %}
             </div>
 
@@ -46,12 +46,12 @@
                 <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}">
               {% endif %}
               <button type="submit" class="btn eb-btn-primary w-100 py-2 mb-3">
-                {% trans "Continue" %}
+                Pokračovat
               </button>
             </form>
 
             <p class="eb-muted text-center mb-0">
-              <a class="eb-link" href="{% url 'account_login' %}">{% trans "Back to sign in" %}</a>
+              <a class="eb-link" href="{% url 'account_login' %}">Zpět na přihlášení</a>
             </p>
           </div>
         </section>
@@ -63,3 +63,4 @@
   <script src="{% static 'js/login.js' %}?v=1"></script>
 </body>
 </html>
+

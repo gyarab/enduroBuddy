@@ -1,4 +1,4 @@
-﻿(function () {
+(function () {
   window.EB = window.EB || {};
 
   function createPlannedEditor(deps) {
@@ -16,7 +16,7 @@
         body: JSON.stringify(payload || {}),
         credentials: "same-origin",
       });
-      if (!response.ok) throw new Error(`Request failed with status ${response.status}`);
+      if (!response.ok) throw new Error(`Požadavek selhal se stavem ${response.status}`);
       return response.json();
     });
     const placeCaretToEnd = (deps && deps.placeCaretToEnd) || (() => {});
@@ -320,30 +320,30 @@
 
     function resolveLanguageCode() {
       const lang = (document.documentElement.getAttribute("lang") || "").toLowerCase();
-      return lang.startsWith("cs") ? "cs" : "en";
+      return lang.startsWith("cs") ? "cs" : "cs";
     }
 
     function formatWeekKmText(totalKm, languageCode) {
       const safeTotal = Number.isFinite(totalKm) ? totalKm : 0;
       const rounded = (Math.round(safeTotal * 10) / 10).toFixed(1);
       if (languageCode === "cs") return `${rounded.replace(".", ",")} km/týden`;
-      return `${rounded} km/week`;
+      return `${rounded.replace(".", ",")} km/týden`;
     }
 
     function formatRowKmText(totalKm, languageCode) {
       const safeTotal = Number.isFinite(totalKm) ? totalKm : 0;
       const rounded = (Math.round(safeTotal * 10) / 10).toFixed(1);
       if (languageCode === "cs") return `≈ ${rounded.replace(".", ",")} km`;
-      return `≈ ${rounded} km`;
+      return `≈ ${rounded.replace(".", ",")} km`;
     }
 
     function warningTextFor(warningKey, languageCode) {
       const isCs = languageCode === "cs";
       const warningMap = {
-        run_hint_but_no_distance: isCs ? "Nejasný zápis: chybí konkrétní vzdálenost (např. 8 km, 6x300m, 2R/2V)." : "Ambiguous input: missing concrete distance (e.g. 8 km, 6x300m, 2R/2V).",
-        long_run_by_feel_heuristic_used: isCs ? "Použit odhad pro běh na pocit." : "Heuristic used for by-feel long run.",
-        klus_minutes_estimate_used: isCs ? "Do součtu je započítán odhad z času klusu (min klus)." : "Estimated distance from jogging minutes (min klus) included.",
-        pause_minutes_estimate_used: isCs ? "Do součtu je započítán odhad z pauz." : "Estimated distance from pause markers included.",
+        run_hint_but_no_distance: isCs ? "Nejasný zápis: chybí konkrétní vzdálenost (např. 8 km, 6x300m, 2R/2V)." : "Nejasný zápis: chybí konkrétní vzdálenost (např. 8 km, 6x300m, 2R/2V).",
+        long_run_by_feel_heuristic_used: isCs ? "Použit odhad pro běh na pocit." : "Použit odhad pro běh na pocit.",
+        klus_minutes_estimate_used: isCs ? "Do součtu je započítán odhad z času klusu (min klus)." : "Do součtu je započítán odhad z času klusu (min klus).",
+        pause_minutes_estimate_used: isCs ? "Do součtu je započítán odhad z pauz." : "Do součtu je započítán odhad z pauz.",
       };
       return warningMap[warningKey] || "";
     }
@@ -434,12 +434,12 @@
         const dot = document.createElement("button");
         dot.type = "button";
         dot.className = "eb-planned-row-km-dot";
-        dot.setAttribute("aria-label", languageCode === "cs" ? "Detail odhadu km" : "Planned km detail");
+        dot.setAttribute("aria-label", languageCode === "cs" ? "Detail odhadu km" : "Detail odhadu km");
         const pop = document.createElement("div");
         pop.className = "eb-planned-row-km-popover d-none";
         const head = document.createElement("div");
         head.className = "eb-planned-row-km-popover-head";
-        head.textContent = languageCode === "cs" ? "Kontrola km" : "Planned km check";
+        head.textContent = languageCode === "cs" ? "Kontrola km" : "Kontrola km";
         const body = document.createElement("div");
         body.className = "eb-planned-row-km-popover-body";
         pop.appendChild(head);
@@ -455,8 +455,8 @@
       const popoverBody = popover.querySelector(".eb-planned-row-km-popover-body");
       if (!popoverBody) return;
       const kmLabel = languageCode === "cs" ? "Km:" : "Km:";
-      const reasonLabel = languageCode === "cs" ? "Důvod:" : "Reason:";
-      const whereLabel = languageCode === "cs" ? "Kde:" : "Where:";
+      const reasonLabel = languageCode === "cs" ? "Důvod:" : "Důvod:";
+      const whereLabel = languageCode === "cs" ? "Kde:" : "Kde:";
       const setBodyLines = (kmText, reasonText, whereText) => {
         popoverBody.innerHTML = `
           <div class="eb-planned-km-line"><strong>${kmLabel}</strong> ${kmText || "-"}</div>
@@ -467,7 +467,7 @@
       if (details.isRest) {
         setBodyLines(
           formatRowKmText(details.totalKm, languageCode),
-          languageCode === "cs" ? "V pořádku (volno)." : "OK (rest day).",
+          languageCode === "cs" ? "V pořádku (volno)." : "V pořádku (volno).",
           ""
         );
         return;
@@ -479,11 +479,11 @@
             formatRowKmText(details.totalKm, languageCode),
             languageCode === "cs"
               ? "Nejasný zápis, doplň konkrétní vzdálenosti."
-              : "Ambiguous input, add explicit distances.",
+              : "Nejasný zápis, doplň konkrétní vzdálenosti.",
             ""
           );
         } else {
-          setBodyLines(formatRowKmText(details.totalKm, languageCode), languageCode === "cs" ? "V pořádku." : "OK.", "");
+          setBodyLines(formatRowKmText(details.totalKm, languageCode), languageCode === "cs" ? "V pořádku." : "V pořádku.", "");
         }
         return;
       }
@@ -564,7 +564,7 @@
             ),
           { field, training_id: trainingId }
         );
-        if (!payload.ok) throw new Error(payload.error || "Save failed.");
+        if (!payload.ok) throw new Error(payload.error || "Uložení selhalo.");
         node.dataset.originalValue = payload.value || "";
         node.classList.remove("is-error");
       } catch (err) {
@@ -611,7 +611,7 @@
             ),
           { field, training_id: trainingId }
         );
-        if (!payload.ok) throw new Error(payload.error || "Save failed.");
+        if (!payload.ok) throw new Error(payload.error || "Uložení selhalo.");
         selectNode.dataset.originalValue = payload.value || "";
         selectNode.classList.remove("is-error");
         // Completed rendering depends on server-side month card build; refresh to reflect new mode immediately.
@@ -704,11 +704,11 @@
             csrfToken
           );
           if (!payload || !payload.ok || !payload.second_phase_planned_id) {
-            throw new Error((payload && payload.error) || "Add second phase failed.");
+            throw new Error((payload && payload.error) || "Přidání druhé fáze selhalo.");
           }
 
           const newPlannedId = Number(payload.second_phase_planned_id);
-          if (!newPlannedId) throw new Error("Invalid second phase id.");
+          if (!newPlannedId) throw new Error("Neplatné ID druhé fáze.");
 
           const plannedRows = Array.from(plannedBody.querySelectorAll("tr"));
           const rowIndex = plannedRows.indexOf(sourcePlannedRow);
@@ -720,8 +720,8 @@
             <td class="eb-planned-day-col"></td>
             <td class="eb-planned-type-col">
               <select class="form-select form-select-sm eb-inline-select" data-training-id="${newPlannedId}" data-field="session_type">
-                <option value="RUN" selected>Run</option>
-                <option value="WORKOUT">Workout</option>
+                <option value="RUN" selected>Běh</option>
+                <option value="WORKOUT">Trénink</option>
               </select>
             </td>
             <td class="eb-planned-training-col">
@@ -792,11 +792,11 @@
             csrfToken
           );
           if (!payload || !payload.ok || !payload.removed_planned_id) {
-            throw new Error((payload && payload.error) || "Remove second phase failed.");
+            throw new Error((payload && payload.error) || "Odebrání druhé fáze selhalo.");
           }
 
           const removedId = Number(payload.removed_planned_id);
-          if (!removedId) throw new Error("Invalid removed phase id.");
+          if (!removedId) throw new Error("Neplatné ID odebrané fáze.");
 
           const plannedRemovedNode = plannedBody.querySelector(`.eb-inline-edit[data-training-id="${removedId}"]`);
           const plannedRemovedRow = plannedRemovedNode ? plannedRemovedNode.closest("tr") : null;

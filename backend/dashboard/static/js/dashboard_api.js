@@ -12,7 +12,7 @@
       credentials: "same-origin",
     });
     if (!response.ok) {
-      throw new Error(`Request failed with status ${response.status}`);
+      throw new Error(`Požadavek selhal se stavem ${response.status}`);
     }
     return response.text();
   }
@@ -28,7 +28,7 @@
       credentials: "same-origin",
     });
     if (!response.ok) {
-      throw new Error(`Request failed with status ${response.status}`);
+      throw new Error(`Požadavek selhal se stavem ${response.status}`);
     }
     return response.json();
   }
@@ -43,7 +43,7 @@
       credentials: "same-origin",
     });
     if (!response.ok) {
-      throw new Error(`Request failed with status ${response.status}`);
+      throw new Error(`Požadavek selhal se stavem ${response.status}`);
     }
     return response;
   }

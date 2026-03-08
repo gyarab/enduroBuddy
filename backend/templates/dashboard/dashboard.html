@@ -3,7 +3,7 @@
 {% load i18n %}
 {% get_current_language as CURRENT_LANGUAGE %}
 
-{% block title %}{% if CURRENT_LANGUAGE == "cs" %}Tr&eacute;ninkov&yacute; p&#345;ehled | EnduroBuddy{% else %}Training view | EnduroBuddy{% endif %}{% endblock %}
+{% block title %}Tr&eacute;ninkov&yacute; p&#345;ehled | EnduroBuddy{% endblock %}
 
 {% block content %}
 <div class="container-fluid py-3">
@@ -19,9 +19,9 @@
 
   <div class="d-flex align-items-center justify-content-between mb-3">
     <div class="d-flex align-items-center gap-2">
-      <h3 class="mb-0">{% if CURRENT_LANGUAGE == "cs" %}Tr&eacute;ninkov&yacute; pl&aacute;n{% else %}Training plan{% endif %}</h3>
+      <h3 class="mb-0">Tr&eacute;ninkov&yacute; pl&aacute;n</h3>
       <h3 class="mb-0 text-muted">
-        - {% if CURRENT_LANGUAGE == "cs" %}atlet:{% else %}athlete:{% endif %}
+        - atlet:
         {% if user.first_name or user.last_name %}
           {{ user.first_name }} {{ user.last_name }}
         {% else %}
@@ -31,13 +31,13 @@
     </div>
     <div class="d-flex align-items-center gap-2">
       <button class="btn btn-outline-dark btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#coachLegendModal">
-        {% if CURRENT_LANGUAGE == "cs" %}Legenda{% else %}Legend{% endif %}
+        Legenda
       </button>
       <button class="btn btn-outline-dark btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#coachCodeModal">
-        {% if CURRENT_LANGUAGE == "cs" %}P&#345;idat tren&eacute;ra{% else %}Join coach{% endif %}
+        P&#345;idat tren&eacute;ra
       </button>
       <button class="btn btn-success btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#importActivitiesModal">
-        {% if CURRENT_LANGUAGE == "cs" %}Import aktivit{% else %}Import activities{% endif %}
+        Import aktivit
       </button>
     </div>
   </div>
@@ -46,31 +46,31 @@
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="coachCodeModalLabel">{% if CURRENT_LANGUAGE == "cs" %}P&#345;ipojit tren&eacute;ra{% else %}Join coach{% endif %}</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          <h5 class="modal-title" id="coachCodeModalLabel">P&#345;ipojit tren&eacute;ra</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Zavřít"></button>
         </div>
         <div class="modal-body d-grid gap-2">
           <form method="post" class="d-grid gap-2">
             {% csrf_token %}
             <input type="hidden" name="action" value="request_coach_by_code">
-            <label class="form-label form-label-sm mb-0">{% if CURRENT_LANGUAGE == "cs" %}K&oacute;d tren&eacute;ra{% else %}Coach code{% endif %}</label>
+            <label class="form-label form-label-sm mb-0">K&oacute;d tren&eacute;ra</label>
             <input type="text" class="form-control form-control-sm text-uppercase" name="coach_code" placeholder="AB7K9Q2M5T8R" maxlength="12" required>
-            <button type="submit" class="btn btn-primary btn-sm">{% if CURRENT_LANGUAGE == "cs" %}Odeslat &zcaron;&aacute;dost{% else %}Send request{% endif %}</button>
+            <button type="submit" class="btn btn-primary btn-sm">Odeslat &zcaron;&aacute;dost</button>
           </form>
 
           {% if pending_coach_requests %}
-            <div class="small text-muted">{% if CURRENT_LANGUAGE == "cs" %}&Ccaron;ekaj&iacute;c&iacute; &zcaron;&aacute;dosti{% else %}Pending requests{% endif %}</div>
+            <div class="small text-muted">&Ccaron;ekaj&iacute;c&iacute; &zcaron;&aacute;dosti</div>
             <div class="d-grid gap-2">
               {% for req in pending_coach_requests %}
                 <div class="eb-invite-row py-2">
-                  {% if CURRENT_LANGUAGE == "cs" %}Tren&eacute;r{% else %}Coach{% endif %}: <strong>{{ req.coach.username }}</strong>
+                  Tren&eacute;r: <strong>{{ req.coach.username }}</strong>
                 </div>
               {% endfor %}
             </div>
           {% endif %}
 
           {% if approved_coach_links %}
-            <div class="small text-muted mt-1">{% if CURRENT_LANGUAGE == "cs" %}Aktivn&iacute; tren&eacute;&#345;i{% else %}Active coaches{% endif %}</div>
+            <div class="small text-muted mt-1">Aktivn&iacute; tren&eacute;&#345;i</div>
             <div class="d-grid gap-2">
               {% for link in approved_coach_links %}
                 <div class="eb-invite-row py-2"><strong>{{ link.coach.username }}</strong></div>
@@ -86,30 +86,28 @@
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="importActivitiesModalLabel">{% if CURRENT_LANGUAGE == "cs" %}Import aktivit{% else %}Import activities{% endif %}</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          <h5 class="modal-title" id="importActivitiesModalLabel">Import aktivit</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Zavřít"></button>
         </div>
         <div class="modal-body eb-import-modal-body">
           <div class="eb-import-note">
-            {% if CURRENT_LANGUAGE == "cs" %}
+            
               Garmin heslo se neukl&aacute;d&aacute;. Ukl&aacute;daj&iacute; se pouze &scaron;ifrovan&eacute; tokeny.
-            {% else %}
-              Garmin password is not stored. Only encrypted tokens are saved.
-            {% endif %}
+            
           </div>
 
           {% if garmin_connection %}
           <div class="eb-import-block eb-import-block-connected">
             <div class="eb-import-block-head">
               <div>
-                <div class="eb-import-label">{% if CURRENT_LANGUAGE == "cs" %}Garmin &uacute;&ccaron;et{% else %}Garmin account{% endif %}</div>
+                <div class="eb-import-label">Garmin &uacute;&ccaron;et</div>
                 <div class="eb-import-value">{{ garmin_connection.garmin_display_name|default:garmin_connection.garmin_email }}</div>
               </div>
             </div>
             <form method="post" class="m-0 mt-2">
               {% csrf_token %}
               <button class="btn btn-outline-danger btn-sm w-100" type="submit" name="import_source" value="garmin_revoke">
-                {% if CURRENT_LANGUAGE == "cs" %}Odpojit Garmin{% else %}Disconnect Garmin{% endif %}
+                Odpojit Garmin
               </button>
             </form>
           </div>
@@ -118,17 +116,17 @@
             {% csrf_token %}
             <input type="hidden" name="import_source" value="garmin_connect">
             <div class="eb-import-block-head">
-              <div class="eb-import-title">{% if CURRENT_LANGUAGE == "cs" %}P&#345;ipojit Garmin &uacute;&ccaron;et{% else %}Connect Garmin account{% endif %}</div>
+              <div class="eb-import-title">P&#345;ipojit Garmin &uacute;&ccaron;et</div>
             </div>
             <div class="mb-2">
-              <label class="form-label form-label-sm mb-1">{% if CURRENT_LANGUAGE == "cs" %}E-mail{% else %}Email{% endif %}</label>
+              <label class="form-label form-label-sm mb-1">E-mail</label>
               <input type="email" class="form-control form-control-sm" name="garmin_email" placeholder="tvuj@email.cz" required>
             </div>
             <div class="mb-3">
-              <label class="form-label form-label-sm mb-1">{% if CURRENT_LANGUAGE == "cs" %}Heslo{% else %}Password{% endif %}</label>
+              <label class="form-label form-label-sm mb-1">Heslo</label>
               <input type="password" class="form-control form-control-sm" name="garmin_password" placeholder="********" required>
             </div>
-            <button class="btn btn-primary btn-sm w-100" type="submit">{% if CURRENT_LANGUAGE == "cs" %}P&#345;ipojit Garmin{% else %}Connect Garmin{% endif %}</button>
+            <button class="btn btn-primary btn-sm w-100" type="submit">P&#345;ipojit Garmin</button>
           </form>
           {% endif %}
 
@@ -136,16 +134,16 @@
             {% csrf_token %}
             <input type="hidden" name="import_source" value="garmin_sync">
             <div class="eb-import-block-head">
-              <div class="eb-import-title">{% if CURRENT_LANGUAGE == "cs" %}Synchronizace z Garminu{% else %}Sync from Garmin{% endif %}</div>
+              <div class="eb-import-title">Synchronizace z Garminu</div>
             </div>
             <div class="d-flex align-items-center gap-2">
               <select class="form-select form-select-sm" id="garminRangeSelect" name="garmin_range">
-                <option value="today">{% if CURRENT_LANGUAGE == "cs" %}Dnes{% else %}Today{% endif %}</option>
-                <option value="yesterday">{% if CURRENT_LANGUAGE == "cs" %}V&ccaron;era{% else %}Yesterday{% endif %}</option>
-                <option value="this_week">{% if CURRENT_LANGUAGE == "cs" %}Tento t&yacute;den{% else %}This week{% endif %}</option>
-                <option value="last_week">{% if CURRENT_LANGUAGE == "cs" %}Minul&yacute; t&yacute;den{% else %}Last week{% endif %}</option>
-                <option value="last_30_days" selected>{% if CURRENT_LANGUAGE == "cs" %}Posledn&iacute;ch 30 dn&iacute;{% else %}Last 30 days{% endif %}</option>
-                <option value="all">{% if CURRENT_LANGUAGE == "cs" %}V&scaron;e{% else %}All{% endif %}</option>
+                <option value="today">Dnes</option>
+                <option value="yesterday">V&ccaron;era</option>
+                <option value="this_week">Tento t&yacute;den</option>
+                <option value="last_week">Minul&yacute; t&yacute;den</option>
+                <option value="last_30_days" selected>Posledn&iacute;ch 30 dn&iacute;</option>
+                <option value="all">V&scaron;e</option>
               </select>
               <button class="btn btn-success btn-sm" type="submit" {% if not garmin_connection %}disabled{% endif %}>Sync Garmin</button>
             </div>
@@ -155,8 +153,8 @@
             {% csrf_token %}
             <input type="hidden" id="importSourceInput" name="import_source" value="fit_upload">
             <input type="file" id="fitFileInput" name="fit_file" accept=".fit" class="d-none">
-            <div class="eb-import-title mb-1">{% if CURRENT_LANGUAGE == "cs" %}Import ze souboru{% else %}Import from file{% endif %}</div>
-            <a href="#" id="fitImportLink" class="eb-fit-link">{% if CURRENT_LANGUAGE == "cs" %}Importovat .fit soubor{% else %}Import .fit file{% endif %}</a>
+            <div class="eb-import-title mb-1">Import ze souboru</div>
+            <a href="#" id="fitImportLink" class="eb-fit-link">Importovat .fit soubor</a>
           </form>
         </div>
       </div>
@@ -168,9 +166,9 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="coachLegendModalLabel">
-            {% if CURRENT_LANGUAGE == "cs" %}Legenda pl&aacute;nu{% else %}Plan legend{% endif %}
+            Legenda pl&aacute;nu
           </h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Zavřít"></button>
         </div>
         <div
           class="modal-body eb-legend-modal-body"
@@ -182,27 +180,27 @@
           <div class="eb-legend-layout">
             <div class="eb-legend-section">
               <div class="d-flex align-items-center justify-content-between gap-2 mb-2">
-                <div class="eb-legend-section-title mb-0">{% if CURRENT_LANGUAGE == "cs" %}Tepov&eacute; z&oacute;ny{% else %}Heart rate zones{% endif %}</div>
+                <div class="eb-legend-section-title mb-0">Tepov&eacute; z&oacute;ny</div>
                 <button type="button" class="btn btn-sm btn-outline-dark eb-legend-plus-btn" data-legend-open-modal="#coachLegendZonesModal">+</button>
               </div>
               <table class="table table-sm align-middle eb-legend-table mb-0">
                 <thead>
                   <tr>
-                    <th style="width: 90px;">{% if CURRENT_LANGUAGE == "cs" %}Z&oacute;na{% else %}Zone{% endif %}</th>
-                    <th style="width: 140px;">{% if CURRENT_LANGUAGE == "cs" %}Rozsah{% else %}Range{% endif %}</th>
+                    <th style="width: 90px;">Z&oacute;na</th>
+                    <th style="width: 140px;">Rozsah</th>
                   </tr>
                 </thead>
                 <tbody data-legend-zone-table-body></tbody>
               </table>
               <div class="eb-legend-thresholds">
                 <div class="d-flex align-items-center justify-content-between gap-2">
-                  <div class="eb-legend-section-title mb-0">{% if CURRENT_LANGUAGE == "cs" %}Prahy{% else %}Thresholds{% endif %}</div>
+                  <div class="eb-legend-section-title mb-0">Prahy</div>
                   <button type="button" class="btn btn-sm btn-outline-dark eb-legend-plus-btn" data-legend-open-modal="#coachLegendThresholdModal">+</button>
                 </div>
                 <table class="table table-sm align-middle eb-legend-table mt-2 mb-0">
                   <thead>
                     <tr>
-                      <th style="width: 120px;">{% if CURRENT_LANGUAGE == "cs" %}Prah{% else %}Threshold{% endif %}</th>
+                      <th style="width: 120px;">Prah</th>
                       <th style="width: 90px;">BPM</th>
                     </tr>
                   </thead>
@@ -222,14 +220,14 @@
 
             <div class="eb-legend-section">
               <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
-                <div class="eb-legend-section-title mb-0">{% if CURRENT_LANGUAGE == "cs" %}Osobn&iacute; rekordy (PR){% else %}Personal records (PR){% endif %}</div>
+                <div class="eb-legend-section-title mb-0">Osobn&iacute; rekordy (PR)</div>
                 <button type="button" class="btn btn-sm btn-outline-dark eb-legend-plus-btn" data-legend-open-modal="#coachLegendPrModal">+</button>
               </div>
               <table class="table table-sm align-middle eb-legend-table mb-0">
                 <thead>
                   <tr>
-                    <th>{% if CURRENT_LANGUAGE == "cs" %}Discipl&iacute;na{% else %}Distance{% endif %}</th>
-                    <th style="width: 180px;">{% if CURRENT_LANGUAGE == "cs" %}PR (&ccaron;as){% else %}PR (time){% endif %}</th>
+                    <th>Discipl&iacute;na</th>
+                    <th style="width: 180px;">PR (&ccaron;as)</th>
                   </tr>
                 </thead>
                 <tbody data-legend-pr-body>
@@ -249,16 +247,16 @@
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">{% if CURRENT_LANGUAGE == "cs" %}&Uacute;prava tepov&yacute;ch z&oacute;n{% else %}Edit heart rate zones{% endif %}</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          <h5 class="modal-title">&Uacute;prava tepov&yacute;ch z&oacute;n</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Zavřít"></button>
         </div>
         <div class="modal-body">
           <table class="table table-sm align-middle mb-0">
             <thead>
               <tr>
-                <th style="width: 90px;">{% if CURRENT_LANGUAGE == "cs" %}Z&oacute;na{% else %}Zone{% endif %}</th>
-                <th style="width: 100px;">{% if CURRENT_LANGUAGE == "cs" %}Od{% else %}From{% endif %}</th>
-                <th style="width: 100px;">{% if CURRENT_LANGUAGE == "cs" %}Do{% else %}To{% endif %}</th>
+                <th style="width: 90px;">Z&oacute;na</th>
+                <th style="width: 100px;">Od</th>
+                <th style="width: 100px;">Do</th>
               </tr>
             </thead>
             <tbody>
@@ -273,7 +271,7 @@
           </table>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-dark" data-legend-zones-modal-save>{% if CURRENT_LANGUAGE == "cs" %}Ulo&#382;it z&oacute;ny{% else %}Save zones{% endif %}</button>
+          <button type="button" class="btn btn-dark" data-legend-zones-modal-save>Ulo&#382;it z&oacute;ny</button>
         </div>
       </div>
     </div>
@@ -283,21 +281,21 @@
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">{% if CURRENT_LANGUAGE == "cs" %}&Uacute;prava prah&#367;{% else %}Edit thresholds{% endif %}</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          <h5 class="modal-title">&Uacute;prava prah&#367;</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Zavřít"></button>
         </div>
         <div class="modal-body">
           <div class="mb-2">
-            <label class="form-label small text-muted mb-1">{% if CURRENT_LANGUAGE == "cs" %}Aerobn&iacute; pr&aacute;h (bpm){% else %}Aerobic threshold (bpm){% endif %}</label>
+            <label class="form-label small text-muted mb-1">Aerobn&iacute; pr&aacute;h (bpm)</label>
             <input class="form-control form-control-sm" type="number" min="0" max="260" step="1" data-legend-threshold-edit="aerobic">
           </div>
           <div>
-            <label class="form-label small text-muted mb-1">{% if CURRENT_LANGUAGE == "cs" %}Anaerobn&iacute; pr&aacute;h (bpm){% else %}Anaerobic threshold (bpm){% endif %}</label>
+            <label class="form-label small text-muted mb-1">Anaerobn&iacute; pr&aacute;h (bpm)</label>
             <input class="form-control form-control-sm" type="number" min="0" max="260" step="1" data-legend-threshold-edit="anaerobic">
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-dark" data-legend-threshold-modal-save>{% if CURRENT_LANGUAGE == "cs" %}Ulo&#382;it prahy{% else %}Save thresholds{% endif %}</button>
+          <button type="button" class="btn btn-dark" data-legend-threshold-modal-save>Ulo&#382;it prahy</button>
         </div>
       </div>
     </div>
@@ -307,12 +305,12 @@
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">{% if CURRENT_LANGUAGE == "cs" %}P&#345;idat PR{% else %}Add PR{% endif %}</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          <h5 class="modal-title">P&#345;idat PR</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Zavřít"></button>
         </div>
         <div class="modal-body">
           <div class="mb-2">
-            <label class="form-label small text-muted mb-1">{% if CURRENT_LANGUAGE == "cs" %}Discipl&iacute;na{% else %}Distance{% endif %}</label>
+            <label class="form-label small text-muted mb-1">Discipl&iacute;na</label>
             <select class="form-select form-select-sm" data-legend-pr-select>
               <option value="800m">800m</option>
               <option value="1000m">1000m</option>
@@ -325,17 +323,17 @@
               <option value="5k">5k</option>
               <option value="10000m">10000m</option>
               <option value="10k">10k</option>
-              <option value="{% if CURRENT_LANGUAGE == 'cs' %}P&#367;lmaraton{% else %}Half marathon{% endif %}">{% if CURRENT_LANGUAGE == 'cs' %}P&#367;lmaraton{% else %}Half marathon{% endif %}</option>
-              <option value="{% if CURRENT_LANGUAGE == 'cs' %}Maraton{% else %}Marathon{% endif %}">{% if CURRENT_LANGUAGE == 'cs' %}Maraton{% else %}Marathon{% endif %}</option>
+              <option value="P&#367;lmaraton">P&#367;lmaraton</option>
+              <option value="Maraton">Maraton</option>
             </select>
           </div>
           <div>
-            <label class="form-label small text-muted mb-1">{% if CURRENT_LANGUAGE == "cs" %}&Ccaron;as{% else %}Time{% endif %}</label>
+            <label class="form-label small text-muted mb-1">&Ccaron;as</label>
             <input class="form-control form-control-sm" type="text" maxlength="20" data-legend-pr-time-input>
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-dark" data-legend-pr-add>{% if CURRENT_LANGUAGE == "cs" %}P&#345;idat PR{% else %}Add PR{% endif %}</button>
+          <button type="button" class="btn btn-dark" data-legend-pr-add>P&#345;idat PR</button>
         </div>
       </div>
     </div>

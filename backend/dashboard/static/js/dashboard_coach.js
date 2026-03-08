@@ -17,7 +17,7 @@
         body: JSON.stringify(payload || {}),
         credentials: "same-origin",
       });
-      if (!response.ok) throw new Error(`Request failed with status ${response.status}`);
+      if (!response.ok) throw new Error(`Požadavek selhal se stavem ${response.status}`);
       return response.json();
     });
     const postForm = (deps && deps.postForm) || (async (url, formData, csrfToken) => {
@@ -30,7 +30,7 @@
         },
         credentials: "same-origin",
       });
-      if (!response.ok) throw new Error(`Request failed with status ${response.status}`);
+      if (!response.ok) throw new Error(`Požadavek selhal se stavem ${response.status}`);
       return response;
     });
     const getHtml = (deps && deps.getHtml) || (async (url) => {
@@ -39,7 +39,7 @@
         headers: { "X-Requested-With": "XMLHttpRequest" },
         credentials: "same-origin",
       });
-      if (!response.ok) throw new Error(`Request failed with status ${response.status}`);
+      if (!response.ok) throw new Error(`Požadavek selhal se stavem ${response.status}`);
       return response.text();
     });
     const initCoachMainContent = (deps && deps.initCoachMainContent) || (() => {});
@@ -84,7 +84,7 @@
             csrfToken
           );
           if (!payload.ok) {
-            throw new Error(payload.error || "Focus save failed.");
+            throw new Error(payload.error || "Uložení fokusu selhalo.");
           }
 
           input.dataset.savedValue = payload.focus || "";
@@ -918,7 +918,7 @@
         try {
           const response = await postForm(form.getAttribute("action") || window.location.href, new FormData(form), getCsrfToken() || "");
           const payload = await response.json();
-          if (!payload || !payload.ok) throw new Error("Visibility toggle failed.");
+          if (!payload || !payload.ok) throw new Error("Přepnutí viditelnosti selhalo.");
 
           const isHidden = !!payload.hidden;
           const row = form.closest(".eb-manage-athlete-row");

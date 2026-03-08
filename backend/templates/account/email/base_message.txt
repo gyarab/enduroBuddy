@@ -1,8 +1,7 @@
-{% load i18n %}{% get_current_language as CURRENT_LANGUAGE %}{% autoescape off %}{% if CURRENT_LANGUAGE|slice:":2" == "cs" %}Ahoj z {{ current_site.name }}!{% else %}Hello from {{ current_site.name }}!{% endif %}
+{% load i18n %}{% get_current_language as CURRENT_LANGUAGE %}{% autoescape off %}Ahoj z {{ current_site.name }}!
 
 {% block content %}{% endblock content %}
 
-{% if CURRENT_LANGUAGE|slice:":2" == "cs" %}Děkujeme, že používáte {{ current_site.name }}!
-{{ current_site.domain }}{% else %}Thank you for using {{ current_site.name }}!
-{{ current_site.domain }}{% endif %}
+Děkujeme, že používáte {{ current_site.name }}!
+{{ current_site.domain }}
 {% endautoescape %}
