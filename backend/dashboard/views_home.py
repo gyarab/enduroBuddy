@@ -16,7 +16,7 @@ from activities.services.garmin_importer import GarminImportError
 from dashboard.services.imports import GARMIN_RANGE_OPTIONS, audit_garmin, connect_garmin_for_user, revoke_garmin_for_user
 from dashboard.services.month_cards import add_next_month_for_athlete, build_month_cards_for_athlete, is_coach
 from dashboard.services.tasks import run_fit_import, run_garmin_sync
-from .views_shared import _resolve_coach_from_code, sanitize_legend_state
+from .views_shared import _resolve_coach_from_code, maybe_add_test_notifications, sanitize_legend_state
 
 logger = logging.getLogger(__name__)
 
@@ -185,6 +185,7 @@ def home(request):
         .filter(athlete=request.user)
         .order_by("coach__username", "coach__id")
     )
+    maybe_add_test_notifications(request)
     return render(
         request,
         "dashboard/dashboard.html",

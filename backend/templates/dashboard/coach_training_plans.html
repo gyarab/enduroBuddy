@@ -7,16 +7,6 @@
 
 {% block content %}
 <div class="container-fluid py-3">
-  {% if messages %}
-    <div class="eb-coach-toast-stack">
-      {% for message in messages %}
-        <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} py-2 mb-2 eb-coach-toast" role="alert">
-          {{ message }}
-        </div>
-      {% endfor %}
-    </div>
-  {% endif %}
-
   <div class="eb-coach-shell" id="coachShell">
     <aside class="eb-coach-sidebar">
       <div class="card shadow-sm">

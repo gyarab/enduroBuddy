@@ -20,3 +20,4 @@ from .views_coach import (
 from .views_home import home
 from .views_home import athlete_update_legend_state
 from .views_invites import accept_training_group_invite
+from .views_profile import profile_manage

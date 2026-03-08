@@ -22,6 +22,7 @@ from .views_shared import (
     _remove_second_phase_for_planned,
     _create_training_group_invite,
     _get_cached_coach_accessible_ids,
+    maybe_add_test_notifications,
     _update_completed_training_for_planned,
     sanitize_legend_state,
 )
@@ -290,6 +291,7 @@ def coach_training_plans(request):
             sanitize_legend_state(getattr(selected_profile, "legend_state", {}))
         )
 
+    maybe_add_test_notifications(request)
     return render(
         request,
         "dashboard/coach_training_plans.html",

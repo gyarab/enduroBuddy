@@ -5,7 +5,7 @@ from datetime import date, timedelta
 from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
 
@@ -78,6 +78,13 @@ class CoachTrainingPlansTests(TestCase):
         resp = self.client.get(reverse("dashboard_home"))
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, reverse("coach_training_plans"))
+
+    @override_settings(DEBUG=True)
+    def test_coach_page_can_render_test_notifications_from_query_param(self):
+        self.client.login(username="coach", password="coach")
+        resp = self.client.get(reverse("coach_training_plans"), {"test_notifications": "1"})
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Test: Novy treninkovy plan je pripraven.")
 
     def test_create_group_action_is_ignored_in_simplified_coach_ui(self):
         self.client.login(username="coach", password="coach")

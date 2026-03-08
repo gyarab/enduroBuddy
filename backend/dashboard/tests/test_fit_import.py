@@ -141,6 +141,13 @@ class DashboardFitImportTests(TestCase):
         ).order_by("week_index")
         self.assertEqual(list(march_weeks.values_list("week_index", flat=True)), [1, 5])
 
+    @override_settings(DEBUG=True)
+    def test_dashboard_can_render_test_notifications_from_query_param(self):
+        resp = self.client.get(reverse("dashboard_home"), {"test_notifications": "1"})
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Test: Novy treninkovy plan je pripraven.")
+        self.assertContains(resp, "Test: Garmin synchronizace bude spustena za chvili.")
+
     def test_completed_rows_are_aggregated_by_day_and_sorted_by_activity_start(self):
         run_day = date(2026, 3, 3)
         week = _resolve_week_for_day(self.user, run_day)
