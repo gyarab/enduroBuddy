@@ -333,10 +333,15 @@ def coach_update_planned_training(request):
 
     if not isinstance(planned_id, int):
         return JsonResponse({"ok": False, "error": "Invalid planned_id."}, status=400)
-    if field not in {"title", "notes"}:
+    if field not in {"title", "notes", "session_type"}:
         return JsonResponse({"ok": False, "error": "Invalid field."}, status=400)
     if not isinstance(value, str):
         return JsonResponse({"ok": False, "error": "Invalid value."}, status=400)
+    if field == "session_type" and value not in {
+        PlannedTraining.SessionType.RUN,
+        PlannedTraining.SessionType.WORKOUT,
+    }:
+        return JsonResponse({"ok": False, "error": "Invalid session_type value."}, status=400)
 
     planned = (
         PlannedTraining.objects.select_related("week__training_month")

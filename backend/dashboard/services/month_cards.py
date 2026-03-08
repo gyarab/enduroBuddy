@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import date, timedelta
+import re
 from typing import Any, Optional
 
 from django.db.models import Prefetch
@@ -66,15 +67,62 @@ def _fmt_intervals(intervals: list[ActivityInterval]) -> str:
     return "(" + ", ".join(out) + ")"
 
 
-def _activity_segment(a: Activity) -> str:
-    if (a.workout_type or "RUN") == "WORKOUT":
-        intervals = list(a.intervals.all())
-        return _fmt_intervals(intervals)
+def _normalize_plan_text(text: str) -> str:
+    return (text or "").strip().lower()
 
+
+def _plan_indicates_workout(*, title: str, notes: str) -> bool:
+    text = f"{_normalize_plan_text(title)} {_normalize_plan_text(notes)}".strip()
+    if not text:
+        return False
+
+    workout_keywords = (
+        "workout",
+        "tempo",
+        "fartlek",
+        "anp",
+        "lt",
+        "interv",
+        "rovinky",
+        "sbc",
+        "mk",
+        "mch",
+        "p=",
+        "zavod",
+        "závod",
+        "kopec",
+        "kopce",
+        "fini",
+        "interval",
+    )
+    if any(k in text for k in workout_keywords):
+        return True
+
+    pattern_hits = (
+        re.search(r"\b\d+\s*x\s*\d+", text),
+        re.search(r"\b\d+\s*x\s*\(", text),
+        re.search(r"\b\d+\s*-\s*\d+\b", text),
+        re.search(r"\btempo\s*\d", text),
+    )
+    return any(pattern_hits)
+
+
+def _activity_segment(a: Activity, *, show_intervals: bool) -> str:
+    intervals = list(a.intervals.all())
+    intervals_text = _fmt_intervals(intervals)
     pace = _fmt_mmss(a.avg_pace_s_per_km)
-    if pace == "-":
-        return "-"
-    return f"{pace}/km"
+    pace_text = "-" if pace == "-" else f"{pace}/km"
+
+    if not show_intervals:
+        return pace_text
+
+    if intervals_text != "-" and pace_text != "-":
+        return f"{intervals_text}, {pace_text}"
+    if intervals_text != "-":
+        return intervals_text
+    if pace_text != "-":
+        return pace_text
+    return "-"
 
 
 def _planned_day_key(t: PlannedTraining):
@@ -106,6 +154,7 @@ def _build_planned_rows_for_week(planned_items: list[PlannedTraining]) -> list[d
                     "day_label": items[0].day_label if show_date else "",
                     "title": "-",
                     "title_raw": "",
+                    "session_type": PlannedTraining.SessionType.RUN,
                     "notes": "",
                     "notes_raw": "",
                 }
@@ -114,6 +163,11 @@ def _build_planned_rows_for_week(planned_items: list[PlannedTraining]) -> list[d
             notes = [x.notes for x in subitems if x.notes]
             joined_titles = " | ".join(titles) if titles else ""
             joined_notes = " | ".join(notes) if notes else ""
+            effective_session_type = (
+                PlannedTraining.SessionType.WORKOUT
+                if any((x.session_type or PlannedTraining.SessionType.RUN) == PlannedTraining.SessionType.WORKOUT for x in subitems)
+                else PlannedTraining.SessionType.RUN
+            )
             return {
                 "planned_id": first.id,
                 "item_count": len(subitems),
@@ -121,6 +175,7 @@ def _build_planned_rows_for_week(planned_items: list[PlannedTraining]) -> list[d
                 "day_label": first.day_label if show_date else "",
                 "title": joined_titles if joined_titles else "-",
                 "title_raw": joined_titles,
+                "session_type": effective_session_type,
                 "notes": joined_notes,
                 "notes_raw": joined_notes,
             }
@@ -133,7 +188,7 @@ def _build_planned_rows_for_week(planned_items: list[PlannedTraining]) -> list[d
     return rows
 
 
-def _build_completed_row_from_activities(activities: list[Activity]) -> dict[str, Any]:
+def _build_completed_row_from_activities(activities: list[Activity], *, show_intervals: bool) -> dict[str, Any]:
     activities = sorted(activities, key=lambda a: (a.started_at is None, a.started_at))
     total_distance_m = sum(int(a.distance_m or 0) for a in activities)
     total_duration_s = sum(int(a.duration_s or 0) for a in activities)
@@ -151,7 +206,7 @@ def _build_completed_row_from_activities(activities: list[Activity]) -> dict[str
         if a.max_hr is not None:
             max_hr = max(max_hr or 0, int(a.max_hr))
 
-        seg = _activity_segment(a)
+        seg = _activity_segment(a, show_intervals=show_intervals)
         if seg != "-":
             third_parts.append(seg)
 
@@ -207,6 +262,25 @@ def _build_completed_rows_for_week(planned_items: list[PlannedTraining]) -> list
         items = sorted(grouped[key], key=lambda x: (x.order_in_day, x.id))
         is_two_phase = any(x.is_two_phase_day for x in items)
 
+        def _show_intervals_for(subitems: list[PlannedTraining], sub_activities: list[Activity]) -> bool:
+            if any((x.session_type or PlannedTraining.SessionType.RUN) == PlannedTraining.SessionType.WORKOUT for x in subitems):
+                return True
+            if subitems and all((x.session_type or PlannedTraining.SessionType.RUN) == PlannedTraining.SessionType.RUN for x in subitems):
+                return False
+
+            title = " ".join((x.title or "") for x in subitems)
+            notes = " ".join((x.notes or "") for x in subitems)
+            normalized = _normalize_plan_text(f"{title} {notes}")
+            has_plan_text = bool(normalized)
+            if _plan_indicates_workout(title=title, notes=notes):
+                return True
+            if has_plan_text:
+                return False
+            has_work_intervals = any(_fmt_intervals(list(a.intervals.all())) != "-" for a in sub_activities)
+            if has_work_intervals:
+                return True
+            return any((a.workout_type or "") == "WORKOUT" for a in sub_activities)
+
         if is_two_phase:
             phase_1_items = items[:1]
             phase_2_items = items[1:]
@@ -214,23 +288,39 @@ def _build_completed_rows_for_week(planned_items: list[PlannedTraining]) -> list
             phase_1_activities = [x.activity for x in phase_1_items if getattr(x, "activity", None)]
             phase_2_activities = [x.activity for x in phase_2_items if getattr(x, "activity", None)]
 
-            phase_1_row = _build_completed_row_from_activities(phase_1_activities)
-            phase_1_row["planned_id"] = phase_1_items[0].id if len(phase_1_items) == 1 else None
+            phase_1_row = _build_completed_row_from_activities(
+                phase_1_activities,
+                show_intervals=_show_intervals_for(phase_1_items, phase_1_activities),
+            )
+            phase_1_row["planned_id"] = phase_1_items[0].id if phase_1_items else None
             phase_1_row["item_count"] = len(phase_1_items)
             if len(phase_1_items) == 1:
                 _apply_manual_overrides(phase_1_row, getattr(phase_1_items[0], "completed", None))
             rows.append(phase_1_row)
 
-            phase_2_row = _build_completed_row_from_activities(phase_2_activities)
-            phase_2_row["planned_id"] = phase_2_items[0].id if len(phase_2_items) == 1 else None
+            phase_2_row = _build_completed_row_from_activities(
+                phase_2_activities,
+                show_intervals=_show_intervals_for(phase_2_items, phase_2_activities),
+            )
+            phase_2_row["planned_id"] = phase_2_items[0].id if phase_2_items else None
             phase_2_row["item_count"] = len(phase_2_items)
             if len(phase_2_items) == 1:
                 _apply_manual_overrides(phase_2_row, getattr(phase_2_items[0], "completed", None))
+
+            # Keep week totals based on per-phase raw values, but display
+            # km/min in phase 2 as cumulative day total (phase 1 + phase 2).
+            day_distance_m = int(phase_1_row.get("_distance_m") or 0) + int(phase_2_row.get("_distance_m") or 0)
+            day_duration_min = int(phase_1_row.get("_duration_min") or 0) + int(phase_2_row.get("_duration_min") or 0)
+            phase_2_row["km"] = f"{day_distance_m / 1000.0:.2f}" if day_distance_m > 0 else "-"
+            phase_2_row["min"] = str(day_duration_min) if day_duration_min > 0 else "-"
             rows.append(phase_2_row)
         else:
             day_activities = [x.activity for x in items if getattr(x, "activity", None)]
-            row = _build_completed_row_from_activities(day_activities)
-            row["planned_id"] = items[0].id if len(items) == 1 else None
+            row = _build_completed_row_from_activities(
+                day_activities,
+                show_intervals=_show_intervals_for(items, day_activities),
+            )
+            row["planned_id"] = items[0].id if items else None
             row["item_count"] = len(items)
             if len(items) == 1:
                 _apply_manual_overrides(row, getattr(items[0], "completed", None))
@@ -326,7 +416,7 @@ def build_month_cards_for_athlete(*, athlete, language_code: str) -> list[dict[s
                                 .prefetch_related(
                                     Prefetch(
                                         "activity__intervals",
-                                        queryset=ActivityInterval.objects.filter(activity__workout_type="WORKOUT").order_by("index"),
+                                        queryset=ActivityInterval.objects.order_by("index"),
                                     )
                                 )
                                 .order_by("date", "id")

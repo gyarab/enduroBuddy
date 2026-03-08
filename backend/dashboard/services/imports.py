@@ -49,6 +49,7 @@ def _resolve_planned_training(user, run_day: date, fallback_title: str) -> Plann
         date=run_day,
         day_label=run_day.strftime("%a"),
         title=fallback_title or "Imported activity",
+        session_type=PlannedTraining.SessionType.RUN,
         order_in_day=max_order + 1,
         is_two_phase_day=len(day_items) >= 1,
     )

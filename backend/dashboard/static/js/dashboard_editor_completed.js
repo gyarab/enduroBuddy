@@ -24,6 +24,56 @@
     const parsePasteMatrix = (deps && deps.parsePasteMatrix) || (() => []);
     const createHistoryManager = (deps && deps.createHistoryManager) || (() => ({ push() {}, undo() {}, redo() {} }));
 
+    function parseNum(text) {
+      if (text == null) return null;
+      const normalized = String(text).trim().replace(",", ".");
+      if (!normalized || normalized === "-") return null;
+      const value = Number.parseFloat(normalized);
+      return Number.isFinite(value) ? value : null;
+    }
+
+    function recalcCompletedWeekTotals(widget) {
+      const weekRows = Array.from(widget.querySelectorAll(".eb-week-row"));
+      weekRows.forEach((weekRow) => {
+        const table = weekRow.querySelector(".eb-col-completed table");
+        if (!table) return;
+        const bodyRows = Array.from(table.querySelectorAll("tbody tr"));
+        let totalKm = 0;
+        let totalMin = 0;
+        let hrNum = 0;
+        let hrDen = 0;
+        let maxHr = null;
+
+        bodyRows.forEach((row) => {
+          const cells = row.querySelectorAll("td");
+          if (!cells || cells.length < 5) return;
+          const kmVal = parseNum(cells[0].textContent);
+          const minVal = parseNum(cells[1].textContent);
+          const avgHrVal = parseNum(cells[3].textContent);
+          const maxHrVal = parseNum(cells[4].textContent);
+
+          if (kmVal !== null) totalKm += kmVal;
+          if (minVal !== null) totalMin += minVal;
+          if (avgHrVal !== null && minVal !== null && minVal > 0) {
+            hrNum += avgHrVal * minVal;
+            hrDen += minVal;
+          }
+          if (maxHrVal !== null) {
+            maxHr = maxHr === null ? maxHrVal : Math.max(maxHr, maxHrVal);
+          }
+        });
+
+        const foot = table.querySelector("tfoot tr");
+        if (!foot) return;
+        const footCells = foot.querySelectorAll("th");
+        if (!footCells || footCells.length < 5) return;
+        footCells[0].textContent = totalKm > 0 ? totalKm.toFixed(2) : "-";
+        footCells[1].textContent = totalMin > 0 ? String(Math.round(totalMin)) : "-";
+        footCells[3].textContent = hrDen > 0 ? String(Math.round(hrNum / hrDen)) : "-";
+        footCells[4].textContent = maxHr !== null ? String(Math.round(maxHr)) : "-";
+      });
+    }
+
     function initCompletedInlineEditing(widget, scheduleEqualize) {
       const updateUrl = widget.getAttribute("data-completed-update-url");
       const addPhaseUrl = widget.getAttribute("data-add-phase-url");
@@ -89,6 +139,12 @@
           newPlannedRow.innerHTML = `
             <td class="eb-planned-date-col"></td>
             <td class="eb-planned-day-col"></td>
+            <td class="eb-planned-type-col">
+              <select class="form-select form-select-sm eb-inline-select" data-training-id="${newPlannedId}" data-field="session_type">
+                <option value="RUN" selected>Run</option>
+                <option value="WORKOUT">Workout</option>
+              </select>
+            </td>
             <td class="eb-planned-training-col"><div class="eb-inline-edit" contenteditable="true" data-training-id="${newPlannedId}" data-field="title"></div></td>
             <td class="eb-planned-notes-col"><div class="eb-inline-edit" contenteditable="true" data-training-id="${newPlannedId}" data-field="notes"></div></td>
           `;
@@ -110,6 +166,7 @@
             monthTableCache.delete(month);
             widget.dispatchEvent(new CustomEvent("eb:rows-changed", { detail: { month } }));
           }
+          recalcCompletedWeekTotals(widget);
           scheduleEqualize(widget, { dirty: true });
 
           const field = node.getAttribute("data-field") || "km";
@@ -170,6 +227,7 @@
             monthTableCache.delete(month);
             widget.dispatchEvent(new CustomEvent("eb:rows-changed", { detail: { month } }));
           }
+          recalcCompletedWeekTotals(widget);
           scheduleEqualize(widget, { dirty: true });
 
           const field = node.getAttribute("data-field") || "km";
@@ -236,6 +294,7 @@
             node.dataset.queued = "0";
             saveCompletedField(node);
           }
+          recalcCompletedWeekTotals(widget);
           scheduleEqualize(widget, { dirty: true });
         }
       }
@@ -378,6 +437,7 @@
         history.push(changes);
         clearInlineSelection();
         scheduleEqualize(widget, { dirty: true });
+        recalcCompletedWeekTotals(widget);
         return true;
       }
 
@@ -399,6 +459,7 @@
           });
         });
         scheduleEqualize(widget, { dirty: true });
+        recalcCompletedWeekTotals(widget);
         return changes;
       }
 
@@ -406,6 +467,7 @@
       editableNodes.forEach((node) => {
         node.dataset.originalValue = node.textContent || "";
       });
+      recalcCompletedWeekTotals(widget);
       if (widget.dataset.ebCompletedDelegatedInit === "1") return;
       widget.dataset.ebCompletedDelegatedInit = "1";
 

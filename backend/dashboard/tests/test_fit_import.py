@@ -146,7 +146,14 @@ class DashboardFitImportTests(TestCase):
         week = _resolve_week_for_day(self.user, run_day)
 
         p1 = PlannedTraining.objects.create(week=week, date=run_day, day_label="Tue", title="Warmup", order_in_day=1)
-        p2 = PlannedTraining.objects.create(week=week, date=run_day, day_label="Tue", title="Workout", order_in_day=2)
+        p2 = PlannedTraining.objects.create(
+            week=week,
+            date=run_day,
+            day_label="Tue",
+            title="Workout",
+            session_type=PlannedTraining.SessionType.WORKOUT,
+            order_in_day=2,
+        )
         p3 = PlannedTraining.objects.create(week=week, date=run_day, day_label="Tue", title="Cooldown", order_in_day=3)
 
         tz = timezone.get_current_timezone()
@@ -222,6 +229,7 @@ class DashboardFitImportTests(TestCase):
             date=run_day,
             day_label="Wed",
             title="Evening workout",
+            session_type=PlannedTraining.SessionType.WORKOUT,
             order_in_day=2,
             is_two_phase_day=True,
         )
@@ -244,6 +252,7 @@ class DashboardFitImportTests(TestCase):
             started_at=timezone.make_aware(timezone.datetime(2026, 3, 4, 18, 0, 0), tz),
             distance_m=5000,
             duration_s=1500,
+            avg_pace_s_per_km=295,
             avg_hr=165,
             max_hr=180,
         )
@@ -265,9 +274,13 @@ class DashboardFitImportTests(TestCase):
 
         self.assertEqual(len(completed_rows), 2)
         self.assertEqual(completed_rows[0]["km"], "3.00")
+        self.assertEqual(completed_rows[0]["min"], "15")
         self.assertEqual(completed_rows[0]["third"], "5:00/km")
-        self.assertEqual(completed_rows[1]["km"], "5.00")
-        self.assertEqual(completed_rows[1]["third"], "(1:00, 1:20)")
+        self.assertEqual(completed_rows[1]["km"], "8.00")
+        self.assertEqual(completed_rows[1]["min"], "40")
+        self.assertEqual(completed_rows[1]["third"], "(1:00, 1:20), 4:55/km")
+        self.assertEqual(week_ctx.completed_total["km"], "8.00")
+        self.assertEqual(week_ctx.completed_total["time"], "40")
 
     def test_import_resolver_marks_day_as_two_phase_when_creating_second_training(self):
         run_day = date(2026, 3, 6)
@@ -297,6 +310,80 @@ class DashboardFitImportTests(TestCase):
         self.assertEqual(second.order_in_day, 2)
         self.assertTrue(first.is_two_phase_day)
         self.assertTrue(second.is_two_phase_day)
+
+    def test_planned_training_session_type_can_be_updated(self):
+        run_day = date(2026, 3, 7)
+        week = _resolve_week_for_day(self.user, run_day)
+        planned = PlannedTraining.objects.create(
+            week=week,
+            date=run_day,
+            day_label="Sat",
+            title="8 km klus",
+            session_type=PlannedTraining.SessionType.RUN,
+            order_in_day=1,
+        )
+
+        resp = self.client.post(
+            reverse("athlete_update_planned_training"),
+            data='{"planned_id": %d, "field": "session_type", "value": "WORKOUT"}' % planned.id,
+            content_type="application/json",
+        )
+        self.assertEqual(resp.status_code, 200)
+        planned.refresh_from_db()
+        self.assertEqual(planned.session_type, PlannedTraining.SessionType.WORKOUT)
+
+    def test_plan_text_drives_run_vs_workout_rendering(self):
+        tz = timezone.get_current_timezone()
+        week = _resolve_week_for_day(self.user, date(2026, 3, 10))
+
+        planned_workout = PlannedTraining.objects.create(
+            week=week,
+            date=date(2026, 3, 10),
+            day_label="Tue",
+            title="3x(500-300-200), P=60s",
+            session_type=PlannedTraining.SessionType.WORKOUT,
+            order_in_day=1,
+        )
+        activity_workout_like = Activity.objects.create(
+            athlete=self.user,
+            planned_training=planned_workout,
+            workout_type=Activity.WorkoutType.RUN,
+            started_at=timezone.make_aware(timezone.datetime(2026, 3, 10, 8, 0, 0), tz),
+            distance_m=7000,
+            duration_s=2100,
+            avg_pace_s_per_km=300,
+        )
+        ActivityInterval.objects.create(activity=activity_workout_like, index=1, duration_s=99, distance_m=500)
+        ActivityInterval.objects.create(activity=activity_workout_like, index=2, duration_s=56, distance_m=300)
+        ActivityInterval.objects.create(activity=activity_workout_like, index=3, duration_s=35, distance_m=200)
+
+        planned_run = PlannedTraining.objects.create(
+            week=week,
+            date=date(2026, 3, 11),
+            day_label="Wed",
+            title="8 km klus",
+            session_type=PlannedTraining.SessionType.RUN,
+            order_in_day=1,
+        )
+        activity_run_like = Activity.objects.create(
+            athlete=self.user,
+            planned_training=planned_run,
+            workout_type=Activity.WorkoutType.WORKOUT,
+            started_at=timezone.make_aware(timezone.datetime(2026, 3, 11, 8, 0, 0), tz),
+            distance_m=8000,
+            duration_s=2400,
+            avg_pace_s_per_km=300,
+        )
+        ActivityInterval.objects.create(activity=activity_run_like, index=1, duration_s=100, distance_m=400)
+
+        resp = self.client.get(reverse("dashboard_home"))
+        self.assertEqual(resp.status_code, 200)
+
+        week_ctx = resp.context["month_cards"][0]["weeks"][0]
+        rows = week_ctx.completed_rows
+        self.assertGreaterEqual(len(rows), 2)
+        self.assertEqual(rows[0]["third"], "(1:39, 56, 35), 5:00/km")
+        self.assertEqual(rows[1]["third"], "5:00/km")
 
     @patch("dashboard.services.imports.download_garmin_fit_payloads")
     def test_garmin_sync_imports_activity(self, mocked_download):

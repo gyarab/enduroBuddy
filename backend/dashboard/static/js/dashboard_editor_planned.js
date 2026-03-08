@@ -352,6 +352,54 @@
       }
     }
 
+    async function saveSelectField(selectNode, updateUrl, csrfToken, widget, scheduleEqualize) {
+      if (selectNode.dataset.saving === "1") {
+        selectNode.dataset.queued = "1";
+        return;
+      }
+      const trainingId = Number(selectNode.getAttribute("data-training-id"));
+      const field = selectNode.getAttribute("data-field");
+      const currentValue = selectNode.value || "";
+      const originalValue = selectNode.dataset.originalValue || "";
+      if (!trainingId || !field || currentValue === originalValue) return;
+
+      selectNode.dataset.saving = "1";
+      selectNode.classList.add("is-saving");
+      try {
+        const payload = await metricMeasureAsync(
+          "inline-save-planned-select",
+          () =>
+            postJson(
+              updateUrl,
+              {
+                planned_id: trainingId,
+                field,
+                value: currentValue,
+              },
+              csrfToken
+            ),
+          { field, training_id: trainingId }
+        );
+        if (!payload.ok) throw new Error(payload.error || "Save failed.");
+        selectNode.dataset.originalValue = payload.value || "";
+        selectNode.classList.remove("is-error");
+        // Completed rendering depends on server-side month card build; refresh to reflect new mode immediately.
+        window.location.reload();
+      } catch (err) {
+        selectNode.value = originalValue;
+        selectNode.classList.add("is-error");
+        console.error(err);
+      } finally {
+        selectNode.dataset.saving = "0";
+        selectNode.classList.remove("is-saving");
+        if (selectNode.dataset.queued === "1") {
+          selectNode.dataset.queued = "0";
+          saveSelectField(selectNode, updateUrl, csrfToken, widget, scheduleEqualize);
+        }
+        scheduleEqualize(widget, { dirty: true });
+      }
+    }
+
     function initCoachInlineEditing(widget, scheduleEqualize) {
       const updateUrl = widget.getAttribute("data-plan-update-url");
       const addPhaseUrl = widget.getAttribute("data-add-phase-url");
@@ -415,6 +463,12 @@
           newPlannedRow.innerHTML = `
             <td class="eb-planned-date-col"></td>
             <td class="eb-planned-day-col"></td>
+            <td class="eb-planned-type-col">
+              <select class="form-select form-select-sm eb-inline-select" data-training-id="${newPlannedId}" data-field="session_type">
+                <option value="RUN" selected>Run</option>
+                <option value="WORKOUT">Workout</option>
+              </select>
+            </td>
             <td class="eb-planned-training-col"><div class="eb-inline-edit" contenteditable="true" data-training-id="${newPlannedId}" data-field="title"></div></td>
             <td class="eb-planned-notes-col"><div class="eb-inline-edit" contenteditable="true" data-training-id="${newPlannedId}" data-field="notes"></div></td>
           `;
@@ -746,6 +800,10 @@
       editableNodes.forEach((node) => {
         node.dataset.originalValue = node.textContent || "";
       });
+      const selectNodes = Array.from(widget.querySelectorAll(".eb-inline-select[data-field='session_type']"));
+      selectNodes.forEach((node) => {
+        node.dataset.originalValue = node.value || "";
+      });
       recalcPlannedWeekTotals(widget);
       if (widget.dataset.ebPlannedDelegatedInit === "1") return;
       widget.dataset.ebPlannedDelegatedInit = "1";
@@ -941,6 +999,22 @@
           inputTimers.delete(node);
         }
         saveInlineField(node, updateUrl, csrfToken, widget, scheduleEqualize);
+      });
+
+      widget.addEventListener("change", (event) => {
+        const target = event && event.target ? event.target : null;
+        if (!target || typeof target.closest !== "function") return;
+        const selectNode = target.closest(".eb-inline-select[data-field='session_type']");
+        if (!selectNode || !widget.contains(selectNode)) return;
+        saveSelectField(selectNode, updateUrl, csrfToken, widget, scheduleEqualize);
+      });
+
+      widget.addEventListener("focusout", (event) => {
+        const target = event && event.target ? event.target : null;
+        if (!target || typeof target.closest !== "function") return;
+        const selectNode = target.closest(".eb-inline-select[data-field='session_type']");
+        if (!selectNode || !widget.contains(selectNode)) return;
+        saveSelectField(selectNode, updateUrl, csrfToken, widget, scheduleEqualize);
       });
 
       widget.addEventListener("eb:rows-changed", (event) => {

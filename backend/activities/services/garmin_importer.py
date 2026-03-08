@@ -30,12 +30,17 @@ class GarminDownloadResult:
     refreshed_tokenstore: str
 
 
-def _new_client(*, email: str | None = None, password: str | None = None):
+def _new_client(
+    *,
+    email: str | None = None,
+    password: str | None = None,
+    return_on_mfa: bool = False,
+):
     try:
         from garminconnect import Garmin
     except Exception as exc:
         raise GarminImportError("Python package 'garminconnect' is not installed.") from exc
-    return Garmin(email=email, password=password)
+    return Garmin(email=email, password=password, return_on_mfa=return_on_mfa)
 
 
 def _extract_fit_bytes(payload: bytes) -> bytes:
@@ -95,14 +100,23 @@ def connect_garmin_account(*, email: str, password: str) -> GarminConnectionBund
     if not email or not password:
         raise GarminImportError("Missing Garmin email or password.")
 
-    client = _new_client(email=email, password=password)
+    client = _new_client(email=email, password=password, return_on_mfa=True)
     try:
-        client.login()
+        login_status, _ = client.login()
     except Exception as exc:
         raise GarminImportError(f"Garmin login failed: {exc}") from exc
 
+    if login_status == "needs_mfa":
+        raise GarminImportError(
+            "Garmin account requires MFA verification, which is not supported in this flow yet."
+        )
+
+    tokenstore = client.garth.dumps()
+    if not tokenstore:
+        raise GarminImportError("Garmin login succeeded but token store is empty.")
+
     return GarminConnectionBundle(
-        tokenstore=client.garth.dumps(),
+        tokenstore=tokenstore,
         display_name=getattr(client, "display_name", "") or "",
         full_name=getattr(client, "full_name", "") or "",
     )
