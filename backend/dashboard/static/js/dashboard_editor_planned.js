@@ -1,4 +1,4 @@
-(function () {
+﻿(function () {
   window.EB = window.EB || {};
 
   function createPlannedEditor(deps) {
@@ -23,48 +23,56 @@
     const setClipboardText = (deps && deps.setClipboardText) || (() => false);
     const parsePasteMatrix = (deps && deps.parsePasteMatrix) || (() => []);
     const createHistoryManager = (deps && deps.createHistoryManager) || (() => ({ push() {}, undo() {}, redo() {} }));
+    const RULES_ONBOARDING_KEY = "eb_planned_rules_onboarding_dismissed_v1";
     const NUM_RE = "\\d+(?:[.,]\\d+)?";
-    const MULT_RANGE_PAREN_RE = new RegExp(`(${NUM_RE})\\s*-\\s*(${NUM_RE})\\s*[x×]\\s*\\(([^)]*)\\)`, "gi");
-    const MULT_PAREN_WITH_TAIL_SERIES_RE = new RegExp(`(${NUM_RE})\\s*[x×]\\s*\\(([^)]*)\\)\\s*(?:mk|mch)?\\s*(\\d{3,4}(?:\\s*-\\s*\\d{3,4})+)m\\b`, "gi");
-    const MULT_SINGLE_PAREN_RE = new RegExp(`(${NUM_RE})\\s*[x×]\\s*\\(([^)]*)\\)`, "gi");
-    const MULT_CHAIN_DIST_RANGE_RE = new RegExp(`(${NUM_RE})\\s*-\\s*(${NUM_RE})\\s*[x×]\\s*(${NUM_RE})\\s*[x×]\\s*(${NUM_RE})\\s*(km|m)\\b`, "gi");
-    const MULT_CHAIN_DIST_SINGLE_RE = new RegExp(`(${NUM_RE})\\s*[x×]\\s*(${NUM_RE})\\s*[x×]\\s*(${NUM_RE})\\s*(km|m)\\b`, "gi");
-    const MULT_DIST_RANGE_RE = new RegExp(`(${NUM_RE})\\s*-\\s*(${NUM_RE})\\s*[x×]\\s*(${NUM_RE})\\s*(km|m)\\b`, "gi");
-    const MULT_DIST_SINGLE_RE = new RegExp(`(${NUM_RE})\\s*[x×]\\s*(${NUM_RE})\\s*(km|m)\\b`, "gi");
-    const RV_KM_RE = new RegExp(`(?<!\\w)(${NUM_RE})\\s*([RV])(?=$|[\\s,;+()/-])`, "g");
+    const MULT_RANGE_PAREN_RE = new RegExp(`(${NUM_RE})\\s*-\\s*(${NUM_RE})\\s*[xX×]\\s*\\(([^)]*)\\)`, "gi");
+    const MULT_PAREN_WITH_TAIL_SERIES_RE = new RegExp(`(${NUM_RE})\\s*[xX×]\\s*\\(([^)]*)\\)\\s*(?:mk|mch)?\\s*(\\d{3,4}(?:\\s*-\\s*\\d{3,4})+)m\\b`, "gi");
+    const MULT_SINGLE_PAREN_RE = new RegExp(`(${NUM_RE})\\s*[xX×]\\s*\\(([^)]*)\\)`, "gi");
+    const MULT_CHAIN_DIST_RANGE_RE = new RegExp(`(${NUM_RE})\\s*-\\s*(${NUM_RE})\\s*[xX×]\\s*(${NUM_RE})\\s*[xX×]\\s*(${NUM_RE})\\s*(km|m)\\b`, "gi");
+    const MULT_CHAIN_DIST_SINGLE_RE = new RegExp(`(${NUM_RE})\\s*[xX×]\\s*(${NUM_RE})\\s*[xX×]\\s*(${NUM_RE})\\s*(km|m)\\b`, "gi");
+    const MULT_DIST_RANGE_RE = new RegExp(`(${NUM_RE})\\s*-\\s*(${NUM_RE})\\s*[xX×]\\s*(${NUM_RE})\\s*(km|m)\\b`, "gi");
+    const MULT_DIST_SINGLE_RE = new RegExp(`(${NUM_RE})\\s*[xX×]\\s*(${NUM_RE})\\s*(km|m)\\b`, "gi");
+    const RV_RANGE_KM_RE = new RegExp(`(?<!\\w)(${NUM_RE})\\s*-\\s*(${NUM_RE})\\s*([RVrv])(?=$|[\\s,;+()/-])`, "g");
+    const RV_KM_RE = new RegExp(`(?<!\\w)(${NUM_RE})\\s*([RVrv])(?=$|[\\s,;+()/-])`, "g");
     const RANGE_UNIT_RE = new RegExp(`(${NUM_RE})\\s*-\\s*(${NUM_RE})\\s*(km|m)\\b`, "gi");
     const SINGLE_UNIT_RE = new RegExp(`(${NUM_RE})\\s*(km|m)\\b`, "gi");
     const BARE_M_SERIES_RE = /\b(\d{3,4}(?:\s*-\s*\d{3,4}){1,})\b/gi;
     const BARE_M_TOKEN_RE = /(?<!\d)(\d{3,4})(?!\d)/g;
-    const WALK_RE = /(chuze|mch|walk|walking|hike)/i;
-    const PAUSE_MIN_RE = /(?:\bp\s*=\s*|\bpo\s*serii\s*)(\d+(?:[.,]\d+)?)\s*['´’]/gi;
+    const WALK_RE = /(chuze|chůze|mch|walk|walking|hike)/i;
+    const PAUSE_MIN_RE = /\bp\s*=\s*(\d+(?:[.,]\d+)?)\s*['´’]/gi;
+    const KLUS_MIN_RE = /(?:(po\s*serii)\s*)?(\d+(?:[.,]\d+)?)\s*(?:min|m(?:in)?)\s*klus/gi;
+    const RUN_HINT_RE = /\b(km|m|klus|fartlek|tempo|kopec|kopce|beh|běh|run|interval|rovinky)\b/i;
+    const MAX_RV_TOKEN = 30;
 
     function toNum(value) {
       const parsed = Number.parseFloat(String(value || "").replace(",", "."));
       return Number.isFinite(parsed) ? parsed : null;
     }
 
+    function stripAccents(value) {
+      return String(value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    }
+
     function isWalkContext(text, start, end) {
-      const separators = "+,;/|";
-      let segLeft = start;
-      while (segLeft > 0 && !separators.includes(text[segLeft - 1])) segLeft -= 1;
-      let segRight = end;
-      while (segRight < text.length && !separators.includes(text[segRight])) segRight += 1;
-      const segment = text.slice(segLeft, segRight).toLowerCase();
-      const relStart = start - segLeft;
-      const relEnd = end - segLeft;
-      const keywords = ["chuze", "mch", "walk", "walking", "hike"];
-      for (const keyword of keywords) {
-        let pos = segment.indexOf(keyword);
-        while (pos !== -1) {
-          let distance = 0;
-          if (pos < relStart) distance = relStart - (pos + keyword.length);
-          else if (pos > relEnd) distance = pos - relEnd;
-          if (distance <= 3) return true;
-          pos = segment.indexOf(keyword, pos + 1);
-        }
-      }
-      return false;
+      const normalized = String(text || "").toLowerCase();
+      const left = Math.max(0, start - 24);
+      const right = Math.min(normalized.length, end + 24);
+      const around = normalized.slice(left, right);
+      const relStart = start - left;
+      const relEnd = end - left;
+      const before = around.slice(0, relStart);
+      const after = around.slice(relEnd);
+      const marker = "(?:mch|chuze|walk|walking|hike)";
+      const beforeRe = new RegExp(`\\b${marker}\\s*$`);
+      const afterRe = new RegExp(`^\\s*${marker}\\b`);
+      return beforeRe.test(before) || afterRe.test(after);
+    }
+
+    function isTempoContext(text, start) {
+      const normalized = stripAccents(text).toLowerCase();
+      const left = Math.max(0, start - 20);
+      const before = normalized.slice(left, start);
+      return /(?:tempo|tempu)\s*$/i.test(before);
     }
 
     function toKm(value, unit) {
@@ -86,14 +94,31 @@
     }
 
     function estimatePauseMinutesKm(text) {
+      return 0;
+    }
+
+    function outerSeriesMultiplier(text) {
+      const match = /\b(\d+(?:[.,]\d+)?)\s*[xX×]\s*\d/i.exec(stripAccents(text));
+      if (!match) return 1;
+      const value = toNum(match[1]);
+      if (value === null || value <= 0 || value > 10) return 1;
+      return value;
+    }
+
+    function estimateKlusMinutesKm(text) {
       if (!text) return 0;
       let total = 0;
-      PAUSE_MIN_RE.lastIndex = 0;
-      let match = PAUSE_MIN_RE.exec(text);
+      const normalized = stripAccents(text).toLowerCase();
+      const seriesMult = outerSeriesMultiplier(normalized);
+      KLUS_MIN_RE.lastIndex = 0;
+      let match = KLUS_MIN_RE.exec(normalized);
       while (match) {
-        const mins = toNum(match[1]);
-        if (mins !== null && mins >= 0) total += mins * 0.15;
-        match = PAUSE_MIN_RE.exec(text);
+        const mins = toNum(match[2]);
+        if (mins !== null && mins > 0) {
+          const mult = match[1] ? seriesMult : 1;
+          total += mins * 0.25 * mult;
+        }
+        match = KLUS_MIN_RE.exec(normalized);
       }
       return total;
     }
@@ -132,12 +157,13 @@
       let mutable = String(text);
       let total = 0;
       const pauseKm = estimatePauseMinutesKm(mutable);
+      const klusMinutesKm = estimateKlusMinutesKm(mutable);
 
       let out = consumeRegex(mutable, MULT_RANGE_PAREN_RE, (m) => {
         const a = toNum(m[1]);
         const b = toNum(m[2]);
         if (a === null || b === null || a < 0 || b < 0) return 0;
-        const mult = (a + b) / 2;
+        const mult = Math.max(a, b);
         let bodyKm = estimateRunningKmFromText(m[3] || "");
         if (bodyKm === 0) bodyKm = bareMTokensKm(m[3] || "");
         return mult * bodyKm;
@@ -177,7 +203,7 @@
         const b = toNum(m[3]);
         const d = toNum(m[4]);
         if (a1 === null || a2 === null || b === null || d === null || a1 < 0 || a2 < 0 || b < 0 || d < 0) return 0;
-        return ((a1 + a2) / 2) * b * toKm(d, m[5]);
+        return Math.max(a1, a2) * b * toKm(d, m[5]);
       });
       total += out.total;
       mutable = out.text;
@@ -203,7 +229,7 @@
         const b = toNum(m[2]);
         const d = toNum(m[3]);
         if (a === null || b === null || d === null || a < 0 || b < 0 || d < 0) return 0;
-        return ((a + b) / 2) * toKm(d, m[4]);
+        return Math.max(a, b) * toKm(d, m[4]);
       });
       total += out.total;
       mutable = out.text;
@@ -220,12 +246,20 @@
       total += out.total;
       mutable = out.text;
 
+      out = consumeRegex(mutable, RV_RANGE_KM_RE, (m, src) => {
+        const a = toNum(m[1]);
+        const b = toNum(m[2]);
+        if (a === null || b === null || a < 0 || b < 0) return 0;
+        if (a > MAX_RV_TOKEN || b > MAX_RV_TOKEN) return 0;
+        return Math.max(a, b);
+      });
+      total += out.total;
+      mutable = out.text;
+
       out = consumeRegex(mutable, RV_KM_RE, (m, src) => {
-        const start = m.index;
-        const end = start + m[0].length;
-        if (isWalkContext(src, start, end)) return 0;
         const value = toNum(m[1]);
         if (value === null || value < 0) return 0;
+        if (value > MAX_RV_TOKEN) return 0;
         return value;
       });
       total += out.total;
@@ -234,11 +268,12 @@
       out = consumeRegex(mutable, RANGE_UNIT_RE, (m, src) => {
         const start = m.index;
         const end = start + m[0].length;
+        if (String(m[3] || "").toLowerCase() === "m" && isTempoContext(src, start)) return 0;
         if (isWalkContext(src, start, end)) return 0;
         const a = toNum(m[1]);
         const b = toNum(m[2]);
         if (a === null || b === null || a < 0 || b < 0) return 0;
-        return toKm((a + b) / 2, m[3]);
+        return toKm(Math.max(a, b), m[3]);
       });
       total += out.total;
       mutable = out.text;
@@ -246,6 +281,7 @@
       out = consumeRegex(mutable, SINGLE_UNIT_RE, (m, src) => {
         const start = m.index;
         const end = start + m[0].length;
+        if (String(m[2] || "").toLowerCase() === "m" && isTempoContext(src, start)) return 0;
         if (isWalkContext(src, start, end)) return 0;
         const value = toNum(m[1]);
         if (value === null || value < 0) return 0;
@@ -257,6 +293,7 @@
       out = consumeRegex(mutable, BARE_M_SERIES_RE, (m, src) => {
         const start = m.index;
         const end = start + m[0].length;
+        if (isTempoContext(src, start)) return 0;
         if (isWalkContext(src, start, end)) return 0;
         const values = String(m[1] || "")
           .split("-")
@@ -267,6 +304,7 @@
       });
       total += out.total;
       total += pauseKm;
+      total += klusMinutesKm;
       if (total === 0) {
         const normalized = String(text).toLowerCase();
         const longByFeel =
@@ -292,15 +330,208 @@
       return `${rounded} km/week`;
     }
 
+    function formatRowKmText(totalKm, languageCode) {
+      const safeTotal = Number.isFinite(totalKm) ? totalKm : 0;
+      const rounded = (Math.round(safeTotal * 10) / 10).toFixed(1);
+      if (languageCode === "cs") return `≈ ${rounded.replace(".", ",")} km`;
+      return `≈ ${rounded} km`;
+    }
+
+    function warningTextFor(warningKey, languageCode) {
+      const isCs = languageCode === "cs";
+      const warningMap = {
+        run_hint_but_no_distance: isCs ? "Nejasný zápis: chybí konkrétní vzdálenost (např. 8 km, 6x300m, 2R/2V)." : "Ambiguous input: missing concrete distance (e.g. 8 km, 6x300m, 2R/2V).",
+        long_run_by_feel_heuristic_used: isCs ? "Použit odhad pro běh na pocit." : "Heuristic used for by-feel long run.",
+        klus_minutes_estimate_used: isCs ? "Do součtu je započítán odhad z času klusu (min klus)." : "Estimated distance from jogging minutes (min klus) included.",
+        pause_minutes_estimate_used: isCs ? "Do součtu je započítán odhad z pauz." : "Estimated distance from pause markers included.",
+      };
+      return warningMap[warningKey] || "";
+    }
+
+    function extractWarningFragment(rawText, warningKey) {
+      const raw = String(rawText || "");
+      if (warningKey === "run_hint_but_no_distance") {
+        const m = /\b(klus|beh|běh|run|fartlek|tempo|kopec|kopce|interval)\b/i.exec(raw);
+        return m ? m[0] : raw.slice(0, 24).trim();
+      }
+      if (warningKey === "dropped_large_km_token") {
+        const re = /(\d+(?:[.,]\d+)?)\s*km\b/gi;
+        let m = re.exec(raw);
+        while (m) {
+          const val = toNum(m[1]);
+          if (val !== null && val > 60) return m[0];
+          m = re.exec(raw);
+        }
+      }
+      if (warningKey === "dropped_invalid_m_token") {
+        const re = /(\d{2,5})\s*m\b/gi;
+        let m = re.exec(raw);
+        while (m) {
+          const val = Number.parseInt(m[1], 10);
+          if (Number.isFinite(val) && (val < 100 || val > 5000)) return m[0];
+          m = re.exec(raw);
+        }
+      }
+      if (warningKey === "pause_minutes_estimate_used") {
+        const m = /(p\s*=\s*\d+(?:[.,]\d+)?\s*['´’]|po\s*s[ée]rii\s*\d+(?:[.,]\d+)?\s*(?:min|m(?:in)?))/i.exec(raw);
+        return m ? m[0] : "";
+      }
+      if (warningKey === "klus_minutes_estimate_used") {
+        const m = /(?:(?:po\s*s[ée]rii)\s*)?\d+(?:[.,]\d+)?\s*(?:min|m(?:in)?)\s*klus/i.exec(raw);
+        return m ? m[0] : "";
+      }
+      if (warningKey === "long_run_by_feel_heuristic_used") {
+        const m = /(na pocit|by feel)/i.exec(raw);
+        return m ? m[0] : "";
+      }
+      return "";
+    }
+
+    function estimateRowDetails(text) {
+      const raw = String(text || "").trim();
+      if (!raw) {
+        return { totalKm: 0, confidence: "low", warnings: [], isEmpty: true };
+      }
+      const normalized = raw.toLowerCase();
+      const isRest = normalized === "volno" || normalized === "rest" || normalized === "rest day";
+      if (isRest) {
+        return { totalKm: 0, confidence: "high", warnings: [], isEmpty: false, isRest: true, raw };
+      }
+      const totalKm = estimateRunningKmFromText(raw);
+      const warnings = [];
+      const hasRunHint = RUN_HINT_RE.test(normalized);
+      const hasDistanceToken = /(\d+(?:[.,]\d+)?\s*(km|m)\b|\d+\s*[rv]\b|\d{3,4}\s*-\s*\d{3,4})/i.test(normalized);
+      const hasKlusMinutes = /(?:(?:po\s*s[ée]rii)\s*)?\d+(?:[.,]\d+)?\s*(?:min|m(?:in)?)\s*klus/i.test(normalized);
+      const hasLongByFeel =
+        ((normalized.includes("delsi klus") || normalized.includes("dlouhy klus") || normalized.includes("long run"))
+          && (normalized.includes("na pocit") || normalized.includes("by feel")))
+        || (normalized.includes("klus") && normalized.includes("na pocit") && normalized.includes("del"));
+
+      if (hasRunHint && !hasDistanceToken && totalKm === 0) warnings.push("run_hint_but_no_distance");
+      if (hasKlusMinutes && totalKm > 0) warnings.push("klus_minutes_estimate_used");
+      if (hasLongByFeel && totalKm === 15) warnings.push("long_run_by_feel_heuristic_used");
+      if (!warnings.length && totalKm === 0) warnings.push("run_hint_but_no_distance");
+
+      let confidence = "high";
+      if (totalKm === 0) confidence = "low";
+      else if (warnings.length) confidence = warnings.includes("run_hint_but_no_distance") ? "low" : "medium";
+
+      return { totalKm, confidence, warnings, isEmpty: false, isRest: false, raw };
+    }
+
+    function applyRowKmHint(row, details, languageCode) {
+      if (!row || !details) return;
+      let hintWrap = row.querySelector(".eb-planned-row-km-indicator-wrap");
+      if (details.isEmpty) {
+        if (hintWrap) hintWrap.remove();
+        return;
+      }
+      if (!hintWrap) {
+        hintWrap = document.createElement("div");
+        hintWrap.className = "eb-planned-row-km-indicator-wrap";
+        const trainingCell = row.querySelector(".eb-planned-training-col");
+        if (!trainingCell) return;
+        const dot = document.createElement("button");
+        dot.type = "button";
+        dot.className = "eb-planned-row-km-dot";
+        dot.setAttribute("aria-label", languageCode === "cs" ? "Detail odhadu km" : "Planned km detail");
+        const pop = document.createElement("div");
+        pop.className = "eb-planned-row-km-popover d-none";
+        const head = document.createElement("div");
+        head.className = "eb-planned-row-km-popover-head";
+        head.textContent = languageCode === "cs" ? "Kontrola km" : "Planned km check";
+        const body = document.createElement("div");
+        body.className = "eb-planned-row-km-popover-body";
+        pop.appendChild(head);
+        pop.appendChild(body);
+        hintWrap.appendChild(dot);
+        hintWrap.appendChild(pop);
+        trainingCell.appendChild(hintWrap);
+      }
+      hintWrap.classList.remove("eb-km-confidence-high", "eb-km-confidence-medium", "eb-km-confidence-low");
+      hintWrap.classList.add(`eb-km-confidence-${details.confidence}`);
+      const popover = hintWrap.querySelector(".eb-planned-row-km-popover");
+      if (!popover) return;
+      const popoverBody = popover.querySelector(".eb-planned-row-km-popover-body");
+      if (!popoverBody) return;
+      const kmLabel = languageCode === "cs" ? "Km:" : "Km:";
+      const reasonLabel = languageCode === "cs" ? "Důvod:" : "Reason:";
+      const whereLabel = languageCode === "cs" ? "Kde:" : "Where:";
+      const setBodyLines = (kmText, reasonText, whereText) => {
+        popoverBody.innerHTML = `
+          <div class="eb-planned-km-line"><strong>${kmLabel}</strong> ${kmText || "-"}</div>
+          <div class="eb-planned-km-line"><strong>${reasonLabel}</strong> ${reasonText || "-"}</div>
+          <div class="eb-planned-km-line"><strong>${whereLabel}</strong> ${whereText || "-"}</div>
+        `;
+      };
+      if (details.isRest) {
+        setBodyLines(
+          formatRowKmText(details.totalKm, languageCode),
+          languageCode === "cs" ? "V pořádku (volno)." : "OK (rest day).",
+          ""
+        );
+        return;
+      }
+      const warningText = details.warnings.length ? warningTextFor(details.warnings[0], languageCode) : "";
+      if (!warningText) {
+        if (details.confidence !== "high") {
+          setBodyLines(
+            formatRowKmText(details.totalKm, languageCode),
+            languageCode === "cs"
+              ? "Nejasný zápis, doplň konkrétní vzdálenosti."
+              : "Ambiguous input, add explicit distances.",
+            ""
+          );
+        } else {
+          setBodyLines(formatRowKmText(details.totalKm, languageCode), languageCode === "cs" ? "V pořádku." : "OK.", "");
+        }
+        return;
+      }
+      const fragment = extractWarningFragment(details.raw, details.warnings[0]);
+      if (fragment) {
+        setBodyLines(formatRowKmText(details.totalKm, languageCode), warningText, fragment);
+      } else {
+        setBodyLines(formatRowKmText(details.totalKm, languageCode), warningText, "");
+      }
+    }
+
     function recalcPlannedWeekTotals(widget) {
       const languageCode = resolveLanguageCode();
       const weekRows = Array.from(widget.querySelectorAll(".eb-week-row"));
       weekRows.forEach((weekRow) => {
-        const trainingCells = Array.from(weekRow.querySelectorAll(".eb-col-planned tbody td.eb-planned-training-col"));
+        const plannedRows = Array.from(weekRow.querySelectorAll(".eb-col-planned tbody tr"));
         const totalNode = weekRow.querySelector(".eb-planned-week-total-km");
         if (!totalNode) return;
-        const totalKm = trainingCells.reduce((sum, cell) => sum + estimateRunningKmFromText(cell.textContent || ""), 0);
+        const totalKm = plannedRows.reduce((sum, row) => {
+          const titleNode = row.querySelector(".eb-inline-edit[data-field='title']");
+          const sourceText = titleNode ? titleNode.textContent || "" : (row.querySelector(".eb-planned-training-col")?.textContent || "");
+          const details = estimateRowDetails(sourceText);
+          applyRowKmHint(row, details, languageCode);
+          return sum + details.totalKm;
+        }, 0);
         totalNode.textContent = formatWeekKmText(totalKm, languageCode);
+      });
+    }
+
+    function initRulesOnboarding(widget) {
+      const onboarding = widget.querySelector(".eb-plan-rules-onboarding");
+      if (!onboarding) return;
+      let dismissed = false;
+      try {
+        dismissed = window.localStorage.getItem(RULES_ONBOARDING_KEY) === "1";
+      } catch (_err) {
+        dismissed = false;
+      }
+      if (!dismissed) onboarding.classList.remove("d-none");
+
+      const dismissBtn = onboarding.querySelector(".eb-plan-rules-dismiss");
+      if (!dismissBtn || dismissBtn.dataset.ebBound === "1") return;
+      dismissBtn.dataset.ebBound = "1";
+      dismissBtn.addEventListener("click", () => {
+        onboarding.classList.add("d-none");
+        try {
+          window.localStorage.setItem(RULES_ONBOARDING_KEY, "1");
+        } catch (_err) {}
       });
     }
 
@@ -401,6 +632,30 @@
     }
 
     function initCoachInlineEditing(widget, scheduleEqualize) {
+      initRulesOnboarding(widget);
+      if (widget.dataset.ebKmDotClickInit !== "1") {
+        widget.dataset.ebKmDotClickInit = "1";
+        widget.addEventListener("click", (event) => {
+          const target = event && event.target ? event.target : null;
+          if (!target || typeof target.closest !== "function") return;
+          const dot = target.closest(".eb-planned-row-km-dot");
+          if (dot && widget.contains(dot)) {
+            const wrap = dot.closest(".eb-planned-row-km-indicator-wrap");
+            const pop = wrap ? wrap.querySelector(".eb-planned-row-km-popover") : null;
+            if (!pop) return;
+            const all = Array.from(widget.querySelectorAll(".eb-planned-row-km-popover"));
+            all.forEach((node) => {
+              if (node !== pop) node.classList.add("d-none");
+            });
+            pop.classList.toggle("d-none");
+            return;
+          }
+          const insidePopover = target.closest(".eb-planned-row-km-popover");
+          if (insidePopover) return;
+          const all = Array.from(widget.querySelectorAll(".eb-planned-row-km-popover"));
+          all.forEach((node) => node.classList.add("d-none"));
+        });
+      }
       const updateUrl = widget.getAttribute("data-plan-update-url");
       const addPhaseUrl = widget.getAttribute("data-add-phase-url");
       const removePhaseUrl = widget.getAttribute("data-remove-phase-url");
@@ -469,7 +724,9 @@
                 <option value="WORKOUT">Workout</option>
               </select>
             </td>
-            <td class="eb-planned-training-col"><div class="eb-inline-edit" contenteditable="true" data-training-id="${newPlannedId}" data-field="title"></div></td>
+            <td class="eb-planned-training-col">
+              <div class="eb-inline-edit" contenteditable="true" data-training-id="${newPlannedId}" data-field="title"></div>
+            </td>
             <td class="eb-planned-notes-col"><div class="eb-inline-edit" contenteditable="true" data-training-id="${newPlannedId}" data-field="notes"></div></td>
           `;
           sourcePlannedRow.insertAdjacentElement("afterend", newPlannedRow);

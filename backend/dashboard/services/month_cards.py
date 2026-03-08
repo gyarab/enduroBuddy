@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import date, timedelta
+from decimal import Decimal
 import re
 from typing import Any, Optional
 
@@ -10,7 +11,7 @@ from django.utils import timezone
 from accounts.models import Role
 from activities.models import Activity, ActivityInterval
 from training.models import CompletedTraining, PlannedTraining, TrainingMonth, TrainingWeek
-from .planned_km import estimate_running_km_from_title, format_week_km_label
+from .planned_km import estimate_running_km_details, estimate_running_km_from_title, format_week_km_label
 
 
 CZ_MONTHS = {
@@ -131,7 +132,131 @@ def _planned_day_key(t: PlannedTraining):
     return ("dated", t.date)
 
 
-def _build_planned_rows_for_week(planned_items: list[PlannedTraining]) -> list[dict[str, Any]]:
+def _extract_warning_fragment(title_text: str, warning_code: str) -> str:
+    raw = title_text or ""
+    if warning_code == "run_hint_but_no_distance":
+        m = re.search(r"\b(klus|beh|běh|run|fartlek|tempo|kopec|kopce|interval)\b", raw, re.IGNORECASE)
+        return m.group(0) if m else raw[:24].strip()
+    if warning_code == "dropped_large_km_token":
+        for m in re.finditer(r"(\d+(?:[.,]\d+)?)\s*km\b", raw, re.IGNORECASE):
+            try:
+                if float(m.group(1).replace(",", ".")) > 60:
+                    return m.group(0)
+            except Exception:
+                continue
+    if warning_code == "dropped_invalid_m_token":
+        for m in re.finditer(r"(\d{2,5})\s*m\b", raw, re.IGNORECASE):
+            try:
+                value = int(m.group(1))
+                if value < 100 or value > 5000:
+                    return m.group(0)
+            except Exception:
+                continue
+    if warning_code == "pause_minutes_estimate_used":
+        m = re.search(r"(p\s*=\s*\d+(?:[.,]\d+)?\s*['´’]|po\s*s[ée]rii\s*\d+(?:[.,]\d+)?\s*(?:min|m(?:in)?))", raw, re.IGNORECASE)
+        return m.group(0) if m else ""
+    if warning_code == "klus_minutes_estimate_used":
+        m = re.search(r"(?:(?:po\s*s[ée]rii)\s*)?\d+(?:[.,]\d+)?\s*(?:min|m(?:in)?)\s*klus", raw, re.IGNORECASE)
+        return m.group(0) if m else ""
+    if warning_code == "long_run_by_feel_heuristic_used":
+        m = re.search(r"(na pocit|by feel)", raw, re.IGNORECASE)
+        return m.group(0) if m else ""
+    return ""
+
+
+def _planned_km_hint_payload(*, title_text: str, language_code: str) -> dict[str, Any]:
+    normalized_title = (title_text or "").strip()
+    if not normalized_title:
+        return {
+            "planned_km_value": 0.0,
+            "planned_km_confidence": "low",
+            "planned_km_badge": "",
+            "planned_km_text": "",
+            "planned_km_warning": "",
+            "planned_km_detail": "",
+            "planned_km_line_km": "",
+            "planned_km_line_reason": "",
+            "planned_km_line_where": "",
+            "planned_km_show": False,
+        }
+    lowered = normalized_title.lower()
+    is_rest = lowered in {"volno", "rest", "rest day"}
+    if is_rest:
+        detail_text = "Volno: 0 km je v poradku." if language_code.startswith("cs") else "Rest day: 0 km is expected."
+        return {
+            "planned_km_value": 0.0,
+            "planned_km_confidence": "high",
+            "planned_km_badge": "OK",
+            "planned_km_text": "\u2248 0,0 km" if language_code.startswith("cs") else "\u2248 0.0 km",
+            "planned_km_warning": "",
+            "planned_km_detail": detail_text,
+            "planned_km_line_km": "\u2248 0,0 km" if language_code.startswith("cs") else "\u2248 0.0 km",
+            "planned_km_line_reason": "V poradku (volno)." if language_code.startswith("cs") else "OK (rest day).",
+            "planned_km_line_where": "",
+            "planned_km_show": True,
+        }
+    details = estimate_running_km_details(title_text)
+    km_one_decimal = details.total_km.quantize(Decimal("0.1"))
+    km_str = str(km_one_decimal)
+    if language_code.startswith("cs"):
+        km_str = km_str.replace(".", ",")
+    warning_map_cs = {
+        "run_hint_but_no_distance": "Nejasny zapis: chybi konkretni vzdalenost (napr. 8 km, 6x300m, 2R/2V).",
+        "long_run_by_feel_heuristic_used": "Pouzit odhad pro beh na pocit.",
+        "klus_minutes_estimate_used": "Do souctu je zapocitan odhad z casu klusu (min klus).",
+        "pause_minutes_estimate_used": "Do souctu je zapocitan odhad z pauz.",
+        "dropped_large_km_token": "Cast zapisu ignorovana (podezrele vysoke km).",
+        "dropped_invalid_m_token": "Cast zapisu ignorovana (neplatne metry).",
+    }
+    warning_map_en = {
+        "run_hint_but_no_distance": "Ambiguous input, missing km/m.",
+        "long_run_by_feel_heuristic_used": "Heuristic used for by-feel long run.",
+        "klus_minutes_estimate_used": "Estimated distance from jogging minutes (min klus) included.",
+        "pause_minutes_estimate_used": "Estimated distance from pause markers included.",
+        "dropped_large_km_token": "Part of input ignored (suspiciously large km).",
+        "dropped_invalid_m_token": "Part of input ignored (invalid meter value).",
+    }
+    warning_map = warning_map_cs if language_code.startswith("cs") else warning_map_en
+    warning_text = warning_map.get(details.warnings[0], "") if details.warnings else ""
+    line_km = f"\u2248 {km_str} km"
+    line_reason = "V poradku." if language_code.startswith("cs") else "OK."
+    line_where = ""
+    detail_text = line_km
+    if warning_text:
+        fragment = _extract_warning_fragment(normalized_title, details.warnings[0])
+        if fragment:
+            if language_code.startswith("cs"):
+                detail_text = f'{detail_text} - {warning_text} Problem je v: "{fragment}".'
+            else:
+                detail_text = f'{detail_text} - {warning_text} Problem near: "{fragment}".'
+            line_reason = warning_text
+            line_where = fragment
+        else:
+            detail_text = f"{detail_text} - {warning_text}"
+            line_reason = warning_text
+    elif details.confidence != "high":
+        if language_code.startswith("cs"):
+            detail_text = f"{detail_text} - Nejasny zapis, dopln konkretni vzdalenosti (km/m, opakovani, R/V)."
+            line_reason = "Nejasny zapis, dopln konkretni vzdalenosti."
+        else:
+            detail_text = f"{detail_text} - Ambiguous input, add explicit distances (km/m, repetitions, R/V)."
+            line_reason = "Ambiguous input, add explicit distances."
+    badge_map = {"high": "OK", "medium": "~", "low": "!"}
+    return {
+        "planned_km_value": float(details.total_km),
+        "planned_km_confidence": details.confidence,
+        "planned_km_badge": badge_map.get(details.confidence, "?"),
+        "planned_km_text": f"\u2248 {km_str} km",
+        "planned_km_warning": warning_text,
+        "planned_km_detail": detail_text,
+        "planned_km_line_km": line_km,
+        "planned_km_line_reason": line_reason,
+        "planned_km_line_where": line_where,
+        "planned_km_show": True,
+    }
+
+
+def _build_planned_rows_for_week(planned_items: list[PlannedTraining], *, language_code: str) -> list[dict[str, Any]]:
     grouped: dict[Any, list[PlannedTraining]] = {}
     for t in planned_items:
         grouped.setdefault(_planned_day_key(t), []).append(t)
@@ -157,6 +282,16 @@ def _build_planned_rows_for_week(planned_items: list[PlannedTraining]) -> list[d
                     "session_type": PlannedTraining.SessionType.RUN,
                     "notes": "",
                     "notes_raw": "",
+                    "planned_km_value": 0.0,
+                    "planned_km_confidence": "low",
+                    "planned_km_badge": "",
+                    "planned_km_text": "",
+                    "planned_km_warning": "",
+                    "planned_km_detail": "",
+                    "planned_km_line_km": "",
+                    "planned_km_line_reason": "",
+                    "planned_km_line_where": "",
+                    "planned_km_show": False,
                 }
             first = subitems[0]
             titles = [x.title for x in subitems if x.title]
@@ -168,7 +303,7 @@ def _build_planned_rows_for_week(planned_items: list[PlannedTraining]) -> list[d
                 if any((x.session_type or PlannedTraining.SessionType.RUN) == PlannedTraining.SessionType.WORKOUT for x in subitems)
                 else PlannedTraining.SessionType.RUN
             )
-            return {
+            row = {
                 "planned_id": first.id,
                 "item_count": len(subitems),
                 "date": first.date if show_date else None,
@@ -179,6 +314,8 @@ def _build_planned_rows_for_week(planned_items: list[PlannedTraining]) -> list[d
                 "notes": joined_notes,
                 "notes_raw": joined_notes,
             }
+            row.update(_planned_km_hint_payload(title_text=joined_titles, language_code=language_code))
+            return row
 
         if is_two_phase:
             rows.append(planned_row_from(items[:1], show_date=True))
@@ -436,7 +573,7 @@ def build_month_cards_for_athlete(*, athlete, language_code: str) -> list[dict[s
         weeks_out = []
         for w in list(m.weeks.all()):
             planned_items = list(w.planned_trainings.all())
-            w.planned_rows = _build_planned_rows_for_week(planned_items)
+            w.planned_rows = _build_planned_rows_for_week(planned_items, language_code=language_code)
             w.planned_total_km_text = format_week_km_label(_sum_planned_week_km(planned_items), language_code)
             w.completed_rows = _build_completed_rows_for_week(planned_items)
             w.completed_total = _sum_week_total(w.completed_rows)

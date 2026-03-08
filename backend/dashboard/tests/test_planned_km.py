@@ -7,7 +7,12 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase
 
 from dashboard.services.month_cards import build_month_cards_for_athlete
-from dashboard.services.planned_km import estimate_running_km_from_title, estimate_running_km_from_text, format_week_km_label
+from dashboard.services.planned_km import (
+    estimate_running_km_details,
+    estimate_running_km_from_text,
+    estimate_running_km_from_title,
+    format_week_km_label,
+)
 from dashboard.views import _resolve_week_for_day
 from training.models import PlannedTraining
 
@@ -19,11 +24,11 @@ class PlannedKmServiceTests(TestCase):
         self.assertIsNone(estimate_running_km_from_title("Bez vzdalenosti"))
 
     def test_estimate_running_km_handles_ranges_repetitions_and_walk_exclusion(self):
-        self.assertEqual(estimate_running_km_from_text("6-8 km pruzkum oblasti"), Decimal("7.00"))
-        self.assertEqual(estimate_running_km_from_text("2-3x(2km + 1km)"), Decimal("7.50"))
+        self.assertEqual(estimate_running_km_from_text("6-8 km pruzkum oblasti"), Decimal("8.00"))
+        self.assertEqual(estimate_running_km_from_text("2-3x(2km + 1km)"), Decimal("9.00"))
         self.assertEqual(estimate_running_km_from_text("2x(1000-800-600-400-200)"), Decimal("6.00"))
         self.assertEqual(estimate_running_km_from_text("3x5x150m"), Decimal("2.25"))
-        self.assertEqual(estimate_running_km_from_text("2-3x6x100m"), Decimal("1.50"))
+        self.assertEqual(estimate_running_km_from_text("2-3x6x100m"), Decimal("1.80"))
         self.assertEqual(estimate_running_km_from_text("2R 8 km fartlek ... 2V"), Decimal("12.00"))
         self.assertEqual(estimate_running_km_from_text("delsi klus na pocit"), Decimal("15.00"))
         row_est = float(estimate_running_km_from_text("2R 6-8x(400ANP - 400 v tempu 5K, 200MK) P=1' 2V"))
@@ -33,10 +38,37 @@ class PlannedKmServiceTests(TestCase):
             estimate_running_km_from_text("6x50m prudsi kopec s MCH + 6x300m mirnejsi kopec s MK"),
             Decimal("1.80"),
         )
+        self.assertEqual(
+            estimate_running_km_from_text("2R mobilita, plyometrie, prudsi kopce 6-8x100m s mch 5V"),
+            Decimal("7.80"),
+        )
+        self.assertEqual(
+            estimate_running_km_from_text("3R 2x5x300m, p= 60s, po serii 5', tempo 1500m 2-3V"),
+            Decimal("9.00"),
+        )
+        self.assertEqual(
+            estimate_running_km_from_text("2R 3x5x150m (tempo 800-1500), p=150m MCH, po serii 8 min klus 2V"),
+            Decimal("12.25"),
+        )
 
     def test_estimate_running_km_does_not_create_huge_false_range_from_m_and_km_mix(self):
         row = "2R 500-500-1km-1km-500-500 po trave, p=90s po 500 a 2' po km 2-3V tempo cca 5-10km"
         self.assertLess(float(estimate_running_km_from_text(row)), 30.0)
+
+    def test_estimate_running_km_details_reports_confidence_and_warnings(self):
+        high = estimate_running_km_details("8 km klus")
+        self.assertEqual(high.confidence, "high")
+        self.assertEqual(high.total_km, Decimal("8.00"))
+        self.assertEqual(high.warnings, [])
+
+        medium = estimate_running_km_details("delsi klus na pocit")
+        self.assertEqual(medium.confidence, "medium")
+        self.assertIn("long_run_by_feel_heuristic_used", medium.warnings)
+
+        low = estimate_running_km_details("rychly beh podle pocitu")
+        self.assertEqual(low.confidence, "low")
+        self.assertEqual(low.total_km, Decimal("0.00"))
+        self.assertIn("run_hint_but_no_distance", low.warnings)
 
     def test_estimate_running_km_matches_realistic_week_pattern(self):
         rows = [
@@ -49,8 +81,8 @@ class PlannedKmServiceTests(TestCase):
             "volno",
         ]
         total = sum(float(estimate_running_km_from_text(r)) for r in rows)
-        self.assertGreaterEqual(total, 68.0)
-        self.assertLessEqual(total, 71.5)
+        self.assertGreaterEqual(total, 71.0)
+        self.assertLessEqual(total, 74.5)
 
     def test_format_week_km_label_is_localized(self):
         self.assertEqual(format_week_km_label(60.25, "cs"), "60,3 km/týden")
