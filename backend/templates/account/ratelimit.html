@@ -1,11 +1,11 @@
 {% load i18n static %}
 {% get_current_language as CURRENT_LANGUAGE %}
 <!doctype html>
-<html lang="{{ CURRENT_LANGUAGE }}">
+<html lang="cs">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>{% if CURRENT_LANGUAGE|slice:":2" == "cs" %}Příliš mnoho požadavků{% else %}Too many requests{% endif %} | EnduroBuddy</title>
+  <title>Příliš mnoho požadavků | EnduroBuddy</title>
   <link rel="stylesheet" href="{% static 'css/login.css' %}?v=8">
 </head>
 <body class="eb-auth">
@@ -17,9 +17,9 @@
       <div class="col-12 col-md-10 col-lg-7 col-xl-5">
         <section class="eb-shell">
           <div class="eb-card-body text-center">
-            <h1 class="eb-title mb-2">{% if CURRENT_LANGUAGE|slice:":2" == "cs" %}Příliš mnoho požadavků{% else %}Too many requests{% endif %}</h1>
-            <p class="eb-subtitle mb-4">{% if CURRENT_LANGUAGE|slice:":2" == "cs" %}Chvíli počkej a zkus to znovu.{% else %}Please wait a moment and try again.{% endif %}</p>
-            <a class="btn eb-btn-provider py-2 w-100" href="{% url 'account_login' %}">{% if CURRENT_LANGUAGE|slice:":2" == "cs" %}Zpět na přihlášení{% else %}Back to sign in{% endif %}</a>
+            <h1 class="eb-title mb-2">Příliš mnoho požadavků</h1>
+            <p class="eb-subtitle mb-4">Chvíli počkej a zkus to znovu.</p>
+            <a class="btn eb-btn-provider py-2 w-100" href="{% url 'account_login' %}">Zpět na přihlášení</a>
           </div>
         </section>
 

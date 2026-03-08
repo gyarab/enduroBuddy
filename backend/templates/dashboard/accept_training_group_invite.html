@@ -2,32 +2,29 @@
 {% load i18n %}
 {% get_current_language as CURRENT_LANGUAGE %}
 
-{% block title %}{% if CURRENT_LANGUAGE == "cs" %}Přijetí pozvánky | EnduroBuddy{% else %}Accept invite | EnduroBuddy{% endif %}{% endblock %}
+{% block title %}Přijetí pozvánky | EnduroBuddy{% endblock %}
 
 {% block content %}
 <div class="container py-4" style="max-width: 760px;">
   <div class="card shadow-sm">
     <div class="card-body">
-      <h4 class="mb-2">{% if CURRENT_LANGUAGE == "cs" %}Pozvánka do tréninkové skupiny{% else %}Training group invite{% endif %}</h4>
+      <h4 class="mb-2">Pozvánka do tréninkové skupiny</h4>
       <p class="text-muted mb-3">
-        {% if CURRENT_LANGUAGE == "cs" %}
+        
           Skupina: <strong>{{ invite.group.name }}</strong><br>
           Trenér: <strong>{{ invite.group.coach.username }}</strong>
-        {% else %}
-          Group: <strong>{{ invite.group.name }}</strong><br>
-          Coach: <strong>{{ invite.group.coach.username }}</strong>
-        {% endif %}
+        
       </p>
 
       {% if is_used %}
-        <div class="alert alert-warning py-2">{% if CURRENT_LANGUAGE == "cs" %}Tato pozvánka už byla použita.{% else %}This invite has already been used.{% endif %}</div>
+        <div class="alert alert-warning py-2">Tato pozvánka už byla použita.</div>
       {% elif is_expired %}
-        <div class="alert alert-warning py-2">{% if CURRENT_LANGUAGE == "cs" %}Tato pozvánka už vypršela.{% else %}This invite has expired.{% endif %}</div>
+        <div class="alert alert-warning py-2">Tato pozvánka už vypršela.</div>
       {% else %}
         <form method="post">
           {% csrf_token %}
           <button type="submit" class="btn btn-primary">
-            {% if CURRENT_LANGUAGE == "cs" %}Přijmout pozvánku{% else %}Accept invite{% endif %}
+            Přijmout pozvánku
           </button>
         </form>
       {% endif %}

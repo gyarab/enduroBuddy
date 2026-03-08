@@ -16,7 +16,7 @@
         body: JSON.stringify(payload || {}),
         credentials: "same-origin",
       });
-      if (!response.ok) throw new Error(`Request failed with status ${response.status}`);
+      if (!response.ok) throw new Error(`Požadavek selhal se stavem ${response.status}`);
       return response.json();
     });
     const placeCaretToEnd = (deps && deps.placeCaretToEnd) || (() => {});
@@ -124,10 +124,10 @@
             csrfToken
           );
           if (!payload || !payload.ok || !payload.second_phase_planned_id) {
-            throw new Error((payload && payload.error) || "Add second phase failed.");
+            throw new Error((payload && payload.error) || "Přidání druhé fáze selhalo.");
           }
           const newPlannedId = Number(payload.second_phase_planned_id);
-          if (!newPlannedId) throw new Error("Invalid second phase id.");
+          if (!newPlannedId) throw new Error("Neplatné ID druhé fáze.");
 
           const completedRows = Array.from(completedBody.querySelectorAll("tr"));
           const rowIndex = completedRows.indexOf(sourceCompletedRow);
@@ -141,8 +141,8 @@
             <td class="eb-planned-day-col"></td>
             <td class="eb-planned-type-col">
               <select class="form-select form-select-sm eb-inline-select" data-training-id="${newPlannedId}" data-field="session_type">
-                <option value="RUN" selected>Run</option>
-                <option value="WORKOUT">Workout</option>
+                <option value="RUN" selected>Běh</option>
+                <option value="WORKOUT">Trénink</option>
               </select>
             </td>
             <td class="eb-planned-training-col"><div class="eb-inline-edit" contenteditable="true" data-training-id="${newPlannedId}" data-field="title"></div></td>
@@ -209,10 +209,10 @@
             csrfToken
           );
           if (!payload || !payload.ok || !payload.removed_planned_id) {
-            throw new Error((payload && payload.error) || "Remove second phase failed.");
+            throw new Error((payload && payload.error) || "Odebrání druhé fáze selhalo.");
           }
           const removedId = Number(payload.removed_planned_id);
-          if (!removedId) throw new Error("Invalid removed phase id.");
+          if (!removedId) throw new Error("Neplatné ID odebrané fáze.");
 
           const completedRemovedNode = completedBody.querySelector(`.eb-completed-inline-edit[data-training-id="${removedId}"]`);
           const completedRemovedRow = completedRemovedNode ? completedRemovedNode.closest("tr") : null;
@@ -277,7 +277,7 @@
               ),
             { field, training_id: trainingId }
           );
-          if (!payload.ok) throw new Error(payload.error || "Save failed.");
+          if (!payload.ok) throw new Error(payload.error || "Uložení selhalo.");
 
           const normalized = payload.value == null ? "-" : String(payload.value);
           node.textContent = normalized;

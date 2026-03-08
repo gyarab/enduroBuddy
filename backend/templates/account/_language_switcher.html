@@ -1,32 +1,5 @@
-{% load i18n %}
-{% get_current_language as CURRENT_LANGUAGE %}
-
 <div class="text-center mt-4 eb-footer">
-  <a class="eb-footer-link" href="#" tabindex="-1" aria-disabled="true">{% if CURRENT_LANGUAGE|slice:":2" == "cs" %}Zásady soukromí{% else %}Privacy Policy{% endif %}</a>
+  <a class="eb-footer-link" href="#" tabindex="-1" aria-disabled="true">Zásady soukromí</a>
   <span class="eb-dotsep">&bull;</span>
-  <a class="eb-footer-link" href="#" tabindex="-1" aria-disabled="true">{% if CURRENT_LANGUAGE|slice:":2" == "cs" %}Podmínky služby{% else %}Terms of Service{% endif %}</a>
-
-  <form class="eb-lang-form mt-3" action="{% url 'set_language' %}" method="post" aria-label="{% if CURRENT_LANGUAGE|slice:':2' == 'cs' %}Přepínač jazyka{% else %}Language switcher{% endif %}">
-    {% csrf_token %}
-    <input name="next" type="hidden" value="{{ request.get_full_path }}">
-    <span class="eb-lang-label">{% if CURRENT_LANGUAGE|slice:":2" == "cs" %}Jazyk{% else %}Language{% endif %}</span>
-    <span class="eb-lang-actions" role="group" aria-label="{% if CURRENT_LANGUAGE|slice:':2' == 'cs' %}Vyber jazyk{% else %}Choose language{% endif %}">
-      <button
-        class="btn eb-lang-pill {% if CURRENT_LANGUAGE|slice:':2' == 'cs' %}eb-btn-primary{% else %}eb-btn-provider{% endif %}"
-        type="submit"
-        name="language"
-        value="cs"
-      >
-        {% if CURRENT_LANGUAGE|slice:":2" == "cs" %}Čeština{% else %}Czech{% endif %}
-      </button>
-      <button
-        class="btn eb-lang-pill {% if CURRENT_LANGUAGE|slice:':2' == 'en' %}eb-btn-primary{% else %}eb-btn-provider{% endif %}"
-        type="submit"
-        name="language"
-        value="en"
-      >
-        English
-      </button>
-    </span>
-  </form>
+  <a class="eb-footer-link" href="#" tabindex="-1" aria-disabled="true">Podmínky služby</a>
 </div>

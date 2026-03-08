@@ -16,7 +16,7 @@
         },
         credentials: "same-origin",
       });
-      if (!response.ok) throw new Error(`Request failed with status ${response.status}`);
+      if (!response.ok) throw new Error(`Požadavek selhal se stavem ${response.status}`);
       return response;
     });
 

@@ -155,7 +155,6 @@ LANGUAGE_CODE = "cs"
 
 LANGUAGES = [
     ("cs", "Čeština"),
-    ("en", "English"),
 ]
 
 LOCALE_PATHS = [
@@ -259,3 +258,4 @@ GARMIN_KMS_KEYS = os.environ.get("GARMIN_KMS_KEYS", "")
 GARMIN_KMS_KEY_ID = os.environ.get("GARMIN_KMS_KEY_ID", "local-kms-v1")
 IMPORT_TASK_MODE = os.environ.get("IMPORT_TASK_MODE", "inline")
 DASHBOARD_ASSET_VERSION = os.environ.get("DASHBOARD_ASSET_VERSION", "68")
+

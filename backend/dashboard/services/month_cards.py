@@ -182,16 +182,16 @@ def _planned_km_hint_payload(*, title_text: str, language_code: str) -> dict[str
     lowered = normalized_title.lower()
     is_rest = lowered in {"volno", "rest", "rest day"}
     if is_rest:
-        detail_text = "Volno: 0 km je v poradku." if language_code.startswith("cs") else "Rest day: 0 km is expected."
+        detail_text = "Volno: 0 km je v pořádku." if language_code.startswith("cs") else "Volno: 0 km je v pořádku."
         return {
             "planned_km_value": 0.0,
             "planned_km_confidence": "high",
             "planned_km_badge": "OK",
-            "planned_km_text": "\u2248 0,0 km" if language_code.startswith("cs") else "\u2248 0.0 km",
+            "planned_km_text": "\u2248 0,0 km" if language_code.startswith("cs") else "\u2248 0,0 km",
             "planned_km_warning": "",
             "planned_km_detail": detail_text,
-            "planned_km_line_km": "\u2248 0,0 km" if language_code.startswith("cs") else "\u2248 0.0 km",
-            "planned_km_line_reason": "V poradku (volno)." if language_code.startswith("cs") else "OK (rest day).",
+            "planned_km_line_km": "\u2248 0,0 km" if language_code.startswith("cs") else "\u2248 0,0 km",
+            "planned_km_line_reason": "V pořádku (volno)." if language_code.startswith("cs") else "V pořádku (volno).",
             "planned_km_line_where": "",
             "planned_km_show": True,
         }
@@ -201,25 +201,25 @@ def _planned_km_hint_payload(*, title_text: str, language_code: str) -> dict[str
     if language_code.startswith("cs"):
         km_str = km_str.replace(".", ",")
     warning_map_cs = {
-        "run_hint_but_no_distance": "Nejasny zapis: chybi konkretni vzdalenost (napr. 8 km, 6x300m, 2R/2V).",
-        "long_run_by_feel_heuristic_used": "Pouzit odhad pro beh na pocit.",
-        "klus_minutes_estimate_used": "Do souctu je zapocitan odhad z casu klusu (min klus).",
-        "pause_minutes_estimate_used": "Do souctu je zapocitan odhad z pauz.",
-        "dropped_large_km_token": "Cast zapisu ignorovana (podezrele vysoke km).",
-        "dropped_invalid_m_token": "Cast zapisu ignorovana (neplatne metry).",
+        "run_hint_but_no_distance": "Nejasný zápis: chybí konkrétní vzdálenost (např. 8 km, 6x300m, 2R/2V).",
+        "long_run_by_feel_heuristic_used": "Použit odhad pro běh na pocit.",
+        "klus_minutes_estimate_used": "Do součtu je započítán odhad z času klusu (min klus).",
+        "pause_minutes_estimate_used": "Do součtu je započítán odhad z pauz.",
+        "dropped_large_km_token": "Část zápisu ignorována (podezřele vysoké km).",
+        "dropped_invalid_m_token": "Část zápisu ignorována (neplatné metry).",
     }
     warning_map_en = {
-        "run_hint_but_no_distance": "Ambiguous input, missing km/m.",
-        "long_run_by_feel_heuristic_used": "Heuristic used for by-feel long run.",
-        "klus_minutes_estimate_used": "Estimated distance from jogging minutes (min klus) included.",
-        "pause_minutes_estimate_used": "Estimated distance from pause markers included.",
-        "dropped_large_km_token": "Part of input ignored (suspiciously large km).",
-        "dropped_invalid_m_token": "Part of input ignored (invalid meter value).",
+        "run_hint_but_no_distance": "Nejasný zápis: chybí konkrétní vzdálenost (např. 8 km, 6x300m, 2R/2V).",
+        "long_run_by_feel_heuristic_used": "Použit odhad pro běh na pocit.",
+        "klus_minutes_estimate_used": "Do součtu je započítán odhad z času klusu (min klus).",
+        "pause_minutes_estimate_used": "Do součtu je započítán odhad z pauz.",
+        "dropped_large_km_token": "Část zápisu ignorována (podezřele vysoké km).",
+        "dropped_invalid_m_token": "Část zápisu ignorována (neplatné metry).",
     }
-    warning_map = warning_map_cs if language_code.startswith("cs") else warning_map_en
+    warning_map = warning_map_cs if language_code.startswith("cs") else warning_map_cs
     warning_text = warning_map.get(details.warnings[0], "") if details.warnings else ""
     line_km = f"\u2248 {km_str} km"
-    line_reason = "V poradku." if language_code.startswith("cs") else "OK."
+    line_reason = "V pořádku." if language_code.startswith("cs") else "V pořádku."
     line_where = ""
     detail_text = line_km
     if warning_text:
@@ -228,7 +228,7 @@ def _planned_km_hint_payload(*, title_text: str, language_code: str) -> dict[str
             if language_code.startswith("cs"):
                 detail_text = f'{detail_text} - {warning_text} Problem je v: "{fragment}".'
             else:
-                detail_text = f'{detail_text} - {warning_text} Problem near: "{fragment}".'
+                detail_text = f'{detail_text} - {warning_text} Problem je v: "{fragment}".'
             line_reason = warning_text
             line_where = fragment
         else:
@@ -236,11 +236,11 @@ def _planned_km_hint_payload(*, title_text: str, language_code: str) -> dict[str
             line_reason = warning_text
     elif details.confidence != "high":
         if language_code.startswith("cs"):
-            detail_text = f"{detail_text} - Nejasny zapis, dopln konkretni vzdalenosti (km/m, opakovani, R/V)."
-            line_reason = "Nejasny zapis, dopln konkretni vzdalenosti."
+            detail_text = f"{detail_text} - Nejasný zápis, doplň konkrétní vzdálenosti (km/m, opakování, R/V)."
+            line_reason = "Nejasný zápis, doplň konkrétní vzdálenosti."
         else:
-            detail_text = f"{detail_text} - Ambiguous input, add explicit distances (km/m, repetitions, R/V)."
-            line_reason = "Ambiguous input, add explicit distances."
+            detail_text = f"{detail_text} - Nejasný zápis, doplň konkrétní vzdálenosti (km/m, opakování, R/V)."
+            line_reason = "Nejasný zápis, doplň konkrétní vzdálenosti."
     badge_map = {"high": "OK", "medium": "~", "low": "!"}
     return {
         "planned_km_value": float(details.total_km),

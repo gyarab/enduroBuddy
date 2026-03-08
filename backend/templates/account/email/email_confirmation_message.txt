@@ -1,26 +1,16 @@
 {% extends "account/email/base_message.txt" %}
 {% load account %}
-{% load i18n %}
-{% get_current_language as CURRENT_LANGUAGE %}
 
-{% block content %}{% autoescape off %}{% user_display user as user_display %}{% if CURRENT_LANGUAGE|slice:":2" == "cs" %}Ahoj,
+{% block content %}{% autoescape off %}{% user_display user as user_display %}Ahoj,
 
 Na EnduroBuddy byla vytvořena registrace pro účet {{ user_display }} s touto e-mailovou adresou na webu {{ current_site.domain }}.
 
 {% if code %}Ověřovací kód je uveden níže. Zadej ho do otevřeného okna v prohlížeči:
 
-{{ code }}{% else %}Pro potvrzení e-mailu otevři tento odkaz:
+{{ code }}
+{% else %}Pro potvrzení e-mailu otevři tento odkaz:
 
-{{ activate_url }}{% endif %}
+{{ activate_url }}
+{% endif %}
 
-Pokud jsi registraci neprováděl(a), tento e-mail ignoruj.{% else %}Hi,
-
-A registration was started on EnduroBuddy for account {{ user_display }} with this email address on {{ current_site.domain }}.
-
-{% if code %}Your verification code is below. Enter it in your browser window:
-
-{{ code }}{% else %}To confirm your email, open this link:
-
-{{ activate_url }}{% endif %}
-
-If you did not request this registration, you can safely ignore this email.{% endif %}{% endautoescape %}{% endblock content %}
+Pokud jsi registraci neprováděl(a), tento e-mail ignoruj.{% endautoescape %}{% endblock content %}
