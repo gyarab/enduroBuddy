@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections import defaultdict
 from datetime import date, timedelta
 import hashlib
 from io import BytesIO
@@ -59,6 +60,84 @@ def _resolve_planned_training(user, run_day: date, fallback_title: str) -> Plann
             first.is_two_phase_day = True
             first.save(update_fields=["is_two_phase_day"])
     return created
+
+
+def _parse_payload_day_for_user(*, fit_bytes: bytes):
+    parsed = parse_fit_file(BytesIO(fit_bytes))
+    started_at = parsed.summary.get("started_at") if parsed.summary else None
+    if started_at is None:
+        started_at = timezone.now()
+    elif timezone.is_naive(started_at):
+        started_at = timezone.make_aware(started_at, timezone.get_current_timezone())
+
+    run_day = timezone.localtime(started_at).date() if timezone.is_aware(started_at) else started_at.date()
+    summary = parsed.summary or {}
+    workout_type = summary.get("workout_type") or Activity.WorkoutType.UNKNOWN
+    distance_m = int(summary.get("distance_m") or 0)
+    duration_s = int(summary.get("duration_s") or 0)
+    return run_day, workout_type, distance_m, duration_s
+
+
+def _is_explicit_two_phase_day(*, user, run_day: date) -> bool:
+    day_items = list(
+        PlannedTraining.objects.filter(
+            week__training_month__athlete=user,
+            date=run_day,
+        )
+        .only("id", "is_two_phase_day")
+        .order_by("order_in_day", "id")
+    )
+    if len(day_items) >= 2:
+        return True
+    return any(item.is_two_phase_day for item in day_items)
+
+
+def _select_payloads_for_import(*, user, payloads):
+    if not payloads:
+        return []
+
+    prepared = []
+    for payload in payloads:
+        run_day, workout_type, distance_m, duration_s = _parse_payload_day_for_user(fit_bytes=payload.fit_bytes)
+        prepared.append(
+            {
+                "payload": payload,
+                "run_day": run_day,
+                "workout_type": workout_type,
+                "distance_m": distance_m,
+                "duration_s": duration_s,
+            }
+        )
+
+    by_day = defaultdict(list)
+    for row in prepared:
+        by_day[row["run_day"]].append(row)
+
+    selected = []
+    for run_day, day_items in by_day.items():
+        if _is_explicit_two_phase_day(user=user, run_day=run_day):
+            selected.extend(day_items)
+            continue
+
+        best = max(
+            day_items,
+            key=lambda row: (
+                1 if row["workout_type"] == Activity.WorkoutType.WORKOUT else 0,
+                row["distance_m"],
+                row["duration_s"],
+            ),
+        )
+        selected.append(best)
+
+    selected.sort(
+        key=lambda row: (
+            row["run_day"],
+            1 if row["workout_type"] == Activity.WorkoutType.WORKOUT else 0,
+            row["distance_m"],
+            row["duration_s"],
+        )
+    )
+    return [row["payload"] for row in selected]
 
 
 def import_fit_bytes_for_user(*, user, fit_bytes: bytes, original_name: str) -> bool:
@@ -201,9 +280,11 @@ def sync_garmin_for_user(user, *, window: str) -> tuple[int, int, GarminConnecti
         to_day=to_day,
     )
 
+    selected_payloads = _select_payloads_for_import(user=user, payloads=result.payloads)
+
     imported = 0
     skipped = 0
-    for payload in result.payloads:
+    for payload in selected_payloads:
         did_import = import_fit_bytes_for_user(
             user=user,
             fit_bytes=payload.fit_bytes,

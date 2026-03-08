@@ -4,6 +4,8 @@ import secrets
 from datetime import timedelta
 from typing import Any
 
+from django.conf import settings
+from django.contrib import messages
 from django.db import transaction
 from django.utils import timezone
 
@@ -29,6 +31,13 @@ _LEGEND_DISTANCE_VALUES = {
     "marathon",
     "maraton",
 }
+
+_TEST_NOTIFICATION_TEXTS = (
+    ("success", "Test: Novy treninkovy plan je pripraven."),
+    ("info", "Test: Garmin synchronizace bude spustena za chvili."),
+    ("warning", "Test: Chybi ti vyplneny komentar u dnesniho treninku."),
+    ("error", "Test: Nepodarilo se nacist jednu aktivitu."),
+)
 
 
 def sanitize_legend_state(raw_state: Any) -> dict[str, Any]:
@@ -80,6 +89,17 @@ def sanitize_legend_state(raw_state: Any) -> dict[str, Any]:
             cleaned["prs"] = prs
 
     return cleaned
+
+
+def maybe_add_test_notifications(request) -> None:
+    if not settings.DEBUG:
+        return
+    raw_toggle = (request.GET.get("test_notifications") or "").strip().lower()
+    if raw_toggle not in {"1", "true", "yes", "on"}:
+        return
+
+    for level, text in _TEST_NOTIFICATION_TEXTS:
+        getattr(messages, level)(request, text)
 
 def _coach_accessible_athlete_ids(*, coach_user) -> set[int]:
     accessible_ids = set(

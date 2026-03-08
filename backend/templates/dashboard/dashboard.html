@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 {% load static %}
 {% load i18n %}
 {% get_current_language as CURRENT_LANGUAGE %}
@@ -7,16 +7,6 @@
 
 {% block content %}
 <div class="container-fluid py-3">
-  {% if messages %}
-    <div class="mb-3">
-      {% for message in messages %}
-        <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} py-2 mb-2" role="alert">
-          {{ message }}
-        </div>
-      {% endfor %}
-    </div>
-  {% endif %}
-
   <div class="d-flex align-items-center justify-content-between mb-3">
     <div class="d-flex align-items-center gap-2">
       <h3 class="mb-0">Tr&eacute;ninkov&yacute; pl&aacute;n</h3>
@@ -33,52 +23,9 @@
       <button class="btn btn-outline-dark btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#coachLegendModal">
         Legenda
       </button>
-      <button class="btn btn-outline-dark btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#coachCodeModal">
-        P&#345;idat tren&eacute;ra
-      </button>
       <button class="btn btn-success btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#importActivitiesModal">
         Import aktivit
       </button>
-    </div>
-  </div>
-
-  <div class="modal fade" id="coachCodeModal" tabindex="-1" aria-labelledby="coachCodeModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="coachCodeModalLabel">P&#345;ipojit tren&eacute;ra</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Zavřít"></button>
-        </div>
-        <div class="modal-body d-grid gap-2">
-          <form method="post" class="d-grid gap-2">
-            {% csrf_token %}
-            <input type="hidden" name="action" value="request_coach_by_code">
-            <label class="form-label form-label-sm mb-0">K&oacute;d tren&eacute;ra</label>
-            <input type="text" class="form-control form-control-sm text-uppercase" name="coach_code" placeholder="AB7K9Q2M5T8R" maxlength="12" required>
-            <button type="submit" class="btn btn-primary btn-sm">Odeslat &zcaron;&aacute;dost</button>
-          </form>
-
-          {% if pending_coach_requests %}
-            <div class="small text-muted">&Ccaron;ekaj&iacute;c&iacute; &zcaron;&aacute;dosti</div>
-            <div class="d-grid gap-2">
-              {% for req in pending_coach_requests %}
-                <div class="eb-invite-row py-2">
-                  Tren&eacute;r: <strong>{{ req.coach.username }}</strong>
-                </div>
-              {% endfor %}
-            </div>
-          {% endif %}
-
-          {% if approved_coach_links %}
-            <div class="small text-muted mt-1">Aktivn&iacute; tren&eacute;&#345;i</div>
-            <div class="d-grid gap-2">
-              {% for link in approved_coach_links %}
-                <div class="eb-invite-row py-2"><strong>{{ link.coach.username }}</strong></div>
-              {% endfor %}
-            </div>
-          {% endif %}
-        </div>
-      </div>
     </div>
   </div>
 
@@ -87,7 +34,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="importActivitiesModalLabel">Import aktivit</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Zavřít"></button>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="ZavÅ™Ã­t"></button>
         </div>
         <div class="modal-body eb-import-modal-body">
           <div class="eb-import-note">
@@ -168,7 +115,7 @@
           <h5 class="modal-title" id="coachLegendModalLabel">
             Legenda pl&aacute;nu
           </h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Zavřít"></button>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="ZavÅ™Ã­t"></button>
         </div>
         <div
           class="modal-body eb-legend-modal-body"
@@ -248,7 +195,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title">&Uacute;prava tepov&yacute;ch z&oacute;n</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Zavřít"></button>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="ZavÅ™Ã­t"></button>
         </div>
         <div class="modal-body">
           <table class="table table-sm align-middle mb-0">
@@ -282,7 +229,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title">&Uacute;prava prah&#367;</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Zavřít"></button>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="ZavÅ™Ã­t"></button>
         </div>
         <div class="modal-body">
           <div class="mb-2">
@@ -306,7 +253,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title">P&#345;idat PR</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Zavřít"></button>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="ZavÅ™Ã­t"></button>
         </div>
         <div class="modal-body">
           <div class="mb-2">
@@ -344,3 +291,4 @@
 
 {% include "dashboard/_assets.html" %}
 {% endblock %}
+
