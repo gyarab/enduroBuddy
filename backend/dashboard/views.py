@@ -18,4 +18,5 @@ from .views_coach import (
     coach_update_planned_training,
 )
 from .views_home import home
+from .views_home import athlete_update_legend_state
 from .views_invites import accept_training_group_invite

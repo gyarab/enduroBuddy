@@ -128,6 +128,465 @@
       });
     }
 
+    function initCoachLegendModal() {
+      const legendModal = document.getElementById("coachLegendModal");
+      if (!legendModal) return;
+      if (legendModal.dataset.initialized === "1") return;
+      legendModal.dataset.initialized = "1";
+
+      const athleteIdNode = legendModal.querySelector("[data-legend-athlete-id]");
+      const athleteId = athleteIdNode ? String(athleteIdNode.getAttribute("data-legend-athlete-id") || "") : "";
+      if (!athleteId) return;
+      const isCs = (document.documentElement.lang || "").toLowerCase().startsWith("cs");
+      const zoneTableBody = legendModal.querySelector("[data-legend-zone-table-body]");
+      const aerobicDisplay = legendModal.querySelector("[data-legend-threshold-display='aerobic']");
+      const anaerobicDisplay = legendModal.querySelector("[data-legend-threshold-display='anaerobic']");
+      const prBody = legendModal.querySelector("[data-legend-pr-body]");
+      const prEmptyRow = legendModal.querySelector("[data-legend-pr-empty-row]");
+      const prModal = document.getElementById("coachLegendPrModal");
+      const prSelect = prModal ? prModal.querySelector("[data-legend-pr-select]") : null;
+      const prTimeInput = prModal ? prModal.querySelector("[data-legend-pr-time-input]") : null;
+      const prAddButton = prModal ? prModal.querySelector("[data-legend-pr-add]") : null;
+      const zonesModal = document.getElementById("coachLegendZonesModal");
+      const thresholdsModal = document.getElementById("coachLegendThresholdModal");
+      const zonesSaveButton = zonesModal ? zonesModal.querySelector("[data-legend-zones-modal-save]") : null;
+      const thresholdSaveButton = thresholdsModal ? thresholdsModal.querySelector("[data-legend-threshold-modal-save]") : null;
+      const thresholdEditAerobic = thresholdsModal ? thresholdsModal.querySelector("[data-legend-threshold-edit='aerobic']") : null;
+      const thresholdEditAnaerobic = thresholdsModal ? thresholdsModal.querySelector("[data-legend-threshold-edit='anaerobic']") : null;
+      const legendEditable = athleteIdNode.getAttribute("data-legend-editable") === "1";
+      const legendSaveUrl = athleteIdNode.getAttribute("data-legend-save-url") || "";
+      if (
+        !zoneTableBody ||
+        !aerobicDisplay ||
+        !anaerobicDisplay ||
+        !prBody ||
+        (legendEditable && !prModal) ||
+        (legendEditable && !prSelect) ||
+        (legendEditable && !prTimeInput) ||
+        (legendEditable && !prAddButton) ||
+        (legendEditable && !zonesModal) ||
+        (legendEditable && !thresholdsModal) ||
+        (legendEditable && !zonesSaveButton) ||
+        (legendEditable && !thresholdSaveButton) ||
+        (legendEditable && !thresholdEditAerobic) ||
+        (legendEditable && !thresholdEditAnaerobic)
+      ) return;
+
+      const childOpenButtons = Array.from(legendModal.querySelectorAll("[data-legend-open-modal]"));
+      const initialStateRaw = athleteIdNode.getAttribute("data-legend-state") || "{}";
+      const prOrderMap = {
+        "800m": 1,
+        "1000m": 2,
+        "1 mile": 3,
+        "1500m": 4,
+        "2 miles": 5,
+        "3000m": 6,
+        "3k": 7,
+        "5000m": 8,
+        "5k": 9,
+        "10000m": 10,
+        "10k": 11,
+        "half marathon": 12,
+        "půlmaraton": 12,
+        "marathon": 13,
+        "maraton": 13,
+      };
+      const legacyPrFieldToDistance = {
+        pr_800m: "800m",
+        pr_1000m: "1000m",
+        pr_1_mile: "1 mile",
+        pr_1500m: "1500m",
+        pr_2_miles: "2 miles",
+        pr_3000m: "3000m",
+        pr_3k: "3k",
+        pr_5000m: "5000m",
+        pr_5k: "5k",
+        pr_10000m: "10000m",
+        pr_10k: "10k",
+        pr_half_marathon: "Half marathon",
+        pr_marathon: "Marathon",
+      };
+      let currentState = {};
+
+      function readInitialState() {
+        try {
+          const parsed = JSON.parse(initialStateRaw);
+          return parsed && typeof parsed === "object" ? parsed : {};
+        } catch (_) {
+          return {};
+        }
+      }
+
+      function normalizeState(savedState) {
+        const source = savedState && typeof savedState === "object" ? savedState : {};
+        const next = {};
+
+        const zones = source.zones && typeof source.zones === "object" ? source.zones : {};
+        const normalizedZones = {};
+        for (let zone = 1; zone <= 5; zone += 1) {
+          const direct = zones[String(zone)];
+          const from = direct && typeof direct === "object"
+            ? String(direct.from || "").trim()
+            : String(source[`hr_z${zone}_from`] || "").trim();
+          const to = direct && typeof direct === "object"
+            ? String(direct.to || "").trim()
+            : String(source[`hr_z${zone}_to`] || "").trim();
+          if (from && to) {
+            normalizedZones[String(zone)] = { from, to };
+          }
+        }
+        if (Object.keys(normalizedZones).length) {
+          next.zones = normalizedZones;
+        }
+
+        const aerobic = String(source.aerobic_threshold || "").trim();
+        const anaerobic = String(source.anaerobic_threshold || "").trim();
+        if (aerobic) next.aerobic_threshold = aerobic;
+        if (anaerobic) next.anaerobic_threshold = anaerobic;
+
+        const prs = Array.isArray(source.prs) ? source.prs : [];
+        if (prs.length) {
+          next.prs = prs
+            .map((item) => {
+              if (!item || typeof item !== "object") return null;
+              return {
+                distance: normalizeDistance(item.distance),
+                time: String(item.time || "").trim(),
+              };
+            })
+            .filter((item) => !!item && item.distance);
+        } else {
+          const fallback = [];
+          Object.keys(legacyPrFieldToDistance).forEach((legacyField) => {
+            const legacyValue = String(source[legacyField] || "").trim();
+            if (!legacyValue) return;
+            fallback.push({
+              distance: legacyPrFieldToDistance[legacyField],
+              time: legacyValue,
+            });
+          });
+          if (fallback.length) next.prs = fallback;
+        }
+
+        return next;
+      }
+
+      async function writeSavedState(nextState) {
+        if (!legendEditable || !legendSaveUrl) return;
+        try {
+          await postJson(
+            legendSaveUrl,
+            { state: nextState || {} },
+            getCsrfToken()
+          );
+        } catch (err) {
+          console.error(err);
+        }
+      }
+
+      function getPrRows() {
+        return Array.from(prBody.querySelectorAll("tr[data-legend-pr-row='1']"));
+      }
+
+      function updatePrEmptyState() {
+        if (!prEmptyRow) return;
+        prEmptyRow.classList.toggle("d-none", getPrRows().length > 0);
+      }
+
+      function clearPrRows() {
+        getPrRows().forEach((row) => row.remove());
+        updatePrEmptyState();
+      }
+
+      function getPrSortOrder(distance) {
+        const normalized = normalizeDistanceKey(distance);
+        return Object.prototype.hasOwnProperty.call(prOrderMap, normalized) ? prOrderMap[normalized] : 999;
+      }
+
+      function getTimeFormatForDistance(distance) {
+        const normalized = normalizeDistanceKey(distance);
+        if (normalized === "10000m" || normalized === "10k" || normalized === "half marathon" || normalized === "půlmaraton" || normalized === "marathon" || normalized === "maraton") {
+          return "hhmmss";
+        }
+        return "mmss";
+      }
+
+      function formatDigitsAsTime(digitsInput, format, keepTrailingColon) {
+        const digits = String(digitsInput || "").replace(/\D/g, "");
+        if (format === "hhmmss") {
+          const limited = digits.slice(0, 6);
+          const hh = limited.slice(0, 2);
+          const mm = limited.slice(2, 4);
+          const ss = limited.slice(4, 6);
+          if (limited.length <= 2) {
+            if (keepTrailingColon && limited.length === 2) return `${hh}:`;
+            return hh;
+          }
+          if (limited.length <= 4) {
+            const partial = `${hh}:${mm}`;
+            if (keepTrailingColon && limited.length === 4) return `${partial}:`;
+            return partial;
+          }
+          return `${hh}:${mm}:${ss}`;
+        }
+
+        const limited = digits.slice(0, 4);
+        const mm = limited.slice(0, 2);
+        const ss = limited.slice(2, 4);
+        if (limited.length <= 2) {
+          if (keepTrailingColon && limited.length === 2) return `${mm}:`;
+          return mm;
+        }
+        return `${mm}:${ss}`;
+      }
+
+      function normalizeFinalTime(value, format) {
+        const keepTrailing = false;
+        return formatDigitsAsTime(value, format, keepTrailing);
+      }
+
+      function renderZoneTable() {
+        zoneTableBody.innerHTML = "";
+        const zones = (currentState && currentState.zones && typeof currentState.zones === "object") ? currentState.zones : {};
+        for (let zone = 1; zone <= 5; zone += 1) {
+          const data = zones[String(zone)] || {};
+          const from = String(data.from || "").trim();
+          const to = String(data.to || "").trim();
+          const range = from && to ? `${from}-${to}` : "-";
+          const tr = document.createElement("tr");
+          tr.innerHTML = `<td>Z${zone}</td><td>${range}</td>`;
+          zoneTableBody.appendChild(tr);
+        }
+      }
+
+      function renderThresholdDisplays() {
+        const aerobicValue = String((currentState && currentState.aerobic_threshold) || "").trim();
+        const anaerobicValue = String((currentState && currentState.anaerobic_threshold) || "").trim();
+        aerobicDisplay.textContent = aerobicValue || "-";
+        anaerobicDisplay.textContent = anaerobicValue || "-";
+      }
+
+      function normalizeDistance(distance) {
+        return String(distance || "").trim();
+      }
+
+      function normalizeDistanceKey(distance) {
+        return normalizeDistance(distance)
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "");
+      }
+
+      function hasPrDistance(distance) {
+        const normalized = normalizeDistanceKey(distance);
+        if (!normalized) return false;
+        return getPrRows().some((row) => {
+          const rowDistance = normalizeDistanceKey(row.getAttribute("data-distance"));
+          return rowDistance === normalized;
+        });
+      }
+
+      function createPrRow(distance, timeValue) {
+        const normalizedDistance = normalizeDistance(distance);
+        if (!normalizedDistance || hasPrDistance(normalizedDistance)) return null;
+
+        const row = document.createElement("tr");
+        row.setAttribute("data-legend-pr-row", "1");
+        row.setAttribute("data-distance", normalizedDistance);
+
+        const distanceCell = document.createElement("td");
+        distanceCell.className = "eb-legend-pr-distance";
+        distanceCell.textContent = normalizedDistance;
+
+        const timeCell = document.createElement("td");
+        const timeFormat = getTimeFormatForDistance(normalizedDistance);
+        if (legendEditable) {
+          const timeInput = document.createElement("input");
+          timeInput.className = "form-control form-control-sm";
+          timeInput.type = "text";
+          timeInput.maxLength = 20;
+          timeInput.placeholder = timeFormat === "hhmmss" ? "hh:mm:ss" : "mm:ss";
+          timeInput.value = normalizeFinalTime(String(timeValue || ""), timeFormat);
+          timeInput.setAttribute("data-legend-pr-time", "1");
+          timeInput.addEventListener("input", () => {
+            timeInput.value = formatDigitsAsTime(timeInput.value, timeFormat, true);
+            saveStateFromInputs();
+          });
+          timeInput.addEventListener("blur", () => {
+            timeInput.value = normalizeFinalTime(timeInput.value, timeFormat);
+            saveStateFromInputs();
+          });
+          timeCell.appendChild(timeInput);
+        } else {
+          timeCell.textContent = normalizeFinalTime(String(timeValue || ""), timeFormat) || "-";
+        }
+
+        row.appendChild(distanceCell);
+        row.appendChild(timeCell);
+        let inserted = false;
+        const nextOrder = getPrSortOrder(normalizedDistance);
+        getPrRows().forEach((existingRow) => {
+          if (inserted) return;
+          const existingDistance = normalizeDistance(existingRow.getAttribute("data-distance"));
+          const existingOrder = getPrSortOrder(existingDistance);
+          if (nextOrder < existingOrder || (nextOrder === existingOrder && normalizedDistance.localeCompare(existingDistance, "cs", { sensitivity: "base" }) < 0)) {
+            prBody.insertBefore(row, existingRow);
+            inserted = true;
+          }
+        });
+        if (!inserted) {
+          prBody.appendChild(row);
+        }
+        updatePrEmptyState();
+        return row;
+      }
+
+      function loadStateIntoInputs() {
+        currentState = normalizeState(readInitialState());
+        renderZoneTable();
+        renderThresholdDisplays();
+        clearPrRows();
+        const parsedPrs = Array.isArray(currentState.prs) ? currentState.prs : [];
+        if (parsedPrs.length) {
+          parsedPrs.forEach((item) => {
+            if (!item || typeof item !== "object") return;
+            createPrRow(item.distance, item.time || "");
+          });
+        }
+      }
+
+      function saveStateFromInputs() {
+        const prs = getPrRows()
+          .map((row) => {
+            const distance = normalizeDistance(row.getAttribute("data-distance"));
+            const timeInput = row.querySelector("[data-legend-pr-time='1']");
+            const time = timeInput && "value" in timeInput ? String(timeInput.value || "").trim() : "";
+            if (!distance) return null;
+            return { distance, time };
+          })
+          .filter((item) => !!item);
+        if (prs.length) {
+          currentState.prs = prs;
+        } else {
+          delete currentState.prs;
+        }
+        writeSavedState(currentState);
+      }
+
+      legendModal.addEventListener("show.bs.modal", loadStateIntoInputs);
+      if (legendEditable) {
+        childOpenButtons.forEach((button) => {
+          if (button.dataset.legendOpenInit === "1") return;
+          button.dataset.legendOpenInit = "1";
+          button.addEventListener("click", (event) => {
+            event.preventDefault();
+            const targetSelector = button.getAttribute("data-legend-open-modal") || "";
+            if (!targetSelector) return;
+            const targetModal = document.querySelector(targetSelector);
+            if (!targetModal || !(window.bootstrap && window.bootstrap.Modal)) return;
+            const instance = window.bootstrap.Modal.getOrCreateInstance(targetModal, { backdrop: false });
+            instance.show();
+          });
+        });
+        zonesModal.addEventListener("show.bs.modal", () => {
+          const zones = currentState && currentState.zones ? currentState.zones : {};
+          for (let z = 1; z <= 5; z += 1) {
+            const fromInput = zonesModal.querySelector(`[data-legend-zone-edit-from='${z}']`);
+            const toInput = zonesModal.querySelector(`[data-legend-zone-edit-to='${z}']`);
+            if (!fromInput || !toInput) continue;
+            fromInput.value = zones[String(z)] ? String(zones[String(z)].from || "") : "";
+            toInput.value = zones[String(z)] ? String(zones[String(z)].to || "") : "";
+          }
+        });
+        zonesSaveButton.addEventListener("click", () => {
+          const nextZones = {};
+          for (let z = 1; z <= 5; z += 1) {
+            const fromInput = zonesModal.querySelector(`[data-legend-zone-edit-from='${z}']`);
+            const toInput = zonesModal.querySelector(`[data-legend-zone-edit-to='${z}']`);
+            if (!fromInput || !toInput) continue;
+            const from = String(fromInput.value || "").trim();
+            const to = String(toInput.value || "").trim();
+            if (!from && !to) continue;
+            const fromNum = Number(from);
+            const toNum = Number(to);
+            if (!Number.isFinite(fromNum) || !Number.isFinite(toNum) || fromNum > toNum) continue;
+            nextZones[String(z)] = { from, to };
+          }
+          if (Object.keys(nextZones).length) {
+            currentState.zones = nextZones;
+          } else {
+            delete currentState.zones;
+          }
+          writeSavedState(currentState);
+          renderZoneTable();
+          const modal = window.bootstrap && window.bootstrap.Modal ? window.bootstrap.Modal.getInstance(zonesModal) : null;
+          if (modal) modal.hide();
+        });
+
+        thresholdsModal.addEventListener("show.bs.modal", () => {
+          thresholdEditAerobic.value = currentState && currentState.aerobic_threshold ? String(currentState.aerobic_threshold) : "";
+          thresholdEditAnaerobic.value = currentState && currentState.anaerobic_threshold ? String(currentState.anaerobic_threshold) : "";
+        });
+        thresholdSaveButton.addEventListener("click", () => {
+          const aerobic = String(thresholdEditAerobic.value || "").trim();
+          const anaerobic = String(thresholdEditAnaerobic.value || "").trim();
+          if (aerobic) currentState.aerobic_threshold = aerobic;
+          else delete currentState.aerobic_threshold;
+          if (anaerobic) currentState.anaerobic_threshold = anaerobic;
+          else delete currentState.anaerobic_threshold;
+          writeSavedState(currentState);
+          renderThresholdDisplays();
+          const modal = window.bootstrap && window.bootstrap.Modal ? window.bootstrap.Modal.getInstance(thresholdsModal) : null;
+          if (modal) modal.hide();
+        });
+
+        [thresholdEditAerobic, thresholdEditAnaerobic].forEach((input) => {
+          input.addEventListener("keydown", (event) => {
+            if (event.key === "Enter") {
+              event.preventDefault();
+              thresholdSaveButton.click();
+            }
+          });
+        });
+        prModal.addEventListener("show.bs.modal", () => {
+          prTimeInput.value = "";
+          const selectedDistance = normalizeDistance(prSelect.value);
+          prTimeInput.placeholder = getTimeFormatForDistance(selectedDistance) === "hhmmss" ? "hh:mm:ss" : "mm:ss";
+        });
+        prSelect.addEventListener("change", () => {
+          const selectedDistance = normalizeDistance(prSelect.value);
+          const format = getTimeFormatForDistance(selectedDistance);
+          prTimeInput.placeholder = format === "hhmmss" ? "hh:mm:ss" : "mm:ss";
+          prTimeInput.value = normalizeFinalTime(prTimeInput.value, format);
+        });
+        prTimeInput.addEventListener("input", () => {
+          const selectedDistance = normalizeDistance(prSelect.value);
+          const format = getTimeFormatForDistance(selectedDistance);
+          prTimeInput.value = formatDigitsAsTime(prTimeInput.value, format, true);
+        });
+        prTimeInput.addEventListener("blur", () => {
+          const selectedDistance = normalizeDistance(prSelect.value);
+          const format = getTimeFormatForDistance(selectedDistance);
+          prTimeInput.value = normalizeFinalTime(prTimeInput.value, format);
+        });
+        prAddButton.addEventListener("click", () => {
+          const distance = normalizeDistance(prSelect.value);
+          const format = getTimeFormatForDistance(distance);
+          const timeValue = normalizeFinalTime(prTimeInput.value, format);
+          if (!distance || hasPrDistance(distance)) return;
+          const newRow = createPrRow(distance, timeValue);
+          if (newRow) {
+            saveStateFromInputs();
+            prTimeInput.value = "";
+            const modal = window.bootstrap && window.bootstrap.Modal ? window.bootstrap.Modal.getInstance(prModal) : null;
+            if (modal) modal.hide();
+          }
+        });
+      }
+
+      loadStateIntoInputs();
+    }
+
     function initCoachAthleteReorder() {
       const list = document.getElementById("coachAthleteList");
       if (!list) return;
@@ -311,6 +770,9 @@
         }
         if (shell.dataset.loading === "1") return;
 
+        const currentLegendModal = document.getElementById("coachLegendModal");
+        const legendWasOpen = !!(currentLegendModal && currentLegendModal.classList.contains("show"));
+
         shell.dataset.loading = "1";
         shell.classList.add("is-loading");
         try {
@@ -324,6 +786,17 @@
           if (!replacementMain || !currentMain) throw new Error("Replacement main content not found.");
 
           currentMain.replaceWith(replacementMain);
+          ["coachLegendModal", "coachLegendZonesModal", "coachLegendThresholdModal", "coachLegendPrModal"].forEach((modalId) => {
+            const currentModal = document.getElementById(modalId);
+            const nextModal = doc.getElementById(modalId);
+            if (currentModal && nextModal) {
+              currentModal.replaceWith(nextModal);
+            } else if (currentModal && !nextModal) {
+              currentModal.remove();
+            } else if (!currentModal && nextModal) {
+              document.body.appendChild(nextModal);
+            }
+          });
           if (window.location.href !== url) {
             window.history.pushState({}, "", url);
           }
@@ -332,6 +805,14 @@
           }
           updateCoachSidebarActiveState(url);
           initCoachMainContent(document.getElementById("coachShell") || document);
+          initCoachAthleteFocus();
+          initCoachLegendModal();
+          if (legendWasOpen && window.bootstrap && window.bootstrap.Modal) {
+            const nextLegendModal = document.getElementById("coachLegendModal");
+            if (nextLegendModal) {
+              window.bootstrap.Modal.getOrCreateInstance(nextLegendModal).show();
+            }
+          }
           initCoachSidebarToggle();
         } catch (err) {
           console.error(err);
@@ -463,6 +944,8 @@
 
     function initCoachShellContent() {
       initCoachMainContent(document);
+      initCoachAthleteFocus();
+      initCoachLegendModal();
       initCoachAthleteReorder();
       initCoachSidebarToggle();
       initCoachAthleteRemovalModal();

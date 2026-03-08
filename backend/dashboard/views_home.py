@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+import json
 import logging
 
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
 
@@ -14,7 +16,7 @@ from activities.services.garmin_importer import GarminImportError
 from dashboard.services.imports import GARMIN_RANGE_OPTIONS, audit_garmin, connect_garmin_for_user, revoke_garmin_for_user
 from dashboard.services.month_cards import add_next_month_for_athlete, build_month_cards_for_athlete, is_coach
 from dashboard.services.tasks import run_fit_import, run_garmin_sync
-from .views_shared import _resolve_coach_from_code
+from .views_shared import _resolve_coach_from_code, sanitize_legend_state
 
 logger = logging.getLogger(__name__)
 
@@ -202,7 +204,24 @@ def home(request):
             "add_month_athlete_id": None,
             "pending_coach_requests": pending_coach_requests,
             "approved_coach_links": approved_coach_links,
+            "legend_state_json": json.dumps(sanitize_legend_state(getattr(request.user.profile, "legend_state", {}))),
+            "legend_editable": True,
+            "legend_update_url": reverse("athlete_update_legend_state"),
         },
     )
 
 
+@login_required
+def athlete_update_legend_state(request):
+    if request.method != "POST":
+        return JsonResponse({"ok": False, "error": "Method not allowed."}, status=405)
+    try:
+        payload = json.loads(request.body.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        return JsonResponse({"ok": False, "error": "Invalid JSON body."}, status=400)
+
+    next_state = sanitize_legend_state(payload.get("state"))
+    profile = request.user.profile
+    profile.legend_state = next_state
+    profile.save(update_fields=["legend_state"])
+    return JsonResponse({"ok": True, "state": next_state})

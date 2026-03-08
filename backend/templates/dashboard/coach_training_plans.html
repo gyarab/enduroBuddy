@@ -58,14 +58,15 @@
                 <a href="{% url 'coach_training_plans' %}?athlete={{ athlete.id }}" draggable="false" class="btn btn-sm text-start eb-athlete-switch-item {% if selected_athlete and selected_athlete.id == athlete.id %}btn-dark active{% else %}btn-outline-dark{% endif %}">
                   <span class="eb-athlete-row-label">
                     {% if athlete.is_self_plan %}
-                      <span class="eb-athlete-self-badge">{% if CURRENT_LANGUAGE == "cs" %}M&#367;j pl&aacute;n{% else %}My plan{% endif %}</span>
+                      <span class="eb-athlete-summary eb-athlete-summary--self">{% if CURRENT_LANGUAGE == "cs" %}M&#367;j pl&aacute;n{% else %}My plan{% endif %}</span>
+                    {% else %}
+                      <span
+                        class="eb-athlete-summary"
+                        data-athlete-summary
+                        data-athlete-name="{{ athlete.display_name_short|default:athlete.username }}"
+                        data-empty-focus-label="{{ athlete.sidebar_empty_focus_label|default:'' }}"
+                      >{{ athlete.sidebar_summary|default:athlete.username }}</span>
                     {% endif %}
-                    <span
-                      class="eb-athlete-summary"
-                      data-athlete-summary
-                      data-athlete-name="{{ athlete.display_name_short|default:athlete.username }}"
-                      data-empty-focus-label="{{ athlete.sidebar_empty_focus_label|default:'' }}"
-                    >{{ athlete.sidebar_summary|default:athlete.username }}</span>
                     {% if not athlete.is_self_plan %}
                       <span class="eb-athlete-drag-handle" draggable="false" title="{% if CURRENT_LANGUAGE == 'cs' %}P&#345;esunout{% else %}Reorder{% endif %}">&#8801;</span>
                     {% endif %}
@@ -116,8 +117,8 @@
         </div>
         {% if selected_athlete %}
           <div class="d-flex align-items-center gap-3">
-            {% if not selected_athlete_is_self %}
               <div class="d-flex align-items-center gap-2">
+                {% if not selected_athlete_is_self %}
                 <label class="small text-muted mb-0" for="coachAthleteFocusInput">{% if CURRENT_LANGUAGE == "cs" %}Zam&#283;&#345;en&iacute;:{% else %}Focus:{% endif %}</label>
                 <input
                   id="coachAthleteFocusInput"
@@ -128,8 +129,16 @@
                   data-focus-update-url="{{ coach_athlete_focus_update_url }}"
                   maxlength="10"
                 >
+                {% endif %}
+                <button
+                  type="button"
+                  class="btn btn-sm btn-outline-dark"
+                  data-bs-toggle="modal"
+                  data-bs-target="#coachLegendModal"
+                >
+                  {% if CURRENT_LANGUAGE == "cs" %}Legenda{% else %}Legend{% endif %}
+                </button>
               </div>
-            {% endif %}
           </div>
         {% endif %}
       </div>
@@ -142,6 +151,194 @@
       {% endif %}
     </section>
   </div>
+
+  {% if selected_athlete %}
+    <div class="modal fade eb-plan-legend-modal" id="coachLegendModal" tabindex="-1" aria-labelledby="coachLegendModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="coachLegendModalLabel">
+              {% if CURRENT_LANGUAGE == "cs" %}Legenda pl&aacute;nu{% else %}Plan legend{% endif %}
+            </h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div
+            class="modal-body eb-legend-modal-body"
+            data-legend-athlete-id="{{ selected_athlete.id }}"
+            data-legend-state="{{ selected_athlete_legend_state_json|escapejs }}"
+            data-legend-editable="{% if legend_editable %}1{% else %}0{% endif %}"
+            data-legend-save-url="{{ legend_update_url|default:'' }}"
+          >
+            <div class="eb-legend-layout">
+              <div class="eb-legend-section">
+                <div class="d-flex align-items-center justify-content-between gap-2 mb-2">
+                  <div class="eb-legend-section-title mb-0">{% if CURRENT_LANGUAGE == "cs" %}Tepov&eacute; z&oacute;ny{% else %}Heart rate zones{% endif %}</div>
+                  {% if legend_editable %}
+                    <button type="button" class="btn btn-sm btn-outline-dark eb-legend-plus-btn" data-legend-open-modal="#coachLegendZonesModal">+</button>
+                  {% endif %}
+                </div>
+                <table class="table table-sm align-middle eb-legend-table mb-0">
+                  <thead>
+                    <tr>
+                      <th style="width: 90px;">{% if CURRENT_LANGUAGE == "cs" %}Z&oacute;na{% else %}Zone{% endif %}</th>
+                      <th style="width: 140px;">{% if CURRENT_LANGUAGE == "cs" %}Rozsah{% else %}Range{% endif %}</th>
+                    </tr>
+                  </thead>
+                  <tbody data-legend-zone-table-body></tbody>
+                </table>
+                <div class="eb-legend-thresholds">
+                  <div class="d-flex align-items-center justify-content-between gap-2">
+                    <div class="eb-legend-section-title mb-0">{% if CURRENT_LANGUAGE == "cs" %}Prahy{% else %}Thresholds{% endif %}</div>
+                    {% if legend_editable %}
+                      <button type="button" class="btn btn-sm btn-outline-dark eb-legend-plus-btn" data-legend-open-modal="#coachLegendThresholdModal">+</button>
+                    {% endif %}
+                  </div>
+                  <table class="table table-sm align-middle eb-legend-table mt-2 mb-0">
+                    <thead>
+                      <tr>
+                        <th style="width: 120px;">{% if CURRENT_LANGUAGE == "cs" %}Prah{% else %}Threshold{% endif %}</th>
+                        <th style="width: 90px;">BPM</th>
+                      </tr>
+                    </thead>
+                    <tbody data-legend-threshold-table-body>
+                      <tr>
+                        <td>AP</td>
+                        <td data-legend-threshold-display="aerobic">-</td>
+                      </tr>
+                      <tr>
+                        <td>ANP</td>
+                        <td data-legend-threshold-display="anaerobic">-</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div class="eb-legend-section">
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+                  <div class="eb-legend-section-title mb-0">{% if CURRENT_LANGUAGE == "cs" %}Osobn&iacute; rekordy (PR){% else %}Personal records (PR){% endif %}</div>
+                  {% if legend_editable %}
+                    <button type="button" class="btn btn-sm btn-outline-dark eb-legend-plus-btn" data-legend-open-modal="#coachLegendPrModal">+</button>
+                  {% endif %}
+                </div>
+                <table class="table table-sm align-middle eb-legend-table mb-0">
+                  <thead>
+                    <tr>
+                      <th>{% if CURRENT_LANGUAGE == "cs" %}Discipl&iacute;na{% else %}Distance{% endif %}</th>
+                      <th style="width: 180px;">{% if CURRENT_LANGUAGE == "cs" %}PR (&ccaron;as){% else %}PR (time){% endif %}</th>
+                    </tr>
+                  </thead>
+                  <tbody data-legend-pr-body>
+                    <tr data-legend-pr-empty-row>
+                      <td colspan="2" class="text-muted small">-</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {% if legend_editable %}
+    <div class="modal fade" id="coachLegendZonesModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="false">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">{% if CURRENT_LANGUAGE == "cs" %}&Uacute;prava tepov&yacute;ch z&oacute;n{% else %}Edit heart rate zones{% endif %}</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <table class="table table-sm align-middle mb-0">
+              <thead>
+                <tr>
+                  <th style="width: 90px;">{% if CURRENT_LANGUAGE == "cs" %}Z&oacute;na{% else %}Zone{% endif %}</th>
+                  <th style="width: 100px;">{% if CURRENT_LANGUAGE == "cs" %}Od{% else %}From{% endif %}</th>
+                  <th style="width: 100px;">{% if CURRENT_LANGUAGE == "cs" %}Do{% else %}To{% endif %}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for zone in "12345" %}
+                  <tr>
+                    <td>Z{{ zone }}</td>
+                    <td><input class="form-control form-control-sm" type="number" min="0" max="260" step="1" data-legend-zone-edit-from="{{ zone }}"></td>
+                    <td><input class="form-control form-control-sm" type="number" min="0" max="260" step="1" data-legend-zone-edit-to="{{ zone }}"></td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-dark" data-legend-zones-modal-save>{% if CURRENT_LANGUAGE == "cs" %}Ulo&#382;it z&oacute;ny{% else %}Save zones{% endif %}</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="coachLegendThresholdModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="false">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">{% if CURRENT_LANGUAGE == "cs" %}&Uacute;prava prah&#367;{% else %}Edit thresholds{% endif %}</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-2">
+              <label class="form-label small text-muted mb-1">{% if CURRENT_LANGUAGE == "cs" %}Aerobn&iacute; pr&aacute;h (bpm){% else %}Aerobic threshold (bpm){% endif %}</label>
+              <input class="form-control form-control-sm" type="number" min="0" max="260" step="1" data-legend-threshold-edit="aerobic">
+            </div>
+            <div>
+              <label class="form-label small text-muted mb-1">{% if CURRENT_LANGUAGE == "cs" %}Anaerobn&iacute; pr&aacute;h (bpm){% else %}Anaerobic threshold (bpm){% endif %}</label>
+              <input class="form-control form-control-sm" type="number" min="0" max="260" step="1" data-legend-threshold-edit="anaerobic">
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-dark" data-legend-threshold-modal-save>{% if CURRENT_LANGUAGE == "cs" %}Ulo&#382;it prahy{% else %}Save thresholds{% endif %}</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="coachLegendPrModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="false">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">{% if CURRENT_LANGUAGE == "cs" %}P&#345;idat PR{% else %}Add PR{% endif %}</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-2">
+              <label class="form-label small text-muted mb-1">{% if CURRENT_LANGUAGE == "cs" %}Discipl&iacute;na{% else %}Distance{% endif %}</label>
+              <select class="form-select form-select-sm" data-legend-pr-select>
+                <option value="800m">800m</option>
+                <option value="1000m">1000m</option>
+                <option value="1 mile">1 mile</option>
+                <option value="1500m">1500m</option>
+                <option value="2 miles">2 miles</option>
+                <option value="3000m">3000m</option>
+                <option value="3k">3k</option>
+                <option value="5000m">5000m</option>
+                <option value="5k">5k</option>
+                <option value="10000m">10000m</option>
+                <option value="10k">10k</option>
+                <option value="{% if CURRENT_LANGUAGE == 'cs' %}P&#367;lmaraton{% else %}Half marathon{% endif %}">{% if CURRENT_LANGUAGE == 'cs' %}P&#367;lmaraton{% else %}Half marathon{% endif %}</option>
+                <option value="{% if CURRENT_LANGUAGE == 'cs' %}Maraton{% else %}Marathon{% endif %}">{% if CURRENT_LANGUAGE == 'cs' %}Maraton{% else %}Marathon{% endif %}</option>
+              </select>
+            </div>
+            <div>
+              <label class="form-label small text-muted mb-1">{% if CURRENT_LANGUAGE == "cs" %}&Ccaron;as{% else %}Time{% endif %}</label>
+              <input class="form-control form-control-sm" type="text" maxlength="20" data-legend-pr-time-input>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-dark" data-legend-pr-add>{% if CURRENT_LANGUAGE == "cs" %}P&#345;idat PR{% else %}Add PR{% endif %}</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+  {% endif %}
 
   <div class="modal fade eb-coach-manage-modal" id="coachManageModal" tabindex="-1" aria-labelledby="coachManageModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">

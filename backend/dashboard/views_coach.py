@@ -23,6 +23,7 @@ from .views_shared import (
     _create_training_group_invite,
     _get_cached_coach_accessible_ids,
     _update_completed_training_for_planned,
+    sanitize_legend_state,
 )
 
 @login_required
@@ -277,11 +278,17 @@ def coach_training_plans(request):
     month_cards = []
     selected_athlete_focus = ""
     selected_athlete_is_self = bool(selected_athlete and selected_athlete.id == request.user.id)
+    legend_editable = bool(selected_athlete_is_self)
+    selected_athlete_legend_state_json = json.dumps({})
     if selected_athlete is not None:
         month_cards = build_month_cards_for_athlete(athlete=selected_athlete, language_code=request.LANGUAGE_CODE)
         selected_link = coach_links.get(selected_athlete.id) if not selected_athlete_is_self else None
         if selected_link is not None:
             selected_athlete_focus = (selected_link.focus or "")[:sidebar_focus_limit]
+        selected_profile = getattr(selected_athlete, "profile", None)
+        selected_athlete_legend_state_json = json.dumps(
+            sanitize_legend_state(getattr(selected_profile, "legend_state", {}))
+        )
 
     return render(
         request,
@@ -295,6 +302,9 @@ def coach_training_plans(request):
             "selected_athlete_name": display_name(selected_athlete) if selected_athlete else "",
             "selected_athlete_focus": selected_athlete_focus,
             "selected_athlete_is_self": selected_athlete_is_self,
+            "selected_athlete_legend_state_json": selected_athlete_legend_state_json,
+            "legend_editable": legend_editable,
+            "legend_update_url": reverse("athlete_update_legend_state") if legend_editable else "",
             "month_cards": month_cards,
             "plan_editable": True,
             "plan_update_url": reverse("coach_update_planned_training"),
