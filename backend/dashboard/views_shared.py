@@ -126,6 +126,7 @@ def _create_second_phase_for_planned(*, planned: PlannedTraining) -> PlannedTrai
             date=source.date,
             day_label=source.day_label,
             title="",
+            session_type=source.session_type,
             notes="",
             order_in_day=int(source.order_in_day) + 1,
             is_two_phase_day=True,

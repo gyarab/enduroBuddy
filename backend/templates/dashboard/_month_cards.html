@@ -35,6 +35,7 @@
                     <colgroup>
                       <col style="width:110px">
                       <col style="width:120px">
+                      <col style="width:118px">
                       <col style="width:75%">
                       <col style="width:25%">
                     </colgroup>
@@ -42,6 +43,7 @@
                       <tr>
                         <th class="eb-planned-date-col" style="width:110px">{% if CURRENT_LANGUAGE == "cs" %}Datum{% else %}Date{% endif %}</th>
                         <th class="eb-planned-day-col" style="width:120px">{% if CURRENT_LANGUAGE == "cs" %}Den{% else %}Day{% endif %}</th>
+                        <th class="eb-planned-type-col">{% if CURRENT_LANGUAGE == "cs" %}Typ{% else %}Type{% endif %}</th>
                         <th class="eb-planned-training-col">{% if CURRENT_LANGUAGE == "cs" %}Tr&eacute;nink{% else %}Training{% endif %}</th>
                         <th class="eb-planned-notes-col">{% if CURRENT_LANGUAGE == "cs" %}Pozn&aacute;mky tren&eacute;ra{% else %}Coach notes{% endif %}</th>
                       </tr>
@@ -51,8 +53,18 @@
                       <tr>
                         <td class="eb-planned-date-col">{{ t.date|date:"j.n."|default:"" }}</td>
                         <td class="eb-planned-day-col">{{ t.day_label|default:"" }}</td>
+                        <td class="eb-planned-type-col">
+                          {% if plan_editable and t.planned_id %}
+                            <select class="form-select form-select-sm eb-inline-select" data-training-id="{{ t.planned_id }}" data-field="session_type">
+                              <option value="RUN" {% if t.session_type == "RUN" %}selected{% endif %}>Run</option>
+                              <option value="WORKOUT" {% if t.session_type == "WORKOUT" %}selected{% endif %}>Workout</option>
+                            </select>
+                          {% else %}
+                            {% if t.session_type == "WORKOUT" %}Workout{% else %}Run{% endif %}
+                          {% endif %}
+                        </td>
                         <td class="eb-planned-training-col">
-                          {% if plan_editable and t.planned_id and t.item_count == 1 %}
+                          {% if plan_editable and t.planned_id %}
                             <div
                               class="eb-inline-edit"
                               contenteditable="true"
@@ -64,7 +76,7 @@
                           {% endif %}
                         </td>
                         <td class="eb-planned-notes-col">
-                          {% if plan_editable and t.planned_id and t.item_count == 1 %}
+                          {% if plan_editable and t.planned_id %}
                             <div
                               class="eb-inline-edit"
                               contenteditable="true"
@@ -78,7 +90,7 @@
                       </tr>
                       {% empty %}
                       <tr>
-                        <td colspan="4" class="text-muted small">
+                        <td colspan="5" class="text-muted small">
                           {% if CURRENT_LANGUAGE == "cs" %}V tomto t&yacute;dnu zat&iacute;m nejsou &#382;&aacute;dn&eacute; pl&aacute;novan&eacute; tr&eacute;ninky.{% else %}No planned trainings in this week yet.{% endif %}
                         </td>
                       </tr>
@@ -86,7 +98,7 @@
                     </tbody>
                     <tfoot class="table-light eb-planned-week-footer">
                       <tr>
-                        <th colspan="2">&nbsp;</th>
+                        <th colspan="3">&nbsp;</th>
                         <th class="eb-planned-week-total-km">{{ w.planned_total_km_text }}</th>
                         <th>&nbsp;</th>
                       </tr>
@@ -120,35 +132,35 @@
                       {% for r in w.completed_rows %}
                       <tr>
                         <td>
-                          {% if completed_editable and r.planned_id and r.item_count == 1 %}
+                          {% if completed_editable and r.planned_id %}
                             <div class="eb-completed-inline-edit" contenteditable="true" data-training-id="{{ r.planned_id }}" data-field="km">{{ r.km }}</div>
                           {% else %}
                             {{ r.km }}
                           {% endif %}
                         </td>
                         <td>
-                          {% if completed_editable and r.planned_id and r.item_count == 1 %}
+                          {% if completed_editable and r.planned_id %}
                             <div class="eb-completed-inline-edit" contenteditable="true" data-training-id="{{ r.planned_id }}" data-field="min">{{ r.min }}</div>
                           {% else %}
                             {{ r.min }}
                           {% endif %}
                         </td>
                         <td>
-                          {% if completed_editable and r.planned_id and r.item_count == 1 %}
+                          {% if completed_editable and r.planned_id %}
                             <div class="eb-completed-inline-edit" contenteditable="true" data-training-id="{{ r.planned_id }}" data-field="third">{{ r.third }}</div>
                           {% else %}
                             {{ r.third }}
                           {% endif %}
                         </td>
                         <td>
-                          {% if completed_editable and r.planned_id and r.item_count == 1 %}
+                          {% if completed_editable and r.planned_id %}
                             <div class="eb-completed-inline-edit" contenteditable="true" data-training-id="{{ r.planned_id }}" data-field="avg_hr">{{ r.avg_hr|default:"-" }}</div>
                           {% else %}
                             {{ r.avg_hr|default:"-" }}
                           {% endif %}
                         </td>
                         <td>
-                          {% if completed_editable and r.planned_id and r.item_count == 1 %}
+                          {% if completed_editable and r.planned_id %}
                             <div class="eb-completed-inline-edit" contenteditable="true" data-training-id="{{ r.planned_id }}" data-field="max_hr">{{ r.max_hr|default:"-" }}</div>
                           {% else %}
                             {{ r.max_hr|default:"-" }}

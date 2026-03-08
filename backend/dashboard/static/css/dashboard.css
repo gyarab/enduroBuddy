@@ -81,6 +81,17 @@
   padding-right: 1rem;
 }
 
+.eb-col-planned th.eb-planned-type-col,
+.eb-col-planned td.eb-planned-type-col {
+  min-width: 118px;
+  width: 118px;
+  padding-right: 0.8rem;
+}
+
+.eb-planned-type-col .eb-inline-select {
+  min-width: 110px;
+}
+
 .eb-col-planned th.eb-planned-training-col,
 .eb-col-planned td.eb-planned-training-col {
   width: var(--eb-planned-training-col-width);
