@@ -794,6 +794,117 @@ body.eb-coach-page main {
   box-shadow: inset 0 0 0 2px #6ea8fe;
 }
 
+.eb-col-planned td.eb-planned-training-col {
+  position: relative;
+  padding-right: 30px;
+}
+
+.eb-planned-row-km-indicator-wrap {
+  position: absolute;
+  right: 8px;
+  top: 7px;
+}
+
+.eb-planned-row-km-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  display: inline-block;
+  background: #6c757d;
+}
+
+.eb-planned-row-km-popover {
+  position: absolute;
+  right: 0;
+  top: 18px;
+  z-index: 20;
+  min-width: 250px;
+  max-width: 360px;
+  border-radius: 10px;
+  border: 1px solid #d4dbe3;
+  background: #fff;
+  color: #212529;
+  font-size: 0.76rem;
+  line-height: 1.35;
+  white-space: normal;
+  overflow: hidden;
+  box-shadow: 0 10px 24px rgba(16, 24, 40, 0.16);
+}
+
+.eb-planned-row-km-popover::before {
+  content: "";
+  position: absolute;
+  top: -6px;
+  right: 8px;
+  width: 10px;
+  height: 10px;
+  background: #fff;
+  border-left: 1px solid #d4dbe3;
+  border-top: 1px solid #d4dbe3;
+  transform: rotate(45deg);
+}
+
+.eb-planned-row-km-popover-head {
+  padding: 6px 8px;
+  font-size: 0.69rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #3f4a56;
+  background: #f5f7fa;
+  border-bottom: 1px solid #e5eaf0;
+}
+
+.eb-planned-row-km-popover-body {
+  padding: 8px 9px;
+}
+
+.eb-planned-km-line + .eb-planned-km-line {
+  margin-top: 4px;
+}
+
+.eb-km-confidence-high {
+  color: #198754;
+}
+
+.eb-km-confidence-medium {
+  color: #b58105;
+}
+
+.eb-km-confidence-low {
+  color: #dc3545;
+}
+
+.eb-km-confidence-high .eb-planned-row-km-dot {
+  background: #198754;
+}
+
+.eb-km-confidence-medium .eb-planned-row-km-dot {
+  background: #b58105;
+}
+
+.eb-km-confidence-low .eb-planned-row-km-dot {
+  background: #dc3545;
+}
+
+.eb-km-confidence-high .eb-planned-row-km-popover-head {
+  background: #eaf7ef;
+  color: #166d45;
+}
+
+.eb-km-confidence-medium .eb-planned-row-km-popover-head {
+  background: #fff7e7;
+  color: #8f6900;
+}
+
+.eb-km-confidence-low .eb-planned-row-km-popover-head {
+  background: #fdecec;
+  color: #a1262d;
+}
+
 @media (max-width: 991.98px) {
   body.eb-coach-page {
     overflow: auto;
