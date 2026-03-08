@@ -219,7 +219,50 @@ class GarminSyncAudit(models.Model):
 
     def __str__(self):
         return f"{self.user} | {self.action} | {self.status}"
-        
+
+
+class ImportJob(models.Model):
+    class Kind(models.TextChoices):
+        GARMIN_SYNC = "GARMIN_SYNC", "Garmin sync"
+
+    class Status(models.TextChoices):
+        QUEUED = "QUEUED", "Queued"
+        RUNNING = "RUNNING", "Running"
+        SUCCESS = "SUCCESS", "Success"
+        ERROR = "ERROR", "Error"
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="import_jobs",
+    )
+    kind = models.CharField(max_length=32, choices=Kind.choices, db_index=True)
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.QUEUED, db_index=True)
+    window = models.CharField(max_length=20, blank=True, default="")
+    total_count = models.PositiveIntegerField(default=0)
+    processed_count = models.PositiveIntegerField(default=0)
+    imported_count = models.PositiveIntegerField(default=0)
+    skipped_count = models.PositiveIntegerField(default=0)
+    message = models.CharField(max_length=255, blank=True, default="")
+    created_at = models.DateTimeField(auto_now_add=True)
+    started_at = models.DateTimeField(null=True, blank=True)
+    finished_at = models.DateTimeField(null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at", "-id"]
+        constraints = [
+            UniqueConstraint(
+                fields=["user", "kind"],
+                condition=Q(status__in=["QUEUED", "RUNNING"]),
+                name="uniq_active_import_job_per_user_kind",
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.user} | {self.kind} | {self.status}"
+
+
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
 def create_user_profile(sender, instance, created, **kwargs):
     if created:

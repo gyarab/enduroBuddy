@@ -266,7 +266,7 @@ def revoke_garmin_for_user(user) -> bool:
     return True
 
 
-def sync_garmin_for_user(user, *, window: str) -> tuple[int, int, GarminConnection]:
+def sync_garmin_for_user(user, *, window: str, progress_callback=None) -> tuple[int, int, GarminConnection]:
     connection = GarminConnection.objects.filter(user=user, is_active=True).first()
     if connection is None:
         raise GarminImportError("Garmin account is not connected.")
@@ -279,12 +279,29 @@ def sync_garmin_for_user(user, *, window: str) -> tuple[int, int, GarminConnecti
         from_day=from_day,
         to_day=to_day,
     )
+    if callable(progress_callback):
+        progress_callback(
+            stage="downloading_done",
+            total=0,
+            processed=0,
+            imported=0,
+            skipped=0,
+        )
 
     selected_payloads = _select_payloads_for_import(user=user, payloads=result.payloads)
+    total_payloads = len(selected_payloads)
+    if callable(progress_callback):
+        progress_callback(
+            stage="importing",
+            total=total_payloads,
+            processed=0,
+            imported=0,
+            skipped=0,
+        )
 
     imported = 0
     skipped = 0
-    for payload in selected_payloads:
+    for index, payload in enumerate(selected_payloads, start=1):
         did_import = import_fit_bytes_for_user(
             user=user,
             fit_bytes=payload.fit_bytes,
@@ -294,6 +311,14 @@ def sync_garmin_for_user(user, *, window: str) -> tuple[int, int, GarminConnecti
             imported += 1
         else:
             skipped += 1
+        if callable(progress_callback):
+            progress_callback(
+                stage="importing",
+                total=total_payloads,
+                processed=index,
+                imported=imported,
+                skipped=skipped,
+            )
 
     connection.encrypted_tokenstore = encrypt_tokenstore(result.refreshed_tokenstore)
     connection.last_sync_at = timezone.now()

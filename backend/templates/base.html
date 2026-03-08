@@ -87,12 +87,43 @@
       margin-top: 6px;
       flex: 0 0 auto;
     }
+    .eb-notification-spinner {
+      width: 12px;
+      height: 12px;
+      margin-top: 4px;
+      border-width: 2px;
+      flex: 0 0 auto;
+    }
     .eb-notification-item:not(.is-unread) .eb-notification-dot {
       display: none;
     }
     .eb-notification-text {
       min-width: 0;
       flex: 1 1 auto;
+    }
+    .eb-notification-content {
+      min-width: 0;
+      flex: 1 1 auto;
+      display: grid;
+      gap: 4px;
+    }
+    .eb-notification-meta {
+      font-size: .72rem;
+      color: #4b5563;
+      display: none;
+    }
+    .eb-notification-progress {
+      height: 5px;
+      border-radius: 999px;
+      background: #e5e7eb;
+      overflow: hidden;
+      display: none;
+    }
+    .eb-notification-progress-bar {
+      height: 100%;
+      width: 0%;
+      background: #0d6efd;
+      transition: width .2s ease;
     }
     .eb-bell-toast {
       z-index: 1200;
@@ -481,13 +512,102 @@
     const unreadItems = Array.from(dropdownRoot.querySelectorAll("[data-notification-item].is-unread"));
     const badge = bellBtn.querySelector(".eb-notification-badge");
     const toastTimers = new Map();
+    const activeToasts = new Map();
     let markReadTimerId = null;
+
+    const ensureBadge = () => {
+      if (badge) return badge;
+      const created = document.createElement("span");
+      created.className = "eb-notification-badge";
+      bellBtn.appendChild(created);
+      return created;
+    };
 
     const syncUnreadCount = () => {
       const count = dropdownRoot.querySelectorAll("[data-notification-item].is-unread").length;
-      if (!badge) return;
-      badge.textContent = String(count);
-      badge.style.display = count > 0 ? "inline-block" : "none";
+      const targetBadge = ensureBadge();
+      targetBadge.textContent = String(count);
+      targetBadge.style.display = count > 0 ? "inline-block" : "none";
+    };
+
+    const ensureNotificationList = () => {
+      let list = dropdownRoot.querySelector(".eb-notification-list");
+      if (list) return list;
+      const menu = dropdownRoot.querySelector(".eb-notification-dropdown");
+      if (!menu) return null;
+      list = document.createElement("div");
+      list.className = "eb-notification-list";
+      menu.appendChild(list);
+      return list;
+    };
+
+    const upsertNotificationDetails = (item, { statusLabel = "", progressPercent = null } = {}) => {
+      let meta = item.querySelector(".eb-notification-meta");
+      if (!meta) {
+        meta = document.createElement("div");
+        meta.className = "eb-notification-meta";
+        item.appendChild(meta);
+      }
+      const normalizedStatus = (statusLabel || "").trim();
+      meta.textContent = normalizedStatus;
+      meta.style.display = normalizedStatus ? "block" : "none";
+
+      let progress = item.querySelector(".eb-notification-progress");
+      if (!progress) {
+        progress = document.createElement("div");
+        progress.className = "eb-notification-progress";
+        progress.innerHTML = '<div class="eb-notification-progress-bar"></div>';
+        item.appendChild(progress);
+      }
+      const bar = progress.querySelector(".eb-notification-progress-bar");
+      const hasProgress = Number.isFinite(Number(progressPercent));
+      if (hasProgress) {
+        const pct = Math.max(0, Math.min(100, Number(progressPercent)));
+        progress.style.display = "block";
+        if (bar) bar.style.width = `${pct}%`;
+      } else {
+        progress.style.display = "none";
+        if (bar) bar.style.width = "0%";
+      }
+    };
+
+    const buildNotificationItem = ({
+      text,
+      tone = "success",
+      unread = true,
+      spinner = false,
+      statusLabel = "",
+      progressPercent = null,
+    }) => {
+      const item = document.createElement("div");
+      item.className = `eb-notification-item eb-notification-item--${tone}`;
+      item.setAttribute("data-notification-item", "1");
+      if (unread) {
+        item.classList.add("is-unread");
+      }
+
+      if (spinner) {
+        const spinnerEl = document.createElement("span");
+        spinnerEl.className = "spinner-border spinner-border-sm text-primary eb-notification-spinner";
+        spinnerEl.setAttribute("aria-hidden", "true");
+        item.appendChild(spinnerEl);
+      } else {
+        const dot = document.createElement("span");
+        dot.className = "eb-notification-dot";
+        dot.setAttribute("aria-hidden", "true");
+        item.appendChild(dot);
+      }
+
+      const content = document.createElement("div");
+      content.className = "eb-notification-content";
+
+      const textEl = document.createElement("span");
+      textEl.className = "eb-notification-text";
+      textEl.textContent = text || "";
+      content.appendChild(textEl);
+      item.appendChild(content);
+      upsertNotificationDetails(content, { statusLabel, progressPercent });
+      return item;
     };
 
     const ensureToastStack = () => {
@@ -520,35 +640,180 @@
       if (!stack) return;
       toastTimers.forEach((timerId) => window.clearTimeout(timerId));
       toastTimers.clear();
+      activeToasts.clear();
       stack.remove();
+    };
+
+    const hideToastElement = (toast) => {
+      if (!toast) return;
+      const timerId = toastTimers.get(toast);
+      if (timerId) {
+        window.clearTimeout(timerId);
+        toastTimers.delete(toast);
+      }
+      toast.classList.remove("show");
+      toast.classList.add("hide");
+      window.setTimeout(() => {
+        if (toast.dataset.toastId && activeToasts.get(toast.dataset.toastId) === toast) {
+          activeToasts.delete(toast.dataset.toastId);
+        }
+        toast.remove();
+        const stack = document.getElementById("notificationBellToastStack");
+        if (stack && !stack.children.length) {
+          stack.remove();
+        }
+      }, 280);
+    };
+
+    const showToastWithText = (text, { tone = "success", persistent = false, toastId = "" } = {}) => {
+      if (!text) return null;
+      const stack = ensureToastStack();
+      positionToastStack();
+
+      const existing = toastId ? activeToasts.get(toastId) : null;
+      if (existing) {
+        const textEl = existing.querySelector(".eb-notification-text");
+        if (textEl) textEl.textContent = text;
+        const hasSpinner = Boolean(existing.querySelector(".eb-notification-spinner"));
+        if (persistent && !hasSpinner) {
+          const dot = existing.querySelector(".eb-notification-dot");
+          if (dot) dot.remove();
+          const spinnerEl = document.createElement("span");
+          spinnerEl.className = "spinner-border spinner-border-sm text-primary eb-notification-spinner";
+          spinnerEl.setAttribute("aria-hidden", "true");
+          existing.insertBefore(spinnerEl, existing.firstChild);
+        }
+        if (!persistent && hasSpinner) {
+          const spinnerEl = existing.querySelector(".eb-notification-spinner");
+          if (spinnerEl) spinnerEl.remove();
+          const dot = document.createElement("span");
+          dot.className = "eb-notification-dot";
+          dot.setAttribute("aria-hidden", "true");
+          existing.insertBefore(dot, existing.firstChild);
+        }
+        if (!persistent) {
+          const hideTimerId = window.setTimeout(() => hideToastElement(existing), 5000);
+          toastTimers.set(existing, hideTimerId);
+        }
+        return existing;
+      }
+
+      const toast = document.createElement("div");
+      toast.className = "eb-bell-toast";
+      const iconHtml = persistent
+        ? '<span class="spinner-border spinner-border-sm text-primary eb-notification-spinner" aria-hidden="true"></span>'
+        : '<span class="eb-notification-dot" aria-hidden="true"></span>';
+      toast.innerHTML = `${iconHtml}<span class="eb-notification-text"></span>`;
+      toast.querySelector(".eb-notification-text").textContent = text;
+      if (toastId) {
+        toast.dataset.toastId = toastId;
+        activeToasts.set(toastId, toast);
+      }
+      stack.appendChild(toast);
+      window.requestAnimationFrame(() => toast.classList.add("show"));
+
+      if (!persistent) {
+        const hideTimerId = window.setTimeout(() => hideToastElement(toast), 5000);
+        toastTimers.set(toast, hideTimerId);
+      }
+      return toast;
     };
 
     const showBellToast = (item, delayMs) => {
       window.setTimeout(() => {
         const textEl = item.querySelector(".eb-notification-text");
         const text = textEl ? textEl.textContent.trim() : item.textContent.trim();
-        if (!text) return;
-        const stack = ensureToastStack();
-        positionToastStack();
-        const toast = document.createElement("div");
-        toast.className = "eb-bell-toast";
-        toast.innerHTML = '<span class="eb-notification-dot" aria-hidden="true"></span><span class="eb-notification-text"></span>';
-        toast.querySelector(".eb-notification-text").textContent = text;
-        stack.appendChild(toast);
-        window.requestAnimationFrame(() => toast.classList.add("show"));
-        const hideTimerId = window.setTimeout(() => {
-          toast.classList.remove("show");
-          toast.classList.add("hide");
-          window.setTimeout(() => {
-            toastTimers.delete(toast);
-            toast.remove();
-            if (!stack.children.length) {
-              stack.remove();
-            }
-          }, 280);
-        }, 5000);
-        toastTimers.set(toast, hideTimerId);
+        showToastWithText(text, { tone: "success", persistent: false });
       }, delayMs);
+    };
+
+    const addNotification = ({
+      id,
+      text,
+      tone = "success",
+      unread = true,
+      persistent = false,
+      statusLabel = "",
+      progressPercent = null,
+    }) => {
+      const list = ensureNotificationList();
+      if (!list) return { item: null, toast: null };
+
+      const itemId = id || `n-${Date.now()}`;
+      const existingItem = list.querySelector(`[data-eb-notification-id="${itemId}"]`);
+      if (existingItem) {
+        const textEl = existingItem.querySelector(".eb-notification-text");
+        if (textEl) textEl.textContent = text;
+        const content = existingItem.querySelector(".eb-notification-content");
+        if (content) {
+          upsertNotificationDetails(content, { statusLabel, progressPercent });
+        }
+        return { item: existingItem, toast: activeToasts.get(itemId) || null };
+      }
+
+      const item = buildNotificationItem({
+        text,
+        tone,
+        unread,
+        spinner: persistent,
+        statusLabel,
+        progressPercent,
+      });
+      item.dataset.ebNotificationId = itemId;
+      list.prepend(item);
+      syncUnreadCount();
+
+      const toast = showToastWithText(text, { tone, persistent, toastId: itemId });
+      return { item, toast };
+    };
+
+    const updateNotification = ({
+      id,
+      text,
+      tone = "success",
+      persistent = false,
+      statusLabel = "",
+      progressPercent = null,
+    }) => {
+      if (!id) return;
+      const list = ensureNotificationList();
+      const item = list ? list.querySelector(`[data-eb-notification-id="${id}"]`) : null;
+      if (item) {
+        item.classList.remove("eb-notification-item--success", "eb-notification-item--danger", "eb-notification-item--warning", "eb-notification-item--secondary");
+        item.classList.add(`eb-notification-item--${tone}`);
+        const textEl = item.querySelector(".eb-notification-text");
+        if (textEl) textEl.textContent = text;
+        const content = item.querySelector(".eb-notification-content");
+        if (content) {
+          upsertNotificationDetails(content, { statusLabel, progressPercent });
+        }
+
+        const currentSpinner = item.querySelector(".eb-notification-spinner");
+        const currentDot = item.querySelector(".eb-notification-dot");
+        if (persistent && !currentSpinner) {
+          if (currentDot) currentDot.remove();
+          const spinnerEl = document.createElement("span");
+          spinnerEl.className = "spinner-border spinner-border-sm text-primary eb-notification-spinner";
+          spinnerEl.setAttribute("aria-hidden", "true");
+          item.insertBefore(spinnerEl, item.firstChild);
+        }
+        if (!persistent && !currentDot) {
+          if (currentSpinner) currentSpinner.remove();
+          const dot = document.createElement("span");
+          dot.className = "eb-notification-dot";
+          dot.setAttribute("aria-hidden", "true");
+          item.insertBefore(dot, item.firstChild);
+        }
+      }
+      showToastWithText(text, { tone, persistent, toastId: id });
+      if (!persistent) {
+        const toast = activeToasts.get(id);
+        if (toast) {
+          window.setTimeout(() => {
+            if (toast && toast.isConnected) hideToastElement(toast);
+          }, 1200);
+        }
+      }
     };
 
     unreadItems.forEach((item, index) => {
@@ -580,6 +845,12 @@
     window.addEventListener("scroll", positionToastStack, { passive: true });
 
     syncUnreadCount();
+
+    window.EB = window.EB || {};
+    window.EB.notifications = {
+      addNotification,
+      updateNotification,
+    };
   })();
 </script>
 {% block extra_js %}{% endblock %}
