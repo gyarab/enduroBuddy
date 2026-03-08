@@ -8,6 +8,7 @@ urlpatterns = [
     path("plans/add-second-phase/", views.athlete_add_second_phase_training, name="athlete_add_second_phase_training"),
     path("plans/remove-second-phase/", views.athlete_remove_second_phase_training, name="athlete_remove_second_phase_training"),
     path("plans/completed/update/", views.athlete_update_completed_training, name="athlete_update_completed_training"),
+    path("legend/update/", views.athlete_update_legend_state, name="athlete_update_legend_state"),
     path("coach/plans/", views.coach_training_plans, name="coach_training_plans"),
     path("coach/plans/update/", views.coach_update_planned_training, name="coach_update_planned_training"),
     path("coach/plans/add-second-phase/", views.coach_add_second_phase_training, name="coach_add_second_phase_training"),

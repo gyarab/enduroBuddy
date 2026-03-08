@@ -2,12 +2,84 @@ from __future__ import annotations
 
 import secrets
 from datetime import timedelta
+from typing import Any
 
 from django.db import transaction
 from django.utils import timezone
 
 from accounts.models import CoachAthlete, Profile, Role, TrainingGroup, TrainingGroupAthlete, TrainingGroupInvite
 from training.models import CompletedTraining, PlannedTraining
+
+
+_LEGEND_ZONE_KEYS = {"1", "2", "3", "4", "5"}
+_LEGEND_DISTANCE_VALUES = {
+    "800m",
+    "1000m",
+    "1 mile",
+    "1500m",
+    "2 miles",
+    "3000m",
+    "3k",
+    "5000m",
+    "5k",
+    "10000m",
+    "10k",
+    "half marathon",
+    "půlmaraton",
+    "marathon",
+    "maraton",
+}
+
+
+def sanitize_legend_state(raw_state: Any) -> dict[str, Any]:
+    state = raw_state if isinstance(raw_state, dict) else {}
+    cleaned: dict[str, Any] = {}
+
+    raw_zones = state.get("zones")
+    if isinstance(raw_zones, dict):
+        zones: dict[str, dict[str, str]] = {}
+        for key, value in raw_zones.items():
+            zone_key = str(key).strip()
+            if zone_key not in _LEGEND_ZONE_KEYS or not isinstance(value, dict):
+                continue
+            zone_from = str(value.get("from", "")).strip()[:3]
+            zone_to = str(value.get("to", "")).strip()[:3]
+            if zone_from and zone_to and zone_from.isdigit() and zone_to.isdigit():
+                zones[zone_key] = {"from": zone_from, "to": zone_to}
+        if zones:
+            cleaned["zones"] = zones
+
+    aerobic = str(state.get("aerobic_threshold", "")).strip()[:3]
+    anaerobic = str(state.get("anaerobic_threshold", "")).strip()[:3]
+    if aerobic.isdigit():
+        cleaned["aerobic_threshold"] = aerobic
+    if anaerobic.isdigit():
+        cleaned["anaerobic_threshold"] = anaerobic
+
+    raw_prs = state.get("prs")
+    if isinstance(raw_prs, list):
+        seen_distances = set()
+        prs = []
+        for item in raw_prs:
+            if not isinstance(item, dict):
+                continue
+            distance = str(item.get("distance", "")).strip()
+            if not distance:
+                continue
+            distance_key = distance.lower()
+            if distance_key not in _LEGEND_DISTANCE_VALUES or distance_key in seen_distances:
+                continue
+            seen_distances.add(distance_key)
+            prs.append(
+                {
+                    "distance": distance[:40],
+                    "time": str(item.get("time", "")).strip()[:20],
+                }
+            )
+        if prs:
+            cleaned["prs"] = prs
+
+    return cleaned
 
 def _coach_accessible_athlete_ids(*, coach_user) -> set[int]:
     accessible_ids = set(
