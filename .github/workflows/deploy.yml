@@ -5,7 +5,7 @@ on:
 
 jobs:
   deploy:
-    if: github.repository == 'vojtecholcman/enduroBuddy-private'
+    if: false
     runs-on: [self-hosted, Linux, X64]
 
     steps:
