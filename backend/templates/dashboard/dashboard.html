@@ -77,7 +77,13 @@
           </form>
           {% endif %}
 
-          <form method="post" class="eb-import-block eb-import-block-sync">
+          <form
+            method="post"
+            class="eb-import-block eb-import-block-sync"
+            id="garminSyncForm"
+            data-garmin-sync-start-url="{% url 'garmin_sync_start' %}"
+            data-garmin-job-status-url-template="{% url 'import_job_status' 0 %}"
+          >
             {% csrf_token %}
             <input type="hidden" name="import_source" value="garmin_sync">
             <div class="eb-import-block-head">
@@ -92,7 +98,15 @@
                 <option value="last_30_days" selected>Posledn&iacute;ch 30 dn&iacute;</option>
                 <option value="all">V&scaron;e</option>
               </select>
-              <button class="btn btn-success btn-sm" type="submit" {% if not garmin_connection %}disabled{% endif %}>Sync Garmin</button>
+              <button
+                class="btn btn-success btn-sm d-inline-flex align-items-center gap-2"
+                id="garminSyncSubmitButton"
+                type="submit"
+                {% if not garmin_connection %}disabled{% endif %}
+              >
+                <span class="spinner-border spinner-border-sm d-none" id="garminSyncSpinner" role="status" aria-hidden="true"></span>
+                <span id="garminSyncButtonLabel">Sync Garmin</span>
+              </button>
             </div>
           </form>
 
@@ -286,7 +300,9 @@
     </div>
   </div>
 
-  {% include "dashboard/_month_cards.html" with month_state_key=month_state_key add_month_enabled=add_month_enabled add_month_action=add_month_action add_month_athlete_id=add_month_athlete_id plan_editable=plan_editable plan_update_url=plan_update_url completed_editable=completed_editable completed_update_url=completed_update_url %}
+  <div id="dashboardMonthCardsRoot">
+    {% include "dashboard/_month_cards.html" with month_state_key=month_state_key add_month_enabled=add_month_enabled add_month_action=add_month_action add_month_athlete_id=add_month_athlete_id plan_editable=plan_editable plan_update_url=plan_update_url completed_editable=completed_editable completed_update_url=completed_update_url %}
+  </div>
 </div>
 
 {% include "dashboard/_assets.html" %}

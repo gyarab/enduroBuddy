@@ -2,23 +2,176 @@ from __future__ import annotations
 
 import json
 import logging
+from datetime import date, timedelta
 
 from django.conf import settings
 from django.contrib import messages
+from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
+from django.views.decorators.http import require_GET, require_POST
 
-from accounts.models import CoachAthlete, CoachJoinRequest, GarminConnection, GarminSyncAudit
+from accounts.models import CoachAthlete, CoachJoinRequest, GarminConnection, GarminSyncAudit, ImportJob
 from accounts.services.garmin_secret_store import GarminSecretStoreError
+from activities.models import Activity, ActivityImportLedger
 from activities.services.garmin_importer import GarminImportError
 from dashboard.services.imports import GARMIN_RANGE_OPTIONS, audit_garmin, connect_garmin_for_user, revoke_garmin_for_user
-from dashboard.services.month_cards import add_next_month_for_athlete, build_month_cards_for_athlete, is_coach
-from dashboard.services.tasks import run_fit_import, run_garmin_sync
+from dashboard.services.month_cards import add_next_month_for_athlete, build_month_cards_for_athlete, is_coach, resolve_week_for_day
+from dashboard.services.tasks import enqueue_garmin_sync_job, run_fit_import, run_garmin_sync
+from training.models import PlannedTraining
 from .views_shared import _resolve_coach_from_code, maybe_add_test_notifications, sanitize_legend_state
 
 logger = logging.getLogger(__name__)
+
+
+def _job_status_label(status: str) -> str:
+    return {
+        ImportJob.Status.QUEUED: "Queued",
+        ImportJob.Status.RUNNING: "Running",
+        ImportJob.Status.SUCCESS: "Done",
+        ImportJob.Status.ERROR: "Error",
+    }.get(status, status or "Unknown")
+
+
+def _job_progress_percent(job: ImportJob) -> int:
+    if job.status == ImportJob.Status.SUCCESS:
+        return 100
+    if job.status == ImportJob.Status.ERROR:
+        return min(99, max(0, int((job.processed_count / max(1, job.total_count)) * 100))) if job.total_count else 0
+    if job.status == ImportJob.Status.QUEUED:
+        return 0
+    if job.total_count > 0:
+        return min(99, max(0, int((job.processed_count / job.total_count) * 100)))
+    return 10 if (job.started_at or job.status == ImportJob.Status.RUNNING) else 0
+
+
+def _serialize_import_job(job: ImportJob) -> dict:
+    done = job.status in {ImportJob.Status.SUCCESS, ImportJob.Status.ERROR}
+    return {
+        "id": job.id,
+        "status": job.status,
+        "status_label": _job_status_label(job.status),
+        "progress_percent": _job_progress_percent(job),
+        "window": job.window,
+        "message": job.message,
+        "total_count": job.total_count,
+        "processed_count": job.processed_count,
+        "imported_count": job.imported_count,
+        "skipped_count": job.skipped_count,
+        "started_at": job.started_at.isoformat() if job.started_at else None,
+        "finished_at": job.finished_at.isoformat() if job.finished_at else None,
+        "done": done,
+    }
+
+
+def _queue_garmin_sync_job_for_user(*, user, selected_range: str) -> tuple[ImportJob, bool]:
+    existing_job = (
+        ImportJob.objects.filter(
+            user=user,
+            kind=ImportJob.Kind.GARMIN_SYNC,
+            status__in=[ImportJob.Status.QUEUED, ImportJob.Status.RUNNING],
+        )
+        .order_by("-id")
+        .first()
+    )
+    if existing_job:
+        return existing_job, False
+
+    job = ImportJob.objects.create(
+        user=user,
+        kind=ImportJob.Kind.GARMIN_SYNC,
+        status=ImportJob.Status.QUEUED,
+        window=selected_range,
+        message="Synchronizace Garmin čeká na spuštění.",
+    )
+    enqueue_garmin_sync_job(job.id)
+    return job, True
+
+
+def _maybe_run_test_garmin_cleanup(request):
+    if not settings.DEBUG:
+        return None
+    if "test_garmin_import" not in request.GET:
+        return None
+    flag = (request.GET.get("test_garmin_import") or "").strip().lower()
+    if flag and flag not in {"1", "true", "yes", "on"}:
+        return None
+
+    is_admin_like = (
+        request.user.username.lower() == "admin"
+        or bool(getattr(request.user, "is_superuser", False))
+        or bool(getattr(request.user, "is_staff", False))
+    )
+    if not is_admin_like:
+        messages.error(request, "test_garmin_import je povoleny jen pro uzivatele admin.")
+        return redirect("dashboard_home")
+
+    User = get_user_model()
+    admin_user = User.objects.filter(username="admin").first()
+    if admin_user is None:
+        messages.error(request, "Uzivatel admin nebyl nalezen.")
+        return redirect("dashboard_home")
+
+    target_year = date.today().year
+    from_day = date(target_year, 3, 2)
+    to_day = date(target_year, 3, 8)
+
+    planned_ids_qs = PlannedTraining.objects.filter(
+        week__training_month__athlete=admin_user,
+        date__range=(from_day, to_day),
+    ).values_list("id", flat=True)
+    planned_ids = list(planned_ids_qs)
+
+    deleted_activity_count = Activity.objects.filter(
+        athlete=admin_user,
+        planned_training_id__in=planned_ids,
+    ).delete()[0]
+    deleted_activity_count += Activity.objects.filter(
+        athlete=admin_user,
+        started_at__date__range=(from_day, to_day),
+    ).delete()[0]
+
+    deleted_planned_count = PlannedTraining.objects.filter(id__in=planned_ids).delete()[0]
+    deleted_ledger_count = ActivityImportLedger.objects.filter(athlete=admin_user).delete()[0]
+    recreated_week = resolve_week_for_day(admin_user, from_day)
+    day_labels = ["Po", "Ut", "St", "Ct", "Pa", "So", "Ne"]
+    existing_days = set(
+        PlannedTraining.objects.filter(
+            week=recreated_week,
+            date__range=(from_day, to_day),
+            order_in_day=1,
+        ).values_list("date", flat=True)
+    )
+    recreated_days = []
+    for offset, day_label in enumerate(day_labels):
+        run_day = from_day + timedelta(days=offset)
+        if run_day in existing_days:
+            continue
+        recreated_days.append(
+            PlannedTraining(
+                week=recreated_week,
+                date=run_day,
+                order_in_day=1,
+                day_label=day_label,
+                title="",
+                notes="",
+            )
+        )
+    if recreated_days:
+        PlannedTraining.objects.bulk_create(recreated_days, batch_size=50)
+
+    messages.success(
+        request,
+        (
+            f"Test cleanup hotov ({from_day:%d.%m.%Y} - {to_day:%d.%m.%Y}): "
+            f"planned/completed {deleted_planned_count}, activity {deleted_activity_count}, ledger {deleted_ledger_count}. "
+            f"Tyden znovu vytvoren (index {recreated_week.week_index}, dnu {len(recreated_days)})."
+        ),
+    )
+    return redirect("dashboard_home")
+
 
 @login_required
 def home(request):
@@ -116,22 +269,30 @@ def home(request):
             if selected_range not in GARMIN_RANGE_OPTIONS:
                 selected_range = "last_30_days"
             try:
-                sync_result = run_garmin_sync(request.user, window=selected_range)
-                if sync_result is None:
-                    messages.success(request, "Garmin sync queued.")
+                is_ajax = request.headers.get("x-requested-with") == "XMLHttpRequest"
+                if is_ajax:
+                    _, is_new_job = _queue_garmin_sync_job_for_user(user=request.user, selected_range=selected_range)
+                    if is_new_job:
+                        messages.success(request, "Garmin sync queued.")
+                    else:
+                        messages.info(request, "Garmin sync už běží.")
                 else:
-                    imported, skipped, connection = sync_result
-                    audit_garmin(
-                        user=request.user,
-                        connection=connection,
-                        action=GarminSyncAudit.Action.SYNC,
-                        status=GarminSyncAudit.Status.SUCCESS,
-                        window=selected_range,
-                        imported_count=imported,
-                        skipped_count=skipped,
-                        message="Garmin sync finished.",
-                    )
-                    messages.success(request, f"Garmin sync finished. Imported: {imported}, skipped duplicates: {skipped}.")
+                    sync_result = run_garmin_sync(request.user, window=selected_range)
+                    if sync_result is None:
+                        messages.success(request, "Garmin sync queued.")
+                    else:
+                        imported, skipped, connection = sync_result
+                        audit_garmin(
+                            user=request.user,
+                            connection=connection,
+                            action=GarminSyncAudit.Action.SYNC,
+                            status=GarminSyncAudit.Status.SUCCESS,
+                            window=selected_range,
+                            imported_count=imported,
+                            skipped_count=skipped,
+                            message="Garmin sync finished.",
+                        )
+                        messages.success(request, f"Garmin sync finished. Imported: {imported}, skipped duplicates: {skipped}.")
             except (GarminImportError, GarminSecretStoreError) as exc:
                 audit_garmin(
                     user=request.user,
@@ -172,6 +333,10 @@ def home(request):
             else:
                 messages.error(request, "FIT import failed.")
         return redirect("dashboard_home")
+
+    cleanup_response = _maybe_run_test_garmin_cleanup(request)
+    if cleanup_response is not None:
+        return cleanup_response
 
     month_cards = build_month_cards_for_athlete(athlete=request.user, language_code=request.LANGUAGE_CODE)
     garmin_connection = GarminConnection.objects.filter(user=request.user, is_active=True).first()
@@ -226,3 +391,55 @@ def athlete_update_legend_state(request):
     profile.legend_state = next_state
     profile.save(update_fields=["legend_state"])
     return JsonResponse({"ok": True, "state": next_state})
+
+
+@login_required
+@require_POST
+def garmin_sync_start(request):
+    selected_range = request.POST.get("garmin_range", "last_30_days")
+    if selected_range not in GARMIN_RANGE_OPTIONS:
+        selected_range = "last_30_days"
+
+    if not GarminConnection.objects.filter(user=request.user, is_active=True).exists():
+        return JsonResponse({"ok": False, "error": "Garmin účet není připojen."}, status=400)
+
+    try:
+        job, is_new_job = _queue_garmin_sync_job_for_user(user=request.user, selected_range=selected_range)
+    except Exception:
+        logger.exception("Failed to queue Garmin sync for user_id=%s", request.user.id)
+        return JsonResponse({"ok": False, "error": "Synchronizaci se nepodařilo spustit."}, status=500)
+
+    return JsonResponse(
+        {
+            "ok": True,
+            "job_id": job.id,
+            "status": job.status,
+            "status_label": _job_status_label(job.status),
+            "progress_percent": _job_progress_percent(job),
+            "already_running": not is_new_job,
+            "message": job.message,
+        }
+    )
+
+
+@login_required
+@require_GET
+def import_job_status(request, job_id: int):
+    job = (
+        ImportJob.objects.filter(
+            id=job_id,
+            user=request.user,
+            kind=ImportJob.Kind.GARMIN_SYNC,
+        )
+        .order_by("-id")
+        .first()
+    )
+    if job is None:
+        return JsonResponse({"ok": False, "error": "Job nenalezen."}, status=404)
+
+    return JsonResponse(
+        {
+            "ok": True,
+            "job": _serialize_import_job(job),
+        }
+    )

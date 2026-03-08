@@ -11,9 +11,9 @@ from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
 
-from accounts.models import GarminConnection, GarminSyncAudit
+from accounts.models import GarminConnection, GarminSyncAudit, ImportJob
 from accounts.services.garmin_secret_store import encrypt_tokenstore
-from activities.models import Activity, ActivityFile, ActivityInterval
+from activities.models import Activity, ActivityFile, ActivityImportLedger, ActivityInterval
 from activities.services.garmin_importer import GarminDownloadResult, GarminFitPayload
 from activities.services.fit_parser import parse_fit_file
 from dashboard.services.imports import _resolve_planned_training
@@ -147,6 +147,78 @@ class DashboardFitImportTests(TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Test: Novy treninkovy plan je pripraven.")
         self.assertContains(resp, "Test: Garmin synchronizace bude spustena za chvili.")
+
+    def test_import_job_status_returns_progress_fields(self):
+        job = ImportJob.objects.create(
+            user=self.user,
+            kind=ImportJob.Kind.GARMIN_SYNC,
+            status=ImportJob.Status.RUNNING,
+            message="Garmin sync: processing 2/4 (52%).",
+            total_count=4,
+            processed_count=2,
+            imported_count=1,
+            skipped_count=1,
+        )
+
+        resp = self.client.get(reverse("import_job_status", kwargs={"job_id": job.id}))
+        self.assertEqual(resp.status_code, 200)
+        payload = resp.json()
+        self.assertTrue(payload["ok"])
+        self.assertEqual(payload["job"]["status"], ImportJob.Status.RUNNING)
+        self.assertEqual(payload["job"]["status_label"], "Running")
+        self.assertEqual(payload["job"]["progress_percent"], 50)
+        self.assertEqual(payload["job"]["total_count"], 4)
+        self.assertEqual(payload["job"]["processed_count"], 2)
+
+    @override_settings(DEBUG=True)
+    def test_test_garmin_import_query_cleans_admin_week_and_completed(self):
+        User = get_user_model()
+        admin = User.objects.create_user(username="admin", password="admin")
+        self.client.login(username="admin", password="admin")
+
+        year = timezone.localdate().year
+        run_day = date(year, 3, 4)
+        week = _resolve_week_for_day(admin, run_day)
+        planned = PlannedTraining.objects.create(
+            week=week,
+            date=run_day,
+            day_label="Wed",
+            title="Test run",
+            order_in_day=1,
+        )
+        activity = Activity.objects.create(
+            athlete=admin,
+            planned_training=planned,
+            started_at=timezone.make_aware(timezone.datetime(year, 3, 4, 8, 0, 0), timezone.get_current_timezone()),
+            title="Imported test",
+        )
+        CompletedTraining.objects.create(planned=planned, activity=activity, time_seconds=600, distance_m=2000)
+        ActivityImportLedger.objects.create(athlete=admin, checksum_sha256="a" * 64)
+
+        resp = self.client.get(reverse("dashboard_home"), {"test_garmin_import": "1"})
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(resp.url, reverse("dashboard_home"))
+
+        self.assertFalse(PlannedTraining.objects.filter(id=planned.id).exists())
+        self.assertFalse(CompletedTraining.objects.filter(planned_id=planned.id).exists())
+        self.assertFalse(Activity.objects.filter(id=activity.id).exists())
+        self.assertEqual(ActivityImportLedger.objects.filter(athlete=admin).count(), 0)
+        self.assertTrue(
+            TrainingWeek.objects.filter(
+                training_month__athlete=admin,
+                training_month__year=year,
+                training_month__month=3,
+                week_index=1,
+            ).exists()
+        )
+        self.assertEqual(
+            PlannedTraining.objects.filter(
+                week__training_month__athlete=admin,
+                date__range=(date(year, 3, 2), date(year, 3, 8)),
+                order_in_day=1,
+            ).count(),
+            7,
+        )
 
     def test_completed_rows_are_aggregated_by_day_and_sorted_by_activity_start(self):
         run_day = date(2026, 3, 3)
