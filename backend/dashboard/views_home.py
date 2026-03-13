@@ -468,6 +468,7 @@ def home(request):
             "legend_state_json": json.dumps(sanitize_legend_state(getattr(request.user.profile, "legend_state", {}))),
             "legend_editable": True,
             "legend_update_url": reverse("athlete_update_legend_state"),
+            "show_garmin_match_debug": settings.DEBUG and _is_admin_like(request.user),
         },
     )
 

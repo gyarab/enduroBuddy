@@ -16,7 +16,7 @@ from accounts.services.garmin_secret_store import encrypt_tokenstore
 from activities.models import Activity, ActivityFile, ActivityImportLedger, ActivityInterval
 from activities.services.garmin_importer import GarminDownloadResult, GarminFitPayload
 from activities.services.fit_parser import parse_fit_file
-from dashboard.services.imports import _resolve_planned_training
+from dashboard.services.imports import _resolve_planned_training, _select_payloads_for_import
 from dashboard.views import _resolve_week_for_day
 from training.models import CompletedTraining, PlannedTraining, TrainingMonth, TrainingWeek
 
@@ -408,6 +408,102 @@ class DashboardFitImportTests(TestCase):
         self.assertEqual(week_ctx.completed_total["km"], "8.00")
         self.assertEqual(week_ctx.completed_total["time"], "40")
 
+    def test_dashboard_renders_unplanned_activity_from_db_in_completed_rows(self):
+        run_day = date(2026, 3, 6)
+        _resolve_week_for_day(self.user, run_day)
+        tz = timezone.get_current_timezone()
+
+        Activity.objects.create(
+            athlete=self.user,
+            title="Neplanovany vyklus",
+            workout_type=Activity.WorkoutType.RUN,
+            started_at=timezone.make_aware(timezone.datetime(2026, 3, 6, 18, 30, 0), tz),
+            distance_m=5500,
+            duration_s=1650,
+            avg_pace_s_per_km=300,
+            avg_hr=148,
+            max_hr=161,
+        )
+
+        resp = self.client.get(reverse("dashboard_home"))
+        self.assertEqual(resp.status_code, 200)
+
+        week_ctx = resp.context["month_cards"][0]["weeks"][0]
+        rows = week_ctx.completed_rows
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]["km"], "5.50")
+        self.assertEqual(rows[0]["min"], "28")
+        self.assertEqual(rows[0]["third"], "Neplanovany vyklus | 5:00/km")
+        self.assertEqual(week_ctx.completed_total["km"], "5.50")
+        self.assertEqual(week_ctx.completed_total["time"], "28")
+
+    def test_run_day_with_planned_strides_keeps_pace_and_shows_finisher_hint(self):
+        run_day = date(2026, 3, 7)
+        week = _resolve_week_for_day(self.user, run_day)
+        tz = timezone.get_current_timezone()
+
+        planned = PlannedTraining.objects.create(
+            week=week,
+            date=run_day,
+            day_label="Sat",
+            title="10 km klus + 6-8x100m rovinky",
+            session_type=PlannedTraining.SessionType.RUN,
+            order_in_day=1,
+        )
+        activity = Activity.objects.create(
+            athlete=self.user,
+            planned_training=planned,
+            workout_type=Activity.WorkoutType.RUN,
+            started_at=timezone.make_aware(timezone.datetime(2026, 3, 7, 12, 11, 13), tz),
+            distance_m=10397,
+            duration_s=3766,
+            avg_pace_s_per_km=362,
+        )
+        for idx in range(1, 11):
+            ActivityInterval.objects.create(activity=activity, index=idx, duration_s=360 + idx, distance_m=1000)
+        ActivityInterval.objects.create(activity=activity, index=11, duration_s=143, distance_m=397)
+
+        resp = self.client.get(reverse("dashboard_home"))
+        self.assertEqual(resp.status_code, 200)
+
+        week_ctx = resp.context["month_cards"][0]["weeks"][0]
+        rows = week_ctx.completed_rows
+        self.assertEqual(rows[0]["third"], "6:02/km + 6-8x100m rovinky")
+
+    def test_completed_row_contains_garmin_match_debug_summary(self):
+        run_day = date(2026, 3, 12)
+        week = _resolve_week_for_day(self.user, run_day)
+        tz = timezone.get_current_timezone()
+        planned = PlannedTraining.objects.create(
+            week=week,
+            date=run_day,
+            day_label="Thu",
+            title="3R 2x5x300m, p=60s, po serii 5min",
+            session_type=PlannedTraining.SessionType.WORKOUT,
+            order_in_day=1,
+        )
+        activity = Activity.objects.create(
+            athlete=self.user,
+            planned_training=planned,
+            workout_type=Activity.WorkoutType.WORKOUT,
+            started_at=timezone.make_aware(timezone.datetime(2026, 3, 12, 16, 4, 23), tz),
+            distance_m=3942,
+            duration_s=1393,
+            avg_pace_s_per_km=353,
+        )
+        ActivityInterval.objects.create(activity=activity, index=1, duration_s=57, distance_m=303, note="WORK")
+        ActivityInterval.objects.create(activity=activity, index=2, duration_s=60, distance_m=90, note="REST")
+        ActivityInterval.objects.create(activity=activity, index=3, duration_s=56, distance_m=307, note="WORK")
+
+        resp = self.client.get(reverse("dashboard_home"))
+        self.assertEqual(resp.status_code, 200)
+
+        week_ctx = resp.context["month_cards"][0]["weeks"][0]
+        row = week_ctx.completed_rows[0]
+        self.assertIn("Garmin match:", row["match_debug"])
+        self.assertIn("expected WORKOUT", row["match_debug"])
+        self.assertIn("W 2 / R 1", row["match_debug"])
+
     def test_import_resolver_marks_day_as_two_phase_when_creating_second_training(self):
         run_day = date(2026, 3, 6)
         week = _resolve_week_for_day(self.user, run_day)
@@ -557,6 +653,168 @@ class DashboardFitImportTests(TestCase):
         self.assertIn("from_day", kwargs)
         self.assertIn("to_day", kwargs)
         self.assertEqual(kwargs["from_day"], kwargs["to_day"])
+
+    @patch("dashboard.services.imports._parse_payload_metadata_for_user")
+    def test_select_payloads_prefers_interval_rich_workout_when_plan_expects_workout(self, mocked_metadata):
+        run_day = date(2026, 3, 12)
+        week = _resolve_week_for_day(self.user, run_day)
+        PlannedTraining.objects.create(
+            week=week,
+            date=run_day,
+            day_label="Thu",
+            title="3R 2x5x300m, p=60s, po serii 5min",
+            session_type=PlannedTraining.SessionType.WORKOUT,
+            order_in_day=1,
+        )
+
+        payloads = [
+            GarminFitPayload(activity_id="22163202434", original_name="garmin_22163202434.fit", fit_bytes=b"a"),
+            GarminFitPayload(activity_id="22163202422", original_name="garmin_22163202422.fit", fit_bytes=b"b"),
+            GarminFitPayload(activity_id="22163202419", original_name="garmin_22163202419.fit", fit_bytes=b"c"),
+        ]
+
+        by_bytes = {
+            b"a": {
+                "run_day": run_day,
+                "workout_type": Activity.WorkoutType.WORKOUT,
+                "distance_m": 4492,
+                "duration_s": 1249,
+                "interval_count": 5,
+                "work_interval_count": 5,
+                "rest_interval_count": 0,
+            },
+            b"b": {
+                "run_day": run_day,
+                "workout_type": Activity.WorkoutType.WORKOUT,
+                "distance_m": 3942,
+                "duration_s": 1393,
+                "interval_count": 20,
+                "work_interval_count": 10,
+                "rest_interval_count": 10,
+            },
+            b"c": {
+                "run_day": run_day,
+                "workout_type": Activity.WorkoutType.RUN,
+                "distance_m": 3038,
+                "duration_s": 893,
+                "interval_count": 4,
+                "work_interval_count": 0,
+                "rest_interval_count": 0,
+            },
+        }
+        mocked_metadata.side_effect = lambda *, fit_bytes: by_bytes[fit_bytes]
+
+        selected = _select_payloads_for_import(user=self.user, payloads=payloads)
+
+        self.assertEqual([payload.activity_id for payload in selected], ["22163202422"])
+
+    @patch("dashboard.services.imports._parse_payload_metadata_for_user")
+    def test_select_payloads_matches_two_phase_day_by_planned_session_type(self, mocked_metadata):
+        run_day = date(2026, 3, 12)
+        week = _resolve_week_for_day(self.user, run_day)
+        PlannedTraining.objects.create(
+            week=week,
+            date=run_day,
+            day_label="Thu",
+            title="3 km vyklus",
+            session_type=PlannedTraining.SessionType.RUN,
+            order_in_day=1,
+            is_two_phase_day=True,
+        )
+        PlannedTraining.objects.create(
+            week=week,
+            date=run_day,
+            day_label="Thu",
+            title="3R 2x5x300m, p=60s, po serii 5min",
+            session_type=PlannedTraining.SessionType.WORKOUT,
+            order_in_day=2,
+            is_two_phase_day=True,
+        )
+
+        payloads = [
+            GarminFitPayload(activity_id="22163202419", original_name="garmin_22163202419.fit", fit_bytes=b"run"),
+            GarminFitPayload(activity_id="22163202422", original_name="garmin_22163202422.fit", fit_bytes=b"workout"),
+            GarminFitPayload(activity_id="22163202434", original_name="garmin_22163202434.fit", fit_bytes=b"other"),
+        ]
+
+        by_bytes = {
+            b"run": {
+                "run_day": run_day,
+                "workout_type": Activity.WorkoutType.RUN,
+                "distance_m": 3038,
+                "duration_s": 893,
+                "interval_count": 4,
+                "work_interval_count": 0,
+                "rest_interval_count": 0,
+            },
+            b"workout": {
+                "run_day": run_day,
+                "workout_type": Activity.WorkoutType.WORKOUT,
+                "distance_m": 3942,
+                "duration_s": 1393,
+                "interval_count": 20,
+                "work_interval_count": 10,
+                "rest_interval_count": 10,
+            },
+            b"other": {
+                "run_day": run_day,
+                "workout_type": Activity.WorkoutType.WORKOUT,
+                "distance_m": 4492,
+                "duration_s": 1249,
+                "interval_count": 5,
+                "work_interval_count": 5,
+                "rest_interval_count": 0,
+            },
+        }
+        mocked_metadata.side_effect = lambda *, fit_bytes: by_bytes[fit_bytes]
+
+        selected = _select_payloads_for_import(user=self.user, payloads=payloads)
+
+        self.assertEqual([payload.activity_id for payload in selected], ["22163202419", "22163202422"])
+
+    @patch("dashboard.services.imports._parse_payload_metadata_for_user")
+    def test_select_payloads_logs_match_reason_for_single_day(self, mocked_metadata):
+        run_day = date(2026, 3, 12)
+        week = _resolve_week_for_day(self.user, run_day)
+        PlannedTraining.objects.create(
+            week=week,
+            date=run_day,
+            day_label="Thu",
+            title="3R 2x5x300m, p=60s, po serii 5min",
+            session_type=PlannedTraining.SessionType.WORKOUT,
+            order_in_day=1,
+        )
+        payloads = [
+            GarminFitPayload(activity_id="22163202434", original_name="garmin_22163202434.fit", fit_bytes=b"a"),
+            GarminFitPayload(activity_id="22163202422", original_name="garmin_22163202422.fit", fit_bytes=b"b"),
+        ]
+        mocked_metadata.side_effect = lambda *, fit_bytes: {
+            b"a": {
+                "run_day": run_day,
+                "workout_type": Activity.WorkoutType.WORKOUT,
+                "distance_m": 4492,
+                "duration_s": 1249,
+                "interval_count": 5,
+                "work_interval_count": 5,
+                "rest_interval_count": 0,
+            },
+            b"b": {
+                "run_day": run_day,
+                "workout_type": Activity.WorkoutType.WORKOUT,
+                "distance_m": 3942,
+                "duration_s": 1393,
+                "interval_count": 20,
+                "work_interval_count": 10,
+                "rest_interval_count": 10,
+            },
+        }[fit_bytes]
+
+        with self.assertLogs("dashboard.services.imports", level="DEBUG") as cm:
+            selected = _select_payloads_for_import(user=self.user, payloads=payloads)
+
+        self.assertEqual([payload.activity_id for payload in selected], ["22163202422"])
+        self.assertTrue(any("Garmin match day=2026-03-12 mode=single" in line for line in cm.output))
+        self.assertTrue(any("22163202422" in line for line in cm.output))
 
     def test_dashboard_renders_week_garmin_sync_button_for_connected_account(self):
         self._connect_garmin()
