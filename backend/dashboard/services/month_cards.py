@@ -69,6 +69,24 @@ def _fmt_intervals(intervals: list[ActivityInterval]) -> str:
     return "(" + ", ".join(out) + ")"
 
 
+_RUN_FINISHER_RE = re.compile(
+    r"(?P<hint>\d+(?:\s*-\s*\d+)?\s*x\s*\d+(?:[.,]\d+)?\s*m\b[^|+]*)",
+    re.IGNORECASE,
+)
+
+
+def _extract_run_finisher_hint(title: str) -> str:
+    raw = (title or "").strip()
+    if not raw:
+        return ""
+    for match in _RUN_FINISHER_RE.finditer(raw):
+        hint = " ".join((match.group("hint") or "").split())
+        lowered = hint.lower()
+        if any(keyword in lowered for keyword in ("rovinky", "kopec", "kopce", "mch", "stride", "strides")):
+            return hint
+    return ""
+
+
 def _normalize_plan_text(text: str) -> str:
     return (text or "").strip().lower()
 
@@ -116,8 +134,11 @@ def _activity_segment(a: Activity, *, show_intervals: bool, planned_title: str =
         intervals_text = _fmt_intervals(intervals)
     pace = _fmt_mmss(a.avg_pace_s_per_km)
     pace_text = "-" if pace == "-" else f"{pace}/km"
+    finisher_hint = _extract_run_finisher_hint(planned_title)
 
     if not show_intervals:
+        if pace_text != "-" and finisher_hint:
+            return f"{pace_text} + {finisher_hint}"
         return pace_text
 
     if intervals_text != "-" and pace_text != "-":
@@ -127,6 +148,15 @@ def _activity_segment(a: Activity, *, show_intervals: bool, planned_title: str =
     if pace_text != "-":
         return pace_text
     return "-"
+
+
+def _garmin_match_debug_text(a: Activity, *, planned_title: str = "", session_type: str = "") -> str:
+    intervals = list(a.intervals.all())
+    work_count = sum(1 for it in intervals if (it.note or "").upper() == "WORK")
+    rest_count = sum(1 for it in intervals if (it.note or "").upper() == "REST")
+    distance_km = f"{(int(a.distance_m or 0) / 1000.0):.2f}" if a.distance_m else "-"
+    expected = "WORKOUT" if _plan_indicates_workout(title=planned_title, notes="") or session_type == PlannedTraining.SessionType.WORKOUT else "RUN"
+    return f"Garmin match: expected {expected}, got {(a.workout_type or '-')} | W {work_count} / R {rest_count} | {distance_km} km"
 
 
 def _planned_day_key(t: PlannedTraining):
@@ -333,6 +363,7 @@ def _build_completed_row_from_activities(
     *,
     show_intervals: bool,
     planned_titles_by_activity_id: Optional[dict[int, str]] = None,
+    planned_session_types_by_activity_id: Optional[dict[int, str]] = None,
 ) -> dict[str, Any]:
     activities = sorted(activities, key=lambda a: (a.started_at is None, a.started_at))
     total_distance_m = sum(int(a.distance_m or 0) for a in activities)
@@ -342,6 +373,7 @@ def _build_completed_row_from_activities(
     hr_den = 0
     max_hr = None
     third_parts: list[str] = []
+    debug_parts: list[str] = []
 
     for a in activities:
         dur = int(a.duration_s or 0)
@@ -358,6 +390,13 @@ def _build_completed_row_from_activities(
         )
         if seg != "-":
             third_parts.append(seg)
+        debug_parts.append(
+            _garmin_match_debug_text(
+                a,
+                planned_title=(planned_titles_by_activity_id or {}).get(a.id, ""),
+                session_type=(planned_session_types_by_activity_id or {}).get(a.id, ""),
+            )
+        )
 
     km = f"{total_distance_m / 1000.0:.2f}" if total_distance_m > 0 else "-"
     duration_min = int(round(total_duration_s / 60.0)) if total_duration_s > 0 else 0
@@ -368,6 +407,7 @@ def _build_completed_row_from_activities(
         "km": km,
         "min": minutes,
         "third": " | ".join(third_parts) if third_parts else "-",
+        "match_debug": " | ".join(part for part in debug_parts if part),
         "avg_hr": avg_hr,
         "max_hr": max_hr,
         "_distance_m": total_distance_m,
@@ -375,11 +415,49 @@ def _build_completed_row_from_activities(
     }
 
 
-def _build_completed_rows_for_week(planned_items: list[PlannedTraining]) -> list[dict[str, Any]]:
+def _build_completed_row_for_unplanned_activity(activity: Activity) -> dict[str, Any]:
+    show_intervals = any((it.distance_m or 0) > 0 or (it.duration_s or 0) > 0 for it in activity.intervals.all())
+    if not show_intervals:
+        show_intervals = (activity.workout_type or "") == Activity.WorkoutType.WORKOUT
+
+    row = _build_completed_row_from_activities(
+        [activity],
+        show_intervals=show_intervals,
+    )
+    descriptor_parts = []
+    if activity.title:
+        descriptor_parts.append(activity.title)
+    if row["third"] != "-":
+        descriptor_parts.append(row["third"])
+    row["third"] = " | ".join(descriptor_parts) if descriptor_parts else "-"
+    row["planned_id"] = None
+    row["item_count"] = 1
+    return row
+
+
+def _activity_local_day(activity: Activity) -> date | None:
+    if activity.started_at is None:
+        return None
+    if timezone.is_naive(activity.started_at):
+        return activity.started_at.date()
+    return timezone.localtime(activity.started_at).date()
+
+
+def _build_completed_rows_for_week(
+    planned_items: list[PlannedTraining],
+    *,
+    extra_activities: list[Activity] | None = None,
+) -> list[dict[str, Any]]:
     grouped: dict[Any, list[PlannedTraining]] = {}
     for t in planned_items:
         key = ("dated", t.date) if t.date is not None else ("undated", t.id)
         grouped.setdefault(key, []).append(t)
+    extra_by_day: dict[date, list[Activity]] = {}
+    for activity in extra_activities or []:
+        activity_day = _activity_local_day(activity)
+        if activity_day is None:
+            continue
+        extra_by_day.setdefault(activity_day, []).append(activity)
 
     def _apply_manual_overrides(row: dict[str, Any], completed: CompletedTraining | None) -> None:
         if completed is None:
@@ -407,8 +485,9 @@ def _build_completed_rows_for_week(planned_items: list[PlannedTraining]) -> list
                 row["max_hr"] = int(feel)
 
     rows: list[dict[str, Any]] = []
-    for key in sorted(grouped.keys(), key=lambda x: (x[0] == "undated", x[1])):
-        items = sorted(grouped[key], key=lambda x: (x.order_in_day, x.id))
+    all_keys = set(grouped.keys()) | {("dated", activity_day) for activity_day in extra_by_day.keys()}
+    for key in sorted(all_keys, key=lambda x: (x[0] == "undated", x[1])):
+        items = sorted(grouped.get(key, []), key=lambda x: (x.order_in_day, x.id))
         is_two_phase = any(x.is_two_phase_day for x in items)
 
         def _show_intervals_for(subitems: list[PlannedTraining], sub_activities: list[Activity]) -> bool:
@@ -430,7 +509,7 @@ def _build_completed_rows_for_week(planned_items: list[PlannedTraining]) -> list
                 return True
             return any((a.workout_type or "") == "WORKOUT" for a in sub_activities)
 
-        if is_two_phase:
+        if items and is_two_phase:
             phase_1_items = items[:1]
             phase_2_items = items[1:]
 
@@ -438,11 +517,14 @@ def _build_completed_rows_for_week(planned_items: list[PlannedTraining]) -> list
             phase_2_activities = [x.activity for x in phase_2_items if getattr(x, "activity", None)]
             phase_1_titles = {x.activity.id: x.title or "" for x in phase_1_items if getattr(x, "activity", None)}
             phase_2_titles = {x.activity.id: x.title or "" for x in phase_2_items if getattr(x, "activity", None)}
+            phase_1_session_types = {x.activity.id: (x.session_type or PlannedTraining.SessionType.RUN) for x in phase_1_items if getattr(x, "activity", None)}
+            phase_2_session_types = {x.activity.id: (x.session_type or PlannedTraining.SessionType.RUN) for x in phase_2_items if getattr(x, "activity", None)}
 
             phase_1_row = _build_completed_row_from_activities(
                 phase_1_activities,
                 show_intervals=_show_intervals_for(phase_1_items, phase_1_activities),
                 planned_titles_by_activity_id=phase_1_titles,
+                planned_session_types_by_activity_id=phase_1_session_types,
             )
             phase_1_row["planned_id"] = phase_1_items[0].id if phase_1_items else None
             phase_1_row["item_count"] = len(phase_1_items)
@@ -454,6 +536,7 @@ def _build_completed_rows_for_week(planned_items: list[PlannedTraining]) -> list
                 phase_2_activities,
                 show_intervals=_show_intervals_for(phase_2_items, phase_2_activities),
                 planned_titles_by_activity_id=phase_2_titles,
+                planned_session_types_by_activity_id=phase_2_session_types,
             )
             phase_2_row["planned_id"] = phase_2_items[0].id if phase_2_items else None
             phase_2_row["item_count"] = len(phase_2_items)
@@ -467,19 +550,25 @@ def _build_completed_rows_for_week(planned_items: list[PlannedTraining]) -> list
             phase_2_row["km"] = f"{day_distance_m / 1000.0:.2f}" if day_distance_m > 0 else "-"
             phase_2_row["min"] = str(day_duration_min) if day_duration_min > 0 else "-"
             rows.append(phase_2_row)
-        else:
+        elif items:
             day_activities = [x.activity for x in items if getattr(x, "activity", None)]
             planned_titles = {x.activity.id: x.title or "" for x in items if getattr(x, "activity", None)}
+            planned_session_types = {x.activity.id: (x.session_type or PlannedTraining.SessionType.RUN) for x in items if getattr(x, "activity", None)}
             row = _build_completed_row_from_activities(
                 day_activities,
                 show_intervals=_show_intervals_for(items, day_activities),
                 planned_titles_by_activity_id=planned_titles,
+                planned_session_types_by_activity_id=planned_session_types,
             )
             row["planned_id"] = items[0].id if items else None
             row["item_count"] = len(items)
             if len(items) == 1:
                 _apply_manual_overrides(row, getattr(items[0], "completed", None))
             rows.append(row)
+
+        if key[0] == "dated":
+            for activity in sorted(extra_by_day.get(key[1], []), key=lambda a: (a.started_at is None, a.started_at, a.id)):
+                rows.append(_build_completed_row_for_unplanned_activity(activity))
 
     return rows
 
@@ -593,20 +682,59 @@ def build_month_cards_for_athlete(*, athlete, language_code: str) -> list[dict[s
     month_dict = CZ_MONTHS if language_code.startswith("cs") else EN_MONTHS
     month_cards = []
     today = timezone.localdate()
+    week_ranges: list[tuple[int, date, date]] = []
     for m in months_qs:
         weeks_out = []
         for w in list(m.weeks.all()):
             planned_items = list(w.planned_trainings.all())
             w.week_start = _week_start_for_month_index(year=m.year, month=m.month, week_index=w.week_index)
             w.week_end = w.week_start + timedelta(days=6)
+            week_ranges.append((w.id, w.week_start, w.week_end))
             w.has_started = w.week_start <= today
-            w.planned_rows = _build_planned_rows_for_week(planned_items, language_code=language_code)
-            w.planned_total_km_text = format_week_km_label(_sum_planned_week_km(planned_items), language_code)
-            w.completed_rows = _build_completed_rows_for_week(planned_items)
-            w.completed_total = _sum_week_total(w.completed_rows)
-            weeks_out.append(w)
+            weeks_out.append((w, planned_items))
 
         month_cards.append({"id": m.id, "label": f"{month_dict.get(m.month, str(m.month))} {m.year}", "weeks": weeks_out})
+
+    unplanned_by_week_id: dict[int, list[Activity]] = {}
+    if week_ranges:
+        min_day = min(start for _, start, _ in week_ranges)
+        max_day = max(end for _, _, end in week_ranges)
+        unplanned_activities = list(
+            Activity.objects.filter(
+                athlete=athlete,
+                planned_training__isnull=True,
+                started_at__isnull=False,
+                started_at__date__range=(min_day, max_day),
+            )
+            .prefetch_related(
+                Prefetch(
+                    "intervals",
+                    queryset=ActivityInterval.objects.order_by("index"),
+                )
+            )
+            .order_by("started_at", "id")
+        )
+        for activity in unplanned_activities:
+            activity_day = _activity_local_day(activity)
+            if activity_day is None:
+                continue
+            for week_id, week_start, week_end in week_ranges:
+                if week_start <= activity_day <= week_end:
+                    unplanned_by_week_id.setdefault(week_id, []).append(activity)
+                    break
+
+    for month_card in month_cards:
+        resolved_weeks = []
+        for week_obj, planned_items in month_card["weeks"]:
+            week_obj.planned_rows = _build_planned_rows_for_week(planned_items, language_code=language_code)
+            week_obj.planned_total_km_text = format_week_km_label(_sum_planned_week_km(planned_items), language_code)
+            week_obj.completed_rows = _build_completed_rows_for_week(
+                planned_items,
+                extra_activities=unplanned_by_week_id.get(week_obj.id, []),
+            )
+            week_obj.completed_total = _sum_week_total(week_obj.completed_rows)
+            resolved_weeks.append(week_obj)
+        month_card["weeks"] = resolved_weeks
     return month_cards
 
 
