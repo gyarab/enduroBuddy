@@ -515,6 +515,11 @@ def _week_start_monday(d: date) -> date:
     return d - timedelta(days=d.weekday())
 
 
+def _week_start_for_month_index(*, year: int, month: int, week_index: int) -> date:
+    first_monday = _first_monday_in_month(year, month)
+    return first_monday + timedelta(days=max(0, int(week_index) - 1) * 7)
+
+
 def resolve_week_for_day(user, run_day: date) -> TrainingWeek:
     week_start = _week_start_monday(run_day)
     month_obj, _ = TrainingMonth.objects.get_or_create(
@@ -569,10 +574,14 @@ def build_month_cards_for_athlete(*, athlete, language_code: str) -> list[dict[s
 
     month_dict = CZ_MONTHS if language_code.startswith("cs") else EN_MONTHS
     month_cards = []
+    today = timezone.localdate()
     for m in months_qs:
         weeks_out = []
         for w in list(m.weeks.all()):
             planned_items = list(w.planned_trainings.all())
+            w.week_start = _week_start_for_month_index(year=m.year, month=m.month, week_index=w.week_index)
+            w.week_end = w.week_start + timedelta(days=6)
+            w.has_started = w.week_start <= today
             w.planned_rows = _build_planned_rows_for_week(planned_items, language_code=language_code)
             w.planned_total_km_text = format_week_km_label(_sum_planned_week_km(planned_items), language_code)
             w.completed_rows = _build_completed_rows_for_week(planned_items)

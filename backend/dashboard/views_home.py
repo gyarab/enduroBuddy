@@ -11,16 +11,23 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
+from django.utils import timezone
 from django.views.decorators.http import require_GET, require_POST
 
 from accounts.models import CoachAthlete, CoachJoinRequest, GarminConnection, GarminSyncAudit, ImportJob
 from accounts.services.garmin_secret_store import GarminSecretStoreError
 from activities.models import Activity, ActivityImportLedger
 from activities.services.garmin_importer import GarminImportError
-from dashboard.services.imports import GARMIN_RANGE_OPTIONS, audit_garmin, connect_garmin_for_user, revoke_garmin_for_user
+from dashboard.services.imports import (
+    GARMIN_RANGE_OPTIONS,
+    audit_garmin,
+    connect_garmin_for_user,
+    revoke_garmin_for_user,
+    sync_garmin_week_for_user,
+)
 from dashboard.services.month_cards import add_next_month_for_athlete, build_month_cards_for_athlete, is_coach, resolve_week_for_day
 from dashboard.services.tasks import enqueue_garmin_sync_job, run_fit_import, run_garmin_sync
-from training.models import PlannedTraining
+from training.models import CompletedTraining, PlannedTraining, TrainingWeek
 from .views_shared import _resolve_coach_from_code, maybe_add_test_notifications, sanitize_legend_state
 
 logger = logging.getLogger(__name__)
@@ -90,6 +97,92 @@ def _queue_garmin_sync_job_for_user(*, user, selected_range: str) -> tuple[Impor
     return job, True
 
 
+def _is_admin_like(user) -> bool:
+    return (
+        user.username.lower() == "admin"
+        or bool(getattr(user, "is_superuser", False))
+        or bool(getattr(user, "is_staff", False))
+    )
+
+
+def _parse_remove_week_completed_token(raw_value: str) -> tuple[int, int, int] | None:
+    raw = (raw_value or "").strip()
+    if not raw:
+        return None
+
+    parts = [part.strip() for part in raw.split("/") if part.strip()]
+    if len(parts) == 2 and all(part.isdigit() for part in parts):
+        month, week_index = (int(parts[0]), int(parts[1]))
+        return 2026, month, week_index
+    if len(parts) == 3 and all(part.isdigit() for part in parts):
+        year, month, week_index = (int(parts[0]), int(parts[1]), int(parts[2]))
+        return year, month, week_index
+    return None
+
+
+def _maybe_remove_admin_week_completed(request):
+    if not settings.DEBUG:
+        return None
+    if "remove_week_completed" not in request.GET:
+        return None
+
+    if not _is_admin_like(request.user):
+        messages.error(request, "remove_week_completed je povoleny jen pro uzivatele admin.")
+        return redirect("dashboard_home")
+
+    parsed = _parse_remove_week_completed_token(request.GET.get("remove_week_completed") or "")
+    if parsed is None:
+        messages.error(request, "Pouzij remove_week_completed=3/1 nebo remove_week_completed=2026/3/1.")
+        return redirect("dashboard_home")
+
+    year, month, week_index = parsed
+    User = get_user_model()
+    admin_user = User.objects.filter(username="admin").first()
+    if admin_user is None:
+        messages.error(request, "Uzivatel admin nebyl nalezen.")
+        return redirect("dashboard_home")
+
+    week = (
+        TrainingWeek.objects.filter(
+            training_month__athlete=admin_user,
+            training_month__year=year,
+            training_month__month=month,
+            week_index=week_index,
+        )
+        .order_by("id")
+        .first()
+    )
+
+    if week is None:
+        messages.error(request, f"Tyden {week_index} v {month}/{year} nebyl nalezen.")
+        return redirect("dashboard_home")
+
+    planned_ids = list(
+        PlannedTraining.objects.filter(
+            week=week,
+        ).values_list("id", flat=True)
+    )
+    deleted_completed_count = CompletedTraining.objects.filter(planned_id__in=planned_ids).count()
+    deleted_activity_count = Activity.objects.filter(
+        athlete=admin_user,
+        planned_training_id__in=planned_ids,
+    ).count()
+    CompletedTraining.objects.filter(planned_id__in=planned_ids).delete()
+    Activity.objects.filter(
+        athlete=admin_user,
+        planned_training_id__in=planned_ids,
+    ).delete()
+
+    messages.success(
+        request,
+        (
+            f"Vymazano Splneno pro admin {month}/{year}, tyden {week_index}: "
+            f"completed {deleted_completed_count}, activity {deleted_activity_count}."
+        ),
+    )
+    return redirect("dashboard_home")
+
+
 def _maybe_run_test_garmin_cleanup(request):
     if not settings.DEBUG:
         return None
@@ -99,12 +192,7 @@ def _maybe_run_test_garmin_cleanup(request):
     if flag and flag not in {"1", "true", "yes", "on"}:
         return None
 
-    is_admin_like = (
-        request.user.username.lower() == "admin"
-        or bool(getattr(request.user, "is_superuser", False))
-        or bool(getattr(request.user, "is_staff", False))
-    )
-    if not is_admin_like:
+    if not _is_admin_like(request.user):
         messages.error(request, "test_garmin_import je povoleny jen pro uzivatele admin.")
         return redirect("dashboard_home")
 
@@ -338,6 +426,10 @@ def home(request):
     if cleanup_response is not None:
         return cleanup_response
 
+    remove_completed_response = _maybe_remove_admin_week_completed(request)
+    if remove_completed_response is not None:
+        return remove_completed_response
+
     month_cards = build_month_cards_for_athlete(athlete=request.user, language_code=request.LANGUAGE_CODE)
     garmin_connection = GarminConnection.objects.filter(user=request.user, is_active=True).first()
     pending_coach_requests = list(
@@ -365,6 +457,9 @@ def home(request):
             "remove_phase_url": reverse("athlete_remove_second_phase_training"),
             "completed_editable": True,
             "completed_update_url": reverse("athlete_update_completed_training"),
+            "garmin_week_sync_enabled": True,
+            "garmin_week_sync_url": reverse("garmin_sync_week"),
+            "garmin_week_sync_connected": bool(garmin_connection),
             "add_month_enabled": True,
             "add_month_action": "add_next_month_self",
             "add_month_athlete_id": None,
@@ -418,6 +513,73 @@ def garmin_sync_start(request):
             "progress_percent": _job_progress_percent(job),
             "already_running": not is_new_job,
             "message": job.message,
+        }
+    )
+
+
+@login_required
+@require_POST
+def garmin_sync_week(request):
+    raw_week_start = (request.POST.get("week_start") or "").strip()
+    try:
+        week_start = date.fromisoformat(raw_week_start)
+    except ValueError:
+        return JsonResponse({"ok": False, "error": "Neplatny zacatek tydne."}, status=400)
+
+    if not GarminConnection.objects.filter(user=request.user, is_active=True).exists():
+        return JsonResponse({"ok": False, "error": "Garmin ucet neni pripojen."}, status=400)
+
+    normalized_week_start = week_start - timedelta(days=week_start.weekday())
+    if normalized_week_start > timezone.localdate():
+        return JsonResponse({"ok": False, "error": "Garmin import tydne je dostupny az od zacatku tydne."}, status=400)
+    window_label = f"week:{normalized_week_start.isoformat()}"
+    try:
+        replaced, untouched, connection = sync_garmin_week_for_user(
+            request.user,
+            week_start=normalized_week_start,
+        )
+        audit_garmin(
+            user=request.user,
+            connection=connection,
+            action=GarminSyncAudit.Action.SYNC,
+            status=GarminSyncAudit.Status.SUCCESS,
+            window=window_label,
+            imported_count=replaced,
+            skipped_count=untouched,
+            message="Garmin week sync finished.",
+        )
+    except (GarminImportError, GarminSecretStoreError) as exc:
+        audit_garmin(
+            user=request.user,
+            action=GarminSyncAudit.Action.SYNC,
+            status=GarminSyncAudit.Status.ERROR,
+            window=window_label,
+            message=str(exc),
+        )
+        return JsonResponse({"ok": False, "error": f"Garmin sync failed: {exc}"}, status=400)
+    except Exception:
+        logger.exception("Garmin week sync failed for user_id=%s week_start=%s", request.user.id, normalized_week_start)
+        audit_garmin(
+            user=request.user,
+            action=GarminSyncAudit.Action.SYNC,
+            status=GarminSyncAudit.Status.ERROR,
+            window=window_label,
+            message="Unexpected Garmin week sync error.",
+        )
+        return JsonResponse({"ok": False, "error": "Garmin sync failed."}, status=500)
+
+    return JsonResponse(
+        {
+            "ok": True,
+            "status": "SUCCESS",
+            "status_label": "Done",
+            "progress_percent": 100,
+            "week_start": normalized_week_start.isoformat(),
+            "replaced_count": replaced,
+            "untouched_count": untouched,
+            "imported_count": replaced,
+            "skipped_count": untouched,
+            "message": f"Garmin tyden synchronizovan. Prepsano: {replaced}, ponechano: {untouched}.",
         }
     )
 

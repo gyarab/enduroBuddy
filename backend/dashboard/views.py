@@ -18,6 +18,6 @@ from .views_coach import (
     coach_update_planned_training,
 )
 from .views_home import home
-from .views_home import athlete_update_legend_state, garmin_sync_start, import_job_status
+from .views_home import athlete_update_legend_state, garmin_sync_start, garmin_sync_week, import_job_status
 from .views_invites import accept_training_group_invite
 from .views_profile import profile_manage

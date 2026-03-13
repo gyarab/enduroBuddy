@@ -7,7 +7,7 @@
 
 {% block content %}
 <div class="container-fluid py-3">
-  <div class="d-flex align-items-center justify-content-between mb-3">
+  <div class="d-flex align-items-center justify-content-between mb-3 eb-dashboard-toolbar">
     <div class="d-flex align-items-center gap-2">
       <h3 class="mb-0">Tr&eacute;ninkov&yacute; pl&aacute;n</h3>
       <h3 class="mb-0 text-muted">
@@ -301,7 +301,7 @@
   </div>
 
   <div id="dashboardMonthCardsRoot">
-    {% include "dashboard/_month_cards.html" with month_state_key=month_state_key add_month_enabled=add_month_enabled add_month_action=add_month_action add_month_athlete_id=add_month_athlete_id plan_editable=plan_editable plan_update_url=plan_update_url completed_editable=completed_editable completed_update_url=completed_update_url %}
+    {% include "dashboard/_month_cards.html" with month_state_key=month_state_key add_month_enabled=add_month_enabled add_month_action=add_month_action add_month_athlete_id=add_month_athlete_id plan_editable=plan_editable plan_update_url=plan_update_url completed_editable=completed_editable completed_update_url=completed_update_url garmin_week_sync_enabled=garmin_week_sync_enabled garmin_week_sync_url=garmin_week_sync_url garmin_week_sync_connected=garmin_week_sync_connected %}
   </div>
 </div>
 

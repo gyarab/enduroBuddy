@@ -28,6 +28,19 @@
   const createCompletedEditor = completedModule.createCompletedEditor || null;
   const createCoachController = coachModule.createCoachController || null;
 
+  async function refreshDashboardMonthCards() {
+    const root = document.getElementById("dashboardMonthCardsRoot");
+    if (!root) return;
+    const html = await getHtml(window.location.pathname + window.location.search);
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, "text/html");
+    const nextRoot = doc.getElementById("dashboardMonthCardsRoot");
+    if (!nextRoot) return;
+    root.innerHTML = nextRoot.innerHTML;
+    initCoachMainContent(root);
+    initGarminWeekSync();
+  }
+
   const monthController = createMonthController
     ? createMonthController({
         getWidgetState,
@@ -151,18 +164,6 @@
       return statusUrlTemplate.replace("0", String(jobId));
     };
 
-    const refreshMonthCards = async () => {
-      const root = document.getElementById("dashboardMonthCardsRoot");
-      if (!root) return;
-      const html = await getHtml(window.location.pathname + window.location.search);
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(html, "text/html");
-      const nextRoot = doc.getElementById("dashboardMonthCardsRoot");
-      if (!nextRoot) return;
-      root.innerHTML = nextRoot.innerHTML;
-      initCoachMainContent(root);
-    };
-
     const formatSyncText = (job) => {
       const status = (job && (job.status_label || job.status)) || "RUNNING";
       const progress = Number.isFinite(Number(job && job.progress_percent))
@@ -227,7 +228,7 @@
             stopPolling();
             setLoading(false);
             if (isSuccess) {
-              refreshMonthCards().catch(() => {});
+              refreshDashboardMonthCards().catch(() => {});
             }
           }
         } catch (_error) {
@@ -288,6 +289,121 @@
     });
   }
 
+  function initGarminWeekSync() {
+    if (document.body.dataset.ebGarminWeekSyncInit === "1") return;
+    document.body.dataset.ebGarminWeekSyncInit = "1";
+
+    const notifications = (window.EB && window.EB.notifications) || null;
+    const formatWeekSyncText = (job) => {
+      const status = (job && (job.status_label || job.status)) || "RUNNING";
+      const progress = Number.isFinite(Number(job && job.progress_percent))
+        ? Math.max(0, Math.min(100, Number(job.progress_percent)))
+        : 0;
+      if (job && job.status === "SUCCESS") {
+        return `${status} (${progress}%): imported ${job.imported_count || 0}, duplicates ${job.skipped_count || 0}.`;
+      }
+      if (job && job.status === "ERROR") {
+        return `${status} (${progress}%): ${job.message || "Garmin sync failed."}`;
+      }
+      return `${status} (${progress}%): ${job && job.message ? job.message : "Garmin sync is running."}`;
+    };
+
+    document.addEventListener("click", async (event) => {
+      const button = event.target && event.target.closest
+        ? event.target.closest(".eb-garmin-week-sync-btn")
+        : null;
+      if (!button) return;
+
+      event.preventDefault();
+      if (button.disabled || button.dataset.loading === "1") return;
+
+      const widget = button.closest(".eb-month-widget");
+      const startUrl = widget ? widget.getAttribute("data-garmin-week-sync-url") || "" : "";
+      const weekStart = button.getAttribute("data-week-start") || "";
+      if (!startUrl || !weekStart) return;
+
+      const spinner = button.querySelector(".eb-garmin-week-sync-spinner");
+      const icon = button.querySelector(".eb-garmin-week-sync-icon");
+      const wasDisabled = button.disabled;
+      const activeNotificationId = `garmin-week-sync-${weekStart}-${Date.now()}`;
+      button.dataset.loading = "1";
+      button.disabled = true;
+      if (spinner) spinner.classList.remove("d-none");
+      if (icon) icon.classList.add("d-none");
+
+      const formData = new FormData();
+      formData.append("week_start", weekStart);
+
+      if (notifications) {
+        notifications.addNotification({
+          id: activeNotificationId,
+          text: formatWeekSyncText({
+            status: "RUNNING",
+            status_label: "Running",
+            progress_percent: 10,
+            message: "Garmin sync is running.",
+          }),
+          tone: "warning",
+          unread: true,
+          persistent: true,
+          statusLabel: "Running",
+          progressPercent: 10,
+        });
+      }
+
+      try {
+        const response = await fetch(startUrl, {
+          method: "POST",
+          headers: {
+            "X-Requested-With": "XMLHttpRequest",
+            "X-CSRFToken": getCsrfToken() || "",
+          },
+          body: formData,
+          credentials: "same-origin",
+        });
+        const payload = await response.json();
+        if (!response.ok || !payload || !payload.ok) {
+          throw new Error((payload && payload.error) || "Tydenni Garmin import selhal.");
+        }
+
+        if (notifications) {
+          notifications.updateNotification({
+            id: activeNotificationId,
+            text: formatWeekSyncText(payload),
+            tone: "success",
+            unread: true,
+            persistent: false,
+            statusLabel: payload.status_label || payload.status || "Done",
+            progressPercent: Number(payload.progress_percent || 100),
+          });
+        }
+        await refreshDashboardMonthCards();
+      } catch (error) {
+        if (notifications) {
+          notifications.updateNotification({
+            id: activeNotificationId,
+            text: formatWeekSyncText({
+              status: "ERROR",
+              status_label: "Error",
+              progress_percent: 0,
+              message: (error && error.message) || "Garmin sync failed.",
+            }),
+            tone: "danger",
+            unread: true,
+            persistent: false,
+            statusLabel: "Error",
+            progressPercent: 0,
+          });
+        }
+      } finally {
+        delete button.dataset.loading;
+        if (spinner) spinner.classList.add("d-none");
+        if (icon) icon.classList.remove("d-none");
+        button.disabled = wasDisabled;
+      }
+    });
+  }
+
   function initLegendKeyboardShortcut() {
     if (document.body.dataset.ebLegendShortcutInit === "1") return;
     document.body.dataset.ebLegendShortcutInit = "1";
@@ -330,6 +446,7 @@
     initLegendKeyboardShortcut();
     initFitImportQuickAction();
     initGarminBackgroundSync();
+    initGarminWeekSync();
   }
 
   if (document.readyState === "loading") {
