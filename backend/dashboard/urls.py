@@ -11,6 +11,7 @@ urlpatterns = [
     path("plans/completed/update/", views.athlete_update_completed_training, name="athlete_update_completed_training"),
     path("legend/update/", views.athlete_update_legend_state, name="athlete_update_legend_state"),
     path("imports/garmin/start/", views.garmin_sync_start, name="garmin_sync_start"),
+    path("imports/garmin/week-sync/", views.garmin_sync_week, name="garmin_sync_week"),
     path("imports/jobs/<int:job_id>/status/", views.import_job_status, name="import_job_status"),
     path("coach/plans/", views.coach_training_plans, name="coach_training_plans"),
     path("coach/plans/update/", views.coach_update_planned_training, name="coach_update_planned_training"),

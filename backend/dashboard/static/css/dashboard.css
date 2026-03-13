@@ -158,6 +158,15 @@
 }
 
 /* ===== import modal ===== */
+.eb-dashboard-toolbar {
+  position: sticky;
+  top: 57px;
+  z-index: 1035;
+  background: #f8f9fa;
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+
 .eb-import-modal-body {
   display: grid;
   gap: 12px;

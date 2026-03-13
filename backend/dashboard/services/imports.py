@@ -11,7 +11,7 @@ from django.utils import timezone
 
 from accounts.models import GarminConnection, GarminSyncAudit
 from accounts.services.garmin_secret_store import decrypt_tokenstore, encrypt_tokenstore
-from activities.models import Activity, ActivityImportLedger
+from activities.models import Activity, ActivityFile, ActivityImportLedger
 from activities.services.garmin_importer import GarminImportError, connect_garmin_account, download_garmin_fit_payloads
 from activities.services.fit_importer import import_fit_into_activity
 from activities.services.fit_parser import parse_fit_file
@@ -188,6 +188,56 @@ def import_fit_bytes_for_user(*, user, fit_bytes: bytes, original_name: str) -> 
     return True
 
 
+def import_fit_bytes_into_planned_for_user(*, user, planned: PlannedTraining, fit_bytes: bytes, original_name: str) -> Activity:
+    checksum = hashlib.sha256(fit_bytes).hexdigest()
+    parsed = parse_fit_file(BytesIO(fit_bytes))
+    started_at = parsed.summary.get("started_at") if parsed.summary else None
+    if started_at is None:
+        started_at = timezone.now()
+    elif timezone.is_naive(started_at):
+        started_at = timezone.make_aware(started_at, timezone.get_current_timezone())
+
+    fallback_title = (parsed.summary or {}).get("title") or planned.title or "Imported activity"
+
+    with transaction.atomic():
+        ActivityImportLedger.objects.get_or_create(athlete=user, checksum_sha256=checksum)
+
+        activity = getattr(planned, "activity", None)
+        if activity is None:
+            activity = Activity.objects.create(
+                athlete=user,
+                planned_training=planned,
+                started_at=started_at,
+                title=fallback_title,
+            )
+
+        create_activity_file_row = not ActivityFile.objects.filter(
+            activity=activity,
+            checksum_sha256=checksum,
+        ).exists()
+        outcome = import_fit_into_activity(
+            activity=activity,
+            fileobj=BytesIO(fit_bytes),
+            original_name=original_name or "",
+            checksum_sha256=checksum,
+            create_activity_file_row=create_activity_file_row,
+            parsed_result=parsed,
+            force_reimport=True,
+        )
+        outcome.activity.refresh_from_db()
+
+        completed, _ = CompletedTraining.objects.get_or_create(planned=planned)
+        completed.activity = outcome.activity
+        completed.time_seconds = outcome.activity.duration_s
+        completed.distance_m = outcome.activity.distance_m
+        completed.avg_hr = outcome.activity.avg_hr
+        completed.note = ""
+        completed.feel = ""
+        completed.save(update_fields=["activity", "time_seconds", "distance_m", "avg_hr", "note", "feel"])
+
+    return outcome.activity
+
+
 def import_fit_for_user(user, uploaded_file) -> bool:
     fit_bytes = uploaded_file.read()
     return import_fit_bytes_for_user(
@@ -325,3 +375,66 @@ def sync_garmin_for_user(user, *, window: str, progress_callback=None) -> tuple[
     connection.revoked_at = None
     connection.save(update_fields=["encrypted_tokenstore", "last_sync_at", "revoked_at", "updated_at"])
     return imported, skipped, connection
+
+
+def sync_garmin_week_for_user(user, *, week_start: date) -> tuple[int, int, GarminConnection]:
+    connection = GarminConnection.objects.filter(user=user, is_active=True).first()
+    if connection is None:
+        raise GarminImportError("Garmin account is not connected.")
+
+    week_start = week_start - timedelta(days=week_start.weekday())
+    week_end = week_start + timedelta(days=6)
+
+    tokenstore = decrypt_tokenstore(connection.encrypted_tokenstore)
+    result = download_garmin_fit_payloads(
+        tokenstore=tokenstore,
+        limit=int(settings.GARMIN_SYNC_LIMIT),
+        from_day=week_start,
+        to_day=week_end,
+    )
+    selected_payloads = _select_payloads_for_import(user=user, payloads=result.payloads)
+
+    payloads_by_day: dict[date, list] = defaultdict(list)
+    for payload in selected_payloads:
+        run_day, _, _, _ = _parse_payload_day_for_user(fit_bytes=payload.fit_bytes)
+        payloads_by_day[run_day].append(payload)
+
+    replaced = 0
+    untouched = 0
+    for run_day in sorted(payloads_by_day.keys()):
+        payloads_for_day = payloads_by_day[run_day]
+        day_items = list(
+            PlannedTraining.objects.filter(
+                week__training_month__athlete=user,
+                date=run_day,
+            )
+            .select_related("activity")
+            .order_by("order_in_day", "id")
+        )
+
+        if not day_items:
+            fallback_title = ""
+            first_payload = payloads_for_day[0] if payloads_for_day else None
+            if first_payload is not None:
+                parsed = parse_fit_file(BytesIO(first_payload.fit_bytes))
+                fallback_title = (parsed.summary or {}).get("title") or ""
+            created = _resolve_planned_training(user, run_day, fallback_title)
+            day_items = [created]
+
+        for payload, planned in zip(payloads_for_day, day_items):
+            import_fit_bytes_into_planned_for_user(
+                user=user,
+                planned=planned,
+                fit_bytes=payload.fit_bytes,
+                original_name=payload.original_name,
+            )
+            replaced += 1
+
+        if len(payloads_for_day) < len(day_items):
+            untouched += len(day_items) - len(payloads_for_day)
+
+    connection.encrypted_tokenstore = encrypt_tokenstore(result.refreshed_tokenstore)
+    connection.last_sync_at = timezone.now()
+    connection.revoked_at = None
+    connection.save(update_fields=["encrypted_tokenstore", "last_sync_at", "revoked_at", "updated_at"])
+    return replaced, untouched, connection

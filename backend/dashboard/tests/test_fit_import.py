@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, timedelta
 from io import BytesIO
 from pathlib import Path
 from unittest.mock import patch
@@ -219,6 +219,53 @@ class DashboardFitImportTests(TestCase):
             ).count(),
             7,
         )
+
+    @override_settings(DEBUG=True)
+    def test_remove_week_completed_query_cleans_only_completed_for_selected_admin_week(self):
+        User = get_user_model()
+        admin = User.objects.create_user(username="admin", password="admin")
+        self.client.login(username="admin", password="admin")
+
+        week = _resolve_week_for_day(admin, date(2026, 3, 4))
+        target = PlannedTraining.objects.create(
+            week=week,
+            date=date(2026, 3, 4),
+            day_label="Wed",
+            title="Target run",
+            order_in_day=1,
+        )
+        keep = PlannedTraining.objects.create(
+            week=week,
+            date=date(2026, 3, 5),
+            day_label="Thu",
+            title="Keep row",
+            order_in_day=1,
+        )
+        target_activity = Activity.objects.create(
+            athlete=admin,
+            planned_training=target,
+            started_at=timezone.make_aware(timezone.datetime(2026, 3, 4, 8, 0, 0), timezone.get_current_timezone()),
+            title="Imported target",
+        )
+        keep_activity = Activity.objects.create(
+            athlete=admin,
+            planned_training=keep,
+            started_at=timezone.make_aware(timezone.datetime(2026, 3, 5, 8, 0, 0), timezone.get_current_timezone()),
+            title="Imported keep",
+        )
+        CompletedTraining.objects.create(planned=target, activity=target_activity, time_seconds=600, distance_m=2000)
+        CompletedTraining.objects.create(planned=keep, activity=keep_activity, time_seconds=1200, distance_m=4000)
+
+        resp = self.client.get(reverse("dashboard_home"), {"remove_week_completed": "3/1"})
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(resp.url, reverse("dashboard_home"))
+
+        self.assertTrue(PlannedTraining.objects.filter(id=target.id).exists())
+        self.assertTrue(PlannedTraining.objects.filter(id=keep.id).exists())
+        self.assertFalse(CompletedTraining.objects.filter(planned_id=target.id).exists())
+        self.assertFalse(CompletedTraining.objects.filter(planned_id=keep.id).exists())
+        self.assertFalse(Activity.objects.filter(id=target_activity.id).exists())
+        self.assertFalse(Activity.objects.filter(id=keep_activity.id).exists())
 
     def test_completed_rows_are_aggregated_by_day_and_sorted_by_activity_start(self):
         run_day = date(2026, 3, 3)
@@ -510,6 +557,137 @@ class DashboardFitImportTests(TestCase):
         self.assertIn("from_day", kwargs)
         self.assertIn("to_day", kwargs)
         self.assertEqual(kwargs["from_day"], kwargs["to_day"])
+
+    def test_dashboard_renders_week_garmin_sync_button_for_connected_account(self):
+        self._connect_garmin()
+        week = _resolve_week_for_day(self.user, date(2026, 3, 2))
+        PlannedTraining.objects.create(
+            week=week,
+            date=date(2026, 3, 2),
+            day_label="Mon",
+            title="Easy run",
+            order_in_day=1,
+        )
+
+        resp = self.client.get(reverse("dashboard_home"))
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "eb-garmin-week-sync-btn")
+        self.assertContains(resp, "data-garmin-week-sync-url")
+        self.assertContains(resp, reverse("garmin_sync_week"))
+
+    @override_settings(USE_TZ=True)
+    @patch("dashboard.services.month_cards.timezone.localdate")
+    def test_dashboard_disables_week_garmin_sync_for_future_week(self, mocked_localdate):
+        mocked_localdate.return_value = date(2026, 3, 1)
+        self._connect_garmin()
+        week = _resolve_week_for_day(self.user, date(2026, 3, 2))
+        PlannedTraining.objects.create(
+            week=week,
+            date=date(2026, 3, 2),
+            day_label="Mon",
+            title="Easy run",
+            order_in_day=1,
+        )
+
+        resp = self.client.get(reverse("dashboard_home"))
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Tento tyden jeste nezacal.")
+        self.assertContains(resp, "eb-garmin-week-sync-btn")
+        self.assertContains(resp, "disabled")
+
+    @patch("dashboard.services.imports.download_garmin_fit_payloads")
+    def test_garmin_week_sync_replaces_only_days_with_new_payloads(self, mocked_download):
+        fit_path = FIXTURES_DIR / "Z3.fit"
+        fit_bytes = fit_path.read_bytes()
+        parsed = parse_fit_file(BytesIO(fit_bytes))
+        started_at = parsed.summary.get("started_at")
+        self.assertIsNotNone(started_at)
+        if timezone.is_naive(started_at):
+            started_at = timezone.make_aware(started_at, timezone.get_current_timezone())
+        run_day = timezone.localtime(started_at).date()
+        week = _resolve_week_for_day(self.user, run_day)
+        other_day = run_day + timedelta(days=1)
+
+        target = PlannedTraining.objects.create(
+            week=week,
+            date=run_day,
+            day_label="Run",
+            title="Target",
+            order_in_day=1,
+        )
+        untouched = PlannedTraining.objects.create(
+            week=week,
+            date=other_day,
+            day_label="Keep",
+            title="Keep",
+            order_in_day=1,
+        )
+        CompletedTraining.objects.create(
+            planned=target,
+            time_seconds=111,
+            distance_m=2222,
+            avg_hr=123,
+            note="manual target",
+            feel="199",
+        )
+        CompletedTraining.objects.create(
+            planned=untouched,
+            time_seconds=333,
+            distance_m=4444,
+            avg_hr=145,
+            note="manual keep",
+            feel="188",
+        )
+
+        self._connect_garmin()
+        mocked_download.return_value = GarminDownloadResult(
+            payloads=[GarminFitPayload(activity_id="1001", original_name="garmin_1001.fit", fit_bytes=fit_bytes)],
+            refreshed_tokenstore="new-token",
+        )
+
+        week_start = run_day - timedelta(days=run_day.weekday())
+        resp = self.client.post(
+            reverse("garmin_sync_week"),
+            data={"week_start": week_start.isoformat()},
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+        self.assertEqual(resp.status_code, 200)
+        payload = resp.json()
+        self.assertTrue(payload["ok"])
+        self.assertEqual(payload["replaced_count"], 1)
+
+        target.refresh_from_db()
+        untouched.refresh_from_db()
+        target_completed = CompletedTraining.objects.get(planned=target)
+        untouched_completed = CompletedTraining.objects.get(planned=untouched)
+
+        target_activity = Activity.objects.get(planned_training=target)
+        self.assertEqual(target_completed.activity_id, target_activity.id)
+        self.assertEqual(target_completed.distance_m, int(parsed.summary.get("distance_m") or 0))
+        self.assertEqual(target_completed.time_seconds, int(parsed.summary.get("duration_s") or 0))
+        self.assertEqual(target_completed.avg_hr, parsed.summary.get("avg_hr"))
+        self.assertEqual(target_completed.note, "")
+        self.assertEqual(target_completed.feel, "")
+
+        self.assertEqual(untouched_completed.distance_m, 4444)
+        self.assertEqual(untouched_completed.time_seconds, 333)
+        self.assertEqual(untouched_completed.note, "manual keep")
+        self.assertEqual(untouched_completed.feel, "188")
+
+    @patch("dashboard.views_home.timezone.localdate")
+    def test_garmin_week_sync_rejects_future_week(self, mocked_localdate):
+        mocked_localdate.return_value = date(2026, 3, 1)
+        self._connect_garmin()
+
+        resp = self.client.post(
+            reverse("garmin_sync_week"),
+            data={"week_start": "2026-03-02"},
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+        self.assertEqual(resp.status_code, 400)
+        payload = resp.json()
+        self.assertFalse(payload["ok"])
+        self.assertIn("az od zacatku tydne", payload["error"])
 
     @patch("dashboard.services.imports.connect_garmin_account")
     def test_garmin_connect_persists_encrypted_tokens_and_audit(self, mocked_connect):

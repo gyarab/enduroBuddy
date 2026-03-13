@@ -133,7 +133,7 @@
         {% endif %}
       </div>
       {% if selected_athlete %}
-        {% include "dashboard/_month_cards.html" with month_switcher_embedded=True month_state_key=selected_athlete.id plan_editable=plan_editable plan_update_url=plan_update_url completed_editable=completed_editable completed_update_url=completed_update_url add_month_enabled=add_month_enabled add_month_action=add_month_action add_month_athlete_id=add_month_athlete_id %}
+        {% include "dashboard/_month_cards.html" with month_switcher_embedded=True month_state_key=selected_athlete.id plan_editable=plan_editable plan_update_url=plan_update_url completed_editable=completed_editable completed_update_url=completed_update_url garmin_week_sync_enabled=False garmin_week_sync_connected=False add_month_enabled=add_month_enabled add_month_action=add_month_action add_month_athlete_id=add_month_athlete_id %}
       {% else %}
         <div class="alert alert-info py-2">
           Vyber sv&#283;&#345;ence ze sloupce vlevo.

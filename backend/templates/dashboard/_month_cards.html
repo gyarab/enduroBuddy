@@ -8,6 +8,7 @@
   {% if add_phase_url %}data-add-phase-url="{{ add_phase_url }}"{% endif %}
   {% if remove_phase_url %}data-remove-phase-url="{{ remove_phase_url }}"{% endif %}
   {% if completed_editable and completed_update_url %}data-completed-inline-editable="1" data-completed-update-url="{{ completed_update_url }}"{% endif %}
+  {% if garmin_week_sync_enabled and garmin_week_sync_url %}data-garmin-week-sync-url="{{ garmin_week_sync_url }}"{% endif %}
 >
 <div class="alert alert-info py-2 px-3 mb-2 d-none eb-plan-rules-onboarding" role="alert">
   <div class="d-flex align-items-center justify-content-between gap-2">
@@ -158,7 +159,28 @@
             <div class="card shadow-sm h-100">
               <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-2">
-                  <h5 class="mb-0">Spln&#283;no</h5>
+                  <div class="d-flex align-items-center gap-2">
+                    <h5 class="mb-0">Spln&#283;no</h5>
+                    {% if garmin_week_sync_enabled %}
+                      <button
+                        type="button"
+                        class="btn btn-outline-secondary btn-sm rounded-circle d-inline-flex align-items-center justify-content-center eb-garmin-week-sync-btn"
+                        style="width: 28px; height: 28px;"
+                        data-week-start="{{ w.week_start|date:'Y-m-d' }}"
+                        aria-label="Importovat Garmin aktivity z tohoto tydne"
+                        title="{% if not w.has_started %}Tento tyden jeste nezacal.{% else %}Importovat Garmin aktivity z tohoto tydne{% endif %}"
+                        {% if not garmin_week_sync_connected or not w.has_started %}disabled{% endif %}
+                      >
+                        <span class="spinner-border spinner-border-sm d-none eb-garmin-week-sync-spinner" role="status" aria-hidden="true"></span>
+                        <svg class="eb-garmin-week-sync-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false" width="14" height="14">
+                          <path d="M13.2 4.8A5.5 5.5 0 0 0 3.9 3.5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+                          <path d="M3.9 1.9v1.9h1.9" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                          <path d="M2.8 11.2A5.5 5.5 0 0 0 12.1 12.5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+                          <path d="M12.1 14.1v-1.9h-1.9" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                      </button>
+                    {% endif %}
+                  </div>
                   <small class="text-muted">Splits</small>
                 </div>
 

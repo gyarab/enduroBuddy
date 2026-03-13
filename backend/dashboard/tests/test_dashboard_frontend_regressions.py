@@ -20,6 +20,7 @@ DASHBOARD_TEMPLATE_PATH = BACKEND_DIR / "templates" / "dashboard" / "dashboard.h
 COACH_TEMPLATE_PATH = BACKEND_DIR / "templates" / "dashboard" / "coach_training_plans.html"
 MONTH_CARDS_TEMPLATE_PATH = BACKEND_DIR / "templates" / "dashboard" / "_month_cards.html"
 ASSETS_TEMPLATE_PATH = BACKEND_DIR / "templates" / "dashboard" / "_assets.html"
+BASE_TEMPLATE_PATH = BACKEND_DIR / "templates" / "base.html"
 
 
 class DashboardFrontendRegressionTests(SimpleTestCase):
@@ -127,3 +128,32 @@ class DashboardFrontendRegressionTests(SimpleTestCase):
         self.assertIn('data-add-phase-url="{{ add_phase_url }}"', month_cards_html)
         self.assertIn('data-remove-phase-url="{{ remove_phase_url }}"', month_cards_html)
         self.assertIn("eb-completed-inline-edit", month_cards_html)
+
+    def test_garmin_week_sync_hook_is_present_in_template_and_js(self):
+        month_cards_html = MONTH_CARDS_TEMPLATE_PATH.read_text(encoding="utf-8")
+        js = JS_PATH.read_text(encoding="utf-8")
+
+        self.assertIn('data-garmin-week-sync-url="{{ garmin_week_sync_url }}"', month_cards_html)
+        self.assertIn("eb-garmin-week-sync-btn", month_cards_html)
+        self.assertIn("data-week-start", month_cards_html)
+        self.assertIn('closest(".eb-garmin-week-sync-btn")', js)
+        self.assertIn('formData.append("week_start", weekStart)', js)
+        self.assertIn("notifications.updateNotification({", js)
+        self.assertIn('imported ${job.imported_count || 0}, duplicates ${job.skipped_count || 0}.', js)
+        self.assertIn("Garmin sync is running.", js)
+
+    def test_base_template_keeps_top_nav_sticky(self):
+        base_html = BASE_TEMPLATE_PATH.read_text(encoding="utf-8")
+        self.assertIn(".eb-top-nav {", base_html)
+        self.assertIn("position: sticky;", base_html)
+        self.assertIn("top: 0;", base_html)
+        self.assertIn('class="navbar navbar-expand-lg navbar-light bg-white border-bottom eb-top-nav"', base_html)
+
+    def test_dashboard_toolbar_is_sticky_below_top_nav(self):
+        dashboard_html = DASHBOARD_TEMPLATE_PATH.read_text(encoding="utf-8")
+        css = CSS_PATH.read_text(encoding="utf-8")
+
+        self.assertIn("eb-dashboard-toolbar", dashboard_html)
+        self.assertIn(".eb-dashboard-toolbar {", css)
+        self.assertIn("position: sticky;", css)
+        self.assertIn("top: 57px;", css)
