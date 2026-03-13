@@ -52,6 +52,16 @@ class FitWorkoutTypeDetectionTests(SimpleTestCase):
         t = _detect_workout_type(has_workout_steps=False, laps=laps, is_auto_km_laps=False)
         self.assertEqual(t, "WORKOUT")
 
+    def test_workout_type_heuristic_marks_manual_active_rest_laps_as_workout(self):
+        laps = [
+            {"duration_s": 57, "distance_m": 303, "avg_pace_s_per_km": 188, "intensity": "active", "lap_trigger": "manual"},
+            {"duration_s": 60, "distance_m": 90, "avg_pace_s_per_km": 662, "intensity": "rest", "lap_trigger": "manual"},
+            {"duration_s": 56, "distance_m": 307, "avg_pace_s_per_km": 182, "intensity": "active", "lap_trigger": "manual"},
+            {"duration_s": 59, "distance_m": 88, "avg_pace_s_per_km": 665, "intensity": "rest", "lap_trigger": "manual"},
+        ]
+        t = _detect_workout_type(has_workout_steps=False, laps=laps, is_auto_km_laps=False)
+        self.assertEqual(t, "WORKOUT")
+
     @skip("debug only")
     def test_debug_z3_print_laps(self):
         path = FIXTURES_DIR / "Z3.fit"

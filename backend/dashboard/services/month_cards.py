@@ -12,6 +12,7 @@ from accounts.models import Role
 from activities.models import Activity, ActivityInterval
 from training.models import CompletedTraining, PlannedTraining, TrainingMonth, TrainingWeek
 from .planned_km import estimate_running_km_details, estimate_running_km_from_title, format_week_km_label
+from .planned_interval_formatter import format_planned_interval_string
 
 
 CZ_MONTHS = {
@@ -108,9 +109,11 @@ def _plan_indicates_workout(*, title: str, notes: str) -> bool:
     return any(pattern_hits)
 
 
-def _activity_segment(a: Activity, *, show_intervals: bool) -> str:
+def _activity_segment(a: Activity, *, show_intervals: bool, planned_title: str = "") -> str:
     intervals = list(a.intervals.all())
-    intervals_text = _fmt_intervals(intervals)
+    intervals_text = format_planned_interval_string(planned_title, intervals)
+    if intervals_text == "-":
+        intervals_text = _fmt_intervals(intervals)
     pace = _fmt_mmss(a.avg_pace_s_per_km)
     pace_text = "-" if pace == "-" else f"{pace}/km"
 
@@ -325,7 +328,12 @@ def _build_planned_rows_for_week(planned_items: list[PlannedTraining], *, langua
     return rows
 
 
-def _build_completed_row_from_activities(activities: list[Activity], *, show_intervals: bool) -> dict[str, Any]:
+def _build_completed_row_from_activities(
+    activities: list[Activity],
+    *,
+    show_intervals: bool,
+    planned_titles_by_activity_id: Optional[dict[int, str]] = None,
+) -> dict[str, Any]:
     activities = sorted(activities, key=lambda a: (a.started_at is None, a.started_at))
     total_distance_m = sum(int(a.distance_m or 0) for a in activities)
     total_duration_s = sum(int(a.duration_s or 0) for a in activities)
@@ -343,7 +351,11 @@ def _build_completed_row_from_activities(activities: list[Activity], *, show_int
         if a.max_hr is not None:
             max_hr = max(max_hr or 0, int(a.max_hr))
 
-        seg = _activity_segment(a, show_intervals=show_intervals)
+        seg = _activity_segment(
+            a,
+            show_intervals=show_intervals,
+            planned_title=(planned_titles_by_activity_id or {}).get(a.id, ""),
+        )
         if seg != "-":
             third_parts.append(seg)
 
@@ -424,10 +436,13 @@ def _build_completed_rows_for_week(planned_items: list[PlannedTraining]) -> list
 
             phase_1_activities = [x.activity for x in phase_1_items if getattr(x, "activity", None)]
             phase_2_activities = [x.activity for x in phase_2_items if getattr(x, "activity", None)]
+            phase_1_titles = {x.activity.id: x.title or "" for x in phase_1_items if getattr(x, "activity", None)}
+            phase_2_titles = {x.activity.id: x.title or "" for x in phase_2_items if getattr(x, "activity", None)}
 
             phase_1_row = _build_completed_row_from_activities(
                 phase_1_activities,
                 show_intervals=_show_intervals_for(phase_1_items, phase_1_activities),
+                planned_titles_by_activity_id=phase_1_titles,
             )
             phase_1_row["planned_id"] = phase_1_items[0].id if phase_1_items else None
             phase_1_row["item_count"] = len(phase_1_items)
@@ -438,6 +453,7 @@ def _build_completed_rows_for_week(planned_items: list[PlannedTraining]) -> list
             phase_2_row = _build_completed_row_from_activities(
                 phase_2_activities,
                 show_intervals=_show_intervals_for(phase_2_items, phase_2_activities),
+                planned_titles_by_activity_id=phase_2_titles,
             )
             phase_2_row["planned_id"] = phase_2_items[0].id if phase_2_items else None
             phase_2_row["item_count"] = len(phase_2_items)
@@ -453,9 +469,11 @@ def _build_completed_rows_for_week(planned_items: list[PlannedTraining]) -> list
             rows.append(phase_2_row)
         else:
             day_activities = [x.activity for x in items if getattr(x, "activity", None)]
+            planned_titles = {x.activity.id: x.title or "" for x in items if getattr(x, "activity", None)}
             row = _build_completed_row_from_activities(
                 day_activities,
                 show_intervals=_show_intervals_for(items, day_activities),
+                planned_titles_by_activity_id=planned_titles,
             )
             row["planned_id"] = items[0].id if items else None
             row["item_count"] = len(items)

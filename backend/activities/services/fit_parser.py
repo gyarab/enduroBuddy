@@ -49,6 +49,12 @@ def _sport_to_model(sport) -> Optional[str]:
 
 
 def _is_work_interval(it: dict[str, Any]) -> bool:
+    intensity = str(it.get("intensity") or "").lower()
+    if intensity in {"rest", "recovery"}:
+        return False
+    if intensity in {"active", "interval", "work"}:
+        return True
+
     dur = it.get("duration_s") or 0
     dist = it.get("distance_m") or 0
     pace = it.get("avg_pace_s_per_km")
@@ -71,6 +77,156 @@ def _is_work_interval(it: dict[str, Any]) -> bool:
     return True
 
 
+def _avg_hr_from_samples(samples: list[dict[str, Any]]) -> Optional[int]:
+    hrs = [int(s["hr"]) for s in samples if s.get("hr") is not None]
+    if not hrs:
+        return None
+    return int(round(sum(hrs) / len(hrs)))
+
+
+def _max_hr_from_samples(samples: list[dict[str, Any]]) -> Optional[int]:
+    hrs = [int(s["hr"]) for s in samples if s.get("hr") is not None]
+    return max(hrs) if hrs else None
+
+
+def _message_to_row(msg) -> dict[str, Any]:
+    row: dict[str, Any] = {}
+    for field in getattr(msg, "fields", []):
+        if field.name:
+            row[field.name] = field.value
+    return row
+
+
+def _extract_workout_steps(fit) -> list[dict[str, Any]]:
+    steps: list[dict[str, Any]] = []
+    for msg in fit.get_messages("workout_step"):
+        row = _message_to_row(msg)
+        duration_type = str(row.get("duration_type") or "")
+        if duration_type.startswith("repeat_until"):
+            continue
+
+        distance_m = row.get("duration_distance")
+        if distance_m is not None:
+            distance_m = int(round(float(distance_m)))
+
+        time_s = row.get("duration_time")
+        if time_s is not None:
+            time_s = int(round(float(time_s)))
+
+        if not distance_m and not time_s:
+            continue
+
+        steps.append(
+            {
+                "message_index": row.get("message_index"),
+                "step_name": row.get("wkt_step_name") or row.get("notes") or "",
+                "duration_type": duration_type,
+                "distance_m": distance_m,
+                "time_s": time_s,
+                "intensity": str(row.get("intensity") or ""),
+            }
+        )
+    return steps
+
+
+def _step_note(step: dict[str, Any]) -> str:
+    intensity = str(step.get("intensity") or "").lower()
+    if intensity in {"rest", "recovery", "warmup", "cooldown"}:
+        return "REST"
+    return "WORK"
+
+
+def _find_segment_end_index(
+    samples: list[dict[str, Any]],
+    start_index: int,
+    *,
+    target_distance_m: Optional[int] = None,
+    target_time_s: Optional[int] = None,
+) -> Optional[int]:
+    start = samples[start_index]
+    best_index: Optional[int] = None
+    best_diff: Optional[float] = None
+
+    for idx in range(start_index + 1, len(samples)):
+        current = samples[idx]
+        delta_t = int(current["t_s"]) - int(start["t_s"])
+        if target_distance_m is not None and current.get("distance_m") is not None and start.get("distance_m") is not None:
+            delta_d = int(current["distance_m"]) - int(start["distance_m"])
+            diff = abs(delta_d - int(target_distance_m))
+            if best_diff is None or diff < best_diff:
+                best_index = idx
+                best_diff = diff
+            if delta_d >= int(target_distance_m):
+                break
+        elif target_time_s is not None:
+            diff = abs(delta_t - int(target_time_s))
+            if best_diff is None or diff < best_diff:
+                best_index = idx
+                best_diff = diff
+            if delta_t >= int(target_time_s):
+                break
+
+    return best_index
+
+
+def _interval_from_sample_slice(samples: list[dict[str, Any]], start_index: int, end_index: int, *, note: str) -> Optional[dict[str, Any]]:
+    if end_index <= start_index:
+        return None
+
+    start = samples[start_index]
+    end = samples[end_index]
+    duration_s = int(end["t_s"]) - int(start["t_s"])
+    if duration_s <= 0:
+        return None
+
+    distance_m = None
+    if start.get("distance_m") is not None and end.get("distance_m") is not None:
+        distance_m = int(end["distance_m"]) - int(start["distance_m"])
+
+    avg_pace_s_per_km = None
+    if distance_m and distance_m > 0:
+        avg_pace_s_per_km = int(round(float(duration_s) / (float(distance_m) / 1000.0)))
+
+    window = samples[start_index : end_index + 1]
+    return {
+        "duration_s": duration_s,
+        "distance_m": distance_m,
+        "avg_hr": _avg_hr_from_samples(window),
+        "max_hr": _max_hr_from_samples(window),
+        "avg_pace_s_per_km": avg_pace_s_per_km,
+        "note": note,
+    }
+
+
+def _derive_intervals_from_workout_steps(samples: list[dict[str, Any]], steps: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    if len(samples) < 2 or not steps:
+        return []
+
+    intervals: list[dict[str, Any]] = []
+    cursor = 0
+
+    for step in steps:
+        end_index = _find_segment_end_index(
+            samples,
+            cursor,
+            target_distance_m=step.get("distance_m"),
+            target_time_s=step.get("time_s"),
+        )
+        if end_index is None:
+            break
+
+        interval = _interval_from_sample_slice(samples, cursor, end_index, note=_step_note(step))
+        if interval is None:
+            break
+
+        intervals.append(interval)
+        cursor = end_index
+        if cursor >= len(samples) - 1:
+            break
+
+    return intervals if len(intervals) >= 2 else []
+
+
 def _detect_workout_type(*, has_workout_steps: bool, laps: list[dict[str, Any]], is_auto_km_laps: bool) -> str:
     if has_workout_steps:
         return "WORKOUT"
@@ -80,6 +236,12 @@ def _detect_workout_type(*, has_workout_steps: bool, laps: list[dict[str, Any]],
 
     if is_auto_km_laps:
         return "RUN"
+
+    intensity_labels = [str(it.get("intensity") or "").lower() for it in laps]
+    has_active_rest_pattern = any(label == "active" for label in intensity_labels) and any(label == "rest" for label in intensity_labels)
+    manual_lap_count = sum(1 for it in laps if str(it.get("lap_trigger") or "").lower() == "manual")
+    if has_active_rest_pattern and manual_lap_count >= 4:
+        return "WORKOUT"
 
     work_laps = [it for it in laps if _is_work_interval(it)]
     if len(work_laps) < 2:
@@ -121,10 +283,8 @@ def parse_fit_file(source: SourceType) -> FitParseResult:
         break
 
     # --- structured workout steps ---
-    has_workout_steps = False
-    for _ in fit.get_messages("workout_step"):
-        has_workout_steps = True
-        break
+    workout_steps = _extract_workout_steps(fit)
+    has_workout_steps = bool(workout_steps)
 
     # --- laps -> intervals ---
     laps: list[dict[str, Any]] = []
@@ -151,6 +311,8 @@ def parse_fit_file(source: SourceType) -> FitParseResult:
                 "avg_hr": int(lap_avg_hr) if lap_avg_hr is not None else None,
                 "max_hr": int(lap_max_hr) if lap_max_hr is not None else None,
                 "avg_pace_s_per_km": pace_s_per_km,
+                "intensity": _val(lap, "intensity"),
+                "lap_trigger": _val(lap, "lap_trigger"),
                 "note": "",
             }
         )
@@ -209,6 +371,10 @@ def parse_fit_file(source: SourceType) -> FitParseResult:
         laps=laps,
         is_auto_km_laps=is_auto_km_laps,
     )
+
+    derived_step_intervals = _derive_intervals_from_workout_steps(samples, workout_steps) if has_workout_steps else []
+    if derived_step_intervals:
+        laps = derived_step_intervals
 
     # --- label WORK/REST + work_avg_hr ---
     work_avg_hr = None
