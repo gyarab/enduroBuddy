@@ -279,6 +279,7 @@ def coach_training_plans(request):
     month_cards = []
     selected_athlete_focus = ""
     selected_athlete_is_self = bool(selected_athlete and selected_athlete.id == request.user.id)
+    selected_athlete_is_managed = bool(selected_athlete and selected_athlete.id != request.user.id)
     legend_editable = bool(selected_athlete_is_self)
     selected_athlete_legend_state_json = json.dumps({})
     if selected_athlete is not None:
@@ -312,8 +313,9 @@ def coach_training_plans(request):
             "plan_update_url": reverse("coach_update_planned_training"),
             "add_phase_url": reverse("coach_add_second_phase_training"),
             "remove_phase_url": reverse("coach_remove_second_phase_training"),
-            "completed_editable": True,
-            "completed_update_url": reverse("coach_update_completed_training"),
+            "completed_editable": False if selected_athlete_is_managed else bool(selected_athlete_is_self),
+            "completed_lock_linked_activity": False,
+            "completed_update_url": reverse("coach_update_completed_training") if selected_athlete_is_self else "",
             "add_month_enabled": selected_athlete is not None,
             "add_month_action": "add_next_month_selected",
             "add_month_athlete_id": selected_athlete.id if selected_athlete else None,
@@ -417,6 +419,8 @@ def coach_update_completed_training(request):
         accessible_ids=accessible_ids,
     ):
         return JsonResponse({"ok": False, "error": "Forbidden for this athlete."}, status=403)
+    if athlete_id != request.user.id:
+        return JsonResponse({"ok": False, "error": "Trainer nemuze upravovat completed training sverence."}, status=403)
 
     try:
         normalized = _update_completed_training_for_planned(planned=planned, field=field, value=value)

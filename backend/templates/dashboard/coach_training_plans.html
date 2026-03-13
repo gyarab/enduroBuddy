@@ -368,7 +368,7 @@
                             {% endif %}
                           </div>
                           <div class="d-flex align-items-center gap-2">
-                            <form method="post" class="m-0" data-athlete-visibility-form="1">
+                            <form method="post" class="m-0" data-athlete-visibility-form="1" data-eb-skip-submit-loading="1">
                               {% csrf_token %}
                               <input type="hidden" name="athlete_id" value="{{ athlete.id }}">
                               <input type="hidden" name="action" value="{% if athlete.is_hidden_from_plans %}show_athlete{% else %}hide_athlete{% endif %}">

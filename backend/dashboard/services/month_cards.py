@@ -398,15 +398,15 @@ def _build_completed_row_from_activities(
             )
         )
 
-    km = f"{total_distance_m / 1000.0:.2f}" if total_distance_m > 0 else "-"
+    km = f"{total_distance_m / 1000.0:.2f}" if total_distance_m > 0 else ""
     duration_min = int(round(total_duration_s / 60.0)) if total_duration_s > 0 else 0
-    minutes = str(duration_min) if duration_min > 0 else "-"
+    minutes = str(duration_min) if duration_min > 0 else ""
     avg_hr = int(round(hr_num / hr_den)) if hr_den > 0 else None
 
     return {
         "km": km,
         "min": minutes,
-        "third": " | ".join(third_parts) if third_parts else "-",
+        "third": " | ".join(third_parts) if third_parts else "",
         "match_debug": " | ".join(part for part in debug_parts if part),
         "avg_hr": avg_hr,
         "max_hr": max_hr,
@@ -427,11 +427,12 @@ def _build_completed_row_for_unplanned_activity(activity: Activity) -> dict[str,
     descriptor_parts = []
     if activity.title:
         descriptor_parts.append(activity.title)
-    if row["third"] != "-":
+    if row["third"]:
         descriptor_parts.append(row["third"])
-    row["third"] = " | ".join(descriptor_parts) if descriptor_parts else "-"
+    row["third"] = " | ".join(descriptor_parts) if descriptor_parts else ""
     row["planned_id"] = None
     row["item_count"] = 1
+    row["has_linked_activity"] = True
     return row
 
 
@@ -459,6 +460,15 @@ def _build_completed_rows_for_week(
             continue
         extra_by_day.setdefault(activity_day, []).append(activity)
 
+    def _items_have_linked_activity(subitems: list[PlannedTraining]) -> bool:
+        for item in subitems:
+            if getattr(item, "activity", None) is not None:
+                return True
+            completed = getattr(item, "completed", None)
+            if completed is not None and getattr(completed, "activity_id", None):
+                return True
+        return False
+
     def _apply_manual_overrides(row: dict[str, Any], completed: CompletedTraining | None) -> None:
         if completed is None:
             return
@@ -466,12 +476,12 @@ def _build_completed_rows_for_week(
         if completed.distance_m is not None:
             distance_m = int(completed.distance_m)
             row["_distance_m"] = distance_m
-            row["km"] = f"{distance_m / 1000.0:.2f}" if distance_m > 0 else "-"
+            row["km"] = f"{distance_m / 1000.0:.2f}" if distance_m > 0 else ""
 
         if completed.time_seconds is not None:
             duration_min = int(round(int(completed.time_seconds) / 60.0))
             row["_duration_min"] = duration_min
-            row["min"] = str(duration_min) if duration_min > 0 else "-"
+            row["min"] = str(duration_min) if duration_min > 0 else ""
 
         if completed.avg_hr is not None:
             row["avg_hr"] = int(completed.avg_hr)
@@ -528,6 +538,7 @@ def _build_completed_rows_for_week(
             )
             phase_1_row["planned_id"] = phase_1_items[0].id if phase_1_items else None
             phase_1_row["item_count"] = len(phase_1_items)
+            phase_1_row["has_linked_activity"] = _items_have_linked_activity(phase_1_items)
             if len(phase_1_items) == 1:
                 _apply_manual_overrides(phase_1_row, getattr(phase_1_items[0], "completed", None))
             rows.append(phase_1_row)
@@ -540,6 +551,7 @@ def _build_completed_rows_for_week(
             )
             phase_2_row["planned_id"] = phase_2_items[0].id if phase_2_items else None
             phase_2_row["item_count"] = len(phase_2_items)
+            phase_2_row["has_linked_activity"] = _items_have_linked_activity(phase_2_items)
             if len(phase_2_items) == 1:
                 _apply_manual_overrides(phase_2_row, getattr(phase_2_items[0], "completed", None))
 
@@ -547,8 +559,8 @@ def _build_completed_rows_for_week(
             # km/min in phase 2 as cumulative day total (phase 1 + phase 2).
             day_distance_m = int(phase_1_row.get("_distance_m") or 0) + int(phase_2_row.get("_distance_m") or 0)
             day_duration_min = int(phase_1_row.get("_duration_min") or 0) + int(phase_2_row.get("_duration_min") or 0)
-            phase_2_row["km"] = f"{day_distance_m / 1000.0:.2f}" if day_distance_m > 0 else "-"
-            phase_2_row["min"] = str(day_duration_min) if day_duration_min > 0 else "-"
+            phase_2_row["km"] = f"{day_distance_m / 1000.0:.2f}" if day_distance_m > 0 else ""
+            phase_2_row["min"] = str(day_duration_min) if day_duration_min > 0 else ""
             rows.append(phase_2_row)
         elif items:
             day_activities = [x.activity for x in items if getattr(x, "activity", None)]
@@ -562,6 +574,7 @@ def _build_completed_rows_for_week(
             )
             row["planned_id"] = items[0].id if items else None
             row["item_count"] = len(items)
+            row["has_linked_activity"] = _items_have_linked_activity(items)
             if len(items) == 1:
                 _apply_manual_overrides(row, getattr(items[0], "completed", None))
             rows.append(row)

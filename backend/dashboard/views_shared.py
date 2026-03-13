@@ -272,20 +272,20 @@ def _update_completed_training_for_planned(*, planned: PlannedTraining, field: s
     if field == "km":
         distance_m = _parse_optional_distance_m(value)
         _set_and_save_if_changed(completed, {"distance_m": distance_m})
-        return "-" if completed.distance_m is None else f"{completed.distance_m / 1000.0:.2f}"
+        return "" if completed.distance_m is None else f"{completed.distance_m / 1000.0:.2f}"
 
     if field == "min":
         time_seconds = _parse_optional_minutes_to_seconds(value)
         _set_and_save_if_changed(completed, {"time_seconds": time_seconds})
         if completed.time_seconds is None:
-            return "-"
+            return ""
         return str(int(round(completed.time_seconds / 60.0)))
 
     if field == "third":
         if not isinstance(value, str):
             raise ValueError("Invalid text value.")
         _set_and_save_if_changed(completed, {"note": value})
-        return value or "-"
+        return value or ""
 
     if field == "avg_hr":
         avg_hr = _parse_optional_int(value)

@@ -242,6 +242,18 @@
     .eb-profile-form-sm .form-control {
       max-width: 260px;
     }
+    .eb-btn-busy {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: .45rem;
+    }
+    .eb-btn-busy-spinner {
+      width: 1rem;
+      height: 1rem;
+      border-width: .14em;
+      flex: 0 0 auto;
+    }
   </style>
   {% block extra_head %}{% endblock %}
 </head>
@@ -454,6 +466,9 @@
                       {% csrf_token %}
                       <input type="hidden" name="action" value="request_coach_by_code">
                       <input type="hidden" name="next" value="{{ request.get_full_path }}#profileModal">
+                      {% if request.GET.test_button_loading == "add_coach" %}
+                        <input type="hidden" name="test_button_loading" value="add_coach">
+                      {% endif %}
                       <div>
                         <label class="form-label form-label-sm mb-1">K&oacute;d tren&eacute;ra</label>
                         <input type="text" class="form-control form-control-sm text-uppercase" name="coach_code" maxlength="12" placeholder="AB7K9Q2M5T8R" required>
@@ -499,6 +514,75 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+  window.EB = window.EB || {};
+  window.EB.ui = window.EB.ui || {};
+
+  window.EB.ui.setButtonBusy = function setButtonBusy(button, isBusy, options) {
+    if (!(button instanceof HTMLElement)) return;
+
+    const opts = options || {};
+    const busyLabel = Object.prototype.hasOwnProperty.call(opts, "label")
+      ? String(opts.label || "")
+      : String(
+          button.getAttribute("data-loading-label")
+          || button.getAttribute("aria-label")
+          || button.getAttribute("title")
+          || "Probíhá..."
+        );
+
+    if (isBusy) {
+      if (button.dataset.ebBusy === "1") return;
+      button.dataset.ebBusy = "1";
+      button.dataset.ebBusyDisabled = button.disabled ? "1" : "0";
+      button.dataset.ebBusyHtml = button.innerHTML;
+      button.dataset.ebBusyMinWidth = button.style.minWidth || "";
+      button.style.minWidth = `${Math.ceil(button.getBoundingClientRect().width)}px`;
+      button.disabled = true;
+      button.setAttribute("aria-busy", "true");
+      button.classList.add("eb-btn-busy");
+
+      const spinnerMarkup = '<span class="spinner-border spinner-border-sm eb-btn-busy-spinner" role="status" aria-hidden="true"></span>';
+      button.innerHTML = busyLabel
+        ? `${spinnerMarkup}<span>${busyLabel}</span>`
+        : spinnerMarkup;
+      return;
+    }
+
+    if (button.dataset.ebBusy !== "1") return;
+    button.innerHTML = button.dataset.ebBusyHtml || button.innerHTML;
+    button.style.minWidth = button.dataset.ebBusyMinWidth || "";
+    button.disabled = button.dataset.ebBusyDisabled === "1";
+    button.removeAttribute("aria-busy");
+    button.classList.remove("eb-btn-busy");
+    delete button.dataset.ebBusy;
+    delete button.dataset.ebBusyDisabled;
+    delete button.dataset.ebBusyHtml;
+    delete button.dataset.ebBusyMinWidth;
+  };
+
+  document.addEventListener("submit", (event) => {
+    const form = event.target;
+    if (!(form instanceof HTMLFormElement)) return;
+    if (form.dataset.ebSkipSubmitLoading === "1") return;
+
+    if (form.dataset.ebSubmitting === "1") {
+      event.preventDefault();
+      return;
+    }
+
+    const submitter = event.submitter instanceof HTMLElement
+      ? event.submitter
+      : form.querySelector("button[type='submit'], input[type='submit']");
+
+    if (!(submitter instanceof HTMLElement) || submitter.getAttribute("data-eb-no-loading") === "1") {
+      form.dataset.ebSubmitting = "1";
+      return;
+    }
+
+    form.dataset.ebSubmitting = "1";
+    window.EB.ui.setButtonBusy(submitter, true);
+  });
+
   if (window.location.hash === "#profileModal") {
     const profileModalEl = document.getElementById("profileModal");
     if (profileModalEl && window.bootstrap && window.bootstrap.Modal) {
