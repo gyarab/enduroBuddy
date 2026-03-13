@@ -456,6 +456,7 @@ def home(request):
             "add_phase_url": reverse("athlete_add_second_phase_training"),
             "remove_phase_url": reverse("athlete_remove_second_phase_training"),
             "completed_editable": True,
+            "completed_lock_linked_activity": False,
             "completed_update_url": reverse("athlete_update_completed_training"),
             "garmin_week_sync_enabled": True,
             "garmin_week_sync_url": reverse("garmin_sync_week"),

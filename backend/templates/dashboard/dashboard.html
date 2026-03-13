@@ -81,6 +81,7 @@
             method="post"
             class="eb-import-block eb-import-block-sync"
             id="garminSyncForm"
+            data-eb-skip-submit-loading="1"
             data-garmin-sync-start-url="{% url 'garmin_sync_start' %}"
             data-garmin-job-status-url-template="{% url 'import_job_status' 0 %}"
           >

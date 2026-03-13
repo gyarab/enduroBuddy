@@ -19,6 +19,8 @@
       if (!response.ok) throw new Error(`Požadavek selhal se stavem ${response.status}`);
       return response;
     });
+    const ui = (window.EB && window.EB.ui) || {};
+    const setButtonBusy = ui.setButtonBusy || (() => {});
 
     function getActiveMonthId(widget) {
       const activeMonth = widget.querySelector(".month-container.is-active");
@@ -296,7 +298,9 @@
         form.addEventListener("submit", async (event) => {
           event.preventDefault();
           const submitBtn = form.querySelector("button[type='submit']");
-          if (submitBtn) submitBtn.disabled = true;
+          if (submitBtn) {
+            setButtonBusy(submitBtn, true, { label: "" });
+          }
           form.classList.add("is-loading");
 
           try {
@@ -324,6 +328,10 @@
           } catch (err) {
             console.error(err);
             window.location.reload();
+          } finally {
+            if (submitBtn) {
+              setButtonBusy(submitBtn, false);
+            }
           }
         });
       });

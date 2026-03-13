@@ -43,6 +43,8 @@
       return response.text();
     });
     const initCoachMainContent = (deps && deps.initCoachMainContent) || (() => {});
+    const ui = (window.EB && window.EB.ui) || {};
+    const setButtonBusy = ui.setButtonBusy || (() => {});
 
     function initCoachAthleteFocus() {
       const input = document.getElementById("coachAthleteFocusInput");
@@ -914,7 +916,7 @@
           return;
         }
 
-        button.disabled = true;
+        setButtonBusy(button, true, { label: "" });
         try {
           const response = await postForm(form.getAttribute("action") || window.location.href, new FormData(form), getCsrfToken() || "");
           const payload = await response.json();
@@ -937,7 +939,7 @@
           console.error(err);
           form.submit();
         } finally {
-          button.disabled = false;
+          setButtonBusy(button, false);
         }
       });
     }

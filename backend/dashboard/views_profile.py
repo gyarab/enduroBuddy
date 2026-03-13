@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import time
+
 from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.decorators import login_required
@@ -54,6 +56,9 @@ def profile_manage(request):
         return _redirect_back(request)
 
     if action == "request_coach_by_code":
+        if (request.POST.get("test_button_loading") or "").strip() == "add_coach":
+            time.sleep(10)
+
         coach_code = (request.POST.get("coach_code") or "").strip().upper()
         coach_user = _resolve_coach_from_code(coach_code)
         if coach_user is None:

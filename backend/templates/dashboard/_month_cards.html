@@ -200,37 +200,57 @@
                       <tr>
                         <td>
                           {% if completed_editable and r.planned_id %}
+                            {% if completed_lock_linked_activity and r.has_linked_activity %}
+                              {{ r.km }}
+                            {% else %}
                             <div class="eb-completed-inline-edit" contenteditable="true" data-training-id="{{ r.planned_id }}" data-field="km">{{ r.km }}</div>
+                            {% endif %}
                           {% else %}
                             {{ r.km }}
                           {% endif %}
                         </td>
                         <td>
                           {% if completed_editable and r.planned_id %}
+                            {% if completed_lock_linked_activity and r.has_linked_activity %}
+                              {{ r.min }}
+                            {% else %}
                             <div class="eb-completed-inline-edit" contenteditable="true" data-training-id="{{ r.planned_id }}" data-field="min">{{ r.min }}</div>
+                            {% endif %}
                           {% else %}
                             {{ r.min }}
                           {% endif %}
                         </td>
                         <td>
                           {% if completed_editable and r.planned_id %}
+                            {% if completed_lock_linked_activity and r.has_linked_activity %}
+                              {{ r.third }}
+                            {% else %}
                             <div class="eb-completed-inline-edit" contenteditable="true" data-training-id="{{ r.planned_id }}" data-field="third">{{ r.third }}</div>
+                            {% endif %}
                           {% else %}
                             {{ r.third }}
                           {% endif %}
                         </td>
                         <td>
                           {% if completed_editable and r.planned_id %}
-                            <div class="eb-completed-inline-edit" contenteditable="true" data-training-id="{{ r.planned_id }}" data-field="avg_hr">{{ r.avg_hr|default:"-" }}</div>
+                            {% if completed_lock_linked_activity and r.has_linked_activity %}
+                              {{ r.avg_hr|default:"-" }}
+                            {% else %}
+                            <div class="eb-completed-inline-edit" contenteditable="true" data-training-id="{{ r.planned_id }}" data-field="avg_hr">{{ r.avg_hr|default:"" }}</div>
+                            {% endif %}
                           {% else %}
-                            {{ r.avg_hr|default:"-" }}
+                            {{ r.avg_hr|default:"" }}
                           {% endif %}
                         </td>
                         <td>
                           {% if completed_editable and r.planned_id %}
-                            <div class="eb-completed-inline-edit" contenteditable="true" data-training-id="{{ r.planned_id }}" data-field="max_hr">{{ r.max_hr|default:"-" }}</div>
+                            {% if completed_lock_linked_activity and r.has_linked_activity %}
+                              {{ r.max_hr|default:"" }}
+                            {% else %}
+                            <div class="eb-completed-inline-edit" contenteditable="true" data-training-id="{{ r.planned_id }}" data-field="max_hr">{{ r.max_hr|default:"" }}</div>
+                            {% endif %}
                           {% else %}
-                            {{ r.max_hr|default:"-" }}
+                            {{ r.max_hr|default:"" }}
                           {% endif %}
                         </td>
                       </tr>
@@ -272,7 +292,7 @@
   <div class="container-fluid">
     <div class="d-flex gap-2 px-3 eb-month-switcher-track">
       {% if add_month_enabled and add_month_action %}
-      <form method="post" class="m-0 flex-shrink-0 eb-add-month-form">
+      <form method="post" class="m-0 flex-shrink-0 eb-add-month-form" data-eb-skip-submit-loading="1">
         {% csrf_token %}
         <input type="hidden" name="action" value="{{ add_month_action }}">
         {% if add_month_athlete_id %}
