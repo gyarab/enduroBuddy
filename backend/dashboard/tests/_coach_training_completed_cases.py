@@ -95,3 +95,35 @@ class CoachTrainingCompletedCases:
             )
         self.assertEqual(second.status_code, 200)
         save_mock.assert_not_called()
+
+    def test_clearing_last_manual_completed_value_deletes_completed_row(self):
+        planned = PlannedTraining.objects.filter(week__training_month__athlete=self.athlete).first()
+        self.assertIsNotNone(planned)
+        CompletedTraining.objects.create(planned=planned, note="easy + strides")
+        self.client.login(username="athlete", password="athlete")
+
+        resp = self.client.post(
+            reverse("athlete_update_completed_training"),
+            data=json.dumps({"planned_id": planned.id, "field": "third", "value": ""}),
+            content_type="application/json",
+        )
+
+        self.assertEqual(resp.status_code, 200)
+        self.assertFalse(CompletedTraining.objects.filter(planned=planned).exists())
+
+    def test_clearing_empty_linked_completed_value_deletes_completed_and_activity(self):
+        planned = PlannedTraining.objects.filter(week__training_month__athlete=self.athlete).first()
+        self.assertIsNotNone(planned)
+        activity = Activity.objects.create(athlete=self.athlete, planned_training=planned, distance_m=5000, duration_s=1500)
+        CompletedTraining.objects.create(planned=planned, activity=activity)
+        self.client.login(username="athlete", password="athlete")
+
+        resp = self.client.post(
+            reverse("athlete_update_completed_training"),
+            data=json.dumps({"planned_id": planned.id, "field": "third", "value": ""}),
+            content_type="application/json",
+        )
+
+        self.assertEqual(resp.status_code, 200)
+        self.assertFalse(CompletedTraining.objects.filter(planned=planned).exists())
+        self.assertFalse(Activity.objects.filter(id=activity.id).exists())

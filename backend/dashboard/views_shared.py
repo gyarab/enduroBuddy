@@ -12,6 +12,7 @@ from django.utils import timezone
 from accounts.models import CoachAthlete, Profile, Role, TrainingGroup, TrainingGroupAthlete, TrainingGroupInvite
 from accounts.models import AppNotification
 from accounts.services.notifications import upsert_app_notification
+from activities.models import Activity
 from training.models import CompletedTraining, PlannedTraining
 
 
@@ -145,6 +146,7 @@ def sanitize_legend_state(raw_state: Any) -> dict[str, Any]:
 
 
 def maybe_add_test_notifications(request) -> None:
+    setattr(request, "eb_include_test_app_notifications", False)
     if not settings.DEBUG:
         return
     raw_toggle = (request.GET.get("test_notifications") or "").strip().lower()
@@ -154,6 +156,7 @@ def maybe_add_test_notifications(request) -> None:
     for level, text in _TEST_NOTIFICATION_TEXTS:
         getattr(messages, level)(request, text)
     if raw_toggle in {"all", "full"}:
+        setattr(request, "eb_include_test_app_notifications", True)
         if getattr(request.user, "is_authenticated", False):
             upsert_app_notification(
                 recipient=request.user,
@@ -359,6 +362,31 @@ def _remove_second_phase_for_planned(*, planned: PlannedTraining) -> int:
 def _update_completed_training_for_planned(*, planned: PlannedTraining, field: str, value):
     completed, _ = CompletedTraining.objects.get_or_create(planned=planned)
 
+    def _cleanup_completed_if_empty(instance: CompletedTraining) -> None:
+        # An emptied completed row should disappear from both DB and dashboard.
+        if any(
+            (
+                instance.distance_m is not None,
+                instance.time_seconds is not None,
+                instance.avg_hr is not None,
+                bool(instance.note),
+                bool(instance.feel),
+            )
+        ):
+            return
+
+        linked_activity_ids = {
+            activity_id
+            for activity_id in (
+                getattr(planned, "activity_id", None),
+                getattr(instance, "activity_id", None),
+            )
+            if activity_id is not None
+        }
+        instance.delete()
+        if linked_activity_ids:
+            Activity.objects.filter(id__in=linked_activity_ids).delete()
+
     def _set_and_save_if_changed(instance, updates: dict[str, object]) -> None:
         changed_fields = []
         for key, new_value in updates.items():
@@ -371,11 +399,13 @@ def _update_completed_training_for_planned(*, planned: PlannedTraining, field: s
     if field == "km":
         distance_m = _parse_optional_distance_m(value)
         _set_and_save_if_changed(completed, {"distance_m": distance_m})
+        _cleanup_completed_if_empty(completed)
         return "" if completed.distance_m is None else f"{completed.distance_m / 1000.0:.2f}"
 
     if field == "min":
         time_seconds = _parse_optional_minutes_to_seconds(value)
         _set_and_save_if_changed(completed, {"time_seconds": time_seconds})
+        _cleanup_completed_if_empty(completed)
         if completed.time_seconds is None:
             return ""
         return str(int(round(completed.time_seconds / 60.0)))
@@ -384,6 +414,7 @@ def _update_completed_training_for_planned(*, planned: PlannedTraining, field: s
         if not isinstance(value, str):
             raise ValueError("Invalid text value.")
         _set_and_save_if_changed(completed, {"note": value})
+        _cleanup_completed_if_empty(completed)
         return value or ""
 
     if field == "avg_hr":
@@ -391,6 +422,7 @@ def _update_completed_training_for_planned(*, planned: PlannedTraining, field: s
         if avg_hr is not None and avg_hr < 0:
             raise ValueError("Invalid avg_hr value.")
         _set_and_save_if_changed(completed, {"avg_hr": avg_hr})
+        _cleanup_completed_if_empty(completed)
         return completed.avg_hr
 
     if field == "max_hr":
@@ -401,6 +433,7 @@ def _update_completed_training_for_planned(*, planned: PlannedTraining, field: s
         _set_and_save_if_changed(completed, {"feel": feel})
         if getattr(planned, "activity", None):
             _set_and_save_if_changed(planned.activity, {"max_hr": max_hr})
+        _cleanup_completed_if_empty(completed)
         return max_hr
 
     raise ValueError("Invalid field.")

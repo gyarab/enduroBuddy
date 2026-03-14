@@ -13,6 +13,7 @@ from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_GET, require_POST
+from django.db.models import Q
 
 from dashboard.api import json_error
 from accounts.models import AppNotification, CoachAthlete, CoachJoinRequest, GarminConnection, GarminSyncAudit, ImportJob
@@ -428,10 +429,12 @@ def import_job_status(request, job_id: int):
 @login_required
 @require_GET
 def notification_poll(request):
+    notifications_qs = AppNotification.objects.filter(recipient=request.user, read_at__isnull=True)
+    notifications_qs = notifications_qs.exclude(
+        Q(dedupe_key__startswith="test-live-") | Q(text__startswith="Test live:")
+    )
     notifications = list(
-        AppNotification.objects.filter(recipient=request.user, read_at__isnull=True)
-        .select_related("actor")
-        .order_by("-created_at", "-id")[:20]
+        notifications_qs.select_related("actor").order_by("-created_at", "-id")[:20]
     )
     return JsonResponse(
         {
