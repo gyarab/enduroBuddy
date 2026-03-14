@@ -58,6 +58,11 @@
     border-bottom: 1px solid #e5e7eb;
   }
 
+  .eb-manage-menu-panel {
+    border-right: 0;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
   .eb-coach-manage-modal .modal-content {
     height: auto;
     max-height: calc(100vh - 20px);
