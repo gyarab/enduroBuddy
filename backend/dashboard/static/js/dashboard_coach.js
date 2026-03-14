@@ -5,7 +5,7 @@
     const metrics = (window.EB && window.EB.metrics) || {};
     const metricStart = metrics.start || (() => null);
     const metricEnd = metrics.end || (() => null);
-    const notifications = (window.EB && window.EB.notifications) || null;
+    const getNotifications = () => (window.EB && window.EB.notifications) || null;
     const getCsrfToken = (deps && deps.getCsrfToken) || (() => "");
     const postJson = (deps && deps.postJson) || (async (url, payload, csrfToken) => {
       const response = await fetch(url, {
@@ -97,10 +97,11 @@
           } catch (err) {
             input.classList.add("is-error");
             input.value = input.dataset.savedValue || "";
+            const notifications = getNotifications();
             if (notifications) {
               notifications.addNotification({
                 id: `coach-focus-error-${athleteId}`,
-                text: (err && err.message) || "Ulozeni zamereni selhalo.",
+                text: (err && err.message) || "Uložení zaměření selhalo.",
                 tone: "danger",
                 unread: true,
               });
@@ -291,6 +292,7 @@
             { state: nextState || {} },
             getCsrfToken()
           );
+          const notifications = getNotifications();
           if (notifications && opts.successText) {
             notifications.addNotification({
               id: `legend-save-${athleteId}`,
@@ -300,6 +302,7 @@
             });
           }
         } catch (err) {
+          const notifications = getNotifications();
           if (notifications) {
             notifications.addNotification({
               id: `legend-save-error-${athleteId}`,
@@ -545,7 +548,7 @@
           } else {
             delete currentState.zones;
           }
-          writeSavedState(currentState, { successText: "Zony byly ulozeny." });
+          writeSavedState(currentState, { successText: "Zóny byly uloženy." });
           renderZoneTable();
           const modal = window.bootstrap && window.bootstrap.Modal ? window.bootstrap.Modal.getInstance(zonesModal) : null;
           if (modal) modal.hide();
@@ -562,7 +565,7 @@
           else delete currentState.aerobic_threshold;
           if (anaerobic) currentState.anaerobic_threshold = anaerobic;
           else delete currentState.anaerobic_threshold;
-          writeSavedState(currentState, { successText: "Prahy byly ulozeny." });
+          writeSavedState(currentState, { successText: "Prahy byly uloženy." });
           renderThresholdDisplays();
           const modal = window.bootstrap && window.bootstrap.Modal ? window.bootstrap.Modal.getInstance(thresholdsModal) : null;
           if (modal) modal.hide();
@@ -606,10 +609,11 @@
           if (newRow) {
             saveStateFromInputs();
             prTimeInput.value = "";
+            const notifications = getNotifications();
             if (notifications) {
               notifications.addNotification({
                 id: `legend-pr-${athleteId}`,
-                text: "Osobni rekord byl ulozen.",
+                text: "Osobní rekord byl uložen.",
                 tone: "success",
                 unread: true,
               });
@@ -661,19 +665,21 @@
 
         try {
           await postJson(reorderUrl, { athlete_ids: ids }, csrfToken);
+          const notifications = getNotifications();
           if (notifications) {
             notifications.addNotification({
               id: "coach-reorder-success",
-              text: "Poradi sverencu bylo ulozeno.",
+              text: "Pořadí svěřenců bylo uloženo.",
               tone: "success",
               unread: true,
             });
           }
         } catch (err) {
+          const notifications = getNotifications();
           if (notifications) {
             notifications.addNotification({
               id: "coach-reorder-error",
-              text: (err && err.message) || "Ulozeni poradi sverencu selhalo.",
+              text: (err && err.message) || "Uložení pořadí svěřenců selhalo.",
               tone: "danger",
               unread: true,
             });
@@ -985,15 +991,17 @@
             button.setAttribute("title", nextLabel);
             button.setAttribute("aria-label", nextLabel);
             button.innerHTML = isHidden ? eyeSlashIcon : eyeIcon;
+            const notifications = getNotifications();
             if (notifications) {
               notifications.addNotification({
                 id: `coach-visibility-${payload.athlete_id}`,
-                text: isHidden ? "Sverenec byl skryt z planu." : "Sverenec byl znovu zobrazen v planech.",
+                text: isHidden ? "Svěřenec byl skryt z plánu." : "Svěřenec byl znovu zobrazen v plánech.",
                 tone: "success",
                 unread: true,
               });
             }
           } catch (err) {
+            const notifications = getNotifications();
             if (notifications) {
               notifications.addNotification({
                 id: "coach-visibility-error",

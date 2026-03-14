@@ -164,6 +164,49 @@ class CoachJoinRequest(models.Model):
         return f"{self.athlete.username} -> {self.coach.username} ({self.status})"
 
 
+class AppNotification(models.Model):
+    class Kind(models.TextChoices):
+        COACH_JOIN_REQUEST = "COACH_JOIN_REQUEST", "Coach join request"
+        PLAN_UPDATED = "PLAN_UPDATED", "Plan updated"
+        COACH_NOTE = "COACH_NOTE", "Coach note"
+
+    class Tone(models.TextChoices):
+        SUCCESS = "success", "Success"
+        INFO = "info", "Info"
+        WARNING = "warning", "Warning"
+        DANGER = "danger", "Danger"
+        SECONDARY = "secondary", "Secondary"
+
+    recipient = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="app_notifications",
+    )
+    actor = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="triggered_app_notifications",
+    )
+    kind = models.CharField(max_length=40, choices=Kind.choices, db_index=True)
+    tone = models.CharField(max_length=16, choices=Tone.choices, default=Tone.INFO)
+    text = models.CharField(max_length=255)
+    dedupe_key = models.CharField(max_length=120, blank=True, default="", db_index=True)
+    read_at = models.DateTimeField(null=True, blank=True, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at", "-id"]
+        indexes = [
+            models.Index(fields=["recipient", "read_at", "-created_at"], name="appnotif_rec_read_idx"),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.recipient} | {self.kind} | {self.text[:40]}"
+
+
 class GarminConnection(models.Model):
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,

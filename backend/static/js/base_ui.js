@@ -79,17 +79,150 @@
   }
 
   (function () {
+    if (document.body.dataset.ebProfileAjaxInit === "1") return;
+    document.body.dataset.ebProfileAjaxInit = "1";
+
+    const getNotifications = () => (window.EB && window.EB.notifications) || null;
+    const getCsrfTokenFromForm = (form) => {
+      if (!(form instanceof HTMLFormElement)) return "";
+      const tokenInput = form.querySelector("input[name='csrfmiddlewaretoken']");
+      return tokenInput instanceof HTMLInputElement ? tokenInput.value : "";
+    };
+
+    const fetchCurrentDocument = async () => {
+      const response = await fetch(window.location.pathname + window.location.search, {
+        method: "GET",
+        headers: { "X-Requested-With": "XMLHttpRequest" },
+        credentials: "same-origin",
+      });
+      if (!response.ok) throw new Error(`Pozadavek selhal se stavem ${response.status}`);
+      const html = await response.text();
+      return new DOMParser().parseFromString(html, "text/html");
+    };
+
+    const setActiveProfileTab = (modalEl, tabSelector) => {
+      if (!modalEl || !tabSelector || !(window.bootstrap && window.bootstrap.Tab)) return;
+      const tabTrigger = modalEl.querySelector(`[data-bs-target="${tabSelector}"]`);
+      if (tabTrigger) {
+        window.bootstrap.Tab.getOrCreateInstance(tabTrigger).show();
+      }
+    };
+
+    const refreshProfileModal = async (tabSelector) => {
+      const currentModal = document.getElementById("profileModal");
+      if (!currentModal) return;
+      const doc = await fetchCurrentDocument();
+      const nextModal = doc.getElementById("profileModal");
+      if (nextModal) {
+        const currentContent = currentModal.querySelector(".modal-content");
+        const nextContent = nextModal.querySelector(".modal-content");
+        if (currentContent && nextContent) {
+          currentContent.replaceWith(nextContent);
+        }
+      }
+
+      const currentDropdown = document.querySelector(".eb-profile-dropdown-name");
+      const nextDropdown = doc.querySelector(".eb-profile-dropdown-name");
+      if (currentDropdown && nextDropdown) {
+        currentDropdown.replaceWith(nextDropdown);
+      }
+
+      setActiveProfileTab(currentModal, tabSelector);
+    };
+
+    document.addEventListener("submit", async (event) => {
+      const form = event.target;
+      if (!(form instanceof HTMLFormElement)) return;
+      if (form.getAttribute("data-profile-ajax") !== "1") return;
+
+      event.preventDefault();
+      const submitter = event.submitter instanceof HTMLElement
+        ? event.submitter
+        : form.querySelector("button[type='submit'], input[type='submit']");
+      const activeTabPane = form.closest(".tab-pane");
+      const activeTabSelector = activeTabPane ? `#${activeTabPane.id}` : "#profileTabPane";
+
+      if (submitter instanceof HTMLElement) {
+        window.EB.ui.setButtonBusy(submitter, true);
+      }
+
+      try {
+        const response = await fetch(form.getAttribute("action") || window.location.href, {
+          method: "POST",
+          headers: {
+            "X-Requested-With": "XMLHttpRequest",
+            "X-CSRFToken": getCsrfTokenFromForm(form),
+          },
+          body: new FormData(form),
+          credentials: "same-origin",
+        });
+        const payload = await response.json();
+        const message = (payload && (payload.message || payload.error)) || "Akce selhala.";
+        const tone = (payload && payload.tone) || (response.ok ? "success" : "danger");
+        const notifications = getNotifications();
+        if (notifications) {
+          notifications.addNotification({
+            id: `profile-${Date.now()}`,
+            text: message,
+            tone,
+            unread: true,
+          });
+        }
+        if (!response.ok || !payload || !payload.ok) return;
+        if (payload.refresh_profile_modal) {
+          await refreshProfileModal(activeTabSelector);
+        } else {
+          setActiveProfileTab(document.getElementById("profileModal"), activeTabSelector);
+        }
+      } catch (error) {
+        const notifications = getNotifications();
+        if (notifications) {
+          notifications.addNotification({
+            id: `profile-error-${Date.now()}`,
+            text: (error && error.message) || "Akci v profilu se nepodařilo dokončit.",
+            tone: "danger",
+            unread: true,
+          });
+        }
+      } finally {
+        if (submitter instanceof HTMLElement) {
+          window.EB.ui.setButtonBusy(submitter, false);
+        }
+      }
+    });
+  })();
+
+  (function () {
     const bellBtn = document.getElementById("notificationBellButton");
     const dropdownRoot = document.getElementById("notificationDropdownRoot");
     const centerRoot = document.getElementById("notificationCenterRoot");
     const notificationRoot = dropdownRoot || centerRoot;
     if (!notificationRoot) return;
 
+    const pollUrl = dropdownRoot ? dropdownRoot.getAttribute("data-notification-poll-url") || "" : "";
+    const markReadUrl = dropdownRoot ? dropdownRoot.getAttribute("data-notification-mark-read-url") || "" : "";
     const unreadItems = Array.from(notificationRoot.querySelectorAll("[data-notification-item].is-unread"));
     const badge = bellBtn ? bellBtn.querySelector(".eb-notification-badge") : null;
     const toastTimers = new Map();
     const activeToasts = new Map();
+    const knownNotificationIds = new Set(
+      Array.from(notificationRoot.querySelectorAll("[data-eb-notification-id]"))
+        .map((item) => item.getAttribute("data-eb-notification-id") || "")
+        .filter(Boolean)
+    );
     let markReadTimerId = null;
+    let pollTimerId = null;
+    let pollInFlight = false;
+
+    const getCookieValue = (name) => {
+      const prefix = `${name}=`;
+      const parts = (document.cookie || "").split(";");
+      for (let index = 0; index < parts.length; index += 1) {
+        const cookie = parts[index].trim();
+        if (cookie.startsWith(prefix)) return decodeURIComponent(cookie.slice(prefix.length));
+      }
+      return "";
+    };
 
     const ensureBadge = () => {
       if (!bellBtn) return null;
@@ -326,10 +459,17 @@
       const itemId = id || `n-${Date.now()}`;
       const existingItem = list.querySelector(`[data-eb-notification-id="${itemId}"]`);
       if (existingItem) {
-        const textEl = existingItem.querySelector(".eb-notification-text");
-        if (textEl) textEl.textContent = text;
-        const content = existingItem.querySelector(".eb-notification-content");
-        if (content) upsertNotificationDetails(content, { statusLabel, progressPercent });
+        if (unread) existingItem.classList.add("is-unread");
+        else existingItem.classList.remove("is-unread");
+        syncUnreadCount();
+        updateNotification({
+          id: itemId,
+          text,
+          tone,
+          persistent,
+          statusLabel,
+          progressPercent,
+        });
         return { item: existingItem, toast: activeToasts.get(itemId) || null };
       }
 
@@ -342,11 +482,57 @@
         progressPercent,
       });
       item.dataset.ebNotificationId = itemId;
+      knownNotificationIds.add(itemId);
       list.prepend(item);
       syncUnreadCount();
 
       const toast = showToastWithText(text, { tone, persistent, toastId: itemId });
       return { item, toast };
+    };
+
+    const toneFromItem = (item) => {
+      if (!(item instanceof HTMLElement)) return "secondary";
+      const knownTones = ["success", "danger", "warning", "secondary", "info"];
+      const match = knownTones.find((value) => item.classList.contains(`eb-notification-item--${value}`));
+      return match || "secondary";
+    };
+
+    const ingestNotificationsFromRoot = (sourceRoot) => {
+      if (!sourceRoot || !(sourceRoot instanceof Element)) return [];
+      const sourceItems = Array.from(sourceRoot.querySelectorAll("[data-notification-item]"));
+      const added = [];
+      sourceItems.forEach((sourceItem, index) => {
+        const textEl = sourceItem.querySelector(".eb-notification-text");
+        const metaEl = sourceItem.querySelector(".eb-notification-meta");
+        const progressBar = sourceItem.querySelector(".eb-notification-progress-bar");
+        const text = textEl ? textEl.textContent.trim() : sourceItem.textContent.trim();
+        if (!text) return;
+        const unread = sourceItem.classList.contains("is-unread");
+        const tone = toneFromItem(sourceItem);
+        const progressWidth = progressBar ? progressBar.style.width || "" : "";
+        const parsedProgress = progressWidth.endsWith("%") ? Number(progressWidth.replace("%", "")) : null;
+        const notificationId = `srv-${Date.now()}-${index}-${text.slice(0, 24)}`;
+        added.push(
+          addNotification({
+            id: notificationId,
+            text,
+            tone,
+            unread,
+            persistent: Boolean(sourceItem.querySelector(".eb-notification-spinner")),
+            statusLabel: metaEl ? metaEl.textContent.trim() : "",
+            progressPercent: Number.isFinite(parsedProgress) ? parsedProgress : null,
+          })
+        );
+      });
+      return added;
+    };
+
+    const ingestNotificationsFromDocument = (doc) => {
+      if (!doc || typeof doc.querySelector !== "function") return [];
+      const sourceRoot = doc.querySelector("#notificationDropdownRoot")
+        || doc.querySelector("#notificationCenterRoot")
+        || doc;
+      return ingestNotificationsFromRoot(sourceRoot);
     };
 
     const updateNotification = ({
@@ -361,7 +547,7 @@
       const list = ensureNotificationList();
       const item = list ? list.querySelector(`[data-eb-notification-id="${id}"]`) : null;
       if (item) {
-        item.classList.remove("eb-notification-item--success", "eb-notification-item--danger", "eb-notification-item--warning", "eb-notification-item--secondary");
+        item.classList.remove("eb-notification-item--success", "eb-notification-item--danger", "eb-notification-item--warning", "eb-notification-item--secondary", "eb-notification-item--info");
         item.classList.add(`eb-notification-item--${tone}`);
         const textEl = item.querySelector(".eb-notification-text");
         if (textEl) textEl.textContent = text;
@@ -396,6 +582,72 @@
       }
     };
 
+    const pushServerNotification = (payload) => {
+      if (!payload || typeof payload !== "object") return;
+      const rawId = payload.id;
+      if (!Number.isFinite(Number(rawId))) return;
+      const notificationId = `app-${rawId}`;
+      if (knownNotificationIds.has(notificationId)) return;
+      addNotification({
+        id: notificationId,
+        text: payload.text || "",
+        tone: payload.tone || "info",
+        unread: payload.unread !== false,
+        persistent: false,
+      });
+      const item = notificationRoot.querySelector(`[data-eb-notification-id="${notificationId}"]`);
+      if (item) {
+        item.dataset.appNotificationId = String(rawId);
+      }
+    };
+
+    const pollNotifications = async () => {
+      if (!pollUrl || pollInFlight || document.hidden) return;
+      pollInFlight = true;
+      try {
+        const response = await fetch(pollUrl, {
+          method: "GET",
+          headers: { "X-Requested-With": "XMLHttpRequest" },
+          credentials: "same-origin",
+        });
+        if (!response.ok) return;
+        const payload = await response.json();
+        const notifications = Array.isArray(payload && payload.notifications) ? payload.notifications : [];
+        notifications
+          .slice()
+          .reverse()
+          .forEach((notification) => pushServerNotification(notification));
+      } catch (_error) {
+        // Ignore transient polling errors to avoid noisy UX.
+      } finally {
+        pollInFlight = false;
+      }
+    };
+
+    const markVisibleNotificationsAsRead = async () => {
+      if (!markReadUrl) return;
+      const unreadAppIds = Array.from(
+        notificationRoot.querySelectorAll("[data-app-notification-id][data-notification-item].is-unread")
+      )
+        .map((item) => item.getAttribute("data-app-notification-id") || "")
+        .filter((value) => /^\d+$/.test(value));
+      if (!unreadAppIds.length) return;
+      try {
+        await fetch(markReadUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": getCookieValue("csrftoken"),
+            "X-Requested-With": "XMLHttpRequest",
+          },
+          credentials: "same-origin",
+          body: JSON.stringify({ notification_ids: unreadAppIds }),
+        });
+      } catch (_error) {
+        // Local unread state is already updated optimistically.
+      }
+    };
+
     unreadItems.forEach((item, index) => {
       showBellToast(item, index * 260);
     });
@@ -409,6 +661,7 @@
             item.classList.remove("is-unread");
           });
           syncUnreadCount();
+          markVisibleNotificationsAsRead();
           markReadTimerId = null;
         }, 400);
       });
@@ -423,13 +676,23 @@
 
     window.addEventListener("resize", positionToastStack);
     window.addEventListener("scroll", positionToastStack, { passive: true });
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden) pollNotifications();
+    });
 
     syncUnreadCount();
+    if (pollUrl) {
+      pollNotifications();
+      pollTimerId = window.setInterval(pollNotifications, 15000);
+    }
 
     window.EB = window.EB || {};
     window.EB.notifications = {
       addNotification,
       updateNotification,
+      ingestNotificationsFromDocument,
+      ingestNotificationsFromRoot,
+      pollNotifications,
     };
   })();
 })();

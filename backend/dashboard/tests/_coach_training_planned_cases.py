@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from ._coach_training_base import CoachAthlete, PlannedTraining, _resolve_week_for_day, date, json, patch, reverse
+from ._coach_training_base import AppNotification, CoachAthlete, PlannedTraining, _resolve_week_for_day, date, json, patch, reverse
 
 
 class CoachTrainingPlannedCases:
@@ -24,6 +24,10 @@ class CoachTrainingPlannedCases:
         self.assertEqual(resp_notes.status_code, 200)
         planned.refresh_from_db()
         self.assertEqual(planned.notes, "Keep HR under threshold.")
+        notifications = list(AppNotification.objects.filter(recipient=self.athlete).order_by("id"))
+        self.assertEqual(len(notifications), 2)
+        self.assertIn("Trenér upravil plán", notifications[0].text)
+        self.assertIn("Trenér přidal poznámku", notifications[1].text)
 
     def test_inline_title_update_stores_planned_distance_from_title(self):
         planned = PlannedTraining.objects.filter(week__training_month__athlete=self.athlete).first()
@@ -37,6 +41,27 @@ class CoachTrainingPlannedCases:
         self.assertEqual(resp.status_code, 200)
         planned.refresh_from_db()
         self.assertEqual(str(planned.planned_distance_km), "11.70")
+
+    def test_coach_creates_new_plan_notification_when_title_was_empty(self):
+        week = _resolve_week_for_day(self.athlete, date(2026, 3, 10))
+        planned = PlannedTraining.objects.create(
+            week=week,
+            date=date(2026, 3, 10),
+            day_label="Tue",
+            title="",
+            notes="",
+            order_in_day=1,
+        )
+        self.client.login(username="coach", password="coach")
+        response = self.client.post(
+            reverse("coach_update_planned_training"),
+            data=json.dumps({"planned_id": planned.id, "field": "title", "value": "8 km klus"}),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        notification = AppNotification.objects.filter(recipient=self.athlete).order_by("-id").first()
+        self.assertIsNotNone(notification)
+        self.assertIn("Trenér přidal nový plán", notification.text)
 
     def test_coach_can_inline_update_own_planned_training(self):
         own_week = _resolve_week_for_day(self.coach, date(2026, 3, 8))

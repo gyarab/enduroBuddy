@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
 
-from accounts.models import CoachJoinRequest, Role
+from accounts.models import AppNotification, CoachJoinRequest, Role
 
 
 class ProfileManageTests(TestCase):
@@ -72,3 +72,6 @@ class ProfileManageTests(TestCase):
                 status=CoachJoinRequest.Status.PENDING,
             ).exists()
         )
+        notification = AppNotification.objects.filter(recipient=self.coach).order_by("-id").first()
+        self.assertIsNotNone(notification)
+        self.assertIn("Nová žádost o trénování", notification.text)

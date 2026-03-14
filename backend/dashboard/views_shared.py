@@ -10,6 +10,8 @@ from django.db import transaction
 from django.utils import timezone
 
 from accounts.models import CoachAthlete, Profile, Role, TrainingGroup, TrainingGroupAthlete, TrainingGroupInvite
+from accounts.models import AppNotification
+from accounts.services.notifications import upsert_app_notification
 from training.models import CompletedTraining, PlannedTraining
 
 
@@ -33,10 +35,10 @@ _LEGEND_DISTANCE_VALUES = {
 }
 
 _TEST_NOTIFICATION_TEXTS = (
-    ("success", "Test: Novy treninkovy plan je pripraven."),
-    ("info", "Test: Garmin synchronizace bude spustena za chvili."),
-    ("warning", "Test: Chybi ti vyplneny komentar u dnesniho treninku."),
-    ("error", "Test: Nepodarilo se nacist jednu aktivitu."),
+    ("success", "Test: Nový tréninkový plán je připraven."),
+    ("info", "Test: Garmin synchronizace bude spuštěna za chvíli."),
+    ("warning", "Test: Chybí ti vyplněný komentář u dnešního tréninku."),
+    ("error", "Test: Nepodařilo se načíst jednu aktivitu."),
 )
 
 _TEST_CLIENT_NOTIFICATION_SCENARIOS = [
@@ -44,7 +46,7 @@ _TEST_CLIENT_NOTIFICATION_SCENARIOS = [
         "delay_ms": 0,
         "action": "add",
         "id": "test-client-secondary",
-        "text": "Test client: Tip v notifikacnim baru.",
+        "text": "Test client: Tip v notifikačním baru.",
         "tone": "secondary",
         "unread": True,
         "persistent": False,
@@ -53,7 +55,7 @@ _TEST_CLIENT_NOTIFICATION_SCENARIOS = [
         "delay_ms": 120,
         "action": "add",
         "id": "test-client-warning",
-        "text": "Test client: Garmin synchronizace bezi.",
+        "text": "Test client: Garmin synchronizace běží.",
         "tone": "warning",
         "unread": True,
         "persistent": True,
@@ -64,7 +66,7 @@ _TEST_CLIENT_NOTIFICATION_SCENARIOS = [
         "delay_ms": 900,
         "action": "update",
         "id": "test-client-warning",
-        "text": "Test client: Garmin synchronizace dokoncena.",
+        "text": "Test client: Garmin synchronizace dokončena.",
         "tone": "success",
         "persistent": False,
         "statusLabel": "Done",
@@ -74,7 +76,7 @@ _TEST_CLIENT_NOTIFICATION_SCENARIOS = [
         "delay_ms": 260,
         "action": "add",
         "id": "test-client-danger",
-        "text": "Test client: Ulozeni treninku selhalo.",
+        "text": "Test client: Uložení tréninku selhalo.",
         "tone": "danger",
         "unread": True,
         "persistent": False,
@@ -83,7 +85,7 @@ _TEST_CLIENT_NOTIFICATION_SCENARIOS = [
         "delay_ms": 420,
         "action": "add",
         "id": "test-client-success",
-        "text": "Test client: Druha faze byla pridana.",
+        "text": "Test client: Druhá fáze byla přidána.",
         "tone": "success",
         "unread": True,
         "persistent": False,
@@ -152,7 +154,51 @@ def maybe_add_test_notifications(request) -> None:
     for level, text in _TEST_NOTIFICATION_TEXTS:
         getattr(messages, level)(request, text)
     if raw_toggle in {"all", "full"}:
+        if getattr(request.user, "is_authenticated", False):
+            upsert_app_notification(
+                recipient=request.user,
+                kind=AppNotification.Kind.COACH_JOIN_REQUEST,
+                tone=AppNotification.Tone.INFO,
+                text="Test live: Nová žádost o trénování čeká na schválení.",
+                dedupe_key=f"test-live-join-request:{request.user.id}",
+            )
+            upsert_app_notification(
+                recipient=request.user,
+                kind=AppNotification.Kind.PLAN_UPDATED,
+                tone=AppNotification.Tone.INFO,
+                text="Test live: Trenér přidal nový plán na zítřek.",
+                dedupe_key=f"test-live-plan-updated:{request.user.id}",
+            )
+            upsert_app_notification(
+                recipient=request.user,
+                kind=AppNotification.Kind.COACH_NOTE,
+                tone=AppNotification.Tone.INFO,
+                text="Test live: Trenér přidal poznámku k tréninku.",
+                dedupe_key=f"test-live-coach-note:{request.user.id}",
+            )
         setattr(request, "eb_test_client_notifications", list(_TEST_CLIENT_NOTIFICATION_SCENARIOS))
+
+
+def maybe_add_new_coach_request_notifications(request, pending_join_requests) -> None:
+    if not getattr(request.user, "is_authenticated", False):
+        return
+    session_key = f"eb_seen_coach_join_request_ids_{request.user.id}"
+    seen_ids = request.session.get(session_key, [])
+    if not isinstance(seen_ids, list):
+        seen_ids = []
+
+    current_pending_ids = [int(req.id) for req in pending_join_requests if getattr(req, "id", None)]
+    unseen_requests = [req for req in pending_join_requests if req.id not in seen_ids]
+    if not unseen_requests:
+        request.session[session_key] = current_pending_ids
+        return
+
+    if len(unseen_requests) == 1:
+        request_text = f"Nova zadost o trenovani od {unseen_requests[0].athlete.username}."
+    else:
+        request_text = f"Mas {len(unseen_requests)} nove zadosti o trenovani."
+    messages.info(request, request_text)
+    request.session[session_key] = current_pending_ids
 
 def _coach_accessible_athlete_ids(*, coach_user) -> set[int]:
     accessible_ids = set(

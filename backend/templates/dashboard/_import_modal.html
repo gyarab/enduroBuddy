@@ -3,22 +3,22 @@
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="importActivitiesModalLabel">Import aktivit</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Zavrit"></button>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Zavřít"></button>
       </div>
       <div class="modal-body eb-import-modal-body">
         <div class="eb-import-note">
-          Garmin heslo se neuklada. Ukladaji se pouze sifrovane tokeny.
+          Garmin heslo se neukládá. Ukládají se pouze šifrované tokeny.
         </div>
 
         {% if garmin_connection %}
         <div class="eb-import-block eb-import-block-connected">
           <div class="eb-import-block-head">
             <div>
-              <div class="eb-import-label">Garmin ucet</div>
+              <div class="eb-import-label">Garmin účet</div>
               <div class="eb-import-value">{{ garmin_connection.garmin_display_name|default:garmin_connection.garmin_email }}</div>
             </div>
           </div>
-          <form method="post" class="m-0 mt-2">
+          <form method="post" class="m-0 mt-2" data-import-ajax="1">
             {% csrf_token %}
             <button class="btn btn-outline-danger btn-sm w-100" type="submit" name="import_source" value="garmin_revoke">
               Odpojit Garmin
@@ -26,11 +26,11 @@
           </form>
         </div>
         {% else %}
-        <form method="post" class="eb-import-block eb-import-block-auth">
+        <form method="post" class="eb-import-block eb-import-block-auth" data-import-ajax="1">
           {% csrf_token %}
           <input type="hidden" name="import_source" value="garmin_connect">
           <div class="eb-import-block-head">
-            <div class="eb-import-title">Pripojit Garmin ucet</div>
+            <div class="eb-import-title">Připojit Garmin účet</div>
           </div>
           <div class="mb-2">
             <label class="form-label form-label-sm mb-1">E-mail</label>
@@ -40,7 +40,7 @@
             <label class="form-label form-label-sm mb-1">Heslo</label>
             <input type="password" class="form-control form-control-sm" name="garmin_password" placeholder="********" required>
           </div>
-          <button class="btn btn-primary btn-sm w-100" type="submit">Pripojit Garmin</button>
+          <button class="btn btn-primary btn-sm w-100" type="submit">Připojit Garmin</button>
         </form>
         {% endif %}
 
@@ -60,11 +60,11 @@
           <div class="d-flex align-items-center gap-2">
             <select class="form-select form-select-sm" id="garminRangeSelect" name="garmin_range">
               <option value="today">Dnes</option>
-              <option value="yesterday">Vcera</option>
-              <option value="this_week">Tento tyden</option>
-              <option value="last_week">Minuly tyden</option>
-              <option value="last_30_days" selected>Poslednich 30 dni</option>
-              <option value="all">Vse</option>
+              <option value="yesterday">Včera</option>
+              <option value="this_week">Tento týden</option>
+              <option value="last_week">Minulý týden</option>
+              <option value="last_30_days" selected>Posledních 30 dní</option>
+              <option value="all">Vše</option>
             </select>
             <button class="btn btn-success btn-sm d-inline-flex align-items-center gap-2" id="garminSyncSubmitButton" type="submit" {% if not garmin_connection %}disabled{% endif %}>
               <span class="spinner-border spinner-border-sm d-none" id="garminSyncSpinner" role="status" aria-hidden="true"></span>
@@ -73,7 +73,7 @@
           </div>
         </form>
 
-        <form method="post" enctype="multipart/form-data" id="fitImportForm" class="eb-import-block eb-import-block-fit m-0">
+        <form method="post" enctype="multipart/form-data" id="fitImportForm" class="eb-import-block eb-import-block-fit m-0" data-import-ajax="1">
           {% csrf_token %}
           <input type="hidden" id="importSourceInput" name="import_source" value="fit_upload">
           <input type="file" id="fitFileInput" name="fit_file" accept=".fit" class="d-none">

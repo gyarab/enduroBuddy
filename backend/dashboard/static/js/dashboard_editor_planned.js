@@ -4,7 +4,7 @@
   function createPlannedEditor(deps) {
     const metrics = (window.EB && window.EB.metrics) || {};
     const metricMeasureAsync = metrics.measureAsync || (async (_name, fn) => fn());
-    const notifications = (window.EB && window.EB.notifications) || null;
+    const getNotifications = () => (window.EB && window.EB.notifications) || null;
     const getCsrfToken = (deps && deps.getCsrfToken) || (() => "");
     const postJson = (deps && deps.postJson) || (async (url, payload, csrfToken) => {
       const response = await fetch(url, {
@@ -571,6 +571,7 @@
         } catch (err) {
           node.textContent = originalValue;
           node.classList.add("is-error");
+          const notifications = getNotifications();
           if (notifications) {
             notifications.addNotification({
               id: `planned-save-error-${trainingId}-${field}`,
@@ -628,6 +629,15 @@
       } catch (err) {
         selectNode.value = originalValue;
         selectNode.classList.add("is-error");
+        const notifications = getNotifications();
+        if (notifications) {
+          notifications.addNotification({
+            id: `planned-select-save-error-${trainingId}-${field}`,
+            text: (err && err.message) || "Uložení typu tréninku selhalo.",
+            tone: "danger",
+            unread: true,
+          });
+        }
         console.error(err);
       } finally {
         selectNode.dataset.saving = "0";
@@ -767,20 +777,22 @@
             nextNode.focus();
             placeCaretToEnd(nextNode);
           }
+          const notifications = getNotifications();
           if (notifications) {
             notifications.addNotification({
               id: `planned-add-phase-${trainingId}`,
-              text: "Druha faze byla pridana.",
+              text: "Druhá fáze byla přidána.",
               tone: "success",
               unread: true,
             });
           }
           return true;
         } catch (err) {
+          const notifications = getNotifications();
           if (notifications) {
             notifications.addNotification({
               id: `planned-add-phase-error-${trainingId}`,
-              text: (err && err.message) || "Pridani druhe faze selhalo.",
+              text: (err && err.message) || "Přidání druhé fáze selhalo.",
               tone: "danger",
               unread: true,
             });
@@ -846,20 +858,22 @@
             fallback.focus();
             placeCaretToEnd(fallback);
           }
+          const notifications = getNotifications();
           if (notifications) {
             notifications.addNotification({
               id: `planned-remove-phase-${trainingId}`,
-              text: "Druha faze byla odebrana.",
+              text: "Druhá fáze byla odebrána.",
               tone: "success",
               unread: true,
             });
           }
           return true;
         } catch (err) {
+          const notifications = getNotifications();
           if (notifications) {
             notifications.addNotification({
               id: `planned-remove-phase-error-${trainingId}`,
-              text: (err && err.message) || "Odebrani druhe faze selhalo.",
+              text: (err && err.message) || "Odebrání druhé fáze selhalo.",
               tone: "danger",
               unread: true,
             });

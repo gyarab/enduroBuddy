@@ -17,29 +17,29 @@ class ApiText:
     ATHLETE_IDS_MUST_BE_INT_LIST = "athlete_ids must be a list of integers."
     DUPLICATE_ATHLETE_IDS = "Duplicate athlete ids are not allowed."
     UNLINKED_ATHLETE_IDS = "One or more athletes are not linked to this coach."
-    COACH_CANNOT_EDIT_MANAGED_COMPLETED = "Trainer nemuze upravovat completed training sverence."
-    GARMIN_NOT_CONNECTED = "Garmin ucet neni pripojen."
-    INVALID_WEEK_START = "Neplatny zacatek tydne."
-    GARMIN_WEEK_UNAVAILABLE = "Garmin import tydne je dostupny az od zacatku tydne."
-    GARMIN_SYNC_START_FAILED = "Synchronizaci se nepodarilo spustit."
+    COACH_CANNOT_EDIT_MANAGED_COMPLETED = "Trenér nemůže upravovat completed trénink svěřence."
+    GARMIN_NOT_CONNECTED = "Garmin účet není připojen."
+    INVALID_WEEK_START = "Neplatný začátek týdne."
+    GARMIN_WEEK_UNAVAILABLE = "Garmin import týdne je dostupný až od začátku týdne."
+    GARMIN_SYNC_START_FAILED = "Synchronizaci se nepodařilo spustit."
     GARMIN_SYNC_FAILED = "Garmin sync failed."
     JOB_NOT_FOUND = "Job nenalezen."
 
 
 class DashboardText:
-    ADMIN_ONLY_REMOVE_WEEK = "remove_week_completed je povoleny jen pro uzivatele admin."
-    REMOVE_WEEK_USAGE = "Pouzij remove_week_completed=3/1 nebo remove_week_completed=2026/3/1."
-    ADMIN_USER_NOT_FOUND = "Uzivatel admin nebyl nalezen."
-    ADMIN_ONLY_TEST_IMPORT = "test_garmin_import je povoleny jen pro uzivatele admin."
+    ADMIN_ONLY_REMOVE_WEEK = "remove_week_completed je povolený jen pro uživatele admin."
+    REMOVE_WEEK_USAGE = "Použij remove_week_completed=3/1 nebo remove_week_completed=2026/3/1."
+    ADMIN_USER_NOT_FOUND = "Uživatel admin nebyl nalezen."
+    ADMIN_ONLY_TEST_IMPORT = "test_garmin_import je povolený jen pro uživatele admin."
 
     @staticmethod
     def week_not_found(*, year: int, month: int, week_index: int) -> str:
-        return f"Tyden {week_index} v {month}/{year} nebyl nalezen."
+        return f"Týden {week_index} v {month}/{year} nebyl nalezen."
 
     @staticmethod
     def removed_admin_week(*, year: int, month: int, week_index: int, completed_count: int, activity_count: int) -> str:
         return (
-            f"Vymazano Splneno pro admin {month}/{year}, tyden {week_index}: "
+            f"Vymazáno Splněno pro admin {month}/{year}, týden {week_index}: "
             f"completed {completed_count}, activity {activity_count}."
         )
 
@@ -57,26 +57,26 @@ class DashboardText:
         return (
             f"Test cleanup hotov ({from_day:%d.%m.%Y} - {to_day:%d.%m.%Y}): "
             f"planned/completed {deleted_planned_count}, activity {deleted_activity_count}, ledger {deleted_ledger_count}. "
-            f"Tyden znovu vytvoren (index {recreated_week_index}, dnu {recreated_days_count})."
+            f"Týden znovu vytvořen (index {recreated_week_index}, dnů {recreated_days_count})."
         )
 
     @staticmethod
     def garmin_week_synced(*, replaced: int, untouched: int) -> str:
-        return f"Garmin tyden synchronizovan. Prepsano: {replaced}, ponechano: {untouched}."
+        return f"Garmin týden synchronizován. Přepsáno: {replaced}, ponecháno: {untouched}."
 
 
 class HomeText:
-    COACH_CODE_NOT_FOUND = "Kod trenera nebyl nalezen."
-    OWN_COACH_CODE = "Nemuzes zadat vlastni kod trenera."
-    ALREADY_ASSIGNED_TO_COACH = "Uz jsi u tohoto trenera prirazeny."
-    JOIN_REQUEST_ALREADY_PENDING = "Pozadavek uz ceka na schvaleni."
-    JOIN_REQUEST_SENT = "Pozadavek byl odeslan trenerovi ke schvaleni."
+    COACH_CODE_NOT_FOUND = "Kód trenéra nebyl nalezen."
+    OWN_COACH_CODE = "Nemůžeš zadat vlastní kód trenéra."
+    ALREADY_ASSIGNED_TO_COACH = "Už jsi u tohoto trenéra přiřazený."
+    JOIN_REQUEST_ALREADY_PENDING = "Požadavek už čeká na schválení."
+    JOIN_REQUEST_SENT = "Požadavek byl odeslán trenérovi ke schválení."
     GARMIN_EMAIL_PASSWORD_REQUIRED = "Enter Garmin email and password."
     GARMIN_ACCOUNT_CONNECTED = "Garmin account connected."
     GARMIN_ACCOUNT_DISCONNECTED = "Garmin account disconnected."
     GARMIN_ACCOUNT_NOT_CONNECTED = "Garmin account is not connected."
     GARMIN_SYNC_QUEUED = "Garmin sync queued."
-    GARMIN_SYNC_ALREADY_RUNNING = "Garmin sync uz bezi."
+    GARMIN_SYNC_ALREADY_RUNNING = "Garmin sync už běží."
     GARMIN_SYNC_FAILED = "Garmin sync failed."
     FIT_FILE_REQUIRED = "Please select a FIT file."
     FIT_IMPORT_QUEUED = "FIT import queued."
@@ -86,11 +86,11 @@ class HomeText:
 
     @staticmethod
     def month_created(*, weeks_created: int, days_created: int) -> str:
-        return f"Pridan novy mesic: tydny {weeks_created}, dny {days_created}."
+        return f"Přidán nový měsíc: týdny {weeks_created}, dny {days_created}."
 
     @staticmethod
     def month_extended(*, weeks_created: int, days_created: int) -> str:
-        return f"Mesic uz existoval, doplneno: tydny {weeks_created}, dny {days_created}."
+        return f"Měsíc už existoval, doplněno: týdny {weeks_created}, dny {days_created}."
 
     @staticmethod
     def garmin_connect_failed(exc: Exception) -> str:
@@ -110,46 +110,46 @@ class HomeText:
 
 
 class CoachText:
-    DEFAULT_GROUP_NAME = "Moji sverenci"
-    DEFAULT_GROUP_DESCRIPTION = "Vychozi skupina pro pozvanky."
-    INVALID_REQUEST = "Neplatny pozadavek."
-    REQUEST_NOT_FOUND = "Pozadavek nebyl nalezen nebo uz byl vyrizen."
-    REQUEST_APPROVED = "Zadost byla schvalena."
-    REQUEST_REJECTED = "Zadost byla zamitnuta."
-    INVALID_ATHLETE = "Neplatny atlet."
-    CANNOT_REMOVE_OWN_PLAN = "Nelze odebrat vlastni plan."
+    DEFAULT_GROUP_NAME = "Moji svěřenci"
+    DEFAULT_GROUP_DESCRIPTION = "Výchozí skupina pro pozvánky."
+    INVALID_REQUEST = "Neplatný požadavek."
+    REQUEST_NOT_FOUND = "Požadavek nebyl nalezen nebo už byl vyřízen."
+    REQUEST_APPROVED = "Žádost byla schválena."
+    REQUEST_REJECTED = "Žádost byla zamítnuta."
+    INVALID_ATHLETE = "Neplatný atlet."
+    CANNOT_REMOVE_OWN_PLAN = "Nelze odebrat vlastní plán."
     ATHLETE_NOT_FOUND = "Atlet nebyl nalezen."
-    CONFIRM_NAME_MISMATCH = "Potvrzovaci jmeno nesouhlasi."
-    ATHLETE_REMOVED = "Sverenec byl odebran."
-    SETTINGS_SAVED = "Nastaveni bylo ulozeno."
-    CANNOT_HIDE_OWN_PLAN = "Nelze skryt vlastni plan."
-    INVITE_CREATED = "Pozvanka byla vytvorena."
-    INVALID_ATHLETE_SELECTION = "Neplatny vyber atleta."
+    CONFIRM_NAME_MISMATCH = "Potvrzovací jméno nesouhlasí."
+    ATHLETE_REMOVED = "Svěřenec byl odebrán."
+    SETTINGS_SAVED = "Nastavení bylo uloženo."
+    CANNOT_HIDE_OWN_PLAN = "Nelze skrýt vlastní plán."
+    INVITE_CREATED = "Pozvánka byla vytvořena."
+    INVALID_ATHLETE_SELECTION = "Neplatný výběr atleta."
 
     @staticmethod
     def month_created(*, weeks_created: int, days_created: int) -> str:
-        return f"Pridan novy mesic: tydny {weeks_created}, dny {days_created}."
+        return f"Přidán nový měsíc: týdny {weeks_created}, dny {days_created}."
 
     @staticmethod
     def month_extended(*, weeks_created: int, days_created: int) -> str:
-        return f"Mesic uz existoval, doplneno: tydny {weeks_created}, dny {days_created}."
+        return f"Měsíc už existoval, doplněno: týdny {weeks_created}, dny {days_created}."
 
     @staticmethod
     def bulk_month_created(*, created_months: int, created_weeks: int, created_days: int) -> str:
-        return f"Hromadne vytvoreno: mesice {created_months}, tydny {created_weeks}, dny {created_days}."
+        return f"Hromadně vytvořeno: měsíce {created_months}, týdny {created_weeks}, dny {created_days}."
 
 
 class ProfileText:
-    PROFILE_SAVED = "Profil byl ulozen."
-    OLD_PASSWORD_INVALID = "Stare heslo neni spravne."
-    PASSWORD_CONFIRM_MISMATCH = "Nove heslo a potvrzeni se neshoduji."
-    PASSWORD_CHANGED = "Heslo bylo zmeneno."
-    UNKNOWN_ACTION = "Neznamy pozadavek."
+    PROFILE_SAVED = "Profil byl uložen."
+    OLD_PASSWORD_INVALID = "Staré heslo není správně."
+    PASSWORD_CONFIRM_MISMATCH = "Nové heslo a potvrzení se neshodují."
+    PASSWORD_CHANGED = "Heslo bylo změněno."
+    UNKNOWN_ACTION = "Neznámý požadavek."
 
 
 class InviteText:
     INVITE_NOT_FOUND = "Pozvanka neexistuje."
-    INVITE_ALREADY_USED = "Pozvanka uz byla pouzita."
-    INVITE_EXPIRED = "Pozvanka uz vyprsela."
-    COACH_CANNOT_ACCEPT_OWN_INVITE = "Trener nemuze prijmout vlastni pozvanku."
-    INVITE_ACCEPTED = "Byl/a jsi pridan/a do treninkove skupiny."
+    INVITE_ALREADY_USED = "Pozvánka už byla použita."
+    INVITE_EXPIRED = "Pozvánka už vypršela."
+    COACH_CANNOT_ACCEPT_OWN_INVITE = "Trenér nemůže přijmout vlastní pozvánku."
+    INVITE_ACCEPTED = "Byl/a jsi přidán/a do tréninkové skupiny."

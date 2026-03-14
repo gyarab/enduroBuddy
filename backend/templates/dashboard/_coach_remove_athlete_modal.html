@@ -3,18 +3,18 @@
     <div class="modal-content">
       <form method="post">
         <div class="modal-header">
-          <h5 class="modal-title" id="coachRemoveAthleteModalLabel">Odebrat sverence</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Zavrit"></button>
+          <h5 class="modal-title" id="coachRemoveAthleteModalLabel">Odebrat svěřence</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Zavřít"></button>
         </div>
         <div class="modal-body">
           {% csrf_token %}
           <input type="hidden" name="action" value="remove_athlete">
           <input type="hidden" name="athlete_id" id="coachRemoveAthleteIdInput" value="">
           <p class="mb-2">
-            Pro potvrzeni opis jmeno:
+            Pro potvrzení opiš jméno:
             <strong id="coachRemoveAthleteExpectedName"></strong>
           </p>
-          <label class="form-label form-label-sm" for="coachRemoveAthleteConfirmInput">Potvrzovaci jmeno</label>
+          <label class="form-label form-label-sm" for="coachRemoveAthleteConfirmInput">Potvrzovací jméno</label>
           <input
             id="coachRemoveAthleteConfirmInput"
             class="form-control"
@@ -24,8 +24,8 @@
           >
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Zrusit</button>
-          <button type="submit" class="btn btn-danger btn-sm" id="coachRemoveAthleteSubmitBtn" disabled>Odebrat sverence</button>
+          <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Zrušit</button>
+          <button type="submit" class="btn btn-danger btn-sm" id="coachRemoveAthleteSubmitBtn" disabled>Odebrat svěřence</button>
         </div>
       </form>
     </div>

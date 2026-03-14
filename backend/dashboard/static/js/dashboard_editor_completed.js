@@ -4,7 +4,7 @@
   function createCompletedEditor(deps) {
     const metrics = (window.EB && window.EB.metrics) || {};
     const metricMeasureAsync = metrics.measureAsync || (async (_name, fn) => fn());
-    const notifications = (window.EB && window.EB.notifications) || null;
+    const getNotifications = () => (window.EB && window.EB.notifications) || null;
     const getCsrfToken = (deps && deps.getCsrfToken) || (() => "");
     const postJson = (deps && deps.postJson) || (async (url, payload, csrfToken) => {
       const response = await fetch(url, {
@@ -176,20 +176,22 @@
             nextNode.focus();
             placeCaretToEnd(nextNode);
           }
+          const notifications = getNotifications();
           if (notifications) {
             notifications.addNotification({
               id: `completed-add-phase-${trainingId}`,
-              text: "Druha faze byla pridana.",
+              text: "Druhá fáze byla přidána.",
               tone: "success",
               unread: true,
             });
           }
           return true;
         } catch (err) {
+          const notifications = getNotifications();
           if (notifications) {
             notifications.addNotification({
               id: `completed-add-phase-error-${trainingId}`,
-              text: (err && err.message) || "Pridani druhe faze selhalo.",
+              text: (err && err.message) || "Přidání druhé fáze selhalo.",
               tone: "danger",
               unread: true,
             });
@@ -254,20 +256,22 @@
             fallback.focus();
             placeCaretToEnd(fallback);
           }
+          const notifications = getNotifications();
           if (notifications) {
             notifications.addNotification({
               id: `completed-remove-phase-${trainingId}`,
-              text: "Druha faze byla odebrana.",
+              text: "Druhá fáze byla odebrána.",
               tone: "success",
               unread: true,
             });
           }
           return true;
         } catch (err) {
+          const notifications = getNotifications();
           if (notifications) {
             notifications.addNotification({
               id: `completed-remove-phase-error-${trainingId}`,
-              text: (err && err.message) || "Odebrani druhe faze selhalo.",
+              text: (err && err.message) || "Odebrání druhé fáze selhalo.",
               tone: "danger",
               unread: true,
             });
@@ -319,10 +323,11 @@
         } catch (err) {
           node.textContent = originalValue;
           node.classList.add("is-error");
+          const notifications = getNotifications();
           if (notifications) {
             notifications.addNotification({
               id: `completed-save-error-${trainingId}-${field}`,
-              text: (err && err.message) || "Ulozeni splneneho treninku selhalo.",
+              text: (err && err.message) || "Uložení splněného tréninku selhalo.",
               tone: "danger",
               unread: true,
             });
