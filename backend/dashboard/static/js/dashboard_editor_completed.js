@@ -4,6 +4,7 @@
   function createCompletedEditor(deps) {
     const metrics = (window.EB && window.EB.metrics) || {};
     const metricMeasureAsync = metrics.measureAsync || (async (_name, fn) => fn());
+    const notifications = (window.EB && window.EB.notifications) || null;
     const getCsrfToken = (deps && deps.getCsrfToken) || (() => "");
     const postJson = (deps && deps.postJson) || (async (url, payload, csrfToken) => {
       const response = await fetch(url, {
@@ -175,8 +176,24 @@
             nextNode.focus();
             placeCaretToEnd(nextNode);
           }
+          if (notifications) {
+            notifications.addNotification({
+              id: `completed-add-phase-${trainingId}`,
+              text: "Druha faze byla pridana.",
+              tone: "success",
+              unread: true,
+            });
+          }
           return true;
         } catch (err) {
+          if (notifications) {
+            notifications.addNotification({
+              id: `completed-add-phase-error-${trainingId}`,
+              text: (err && err.message) || "Pridani druhe faze selhalo.",
+              tone: "danger",
+              unread: true,
+            });
+          }
           console.error(err);
           node.classList.add("is-error");
           return false;
@@ -237,8 +254,24 @@
             fallback.focus();
             placeCaretToEnd(fallback);
           }
+          if (notifications) {
+            notifications.addNotification({
+              id: `completed-remove-phase-${trainingId}`,
+              text: "Druha faze byla odebrana.",
+              tone: "success",
+              unread: true,
+            });
+          }
           return true;
         } catch (err) {
+          if (notifications) {
+            notifications.addNotification({
+              id: `completed-remove-phase-error-${trainingId}`,
+              text: (err && err.message) || "Odebrani druhe faze selhalo.",
+              tone: "danger",
+              unread: true,
+            });
+          }
           console.error(err);
           node.classList.add("is-error");
           return false;
@@ -286,6 +319,14 @@
         } catch (err) {
           node.textContent = originalValue;
           node.classList.add("is-error");
+          if (notifications) {
+            notifications.addNotification({
+              id: `completed-save-error-${trainingId}-${field}`,
+              text: (err && err.message) || "Ulozeni splneneho treninku selhalo.",
+              tone: "danger",
+              unread: true,
+            });
+          }
           console.error(err);
         } finally {
           node.dataset.saving = "0";

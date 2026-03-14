@@ -81,15 +81,18 @@
   (function () {
     const bellBtn = document.getElementById("notificationBellButton");
     const dropdownRoot = document.getElementById("notificationDropdownRoot");
-    if (!bellBtn || !dropdownRoot) return;
+    const centerRoot = document.getElementById("notificationCenterRoot");
+    const notificationRoot = dropdownRoot || centerRoot;
+    if (!notificationRoot) return;
 
-    const unreadItems = Array.from(dropdownRoot.querySelectorAll("[data-notification-item].is-unread"));
-    const badge = bellBtn.querySelector(".eb-notification-badge");
+    const unreadItems = Array.from(notificationRoot.querySelectorAll("[data-notification-item].is-unread"));
+    const badge = bellBtn ? bellBtn.querySelector(".eb-notification-badge") : null;
     const toastTimers = new Map();
     const activeToasts = new Map();
     let markReadTimerId = null;
 
     const ensureBadge = () => {
+      if (!bellBtn) return null;
       if (badge) return badge;
       const created = document.createElement("span");
       created.className = "eb-notification-badge";
@@ -98,16 +101,19 @@
     };
 
     const syncUnreadCount = () => {
-      const count = dropdownRoot.querySelectorAll("[data-notification-item].is-unread").length;
+      const count = notificationRoot.querySelectorAll("[data-notification-item].is-unread").length;
       const targetBadge = ensureBadge();
+      if (!targetBadge) return;
       targetBadge.textContent = String(count);
       targetBadge.style.display = count > 0 ? "inline-block" : "none";
     };
 
     const ensureNotificationList = () => {
-      let list = dropdownRoot.querySelector(".eb-notification-list");
+      let list = notificationRoot.querySelector(".eb-notification-list");
       if (list) return list;
-      const menu = dropdownRoot.querySelector(".eb-notification-dropdown");
+      const menu = dropdownRoot
+        ? dropdownRoot.querySelector(".eb-notification-dropdown")
+        : notificationRoot;
       if (!menu) return null;
       list = document.createElement("div");
       list.className = "eb-notification-list";
@@ -195,6 +201,14 @@
     const positionToastStack = () => {
       const stack = document.getElementById("notificationBellToastStack");
       if (!stack) return;
+      if (!bellBtn) {
+        const stackWidth = Math.min(320, window.innerWidth - 24);
+        stack.style.setProperty("--eb-stack-pointer-right", "32px");
+        stack.style.width = `${stackWidth}px`;
+        stack.style.top = "18px";
+        stack.style.left = `${Math.max(12, window.innerWidth - stackWidth - 12)}px`;
+        return;
+      }
       const rect = bellBtn.getBoundingClientRect();
       const stackWidth = Math.min(320, window.innerWidth - 24);
       const bellCenterX = rect.left + (rect.width / 2);
@@ -386,24 +400,26 @@
       showBellToast(item, index * 260);
     });
 
-    dropdownRoot.addEventListener("shown.bs.dropdown", () => {
-      clearBellToastsImmediately();
-      if (markReadTimerId) window.clearTimeout(markReadTimerId);
-      markReadTimerId = window.setTimeout(() => {
-        dropdownRoot.querySelectorAll("[data-notification-item].is-unread").forEach((item) => {
-          item.classList.remove("is-unread");
-        });
-        syncUnreadCount();
-        markReadTimerId = null;
-      }, 400);
-    });
+    if (dropdownRoot) {
+      dropdownRoot.addEventListener("shown.bs.dropdown", () => {
+        clearBellToastsImmediately();
+        if (markReadTimerId) window.clearTimeout(markReadTimerId);
+        markReadTimerId = window.setTimeout(() => {
+          dropdownRoot.querySelectorAll("[data-notification-item].is-unread").forEach((item) => {
+            item.classList.remove("is-unread");
+          });
+          syncUnreadCount();
+          markReadTimerId = null;
+        }, 400);
+      });
 
-    dropdownRoot.addEventListener("hidden.bs.dropdown", () => {
-      if (markReadTimerId) {
-        window.clearTimeout(markReadTimerId);
-        markReadTimerId = null;
-      }
-    });
+      dropdownRoot.addEventListener("hidden.bs.dropdown", () => {
+        if (markReadTimerId) {
+          window.clearTimeout(markReadTimerId);
+          markReadTimerId = null;
+        }
+      });
+    }
 
     window.addEventListener("resize", positionToastStack);
     window.addEventListener("scroll", positionToastStack, { passive: true });

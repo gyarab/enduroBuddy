@@ -4,6 +4,7 @@
   function createPlannedEditor(deps) {
     const metrics = (window.EB && window.EB.metrics) || {};
     const metricMeasureAsync = metrics.measureAsync || (async (_name, fn) => fn());
+    const notifications = (window.EB && window.EB.notifications) || null;
     const getCsrfToken = (deps && deps.getCsrfToken) || (() => "");
     const postJson = (deps && deps.postJson) || (async (url, payload, csrfToken) => {
       const response = await fetch(url, {
@@ -567,11 +568,19 @@
         if (!payload.ok) throw new Error(payload.error || "Uložení selhalo.");
         node.dataset.originalValue = payload.value || "";
         node.classList.remove("is-error");
-      } catch (err) {
-        node.textContent = originalValue;
-        node.classList.add("is-error");
-        console.error(err);
-      } finally {
+        } catch (err) {
+          node.textContent = originalValue;
+          node.classList.add("is-error");
+          if (notifications) {
+            notifications.addNotification({
+              id: `planned-save-error-${trainingId}-${field}`,
+              text: (err && err.message) || "Ulozeni planu selhalo.",
+              tone: "danger",
+              unread: true,
+            });
+          }
+          console.error(err);
+        } finally {
         node.dataset.saving = "0";
         node.classList.remove("is-saving");
         if (node.dataset.queued === "1") {
@@ -758,8 +767,24 @@
             nextNode.focus();
             placeCaretToEnd(nextNode);
           }
+          if (notifications) {
+            notifications.addNotification({
+              id: `planned-add-phase-${trainingId}`,
+              text: "Druha faze byla pridana.",
+              tone: "success",
+              unread: true,
+            });
+          }
           return true;
         } catch (err) {
+          if (notifications) {
+            notifications.addNotification({
+              id: `planned-add-phase-error-${trainingId}`,
+              text: (err && err.message) || "Pridani druhe faze selhalo.",
+              tone: "danger",
+              unread: true,
+            });
+          }
           console.error(err);
           node.classList.add("is-error");
           return false;
@@ -821,8 +846,24 @@
             fallback.focus();
             placeCaretToEnd(fallback);
           }
+          if (notifications) {
+            notifications.addNotification({
+              id: `planned-remove-phase-${trainingId}`,
+              text: "Druha faze byla odebrana.",
+              tone: "success",
+              unread: true,
+            });
+          }
           return true;
         } catch (err) {
+          if (notifications) {
+            notifications.addNotification({
+              id: `planned-remove-phase-error-${trainingId}`,
+              text: (err && err.message) || "Odebrani druhe faze selhalo.",
+              tone: "danger",
+              unread: true,
+            });
+          }
           console.error(err);
           node.classList.add("is-error");
           return false;

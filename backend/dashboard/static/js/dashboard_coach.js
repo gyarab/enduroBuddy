@@ -5,6 +5,7 @@
     const metrics = (window.EB && window.EB.metrics) || {};
     const metricStart = metrics.start || (() => null);
     const metricEnd = metrics.end || (() => null);
+    const notifications = (window.EB && window.EB.notifications) || null;
     const getCsrfToken = (deps && deps.getCsrfToken) || (() => "");
     const postJson = (deps && deps.postJson) || (async (url, payload, csrfToken) => {
       const response = await fetch(url, {
@@ -93,14 +94,22 @@
           input.value = payload.focus || "";
           input.classList.remove("is-error");
           applyFocusToSidebar(payload.focus || "");
-        } catch (err) {
-          input.classList.add("is-error");
-          input.value = input.dataset.savedValue || "";
-          console.error(err);
-        } finally {
-          input.classList.remove("is-saving");
+          } catch (err) {
+            input.classList.add("is-error");
+            input.value = input.dataset.savedValue || "";
+            if (notifications) {
+              notifications.addNotification({
+                id: `coach-focus-error-${athleteId}`,
+                text: (err && err.message) || "Ulozeni zamereni selhalo.",
+                tone: "danger",
+                unread: true,
+              });
+            }
+            console.error(err);
+          } finally {
+            input.classList.remove("is-saving");
+          }
         }
-      }
 
       let timerId = null;
       input.addEventListener("input", () => {
@@ -273,15 +282,32 @@
         return next;
       }
 
-      async function writeSavedState(nextState) {
+      async function writeSavedState(nextState, options) {
         if (!legendEditable || !legendSaveUrl) return;
+        const opts = options || {};
         try {
           await postJson(
             legendSaveUrl,
             { state: nextState || {} },
             getCsrfToken()
           );
+          if (notifications && opts.successText) {
+            notifications.addNotification({
+              id: `legend-save-${athleteId}`,
+              text: opts.successText,
+              tone: "success",
+              unread: true,
+            });
+          }
         } catch (err) {
+          if (notifications) {
+            notifications.addNotification({
+              id: `legend-save-error-${athleteId}`,
+              text: (err && err.message) || "Ulozeni legendy selhalo.",
+              tone: "danger",
+              unread: true,
+            });
+          }
           console.error(err);
         }
       }
@@ -519,7 +545,7 @@
           } else {
             delete currentState.zones;
           }
-          writeSavedState(currentState);
+          writeSavedState(currentState, { successText: "Zony byly ulozeny." });
           renderZoneTable();
           const modal = window.bootstrap && window.bootstrap.Modal ? window.bootstrap.Modal.getInstance(zonesModal) : null;
           if (modal) modal.hide();
@@ -536,7 +562,7 @@
           else delete currentState.aerobic_threshold;
           if (anaerobic) currentState.anaerobic_threshold = anaerobic;
           else delete currentState.anaerobic_threshold;
-          writeSavedState(currentState);
+          writeSavedState(currentState, { successText: "Prahy byly ulozeny." });
           renderThresholdDisplays();
           const modal = window.bootstrap && window.bootstrap.Modal ? window.bootstrap.Modal.getInstance(thresholdsModal) : null;
           if (modal) modal.hide();
@@ -580,6 +606,14 @@
           if (newRow) {
             saveStateFromInputs();
             prTimeInput.value = "";
+            if (notifications) {
+              notifications.addNotification({
+                id: `legend-pr-${athleteId}`,
+                text: "Osobni rekord byl ulozen.",
+                tone: "success",
+                unread: true,
+              });
+            }
             const modal = window.bootstrap && window.bootstrap.Modal ? window.bootstrap.Modal.getInstance(prModal) : null;
             if (modal) modal.hide();
           }
@@ -627,7 +661,23 @@
 
         try {
           await postJson(reorderUrl, { athlete_ids: ids }, csrfToken);
+          if (notifications) {
+            notifications.addNotification({
+              id: "coach-reorder-success",
+              text: "Poradi sverencu bylo ulozeno.",
+              tone: "success",
+              unread: true,
+            });
+          }
         } catch (err) {
+          if (notifications) {
+            notifications.addNotification({
+              id: "coach-reorder-error",
+              text: (err && err.message) || "Ulozeni poradi sverencu selhalo.",
+              tone: "danger",
+              unread: true,
+            });
+          }
           console.error(err);
         }
       }
@@ -931,14 +981,30 @@
 
           const showLabel = button.getAttribute("data-label-show") || "Show";
           const hideLabel = button.getAttribute("data-label-hide") || "Hide";
-          const nextLabel = isHidden ? showLabel : hideLabel;
-          button.setAttribute("title", nextLabel);
-          button.setAttribute("aria-label", nextLabel);
-          button.innerHTML = isHidden ? eyeSlashIcon : eyeIcon;
-        } catch (err) {
-          console.error(err);
-          form.submit();
-        } finally {
+            const nextLabel = isHidden ? showLabel : hideLabel;
+            button.setAttribute("title", nextLabel);
+            button.setAttribute("aria-label", nextLabel);
+            button.innerHTML = isHidden ? eyeSlashIcon : eyeIcon;
+            if (notifications) {
+              notifications.addNotification({
+                id: `coach-visibility-${payload.athlete_id}`,
+                text: isHidden ? "Sverenec byl skryt z planu." : "Sverenec byl znovu zobrazen v planech.",
+                tone: "success",
+                unread: true,
+              });
+            }
+          } catch (err) {
+            if (notifications) {
+              notifications.addNotification({
+                id: "coach-visibility-error",
+                text: (err && err.message) || "Prepnuti viditelnosti selhalo.",
+                tone: "danger",
+                unread: true,
+              });
+            }
+            console.error(err);
+            form.submit();
+          } finally {
           setButtonBusy(button, false);
         }
       });
