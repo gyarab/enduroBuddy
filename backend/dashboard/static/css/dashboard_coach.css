@@ -58,6 +58,10 @@
   min-height: 2rem;
 }
 
+.eb-sidebar-controls form {
+  margin: 0;
+}
+
 .eb-sidebar-controls {
   min-width: 0;
   flex-wrap: nowrap;
@@ -337,6 +341,31 @@ body.eb-coach-page main > .container-fluid.py-3 {
 }
 
 .eb-manage-left .nav-link.active {
+  background: #111827;
+}
+
+.eb-manage-content-panel {
+  padding: 14px;
+  height: 100%;
+  overflow: auto;
+}
+
+.eb-manage-menu-panel {
+  border-right: 1px solid #e5e7eb;
+  background: #f8fafc;
+  padding: 12px;
+  height: 100%;
+  overflow: auto;
+}
+
+.eb-manage-menu .nav-link {
+  text-align: left;
+  color: #374151;
+  border-radius: 8px;
+  margin-bottom: 6px;
+}
+
+.eb-manage-menu .nav-link.active {
   background: #111827;
 }
 

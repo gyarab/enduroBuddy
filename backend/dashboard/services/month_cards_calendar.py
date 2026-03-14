@@ -132,19 +132,13 @@ def shift_month(year: int, month: int, delta: int) -> tuple[int, int]:
     return out_year, out_month
 
 
-def add_next_month_for_athlete(*, athlete) -> tuple[bool, int, int]:
-    latest = TrainingMonth.objects.filter(athlete=athlete).order_by("-year", "-month").first()
-    if latest is None:
-        start = timezone.localdate().replace(day=1)
-        target_year, target_month = start.year, start.month
-    else:
-        target_year, target_month = shift_month(latest.year, latest.month, 1)
-    month_obj, month_created = TrainingMonth.objects.get_or_create(athlete=athlete, year=target_year, month=target_month)
+def ensure_month_for_athlete(*, athlete, year: int, month: int) -> tuple[bool, int, int]:
+    month_obj, month_created = TrainingMonth.objects.get_or_create(athlete=athlete, year=year, month=month)
     day_labels = ["Po", "Út", "St", "Čt", "Pá", "So", "Ne"]
-    monday = first_monday_in_month(target_year, target_month)
+    monday = first_monday_in_month(year, month)
     week_starts: list[tuple[int, date]] = []
     week_index = 1
-    while monday.month == target_month:
+    while monday.month == month:
         week_starts.append((week_index, monday))
         monday += timedelta(days=7)
         week_index += 1
@@ -167,10 +161,68 @@ def add_next_month_for_athlete(*, athlete) -> tuple[bool, int, int]:
             run_day = week_start + timedelta(days=offset)
             if (idx, run_day) in existing_days:
                 continue
-            missing_days.append(PlannedTraining(week=weeks_by_index[idx], date=run_day, order_in_day=1, day_label=day_label, title="", notes=""))
+            missing_days.append(
+                PlannedTraining(
+                    week=weeks_by_index[idx],
+                    date=run_day,
+                    order_in_day=1,
+                    day_label=day_label,
+                    title="",
+                    notes="",
+                )
+            )
     if missing_days:
         PlannedTraining.objects.bulk_create(missing_days, batch_size=200)
     return month_created, len(new_weeks), len(missing_days)
+
+
+def add_next_month_for_athlete(*, athlete) -> tuple[bool, int, int]:
+    latest = TrainingMonth.objects.filter(athlete=athlete).order_by("-year", "-month").first()
+    if latest is None:
+        start = timezone.localdate().replace(day=1)
+        target_year, target_month = start.year, start.month
+    else:
+        target_year, target_month = shift_month(latest.year, latest.month, 1)
+    return ensure_month_for_athlete(athlete=athlete, year=target_year, month=target_month)
+
+
+def fill_gaps_and_add_next_month_for_athlete(*, athlete) -> tuple[int, int, int]:
+    months = list(
+        TrainingMonth.objects.filter(athlete=athlete)
+        .order_by("year", "month")
+        .values_list("year", "month")
+    )
+    if not months:
+        month_created, weeks_created, days_created = add_next_month_for_athlete(athlete=athlete)
+        return (1 if month_created else 0), weeks_created, days_created
+
+    created_months = 0
+    created_weeks = 0
+    created_days = 0
+    start_year, start_month = months[0]
+    end_year, end_month = months[-1]
+    existing_months = {(int(year), int(month)) for year, month in months}
+
+    current_year, current_month = start_year, start_month
+    while (current_year, current_month) != (end_year, end_month):
+        if (current_year, current_month) not in existing_months:
+            month_created, weeks_created, days_created = ensure_month_for_athlete(
+                athlete=athlete,
+                year=current_year,
+                month=current_month,
+            )
+            if month_created:
+                created_months += 1
+            created_weeks += weeks_created
+            created_days += days_created
+        current_year, current_month = shift_month(current_year, current_month, 1)
+
+    month_created, weeks_created, days_created = add_next_month_for_athlete(athlete=athlete)
+    if month_created:
+        created_months += 1
+    created_weeks += weeks_created
+    created_days += days_created
+    return created_months, created_weeks, created_days
 
 
 def is_coach(user) -> bool:

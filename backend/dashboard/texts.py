@@ -138,6 +138,14 @@ class CoachText:
     def bulk_month_created(*, created_months: int, created_weeks: int, created_days: int) -> str:
         return f"Hromadně vytvořeno: měsíce {created_months}, týdny {created_weeks}, dny {created_days}."
 
+    @staticmethod
+    def bulk_specific_month_created(*, label: str, created_months: int, created_weeks: int, created_days: int) -> str:
+        return f"Hromadně doplněn {label}: svěřenci {created_months}, týdny {created_weeks}, dny {created_days}."
+
+    @staticmethod
+    def bulk_specific_month_already_exists(*, label: str) -> str:
+        return f"Všichni svěřenci už mají {label} vytvořený."
+
 
 class ProfileText:
     PROFILE_SAVED = "Profil byl uložen."

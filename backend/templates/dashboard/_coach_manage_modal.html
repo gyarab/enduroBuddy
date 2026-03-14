@@ -1,145 +1,126 @@
-<div class="modal fade" id="coachManageModal" tabindex="-1" aria-labelledby="coachManageModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+<div class="modal fade eb-coach-manage-modal" id="coachManageModal" tabindex="-1" aria-labelledby="coachManageModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="coachManageModalLabel">Správa svěřenců</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Zavřít"></button>
       </div>
-      <div class="modal-body">
-        <div class="row g-3">
-          <div class="col-12 col-lg-6">
-            <div class="card shadow-sm h-100">
-              <div class="card-body">
-                <h6 class="mb-3">Pozvat svěřence</h6>
-                <form method="post" class="d-grid gap-2">
-                  {% csrf_token %}
-                  <input type="hidden" name="action" value="create_invite">
-                  <label class="form-label form-label-sm mb-0" for="coachInviteEmailInput">E-mail svěřence</label>
-                  <input
-                    id="coachInviteEmailInput"
-                    class="form-control form-control-sm"
-                    type="email"
-                    name="invited_email"
-                    placeholder="atlet@example.com"
-                    required
-                  >
-                  <button type="submit" class="btn btn-primary btn-sm align-self-start">Vytvořit pozvánku</button>
-                </form>
+      <div class="modal-body eb-coach-manage-body">
+        <div class="row g-0 h-100">
+          <div class="col-12 col-lg-4">
+            <div class="eb-manage-menu-panel">
+              <div class="nav flex-column nav-pills eb-manage-menu" id="coachManageTabs" role="tablist" aria-orientation="vertical">
+                <button class="nav-link active" id="coachManageAthletesTab" data-bs-toggle="pill" data-bs-target="#coachManageAthletesPane" type="button" role="tab" aria-controls="coachManageAthletesPane" aria-selected="true">
+                  Svěřenci
+                </button>
+                <button class="nav-link" id="coachManageCodeTab" data-bs-toggle="pill" data-bs-target="#coachManageCodePane" type="button" role="tab" aria-controls="coachManageCodePane" aria-selected="false">
+                  Kód trenéra
+                </button>
+                <button class="nav-link" id="coachManageRequestsTab" data-bs-toggle="pill" data-bs-target="#coachManageRequestsPane" type="button" role="tab" aria-controls="coachManageRequestsPane" aria-selected="false">
+                  Žádosti
+                </button>
+              </div>
+            </div>
+          </div>
 
-                <div class="mt-3">
-                  <div class="small text-muted">Kód pro žádost o spolupráci</div>
-                  <code class="d-inline-block mt-1">{{ coach_join_code|default:"-" }}</code>
+          <div class="col-12 col-lg-8">
+            <div class="eb-manage-content-panel">
+              <div class="tab-content h-100" id="coachManageTabContent">
+                <div class="tab-pane fade show active" id="coachManageAthletesPane" role="tabpanel" aria-labelledby="coachManageAthletesTab" tabindex="0">
+                  <div class="d-flex align-items-center justify-content-between gap-2 mb-3">
+                    <h6 class="mb-0">Správa viditelnosti a odebrání</h6>
+                    <span class="small text-muted">Změny se projeví ihned v seznamu svěřenců.</span>
+                  </div>
+
+                  <div class="d-grid gap-2">
+                    {% for athlete in managed_athletes %}
+                      <div class="border rounded px-2 py-2 eb-manage-athlete-row {% if athlete.is_hidden_from_plans %}is-hidden{% endif %}">
+                        <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
+                          <div>
+                            <div class="fw-semibold">{{ athlete.display_name }}</div>
+                            <div class="small text-muted">
+                              {% if athlete.coach_focus %}
+                                Zaměření: {{ athlete.coach_focus }}
+                              {% else %}
+                                Bez nastaveného zaměření.
+                              {% endif %}
+                            </div>
+                          </div>
+                          <div class="d-flex align-items-center gap-2">
+                            <form method="post" class="m-0" data-athlete-visibility-form="1">
+                              {% csrf_token %}
+                              <input type="hidden" name="action" value="{% if athlete.is_hidden_from_plans %}show_athlete{% else %}hide_athlete{% endif %}">
+                              <input type="hidden" name="athlete_id" value="{{ athlete.id }}">
+                              <button
+                                type="submit"
+                                class="btn btn-sm btn-outline-dark"
+                                data-label-show="Zobrazit"
+                                data-label-hide="Skrýt"
+                                title="{% if athlete.is_hidden_from_plans %}Zobrazit{% else %}Skrýt{% endif %}"
+                                aria-label="{% if athlete.is_hidden_from_plans %}Zobrazit{% else %}Skrýt{% endif %}"
+                              >
+                                {% if athlete.is_hidden_from_plans %}
+                                  Skrytý
+                                {% else %}
+                                  Viditelný
+                                {% endif %}
+                              </button>
+                            </form>
+                            <button
+                              type="button"
+                              class="btn btn-sm btn-outline-danger"
+                              data-bs-toggle="modal"
+                              data-bs-target="#coachRemoveAthleteModal"
+                              data-remove-athlete-id="{{ athlete.id }}"
+                              data-remove-athlete-name="{{ athlete.display_name }}"
+                            >
+                              Odebrat
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    {% empty %}
+                      <p class="text-muted small mb-0">Zatím nemáš žádné svěřence ke správě.</p>
+                    {% endfor %}
+                  </div>
                 </div>
 
-                {% if active_invites %}
-                  <div class="mt-3">
-                    <div class="small text-muted mb-2">Aktivní pozvánky</div>
+                <div class="tab-pane fade" id="coachManageCodePane" role="tabpanel" aria-labelledby="coachManageCodeTab" tabindex="0">
+                  <h6 class="mb-3">Kód trenéra</h6>
+                  <p class="small text-muted mb-3">Pošli tento kód svěřenci. Ten ho zadá v nastavení účtu a pak mu žádost tady schválíš.</p>
+                  <code class="d-inline-block">{{ coach_join_code|default:"-" }}</code>
+                </div>
+
+                <div class="tab-pane fade" id="coachManageRequestsPane" role="tabpanel" aria-labelledby="coachManageRequestsTab" tabindex="0">
+                  <h6 class="mb-3">Příchozí žádosti</h6>
+                  {% if pending_join_requests %}
                     <div class="d-grid gap-2">
-                      {% for invite in active_invites %}
-                        <div class="border rounded px-2 py-2 small">
-                          <div>{{ invite.invited_email|default:"Bez e-mailu" }}</div>
-                          <div class="text-muted">Platná do {{ invite.expires_at|date:"j. n. Y H:i" }}</div>
+                      {% for join_request in pending_join_requests %}
+                        <div class="border rounded px-2 py-2">
+                          <div class="fw-semibold">{{ join_request.athlete.username }}</div>
+                          <div class="small text-muted mb-2">Vytvořeno {{ join_request.created_at|date:"j. n. Y H:i" }}</div>
+                          <div class="d-flex gap-2">
+                            <form method="post" class="m-0">
+                              {% csrf_token %}
+                              <input type="hidden" name="action" value="approve_join_request">
+                              <input type="hidden" name="join_request_id" value="{{ join_request.id }}">
+                              <button type="submit" class="btn btn-success btn-sm">Schválit</button>
+                            </form>
+                            <form method="post" class="m-0">
+                              {% csrf_token %}
+                              <input type="hidden" name="action" value="reject_join_request">
+                              <input type="hidden" name="join_request_id" value="{{ join_request.id }}">
+                              <button type="submit" class="btn btn-outline-secondary btn-sm">Zamítnout</button>
+                            </form>
+                          </div>
                         </div>
                       {% endfor %}
                     </div>
-                  </div>
-                {% endif %}
-              </div>
-            </div>
-          </div>
-
-          <div class="col-12 col-lg-6">
-            <div class="card shadow-sm h-100">
-              <div class="card-body">
-                <h6 class="mb-3">Příchozí žádosti</h6>
-                {% if pending_join_requests %}
-                  <div class="d-grid gap-2">
-                    {% for join_request in pending_join_requests %}
-                      <div class="border rounded px-2 py-2">
-                        <div class="fw-semibold">{{ join_request.athlete.username }}</div>
-                        <div class="small text-muted mb-2">Vytvořeno {{ join_request.created_at|date:"j. n. Y H:i" }}</div>
-                        <div class="d-flex gap-2">
-                          <form method="post" class="m-0">
-                            {% csrf_token %}
-                            <input type="hidden" name="action" value="approve_join_request">
-                            <input type="hidden" name="join_request_id" value="{{ join_request.id }}">
-                            <button type="submit" class="btn btn-success btn-sm">Schválit</button>
-                          </form>
-                          <form method="post" class="m-0">
-                            {% csrf_token %}
-                            <input type="hidden" name="action" value="reject_join_request">
-                            <input type="hidden" name="join_request_id" value="{{ join_request.id }}">
-                            <button type="submit" class="btn btn-outline-secondary btn-sm">Zamítnout</button>
-                          </form>
-                        </div>
-                      </div>
-                    {% endfor %}
-                  </div>
-                {% else %}
-                  <p class="text-muted small mb-0">Žádné čekající žádosti.</p>
-                {% endif %}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="card shadow-sm mt-3">
-          <div class="card-body">
-            <div class="d-flex align-items-center justify-content-between gap-2 mb-3">
-              <h6 class="mb-0">Správa viditelnosti a odebrání</h6>
-              <span class="small text-muted">Změny se projeví ihned v seznamu svěřenců.</span>
-            </div>
-
-            <div class="d-grid gap-2">
-              {% for athlete in managed_athletes %}
-                <div class="border rounded px-2 py-2 eb-manage-athlete-row {% if athlete.is_hidden_from_plans %}is-hidden{% endif %}">
-                  <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
-                    <div>
-                      <div class="fw-semibold">{{ athlete.display_name }}</div>
-                      <div class="small text-muted">
-                        {% if athlete.coach_focus %}
-                          Zaměření: {{ athlete.coach_focus }}
-                        {% else %}
-                          Bez nastaveného zaměření.
-                        {% endif %}
-                      </div>
-                    </div>
-                    <div class="d-flex align-items-center gap-2">
-                      <form method="post" class="m-0" data-athlete-visibility-form="1">
-                        {% csrf_token %}
-                        <input type="hidden" name="action" value="{% if athlete.is_hidden_from_plans %}show_athlete{% else %}hide_athlete{% endif %}">
-                        <input type="hidden" name="athlete_id" value="{{ athlete.id }}">
-                        <button
-                          type="submit"
-                          class="btn btn-sm btn-outline-dark"
-                          data-label-show="Zobrazit"
-                          data-label-hide="Skrýt"
-                          title="{% if athlete.is_hidden_from_plans %}Zobrazit{% else %}Skrýt{% endif %}"
-                          aria-label="{% if athlete.is_hidden_from_plans %}Zobrazit{% else %}Skrýt{% endif %}"
-                        >
-                          {% if athlete.is_hidden_from_plans %}
-                            Skrytý
-                          {% else %}
-                            Viditelný
-                          {% endif %}
-                        </button>
-                      </form>
-                      <button
-                        type="button"
-                        class="btn btn-sm btn-outline-danger"
-                        data-bs-toggle="modal"
-                        data-bs-target="#coachRemoveAthleteModal"
-                        data-remove-athlete-id="{{ athlete.id }}"
-                        data-remove-athlete-name="{{ athlete.display_name }}"
-                      >
-                        Odebrat
-                      </button>
-                    </div>
-                  </div>
+                  {% else %}
+                    <p class="text-muted small mb-0">Žádné čekající žádosti.</p>
+                  {% endif %}
                 </div>
-              {% empty %}
-                <p class="text-muted small mb-0">Zatím nemáš žádné svěřence ke správě.</p>
-              {% endfor %}
+              </div>
             </div>
           </div>
         </div>

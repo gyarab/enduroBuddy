@@ -8,7 +8,6 @@ from ._coach_training_base import (
     TrainingGroupAthlete,
     TrainingGroupInvite,
     TrainingMonth,
-    TrainingWeek,
     override_settings,
     reverse,
     timedelta,
@@ -86,33 +85,24 @@ class CoachTrainingPageCases:
         self.assertNotContains(resp, "Skupina s tÃ­mto nÃ¡zvem uÅ¾ existuje.")
         self.assertEqual(TrainingGroup.objects.filter(coach=self.coach).count(), 1)
 
-    def test_coach_can_create_group_invite(self):
+    def test_coach_manage_modal_uses_code_flow_instead_of_invites(self):
         self.client.login(username="coach", password="coach")
-        resp = self.client.post(
-            reverse("coach_training_plans"),
-            data={"action": "create_invite", "group_id": str(self.group.id), "invited_email": "athlete2@example.com"},
-        )
-        self.assertEqual(resp.status_code, 302)
-        invite = TrainingGroupInvite.objects.get(group=self.group)
-        self.assertEqual(invite.created_by_id, self.coach.id)
-        self.assertEqual(invite.invited_email, "athlete2@example.com")
-        self.assertTrue(invite.token)
+        resp = self.client.get(reverse("coach_training_plans"))
+        self.coach.profile.refresh_from_db()
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Kód trenéra")
+        self.assertContains(resp, self.coach.profile.coach_join_code)
+        self.assertNotContains(resp, "Vytvořit odkaz pozvánky")
 
-    def test_coach_can_bulk_add_next_month_with_full_weeks_for_all_athletes(self):
-        CoachAthlete.objects.get_or_create(coach=self.coach, athlete=self.athlete2)
+    def test_coach_page_shows_add_month_button_for_selected_plan(self):
         self.client.login(username="coach", password="coach")
-        resp = self.client.post(reverse("coach_training_plans"), data={"action": "bulk_add_next_month"})
-        self.assertEqual(resp.status_code, 302)
+        own_resp = self.client.get(reverse("coach_training_plans"))
+        self.assertEqual(own_resp.status_code, 200)
+        self.assertContains(own_resp, 'name="action" value="add_next_month_selected"')
 
-        next_month_athlete2 = TrainingMonth.objects.filter(athlete=self.athlete2).order_by("-year", "-month").first()
-        self.assertIsNotNone(next_month_athlete2)
-        weeks = TrainingWeek.objects.filter(training_month=next_month_athlete2).order_by("week_index")
-        self.assertGreaterEqual(weeks.count(), 4)
-        for week in weeks:
-            self.assertEqual(week.planned_trainings.count(), 7)
-
-        self.assertGreaterEqual(TrainingMonth.objects.filter(athlete=self.athlete).count(), 2)
-        self.assertEqual(TrainingMonth.objects.filter(athlete=self.athlete2).count(), 1)
+        athlete_resp = self.client.get(reverse("coach_training_plans"), {"athlete": self.athlete.id})
+        self.assertEqual(athlete_resp.status_code, 200)
+        self.assertContains(athlete_resp, 'name="action" value="add_next_month_selected"')
 
     def test_athlete_can_accept_invite_and_is_linkED_to_group_and_coach(self):
         invite = TrainingGroupInvite.objects.create(

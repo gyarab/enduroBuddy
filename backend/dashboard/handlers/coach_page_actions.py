@@ -8,24 +8,14 @@ from django.urls import reverse
 from django.utils import timezone
 
 from accounts.models import CoachAthlete, CoachJoinRequest, TrainingGroupAthlete
-from dashboard.services.month_cards import add_next_month_for_athlete, display_name
+from dashboard.services.month_cards import (
+    add_next_month_for_athlete,
+    display_name,
+)
 from dashboard.texts import CoachText
-
-from ..views_shared import _create_training_group_invite
-
 
 def handle_coach_preselection_post(request, *, groups, selected_group):
     action = request.POST.get("action")
-    if action == "create_invite":
-        invited_email = (request.POST.get("invited_email") or "").strip()
-        _create_training_group_invite(
-            group=selected_group,
-            created_by=request.user,
-            invited_email=invited_email,
-        )
-        messages.success(request, CoachText.INVITE_CREATED)
-        return redirect("coach_training_plans")
-
     if action in {"approve_join_request", "reject_join_request"}:
         join_request_id_raw = request.POST.get("join_request_id")
         if not join_request_id_raw or not join_request_id_raw.isdigit():
@@ -120,26 +110,6 @@ def handle_coach_month_actions(request, *, athletes):
         else:
             messages.info(request, CoachText.month_extended(weeks_created=weeks_created, days_created=days_created))
         return redirect(f"{reverse('coach_training_plans')}?athlete={target_athlete.id}")
-
-    if action == "bulk_add_next_month":
-        created_months = 0
-        created_weeks = 0
-        created_days = 0
-        for athlete in athletes:
-            month_created, weeks_created, days_created = add_next_month_for_athlete(athlete=athlete)
-            if month_created:
-                created_months += 1
-            created_weeks += weeks_created
-            created_days += days_created
-        messages.success(
-            request,
-            CoachText.bulk_month_created(
-                created_months=created_months,
-                created_weeks=created_weeks,
-                created_days=created_days,
-            ),
-        )
-        return redirect("coach_training_plans")
     return None
 
 
