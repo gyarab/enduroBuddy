@@ -1,15 +1,19 @@
 /* ===== HORIZONTAL SCROLL for whole month content ===== */
 .eb-month-scroll {
-  overflow-x: auto;
-  width: 100%;
+  width: max-content;
+  min-width: 100%;
   background: #fff;
   border-radius: 12px;
   padding-bottom: 8px;
+  overflow: visible;
 }
 
 /* aby se obsah neschoval pod spodni switcher */
 .eb-scrollwrap {
+  flex: 1 1 auto;
+  min-height: 0;
   padding-bottom: 90px;
+  overflow: auto;
 }
 
 .eb-scrollwrap--embedded {
@@ -39,6 +43,7 @@
 .eb-col-completed .card,
 .eb-col-completed table {
   width: 100%;
+  overflow: visible;
 }
 
 .eb-col-completed {
@@ -149,6 +154,23 @@
 
 .month-container.is-active {
   display: block;
+}
+
+.eb-month-widget {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.eb-plan-root {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.eb-month-widget .table-responsive {
+  overflow: visible;
 }
 
 .month-btn.is-active {

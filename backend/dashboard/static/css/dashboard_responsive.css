@@ -1,14 +1,14 @@
 @media (max-width: 991.98px) {
-  body.eb-coach-page {
+  body.eb-plan-page {
     overflow: auto;
   }
 
-  body.eb-coach-page main {
+  body.eb-plan-page main {
     height: auto;
     overflow: visible;
   }
 
-  body.eb-coach-page main > .container-fluid.py-3 {
+  body.eb-plan-page main > .container-fluid.py-3 {
     height: auto;
     display: block;
     padding-bottom: 1rem !important;

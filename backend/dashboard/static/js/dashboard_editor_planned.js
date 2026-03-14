@@ -654,6 +654,48 @@
       initRulesOnboarding(widget);
       if (widget.dataset.ebKmDotClickInit !== "1") {
         widget.dataset.ebKmDotClickInit = "1";
+        let activeKmPopover = null;
+
+        function closeKmPopovers() {
+          const all = Array.from(widget.querySelectorAll(".eb-planned-row-km-popover"));
+          all.forEach((node) => {
+            node.classList.add("d-none");
+            node.classList.remove("is-floating");
+            node.style.removeProperty("--eb-km-popover-top");
+            node.style.removeProperty("--eb-km-popover-left");
+            node.style.removeProperty("--eb-km-popover-arrow-left");
+          });
+          activeKmPopover = null;
+        }
+
+        function positionKmPopover(popover, dot) {
+          if (!popover || !dot) return;
+          popover.classList.remove("d-none");
+          popover.classList.add("is-floating");
+
+          const viewportWidth = window.innerWidth || document.documentElement.clientWidth || 0;
+          const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 0;
+          const dotRect = dot.getBoundingClientRect();
+          const popRect = popover.getBoundingClientRect();
+          const popWidth = Math.min(popRect.width || 360, Math.max(240, viewportWidth - 24));
+          const popHeight = popRect.height || 0;
+          const margin = 12;
+          const preferredLeft = dotRect.right - popWidth;
+          const left = Math.min(
+            Math.max(margin, preferredLeft),
+            Math.max(margin, viewportWidth - popWidth - margin)
+          );
+          let top = dotRect.bottom + 10;
+          if (top + popHeight + margin > viewportHeight) {
+            top = Math.max(margin, dotRect.top - popHeight - 10);
+          }
+          const arrowLeft = Math.min(popWidth - 16, Math.max(16, dotRect.right - left - 10));
+
+          popover.style.setProperty("--eb-km-popover-top", `${top}px`);
+          popover.style.setProperty("--eb-km-popover-left", `${left}px`);
+          popover.style.setProperty("--eb-km-popover-arrow-left", `${arrowLeft}px`);
+        }
+
         widget.addEventListener("click", (event) => {
           const target = event && event.target ? event.target : null;
           if (!target || typeof target.closest !== "function") return;
@@ -662,18 +704,25 @@
             const wrap = dot.closest(".eb-planned-row-km-indicator-wrap");
             const pop = wrap ? wrap.querySelector(".eb-planned-row-km-popover") : null;
             if (!pop) return;
-            const all = Array.from(widget.querySelectorAll(".eb-planned-row-km-popover"));
-            all.forEach((node) => {
-              if (node !== pop) node.classList.add("d-none");
-            });
-            pop.classList.toggle("d-none");
+            if (activeKmPopover === pop && !pop.classList.contains("d-none")) {
+              closeKmPopovers();
+              return;
+            }
+            closeKmPopovers();
+            positionKmPopover(pop, dot);
+            activeKmPopover = pop;
             return;
           }
           const insidePopover = target.closest(".eb-planned-row-km-popover");
           if (insidePopover) return;
-          const all = Array.from(widget.querySelectorAll(".eb-planned-row-km-popover"));
-          all.forEach((node) => node.classList.add("d-none"));
+          closeKmPopovers();
         });
+        widget.querySelectorAll(".eb-scrollwrap").forEach((node) => {
+          node.addEventListener("scroll", () => {
+            closeKmPopovers();
+          }, { passive: true });
+        });
+        window.addEventListener("resize", closeKmPopovers);
       }
       const updateUrl = widget.getAttribute("data-plan-update-url");
       const addPhaseUrl = widget.getAttribute("data-add-phase-url");

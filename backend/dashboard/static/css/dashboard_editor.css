@@ -77,6 +77,15 @@
   box-shadow: 0 10px 24px rgba(16, 24, 40, 0.16);
 }
 
+.eb-planned-row-km-popover.is-floating {
+  position: fixed;
+  top: var(--eb-km-popover-top, 0);
+  left: var(--eb-km-popover-left, 0);
+  right: auto;
+  z-index: 1085;
+  max-width: min(360px, calc(100vw - 24px));
+}
+
 .eb-planned-row-km-popover::before {
   content: "";
   position: absolute;
@@ -88,6 +97,11 @@
   border-left: 1px solid #d4dbe3;
   border-top: 1px solid #d4dbe3;
   transform: rotate(45deg);
+}
+
+.eb-planned-row-km-popover.is-floating::before {
+  right: auto;
+  left: var(--eb-km-popover-arrow-left, 18px);
 }
 
 .eb-planned-row-km-popover-head {
