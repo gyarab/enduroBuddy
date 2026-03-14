@@ -10,355 +10,47 @@
   {% if completed_editable and completed_update_url %}data-completed-inline-editable="1" data-completed-update-url="{{ completed_update_url }}"{% endif %}
   {% if garmin_week_sync_enabled and garmin_week_sync_url %}data-garmin-week-sync-url="{{ garmin_week_sync_url }}"{% endif %}
 >
-<div class="alert alert-info py-2 px-3 mb-2 d-none eb-plan-rules-onboarding" role="alert">
-  <div class="d-flex align-items-center justify-content-between gap-2">
-    <div class="small mb-0">
-      
+  <div class="alert alert-info py-2 px-3 mb-2 d-none eb-plan-rules-onboarding" role="alert">
+    <div class="d-flex align-items-center justify-content-between gap-2">
+      <div class="small mb-0">
         Pro přesné sčítání km piš vzdálenosti jako <code>8 km</code>, <code>6-8 km</code>, <code>6x300m</code>, <code>2R/2V</code>.
-      
-    </div>
-    <div class="d-flex align-items-center gap-2">
-      <button type="button" class="btn btn-link btn-sm p-0 eb-plan-rules-open" data-bs-toggle="modal" data-bs-target="#ebPlannedKmRulesModal">`n        Příklady`n      </button>
-      <button type="button" class="btn-close eb-plan-rules-dismiss" aria-label="Zavřít"></button>
-    </div>
-  </div>
-</div>
-<div class="eb-scrollwrap {% if month_switcher_embedded %}eb-scrollwrap--embedded{% endif %}">
-  <div class="eb-month-scroll border rounded-3 bg-white p-2" id="monthContentArea">
-    {% for m in month_cards %}
-    <div class="month-container {% if forloop.first %}is-active{% endif %}" data-month-id="{{ m.id }}">
-      <div class="mb-3">
-        <div class="d-flex align-items-center justify-content-between">
-          <h5 class="mb-0">{{ m.label }}</h5>
-        </div>
       </div>
-
-      {% for w in m.weeks %}
-      <div class="mb-4">
-        <div class="eb-week-row">
-          <div class="eb-col eb-col-planned">
-            <div class="card shadow-sm h-100">
-              <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                  <h5 class="mb-0">T&yacute;den {{ w.week_index }}.</h5>
-                  <small class="text-muted">Pl&aacute;n</small>
-                </div>
-
-                <div class="table-responsive">
-                  <table class="table table-sm align-middle mb-0">
-                    <colgroup>
-                      <col style="width:110px">
-                      <col style="width:120px">
-                      <col style="width:118px">
-                      <col style="width:75%">
-                      <col style="width:25%">
-                    </colgroup>
-                    <thead class="table-light">
-                      <tr>
-                        <th class="eb-planned-date-col" style="width:110px">Datum</th>
-                        <th class="eb-planned-day-col" style="width:120px">Den</th>
-                        <th class="eb-planned-type-col">Typ</th>
-                        <th class="eb-planned-training-col">
-                          <span class="d-inline-flex align-items-center gap-1">
-                            <span>Tr&eacute;nink</span>
-                            <button
-                              type="button"
-                              class="btn btn-outline-secondary btn-sm rounded-circle p-0 d-inline-flex align-items-center justify-content-center"
-                              style="width: 18px; height: 18px; font-size: 11px;"
-                              data-bs-toggle="modal"
-                              data-bs-target="#ebPlannedKmRulesModal"
-                              aria-label="Jak ps&aacute;t pl&aacute;n"
-                              title="Jak ps&aacute;t pl&aacute;n"
-                            >?</button>
-                          </span>
-                        </th>
-                        <th class="eb-planned-notes-col">Pozn&aacute;mky tren&eacute;ra</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {% for t in w.planned_rows %}
-                      <tr>
-                        <td class="eb-planned-date-col">{{ t.date|date:"j.n."|default:"" }}</td>
-                        <td class="eb-planned-day-col">{{ t.day_label|default:"" }}</td>
-                        <td class="eb-planned-type-col">
-                          {% if plan_editable and t.planned_id %}
-                            <select class="form-select form-select-sm eb-inline-select" data-training-id="{{ t.planned_id }}" data-field="session_type">
-                              <option value="RUN" {% if t.session_type == "RUN" %}selected{% endif %}>Běh</option>
-                              <option value="WORKOUT" {% if t.session_type == "WORKOUT" %}selected{% endif %}>Trénink</option>
-                            </select>
-                          {% else %}
-                            {% if t.session_type == "WORKOUT" %}Trénink{% else %}Běh{% endif %}
-                          {% endif %}
-                        </td>
-                        <td class="eb-planned-training-col">
-                          {% if plan_editable and t.planned_id %}
-                            <div
-                              class="eb-inline-edit"
-                              contenteditable="true"
-                              data-training-id="{{ t.planned_id }}"
-                              data-field="title"
-                            >{{ t.title_raw }}</div>
-                          {% else %}
-                            {{ t.title }}
-                          {% endif %}
-                          {% if t.planned_km_show %}
-                            <div class="eb-planned-row-km-indicator-wrap eb-km-confidence-{{ t.planned_km_confidence }}">
-                              <button
-                                type="button"
-                                class="eb-planned-row-km-dot"
-                                aria-label="Detail odhadu km"
-                              ></button>
-                              <div class="eb-planned-row-km-popover d-none">
-                                <div class="eb-planned-row-km-popover-head">
-                                  Kontrola km
-                                </div>
-                                <div class="eb-planned-row-km-popover-body">
-                                  <div class="eb-planned-km-line"><strong>Km:</strong> {{ t.planned_km_line_km }}</div>
-                                  <div class="eb-planned-km-line"><strong>Důvod:</strong> {{ t.planned_km_line_reason }}</div>
-                                  <div class="eb-planned-km-line"><strong>Kde:</strong> {% if t.planned_km_line_where %}{{ t.planned_km_line_where }}{% else %}-{% endif %}</div>
-                                </div>
-                              </div>
-                            </div>
-                          {% endif %}
-                        </td>
-                        <td class="eb-planned-notes-col">
-                          {% if plan_editable and t.planned_id %}
-                            <div
-                              class="eb-inline-edit"
-                              contenteditable="true"
-                              data-training-id="{{ t.planned_id }}"
-                              data-field="notes"
-                            >{{ t.notes_raw|default:"" }}</div>
-                          {% else %}
-                            {{ t.notes|default:"" }}
-                          {% endif %}
-                        </td>
-                      </tr>
-                      {% empty %}
-                      <tr>
-                        <td colspan="5" class="text-muted small">
-                          V tomto t&yacute;dnu zat&iacute;m nejsou &#382;&aacute;dn&eacute; pl&aacute;novan&eacute; tr&eacute;ninky.
-                        </td>
-                      </tr>
-                      {% endfor %}
-                    </tbody>
-                    <tfoot class="table-light eb-planned-week-footer">
-                      <tr>
-                        <th colspan="3">&nbsp;</th>
-                        <th class="eb-planned-week-total-km">{{ w.planned_total_km_text }}</th>
-                        <th>&nbsp;</th>
-                      </tr>
-                    </tfoot>
-                  </table>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="eb-col eb-col-completed">
-            <div class="card shadow-sm h-100">
-              <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                  <div class="d-flex align-items-center gap-2">
-                    <h5 class="mb-0">Spln&#283;no</h5>
-                    {% if garmin_week_sync_enabled %}
-                      <button
-                        type="button"
-                        class="btn btn-outline-secondary btn-sm rounded-circle d-inline-flex align-items-center justify-content-center eb-garmin-week-sync-btn"
-                        style="width: 28px; height: 28px;"
-                        data-week-start="{{ w.week_start|date:'Y-m-d' }}"
-                        aria-label="Importovat Garmin aktivity z tohoto tydne"
-                        title="{% if not w.has_started %}Tento tyden jeste nezacal.{% else %}Importovat Garmin aktivity z tohoto tydne{% endif %}"
-                        {% if not garmin_week_sync_connected or not w.has_started %}disabled{% endif %}
-                      >
-                        <span class="spinner-border spinner-border-sm d-none eb-garmin-week-sync-spinner" role="status" aria-hidden="true"></span>
-                        <svg class="eb-garmin-week-sync-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false" width="14" height="14">
-                          <path d="M13.2 4.8A5.5 5.5 0 0 0 3.9 3.5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
-                          <path d="M3.9 1.9v1.9h1.9" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
-                          <path d="M2.8 11.2A5.5 5.5 0 0 0 12.1 12.5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
-                          <path d="M12.1 14.1v-1.9h-1.9" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                      </button>
-                    {% endif %}
-                  </div>
-                  <small class="text-muted">Splits</small>
-                </div>
-
-                <div class="table-responsive">
-                  <table class="table table-sm align-middle mb-0">
-                    <thead class="table-light">
-                      <tr>
-                        <th style="width:80px;">km</th>
-                        <th style="width:110px;">min</th>
-                        <th style="min-width:420px;">pace / intervals</th>
-                        <th style="width:90px;">avg HR</th>
-                        <th style="width:90px;">max HR</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {% for r in w.completed_rows %}
-                      <tr>
-                        <td>
-                          {% if completed_editable and r.planned_id %}
-                            {% if completed_lock_linked_activity and r.has_linked_activity %}
-                              {{ r.km }}
-                            {% else %}
-                            <div class="eb-completed-inline-edit" contenteditable="true" data-training-id="{{ r.planned_id }}" data-field="km">{{ r.km }}</div>
-                            {% endif %}
-                          {% else %}
-                            {{ r.km }}
-                          {% endif %}
-                        </td>
-                        <td>
-                          {% if completed_editable and r.planned_id %}
-                            {% if completed_lock_linked_activity and r.has_linked_activity %}
-                              {{ r.min }}
-                            {% else %}
-                            <div class="eb-completed-inline-edit" contenteditable="true" data-training-id="{{ r.planned_id }}" data-field="min">{{ r.min }}</div>
-                            {% endif %}
-                          {% else %}
-                            {{ r.min }}
-                          {% endif %}
-                        </td>
-                        <td>
-                          {% if completed_editable and r.planned_id %}
-                            {% if completed_lock_linked_activity and r.has_linked_activity %}
-                              {{ r.third }}
-                            {% else %}
-                            <div class="eb-completed-inline-edit" contenteditable="true" data-training-id="{{ r.planned_id }}" data-field="third">{{ r.third }}</div>
-                            {% endif %}
-                          {% else %}
-                            {{ r.third }}
-                          {% endif %}
-                        </td>
-                        <td>
-                          {% if completed_editable and r.planned_id %}
-                            {% if completed_lock_linked_activity and r.has_linked_activity %}
-                              {{ r.avg_hr|default:"-" }}
-                            {% else %}
-                            <div class="eb-completed-inline-edit" contenteditable="true" data-training-id="{{ r.planned_id }}" data-field="avg_hr">{{ r.avg_hr|default:"" }}</div>
-                            {% endif %}
-                          {% else %}
-                            {{ r.avg_hr|default:"" }}
-                          {% endif %}
-                        </td>
-                        <td>
-                          {% if completed_editable and r.planned_id %}
-                            {% if completed_lock_linked_activity and r.has_linked_activity %}
-                              {{ r.max_hr|default:"" }}
-                            {% else %}
-                            <div class="eb-completed-inline-edit" contenteditable="true" data-training-id="{{ r.planned_id }}" data-field="max_hr">{{ r.max_hr|default:"" }}</div>
-                            {% endif %}
-                          {% else %}
-                            {{ r.max_hr|default:"" }}
-                          {% endif %}
-                        </td>
-                      </tr>
-                      {% empty %}
-                      <tr>
-                        <td colspan="5" class="text-muted small">Zat&iacute;m &#382;&aacute;dn&eacute; z&aacute;znamy.</td>
-                      </tr>
-                      {% endfor %}
-                    </tbody>
-                    <tfoot class="table-light">
-                      <tr>
-                        <th>{{ w.completed_total.km|default:"-" }}</th>
-                        <th>{{ w.completed_total.time|default:"-" }}</th>
-                        <th>Celkem</th>
-                        <th>{{ w.completed_total.avg_hr|default:"-" }}</th>
-                        <th>{{ w.completed_total.max_hr|default:"-" }}</th>
-                      </tr>
-                    </tfoot>
-                  </table>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      {% empty %}
-      <div class="text-muted small mb-4">V tomto m&#283;s&iacute;ci zat&iacute;m nejsou &#382;&aacute;dn&eacute; t&yacute;dny.</div>
-      {% endfor %}
-    </div>
-    {% empty %}
-    <div class="text-muted small">
-      Zat&iacute;m nejsou &#382;&aacute;dn&eacute; m&#283;s&iacute;ce. Vytvo&#345; TrainingMonth v administraci.
-    </div>
-    {% endfor %}
-  </div>
-</div>
-
-<div class="eb-month-switcher {% if month_switcher_embedded %}eb-month-switcher--embedded{% endif %}">
-  <div class="container-fluid">
-    <div class="d-flex gap-2 px-3 eb-month-switcher-track">
-      {% if add_month_enabled and add_month_action %}
-      <form method="post" class="m-0 flex-shrink-0 eb-add-month-form" data-eb-skip-submit-loading="1">
-        {% csrf_token %}
-        <input type="hidden" name="action" value="{{ add_month_action }}">
-        {% if add_month_athlete_id %}
-        <input type="hidden" name="athlete_id" value="{{ add_month_athlete_id }}">
-        {% endif %}
-        <button
-          class="btn btn-primary btn-sm eb-add-month-btn flex-shrink-0"
-          type="submit"
-          title="P&#345;idat m&#283;s&iacute;c"
-          aria-label="P&#345;idat m&#283;s&iacute;c"
-        >
-          +
+      <div class="d-flex align-items-center gap-2">
+        <button type="button" class="btn btn-link btn-sm p-0 eb-plan-rules-open" data-bs-toggle="modal" data-bs-target="#ebPlannedKmRulesModal">
+          Příklady
         </button>
-      </form>
-      {% endif %}
+        <button type="button" class="btn-close eb-plan-rules-dismiss" aria-label="Zavřít"></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="eb-scrollwrap {% if month_switcher_embedded %}eb-scrollwrap--embedded{% endif %}">
+    <div class="eb-month-scroll border rounded-3 bg-white p-2" id="monthContentArea">
       {% for m in month_cards %}
-      <button class="month-btn btn btn-outline-dark btn-sm flex-shrink-0 {% if forloop.first %}is-active{% endif %}" data-month-id="{{ m.id }}" type="button">
-        {{ m.label }}
-      </button>
+        <div class="month-container {% if forloop.first %}is-active{% endif %}" data-month-id="{{ m.id }}">
+          <div class="mb-3">
+            <div class="d-flex align-items-center justify-content-between">
+              <h5 class="mb-0">{{ m.label }}</h5>
+            </div>
+          </div>
+
+          {% for week in m.weeks %}
+            <div class="mb-4">
+              <div class="eb-week-row">
+                {% include "dashboard/_planned_week_table.html" %}
+                {% include "dashboard/_completed_week_table.html" %}
+              </div>
+            </div>
+          {% empty %}
+            <div class="text-muted small mb-4">V tomto měsíci zatím nejsou žádné týdny.</div>
+          {% endfor %}
+        </div>
       {% empty %}
-      <button class="btn btn-outline-dark btn-sm" disabled>&#381;&aacute;dn&eacute; m&#283;s&iacute;ce</button>
+        <div class="text-muted small">Zatím nejsou žádné měsíce. Vytvoř TrainingMonth v administraci.</div>
       {% endfor %}
     </div>
   </div>
-</div>
 
-<div class="modal fade" id="ebPlannedKmRulesModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-scrollable">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Pravidla zápisu pro sčítání km</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Zavřít"></button>
-      </div>
-      <div class="modal-body small">
-        
-          <p class="mb-2"><strong>Z&aacute;klad:</strong> pi&scaron; vzd&aacute;lenosti s jednotkou (<code>km</code>/<code>m</code>) a rozklus/v&yacute;klus jako <code>2R</code>/<code>2V</code>.</p>
-          <p class="mb-1"><strong>Počítá se:</strong></p>
-          <ul>
-            <li><code>8 km</code>, <code>6-8 km</code></li>
-            <li><code>6x300m</code>, <code>2x(1000-800-600-400-200)</code></li>
-            <li><code>2R 8 km fartlek ... 2V</code></li>
-          </ul>
-          <p class="mb-1"><strong>Nepočítá se jako běh:</strong></p>
-          <ul>
-            <li><code>MCH</code>, <code>chůze</code></li>
-            <li><code>volno</code></li>
-            <li>silová/mobilita část bez běžecké vzdálenosti</li>
-          </ul>
-          <p class="mb-0"><strong>Doporučení:</strong> u dlouhého běhu napiš rozsah, např. <code>17-19 km volný běh</code>.</p>
-          <hr>
-          <p class="mb-1"><strong>Spr&aacute;vn&eacute; z&aacute;pisy:</strong></p>
-          <ul>
-            <li><code>2R 4x(1200 - 400), p=1,5' po 1200 a 3' po s&eacute;rii, tempo 10K - 3K (1500) 2V</code></li>
-            <li><code>3R 2x5x300m, p=60s, po s&eacute;rii 5', tempo 1500m 2-3V</code></li>
-            <li><code>2R mobilita, plyometrie, prud&scaron;&iacute; kopce 6-8x100m s MCH 5V</code></li>
-            <li><code>volný běh 17-19 km</code></li>
-          </ul>
-          <p class="mb-1"><strong>Nejasné zápisy (nedoporučeno):</strong></p>
-          <ul class="mb-0">
-            <li><code>del&scaron;&iacute; klus na pocit</code> (bez km)</li>
-            <li><code>400 v tempu</code> (chyb&iacute; jednotka a kontext)</li>
-            <li><code>síla + mobilita</code> (bez běžecké vzdálenosti)</li>
-          </ul>
-        
-      </div>
-    </div>
-  </div>
-</div>
+  {% include "dashboard/_month_switcher.html" %}
+  {% include "dashboard/_planned_km_rules_modal.html" %}
 </div>

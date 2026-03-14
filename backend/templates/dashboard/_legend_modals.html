@@ -1,0 +1,183 @@
+<div class="modal fade eb-plan-legend-modal" id="coachLegendModal" tabindex="-1" aria-labelledby="coachLegendModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="coachLegendModalLabel">Legenda plánu</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Zavřít"></button>
+      </div>
+      <div
+        class="modal-body eb-legend-modal-body"
+        data-legend-athlete-id="{{ legend_athlete_id }}"
+        data-legend-state="{{ legend_state_json_value|escapejs }}"
+        data-legend-editable="{% if legend_editable %}1{% else %}0{% endif %}"
+        data-legend-save-url="{{ legend_update_url|default:'' }}"
+      >
+        <div class="eb-legend-layout">
+          <div class="eb-legend-section">
+            <div class="d-flex align-items-center justify-content-between gap-2 mb-2">
+              <div class="eb-legend-section-title mb-0">Tepové zóny</div>
+              {% if legend_editable %}
+                <button type="button" class="btn btn-sm btn-outline-dark eb-legend-plus-btn" data-legend-open-modal="#coachLegendZonesModal">+</button>
+              {% endif %}
+            </div>
+            <table class="table table-sm align-middle eb-legend-table mb-0">
+              <thead>
+                <tr>
+                  <th class="eb-legend-zone-col">Zóna</th>
+                  <th class="eb-legend-range-col">Rozsah</th>
+                </tr>
+              </thead>
+              <tbody data-legend-zone-table-body></tbody>
+            </table>
+            <div class="eb-legend-thresholds">
+              <div class="d-flex align-items-center justify-content-between gap-2">
+                <div class="eb-legend-section-title mb-0">Prahy</div>
+                {% if legend_editable %}
+                  <button type="button" class="btn btn-sm btn-outline-dark eb-legend-plus-btn" data-legend-open-modal="#coachLegendThresholdModal">+</button>
+                {% endif %}
+              </div>
+              <table class="table table-sm align-middle eb-legend-table mt-2 mb-0">
+                <thead>
+                  <tr>
+                    <th class="eb-legend-threshold-name-col">Prah</th>
+                    <th class="eb-legend-threshold-value-col">BPM</th>
+                  </tr>
+                </thead>
+                <tbody data-legend-threshold-table-body>
+                  <tr>
+                    <td>AP</td>
+                    <td data-legend-threshold-display="aerobic">-</td>
+                  </tr>
+                  <tr>
+                    <td>ANP</td>
+                    <td data-legend-threshold-display="anaerobic">-</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="eb-legend-section">
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+              <div class="eb-legend-section-title mb-0">Osobní rekordy (PR)</div>
+              {% if legend_editable %}
+                <button type="button" class="btn btn-sm btn-outline-dark eb-legend-plus-btn" data-legend-open-modal="#coachLegendPrModal">+</button>
+              {% endif %}
+            </div>
+            <table class="table table-sm align-middle eb-legend-table mb-0">
+              <thead>
+                <tr>
+                  <th>Disciplína</th>
+                  <th class="eb-legend-pr-time-col">PR (čas)</th>
+                </tr>
+              </thead>
+              <tbody data-legend-pr-body>
+                <tr data-legend-pr-empty-row>
+                  <td colspan="2" class="text-muted small">-</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% if legend_editable %}
+  <div class="modal fade" id="coachLegendZonesModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="false">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Úprava tepových zón</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Zavřít"></button>
+        </div>
+        <div class="modal-body">
+          <table class="table table-sm align-middle mb-0">
+            <thead>
+              <tr>
+                <th class="eb-legend-zone-col">Zóna</th>
+                <th class="eb-legend-zone-edit-col">Od</th>
+                <th class="eb-legend-zone-edit-col">Do</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for zone in "12345" %}
+                <tr>
+                  <td>Z{{ zone }}</td>
+                  <td><input class="form-control form-control-sm" type="number" min="0" max="260" step="1" data-legend-zone-edit-from="{{ zone }}"></td>
+                  <td><input class="form-control form-control-sm" type="number" min="0" max="260" step="1" data-legend-zone-edit-to="{{ zone }}"></td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-dark" data-legend-zones-modal-save>Uložit zóny</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="coachLegendThresholdModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="false">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Úprava prahů</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Zavřít"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-2">
+            <label class="form-label small text-muted mb-1">Aerobní práh (bpm)</label>
+            <input class="form-control form-control-sm" type="number" min="0" max="260" step="1" data-legend-threshold-edit="aerobic">
+          </div>
+          <div>
+            <label class="form-label small text-muted mb-1">Anaerobní práh (bpm)</label>
+            <input class="form-control form-control-sm" type="number" min="0" max="260" step="1" data-legend-threshold-edit="anaerobic">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-dark" data-legend-threshold-modal-save>Uložit prahy</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="coachLegendPrModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="false">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Přidat PR</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Zavřít"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-2">
+            <label class="form-label small text-muted mb-1">Disciplína</label>
+            <select class="form-select form-select-sm" data-legend-pr-select>
+              <option value="800m">800m</option>
+              <option value="1000m">1000m</option>
+              <option value="1 mile">1 mile</option>
+              <option value="1500m">1500m</option>
+              <option value="2 miles">2 miles</option>
+              <option value="3000m">3000m</option>
+              <option value="3k">3k</option>
+              <option value="5000m">5000m</option>
+              <option value="5k">5k</option>
+              <option value="10000m">10000m</option>
+              <option value="10k">10k</option>
+              <option value="Půlmaraton">Půlmaraton</option>
+              <option value="Maraton">Maraton</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label small text-muted mb-1">Čas</label>
+            <input class="form-control form-control-sm" type="text" maxlength="20" data-legend-pr-time-input>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-dark" data-legend-pr-add>Přidat PR</button>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endif %}

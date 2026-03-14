@@ -1,0 +1,34 @@
+<div class="dropdown" id="notificationDropdownRoot">
+  <button
+    type="button"
+    class="eb-profile-trigger position-relative"
+    id="notificationBellButton"
+    data-bs-toggle="dropdown"
+    aria-expanded="false"
+    title="Notifikace"
+    aria-label="Notifikace"
+  >
+    <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+      <path d="M8 2.2c-1.8 0-3.2 1.4-3.2 3.2v1.4c0 .8-.3 1.5-.8 2.2L3 10.5h10L12 9c-.5-.7-.8-1.4-.8-2.2V5.4C11.2 3.6 9.8 2.2 8 2.2Z" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"></path>
+      <path d="M6.6 12.2a1.4 1.4 0 0 0 2.8 0" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"></path>
+    </svg>
+    {% if messages %}
+      <span class="eb-notification-badge">{{ messages|length }}</span>
+    {% endif %}
+  </button>
+  <div class="dropdown-menu dropdown-menu-end eb-notification-dropdown">
+    <div class="fw-semibold px-2 pb-2 border-bottom mb-2">Notifikace</div>
+    <div class="eb-notification-list">
+      {% if messages %}
+        {% for message in messages %}
+          <div class="eb-notification-item is-unread eb-notification-item--{% if message.tags == 'error' %}danger{% elif message.tags %}{{ message.tags }}{% else %}secondary{% endif %}" data-notification-item="1">
+            <span class="eb-notification-dot" aria-hidden="true"></span>
+            <span class="eb-notification-text">{{ message }}</span>
+          </div>
+        {% endfor %}
+      {% else %}
+        <div class="small text-muted px-2 py-1">Zatím nemáš žádné notifikace.</div>
+      {% endif %}
+    </div>
+  </div>
+</div>

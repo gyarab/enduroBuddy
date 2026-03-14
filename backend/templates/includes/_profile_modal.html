@@ -1,0 +1,147 @@
+{% if user.is_authenticated %}
+  <div class="modal fade eb-profile-modal" id="profileModal" tabindex="-1" aria-labelledby="profileModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <div class="d-flex align-items-center gap-3">
+            <div class="eb-profile-avatar">
+              <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                <circle cx="8" cy="5" r="3" fill="none" stroke="currentColor" stroke-width="1.2"></circle>
+                <path d="M2.5 14c.5-2.6 2.6-4.2 5.5-4.2s5 1.6 5.5 4.2" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"></path>
+              </svg>
+            </div>
+            <div>
+              <h5 class="modal-title mb-0" id="profileModalLabel">Správa profilu</h5>
+              <div class="small text-muted">
+                {% if user.first_name or user.last_name %}
+                  {{ user.first_name }} {{ user.last_name }}
+                {% else %}
+                  {{ user.username }}
+                {% endif %}
+                {% if user.email %}
+                  | {{ user.email }}
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Zavřít"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row g-3">
+            <div class="col-md-4">
+              <div class="nav flex-column nav-pills eb-profile-menu" id="profileSettingsTabs" role="tablist" aria-orientation="vertical">
+                <button class="nav-link active" id="profileTabBtn" data-bs-toggle="pill" data-bs-target="#profileTabPane" type="button" role="tab" aria-controls="profileTabPane" aria-selected="true">Profil</button>
+                <button class="nav-link" id="accountTabBtn" data-bs-toggle="pill" data-bs-target="#accountTabPane" type="button" role="tab" aria-controls="accountTabPane" aria-selected="false">Nastavení účtu</button>
+                <button class="nav-link" id="passwordTabBtn" data-bs-toggle="pill" data-bs-target="#passwordTabPane" type="button" role="tab" aria-controls="passwordTabPane" aria-selected="false">Změna hesla</button>
+                <button class="nav-link" id="coachTabBtn" data-bs-toggle="pill" data-bs-target="#coachTabPane" type="button" role="tab" aria-controls="coachTabPane" aria-selected="false">Trenér</button>
+              </div>
+            </div>
+            <div class="col-md-8">
+              <div class="tab-content" id="profileSettingsTabContent">
+                <div class="tab-pane fade show active" id="profileTabPane" role="tabpanel" aria-labelledby="profileTabBtn" tabindex="0">
+                  <div class="eb-profile-block">
+                    <h6 class="mb-3">Profil</h6>
+                    <form method="post" action="{% url 'profile_manage' %}" class="d-grid gap-2 eb-profile-form-sm">
+                      {% csrf_token %}
+                      <input type="hidden" name="action" value="update_profile">
+                      <input type="hidden" name="next" value="{{ request.get_full_path }}#profileModal">
+                      <div>
+                        <label class="form-label form-label-sm mb-1">Jméno</label>
+                        <input type="text" class="form-control form-control-sm" name="first_name" value="{{ user.first_name }}" maxlength="150">
+                      </div>
+                      <div>
+                        <label class="form-label form-label-sm mb-1">Příjmení</label>
+                        <input type="text" class="form-control form-control-sm" name="last_name" value="{{ user.last_name }}" maxlength="150">
+                      </div>
+                      <div>
+                        <button type="submit" class="btn btn-dark btn-sm">Uložit profil</button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+
+                <div class="tab-pane fade" id="accountTabPane" role="tabpanel" aria-labelledby="accountTabBtn" tabindex="0">
+                  <div class="eb-profile-block">
+                    <h6 class="mb-3">Nastavení účtu</h6>
+                    <div class="small text-muted mb-2">Uživatelské jméno: <strong>{{ user.username }}</strong></div>
+                    <form method="post" action="{% url 'account_logout' %}" class="m-0">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-outline-dark btn-sm">Odhlásit</button>
+                    </form>
+                  </div>
+                </div>
+
+                <div class="tab-pane fade" id="passwordTabPane" role="tabpanel" aria-labelledby="passwordTabBtn" tabindex="0">
+                  <div class="eb-profile-block">
+                    <h6 class="mb-3">Změna hesla</h6>
+                    <form method="post" action="{% url 'profile_manage' %}" class="d-grid gap-2 eb-profile-form-sm">
+                      {% csrf_token %}
+                      <input type="hidden" name="action" value="change_password">
+                      <input type="hidden" name="next" value="{{ request.get_full_path }}#profileModal">
+                      <div>
+                        <label class="form-label form-label-sm mb-1">Staré heslo</label>
+                        <input type="password" class="form-control form-control-sm" name="old_password" required>
+                      </div>
+                      <div>
+                        <label class="form-label form-label-sm mb-1">Nové heslo</label>
+                        <input type="password" class="form-control form-control-sm" name="new_password" required>
+                      </div>
+                      <div>
+                        <label class="form-label form-label-sm mb-1">Potvrdit nové heslo</label>
+                        <input type="password" class="form-control form-control-sm" name="new_password_confirm" required>
+                      </div>
+                      <div>
+                        <button type="submit" class="btn btn-dark btn-sm">Změnit heslo</button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+
+                <div class="tab-pane fade" id="coachTabPane" role="tabpanel" aria-labelledby="coachTabBtn" tabindex="0">
+                  <div class="eb-profile-block">
+                    <h6 class="mb-3">Trenér</h6>
+                    <form method="post" action="{% url 'profile_manage' %}" class="d-grid gap-2 mb-2 eb-profile-form-sm">
+                      {% csrf_token %}
+                      <input type="hidden" name="action" value="request_coach_by_code">
+                      <input type="hidden" name="next" value="{{ request.get_full_path }}#profileModal">
+                      {% if request.GET.test_button_loading == "add_coach" %}
+                        <input type="hidden" name="test_button_loading" value="add_coach">
+                      {% endif %}
+                      <div>
+                        <label class="form-label form-label-sm mb-1">Kód trenéra</label>
+                        <input type="text" class="form-control form-control-sm text-uppercase" name="coach_code" maxlength="12" placeholder="AB7K9Q2M5T8R" required>
+                      </div>
+                      <div>
+                        <button type="submit" class="btn btn-primary btn-sm">Přidat trenéra</button>
+                      </div>
+                    </form>
+
+                    {% if profile_pending_coach_requests %}
+                      <div class="small text-muted mb-1">Čekající žádosti</div>
+                      <div class="d-grid gap-2 mb-2">
+                        {% for req in profile_pending_coach_requests %}
+                          <div class="eb-profile-trainer-row small">{{ req.coach.username }}</div>
+                        {% endfor %}
+                      </div>
+                    {% endif %}
+
+                    {% if profile_approved_coach_links %}
+                      <div class="small text-muted mb-1">Aktuálně mě trénuje</div>
+                      <div class="d-grid gap-2">
+                        {% for link in profile_approved_coach_links %}
+                          <div class="eb-profile-trainer-row small"><strong>{{ link.coach.username }}</strong></div>
+                        {% endfor %}
+                      </div>
+                    {% else %}
+                      <div class="small text-muted">Zatím nemáš přiřazeného trenéra.</div>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endif %}

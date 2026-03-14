@@ -1,0 +1,86 @@
+<div class="modal fade" id="importActivitiesModal" tabindex="-1" aria-labelledby="importActivitiesModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="importActivitiesModalLabel">Import aktivit</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Zavrit"></button>
+      </div>
+      <div class="modal-body eb-import-modal-body">
+        <div class="eb-import-note">
+          Garmin heslo se neuklada. Ukladaji se pouze sifrovane tokeny.
+        </div>
+
+        {% if garmin_connection %}
+        <div class="eb-import-block eb-import-block-connected">
+          <div class="eb-import-block-head">
+            <div>
+              <div class="eb-import-label">Garmin ucet</div>
+              <div class="eb-import-value">{{ garmin_connection.garmin_display_name|default:garmin_connection.garmin_email }}</div>
+            </div>
+          </div>
+          <form method="post" class="m-0 mt-2">
+            {% csrf_token %}
+            <button class="btn btn-outline-danger btn-sm w-100" type="submit" name="import_source" value="garmin_revoke">
+              Odpojit Garmin
+            </button>
+          </form>
+        </div>
+        {% else %}
+        <form method="post" class="eb-import-block eb-import-block-auth">
+          {% csrf_token %}
+          <input type="hidden" name="import_source" value="garmin_connect">
+          <div class="eb-import-block-head">
+            <div class="eb-import-title">Pripojit Garmin ucet</div>
+          </div>
+          <div class="mb-2">
+            <label class="form-label form-label-sm mb-1">E-mail</label>
+            <input type="email" class="form-control form-control-sm" name="garmin_email" placeholder="tvuj@email.cz" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label form-label-sm mb-1">Heslo</label>
+            <input type="password" class="form-control form-control-sm" name="garmin_password" placeholder="********" required>
+          </div>
+          <button class="btn btn-primary btn-sm w-100" type="submit">Pripojit Garmin</button>
+        </form>
+        {% endif %}
+
+        <form
+          method="post"
+          class="eb-import-block eb-import-block-sync"
+          id="garminSyncForm"
+          data-eb-skip-submit-loading="1"
+          data-garmin-sync-start-url="{% url 'garmin_sync_start' %}"
+          data-garmin-job-status-url-template="{% url 'import_job_status' 0 %}"
+        >
+          {% csrf_token %}
+          <input type="hidden" name="import_source" value="garmin_sync">
+          <div class="eb-import-block-head">
+            <div class="eb-import-title">Synchronizace z Garminu</div>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <select class="form-select form-select-sm" id="garminRangeSelect" name="garmin_range">
+              <option value="today">Dnes</option>
+              <option value="yesterday">Vcera</option>
+              <option value="this_week">Tento tyden</option>
+              <option value="last_week">Minuly tyden</option>
+              <option value="last_30_days" selected>Poslednich 30 dni</option>
+              <option value="all">Vse</option>
+            </select>
+            <button class="btn btn-success btn-sm d-inline-flex align-items-center gap-2" id="garminSyncSubmitButton" type="submit" {% if not garmin_connection %}disabled{% endif %}>
+              <span class="spinner-border spinner-border-sm d-none" id="garminSyncSpinner" role="status" aria-hidden="true"></span>
+              <span id="garminSyncButtonLabel">Sync Garmin</span>
+            </button>
+          </div>
+        </form>
+
+        <form method="post" enctype="multipart/form-data" id="fitImportForm" class="eb-import-block eb-import-block-fit m-0">
+          {% csrf_token %}
+          <input type="hidden" id="importSourceInput" name="import_source" value="fit_upload">
+          <input type="file" id="fitFileInput" name="fit_file" accept=".fit" class="d-none">
+          <div class="eb-import-title mb-1">Import ze souboru</div>
+          <a href="#" id="fitImportLink" class="eb-fit-link">Importovat .fit soubor</a>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

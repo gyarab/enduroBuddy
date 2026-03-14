@@ -1,0 +1,133 @@
+.eb-plan-legend-modal .modal-dialog {
+  width: 1140px;
+  max-width: min(1140px, calc(100vw - 28px));
+}
+
+.eb-plan-legend-modal .modal-content {
+  height: auto;
+  max-height: none;
+}
+
+.eb-plan-legend-modal {
+  z-index: 1060;
+}
+
+#coachLegendZonesModal,
+#coachLegendThresholdModal,
+#coachLegendPrModal {
+  z-index: 1080;
+}
+
+.eb-legend-modal-body {
+  overflow: visible;
+  background: #f8fafc;
+}
+
+.eb-legend-layout {
+  display: grid;
+  grid-template-columns: minmax(360px, 1fr) minmax(460px, 1fr);
+  gap: 14px;
+  align-items: start;
+}
+
+.eb-legend-section {
+  border: 1px solid #dbe3ee;
+  border-radius: 12px;
+  background: #fff;
+  padding: 10px;
+}
+
+.eb-legend-section-title {
+  font-size: 0.86rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #4b5563;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.eb-legend-table {
+  margin-bottom: 0;
+}
+
+.eb-legend-table thead th {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #6b7280;
+  border-bottom: 1px solid #dbe3ee;
+}
+
+.eb-legend-zone-col,
+.eb-legend-threshold-value-col {
+  width: 90px;
+}
+
+.eb-legend-range-col {
+  width: 140px;
+}
+
+.eb-legend-threshold-name-col {
+  width: 120px;
+}
+
+.eb-legend-pr-time-col {
+  width: 180px;
+}
+
+.eb-legend-zone-edit-col {
+  width: 100px;
+}
+
+.eb-legend-table tbody td {
+  vertical-align: middle;
+}
+
+.eb-legend-table tbody tr:nth-child(odd) {
+  background: #f9fbfd;
+}
+
+.eb-legend-table input.form-control {
+  border-color: #cfd8e3;
+}
+
+.eb-legend-plus-btn {
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.eb-legend-zone-input {
+  width: 80px;
+  min-width: 80px;
+}
+
+.eb-legend-table tbody td:last-child {
+  color: #374151;
+  font-weight: 600;
+}
+
+.eb-legend-thresholds {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed #d4deea;
+}
+
+.eb-legend-pr-select {
+  min-width: 180px;
+}
+
+.eb-legend-pr-distance {
+  font-weight: 600;
+}
+
+.eb-legend-pr-remove {
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}

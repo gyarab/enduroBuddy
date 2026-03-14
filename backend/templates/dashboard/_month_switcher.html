@@ -1,0 +1,21 @@
+<div class="eb-month-switcher {% if month_switcher_embedded %}eb-month-switcher--embedded{% endif %}">
+  <div class="container-fluid">
+    <div class="d-flex gap-2 px-3 eb-month-switcher-track">
+      {% if add_month_enabled and add_month_action %}
+        <form method="post" class="m-0 flex-shrink-0 eb-add-month-form" data-eb-skip-submit-loading="1">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="{{ add_month_action }}">
+          {% if add_month_athlete_id %}
+            <input type="hidden" name="athlete_id" value="{{ add_month_athlete_id }}">
+          {% endif %}
+          <button class="btn btn-primary btn-sm eb-add-month-btn flex-shrink-0" type="submit" title="Přidat měsíc" aria-label="Přidat měsíc">+</button>
+        </form>
+      {% endif %}
+      {% for m in month_cards %}
+        <button class="month-btn btn btn-outline-dark btn-sm flex-shrink-0 {% if forloop.first %}is-active{% endif %}" data-month-id="{{ m.id }}" type="button">{{ m.label }}</button>
+      {% empty %}
+        <button class="btn btn-outline-dark btn-sm" disabled>Žádné měsíce</button>
+      {% endfor %}
+    </div>
+  </div>
+</div>

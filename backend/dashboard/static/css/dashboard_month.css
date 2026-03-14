@@ -1,0 +1,191 @@
+/* ===== HORIZONTAL SCROLL for whole month content ===== */
+.eb-month-scroll {
+  overflow-x: auto;
+  width: 100%;
+  background: #fff;
+  border-radius: 12px;
+  padding-bottom: 8px;
+}
+
+/* aby se obsah neschoval pod spodni switcher */
+.eb-scrollwrap {
+  padding-bottom: 90px;
+}
+
+.eb-scrollwrap--embedded {
+  padding-bottom: 8px;
+}
+
+.eb-week-row {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 12px;
+  width: max-content;
+  align-items: stretch;
+}
+
+.eb-col {
+  flex: 0 0 auto;
+  display: flex;
+}
+
+.eb-col-planned {
+  min-width: 50vw;
+  width: max-content;
+}
+
+.eb-col-planned .card,
+.eb-col-planned table,
+.eb-col-completed .card,
+.eb-col-completed table {
+  width: 100%;
+}
+
+.eb-col-completed {
+  min-width: 50vw;
+  width: max-content;
+}
+
+.eb-completed-km-col {
+  width: 80px;
+}
+
+.eb-completed-min-col {
+  width: 110px;
+}
+
+.eb-completed-pace-col {
+  min-width: 420px;
+}
+
+.eb-completed-avg-hr-col,
+.eb-completed-max-hr-col {
+  width: 90px;
+}
+
+.eb-col td,
+.eb-col th {
+  white-space: nowrap;
+}
+
+.eb-col-planned th.eb-planned-training-col,
+.eb-col-planned td.eb-planned-training-col,
+.eb-col-planned th.eb-planned-notes-col,
+.eb-col-planned td.eb-planned-notes-col {
+  white-space: nowrap;
+  vertical-align: top;
+}
+
+.eb-col-planned th.eb-planned-date-col,
+.eb-col-planned td.eb-planned-date-col {
+  min-width: 110px;
+  padding-right: 0.9rem;
+}
+
+.eb-col-planned th.eb-planned-day-col,
+.eb-col-planned td.eb-planned-day-col {
+  min-width: 120px;
+  padding-right: 1rem;
+}
+
+.eb-col-planned th.eb-planned-type-col,
+.eb-col-planned td.eb-planned-type-col {
+  min-width: 118px;
+  width: 118px;
+  padding-right: 0.8rem;
+}
+
+.eb-planned-date-col-width {
+  width: 110px;
+}
+
+.eb-planned-day-col-width {
+  width: 120px;
+}
+
+.eb-planned-type-col-width {
+  width: 118px;
+}
+
+.eb-planned-training-col-width {
+  width: 75%;
+}
+
+.eb-planned-notes-col-width {
+  width: 25%;
+}
+
+.eb-planned-type-col .eb-inline-select {
+  min-width: 110px;
+}
+
+.eb-plan-rules-help-btn {
+  width: 18px;
+  height: 18px;
+  font-size: 11px;
+}
+
+.eb-col-planned th.eb-planned-training-col,
+.eb-col-planned td.eb-planned-training-col {
+  width: var(--eb-planned-training-col-width);
+  min-width: var(--eb-planned-training-col-width);
+}
+
+.eb-col-planned th.eb-planned-notes-col,
+.eb-col-planned td.eb-planned-notes-col {
+  width: var(--eb-planned-notes-col-width);
+  min-width: var(--eb-planned-notes-col-width);
+}
+
+.eb-wrap {
+  white-space: normal;
+}
+
+.month-container {
+  --eb-planned-training-col-width: 320px;
+  --eb-planned-notes-col-width: 180px;
+  display: none;
+}
+
+.month-container.is-active {
+  display: block;
+}
+
+.month-btn.is-active {
+  background: #212529;
+  color: #fff;
+}
+
+.eb-month-switcher {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #fff;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  z-index: 1030;
+  padding: 8px 0;
+}
+
+.eb-month-switcher--embedded {
+  position: static;
+  left: auto;
+  right: auto;
+  bottom: auto;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  margin-top: 10px;
+  flex: 0 0 auto;
+}
+
+.eb-month-switcher-track {
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.eb-month-switcher-track::-webkit-scrollbar {
+  display: none;
+}

@@ -1,0 +1,118 @@
+<div class="eb-col eb-col-completed">
+  <div class="card shadow-sm h-100">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <div class="d-flex align-items-center gap-2">
+          <h5 class="mb-0">Splněno</h5>
+          {% if garmin_week_sync_enabled %}
+            <button
+              type="button"
+              class="btn btn-outline-secondary btn-sm rounded-circle d-inline-flex align-items-center justify-content-center eb-garmin-week-sync-btn"
+              data-week-start="{{ week.week_start|date:'Y-m-d' }}"
+              aria-label="Importovat Garmin aktivity z tohoto tydne"
+              title="{% if not week.has_started %}Tento tyden jeste nezacal.{% else %}Importovat Garmin aktivity z tohoto tydne{% endif %}"
+              {% if not garmin_week_sync_connected or not week.has_started %}disabled{% endif %}
+            >
+              <span class="spinner-border spinner-border-sm d-none eb-garmin-week-sync-spinner" role="status" aria-hidden="true"></span>
+              <svg class="eb-garmin-week-sync-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false" width="14" height="14">
+                <path d="M13.2 4.8A5.5 5.5 0 0 0 3.9 3.5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+                <path d="M3.9 1.9v1.9h1.9" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M2.8 11.2A5.5 5.5 0 0 0 12.1 12.5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+                <path d="M12.1 14.1v-1.9h-1.9" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          {% endif %}
+        </div>
+        <small class="text-muted">Splits</small>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th class="eb-completed-km-col">km</th>
+              <th class="eb-completed-min-col">min</th>
+              <th class="eb-completed-pace-col">pace / intervals</th>
+              <th class="eb-completed-avg-hr-col">avg HR</th>
+              <th class="eb-completed-max-hr-col">max HR</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for r in week.completed_rows %}
+              <tr>
+                <td>
+                  {% if completed_editable and r.planned_id %}
+                    {% if completed_lock_linked_activity and r.has_linked_activity %}
+                      {{ r.km }}
+                    {% else %}
+                      <div class="eb-completed-inline-edit" contenteditable="true" data-training-id="{{ r.planned_id }}" data-field="km">{{ r.km }}</div>
+                    {% endif %}
+                  {% else %}
+                    {{ r.km }}
+                  {% endif %}
+                </td>
+                <td>
+                  {% if completed_editable and r.planned_id %}
+                    {% if completed_lock_linked_activity and r.has_linked_activity %}
+                      {{ r.min }}
+                    {% else %}
+                      <div class="eb-completed-inline-edit" contenteditable="true" data-training-id="{{ r.planned_id }}" data-field="min">{{ r.min }}</div>
+                    {% endif %}
+                  {% else %}
+                    {{ r.min }}
+                  {% endif %}
+                </td>
+                <td>
+                  {% if completed_editable and r.planned_id %}
+                    {% if completed_lock_linked_activity and r.has_linked_activity %}
+                      {{ r.third }}
+                    {% else %}
+                      <div class="eb-completed-inline-edit" contenteditable="true" data-training-id="{{ r.planned_id }}" data-field="third">{{ r.third }}</div>
+                    {% endif %}
+                  {% else %}
+                    {{ r.third }}
+                  {% endif %}
+                </td>
+                <td>
+                  {% if completed_editable and r.planned_id %}
+                    {% if completed_lock_linked_activity and r.has_linked_activity %}
+                      {{ r.avg_hr|default:"-" }}
+                    {% else %}
+                      <div class="eb-completed-inline-edit" contenteditable="true" data-training-id="{{ r.planned_id }}" data-field="avg_hr">{{ r.avg_hr|default:"" }}</div>
+                    {% endif %}
+                  {% else %}
+                    {{ r.avg_hr|default:"" }}
+                  {% endif %}
+                </td>
+                <td>
+                  {% if completed_editable and r.planned_id %}
+                    {% if completed_lock_linked_activity and r.has_linked_activity %}
+                      {{ r.max_hr|default:"" }}
+                    {% else %}
+                      <div class="eb-completed-inline-edit" contenteditable="true" data-training-id="{{ r.planned_id }}" data-field="max_hr">{{ r.max_hr|default:"" }}</div>
+                    {% endif %}
+                  {% else %}
+                    {{ r.max_hr|default:"" }}
+                  {% endif %}
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="5" class="text-muted small">Zatím žádné záznamy.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+          <tfoot class="table-light">
+            <tr>
+              <th>{{ week.completed_total.km|default:"-" }}</th>
+              <th>{{ week.completed_total.time|default:"-" }}</th>
+              <th>Celkem</th>
+              <th>{{ week.completed_total.avg_hr|default:"-" }}</th>
+              <th>{{ week.completed_total.max_hr|default:"-" }}</th>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
