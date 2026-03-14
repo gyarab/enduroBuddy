@@ -57,6 +57,14 @@ class CoachTrainingPageCases:
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Test: Novy treninkovy plan je pripraven.")
 
+    @override_settings(DEBUG=True)
+    def test_coach_page_can_render_full_test_notification_suite_from_query_param(self):
+        self.client.login(username="coach", password="coach")
+        resp = self.client.get(reverse("coach_training_plans"), {"test_notifications": "all"})
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "ebTestClientNotifications")
+        self.assertContains(resp, "Test client: Ulozeni treninku selhalo.")
+
     def test_create_group_action_is_ignored_in_simplified_coach_ui(self):
         self.client.login(username="coach", password="coach")
         resp = self.client.post(

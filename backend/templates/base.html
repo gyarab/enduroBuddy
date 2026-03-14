@@ -18,9 +18,55 @@
 </main>
 
 {% include "includes/_profile_modal.html" %}
+{% if request.eb_test_client_notifications %}
+  {{ request.eb_test_client_notifications|json_script:"ebTestClientNotifications" }}
+{% endif %}
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="{% static 'js/base_ui.js' %}"></script>
+{% if request.eb_test_client_notifications %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const dataNode = document.getElementById("ebTestClientNotifications");
+    const notifications = window.EB && window.EB.notifications;
+    if (!dataNode || !notifications) return;
+
+    let actions = [];
+    try {
+      actions = JSON.parse(dataNode.textContent || "[]");
+    } catch (_error) {
+      actions = [];
+    }
+
+    actions.forEach(function (item) {
+      const delayMs = Number(item && item.delay_ms) || 0;
+      window.setTimeout(function () {
+        if (!item || !item.action) return;
+        if (item.action === "update") {
+          notifications.updateNotification({
+            id: item.id || "",
+            text: item.text || "",
+            tone: item.tone || "success",
+            persistent: !!item.persistent,
+            statusLabel: item.statusLabel || "",
+            progressPercent: item.progressPercent,
+          });
+          return;
+        }
+        notifications.addNotification({
+          id: item.id || "",
+          text: item.text || "",
+          tone: item.tone || "success",
+          unread: item.unread !== false,
+          persistent: !!item.persistent,
+          statusLabel: item.statusLabel || "",
+          progressPercent: item.progressPercent,
+        });
+      }, delayMs);
+    });
+  });
+</script>
+{% endif %}
 {% block extra_js %}{% endblock %}
 </body>
 </html>

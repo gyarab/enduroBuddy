@@ -69,6 +69,13 @@ class DashboardFitImportFlowCases:
         self.assertContains(resp, "Test: Novy treninkovy plan je pripraven.")
         self.assertContains(resp, "Test: Garmin synchronizace bude spustena za chvili.")
 
+    @override_settings(DEBUG=True)
+    def test_dashboard_can_render_full_test_notification_suite_from_query_param(self):
+        resp = self.client.get(reverse("dashboard_home"), {"test_notifications": "all"})
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "ebTestClientNotifications")
+        self.assertContains(resp, "Test client: Garmin synchronizace bezi.")
+
     def test_import_job_status_returns_progress_fields(self):
         job = ImportJob.objects.create(
             user=self.user,
