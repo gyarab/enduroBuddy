@@ -1,0 +1,56 @@
+<nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom eb-top-nav">
+  <div class="container-fluid">
+    <a class="navbar-brand fw-bold" href="/">EnduroBuddy</a>
+
+    <div class="d-flex gap-2 align-items-center">
+      <a class="btn btn-sm btn-outline-dark" href="/">Tréninkový přehled</a>
+      {% if user.is_authenticated and is_coach %}
+        <a class="btn btn-sm btn-dark" href="{% url 'coach_training_plans' %}">Spravovat tréninkové plány</a>
+      {% endif %}
+    </div>
+
+    <div class="ms-auto d-flex align-items-center gap-2">
+      {% if user.is_authenticated %}
+        {% include "includes/_notifications_dropdown.html" %}
+        <div class="dropdown">
+          <button
+            type="button"
+            class="eb-profile-trigger"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+            title="Uživatel"
+            aria-label="Uživatel"
+          >
+            <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+              <circle cx="8" cy="5" r="3" fill="none" stroke="currentColor" stroke-width="1.2"></circle>
+              <path d="M2.5 14c.5-2.6 2.6-4.2 5.5-4.2s5 1.6 5.5 4.2" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"></path>
+            </svg>
+          </button>
+          <div class="dropdown-menu dropdown-menu-end eb-profile-dropdown">
+            <div class="eb-profile-dropdown-name">
+              <div class="fw-semibold">
+                {% if user.first_name or user.last_name %}
+                  {{ user.first_name }} {{ user.last_name }}
+                {% else %}
+                  {{ user.username }}
+                {% endif %}
+              </div>
+              {% if user.email %}
+                <div class="small text-muted">{{ user.email }}</div>
+              {% endif %}
+            </div>
+            <button type="button" class="dropdown-item rounded-2" data-bs-toggle="modal" data-bs-target="#profileModal">
+              Nastavení
+            </button>
+            <form method="post" action="{% url 'account_logout' %}" class="m-0">
+              {% csrf_token %}
+              <button type="submit" class="dropdown-item rounded-2 text-danger">Odhlásit se</button>
+            </form>
+          </div>
+        </div>
+      {% else %}
+        <a class="btn btn-sm btn-outline-dark" href="{% url 'account_login' %}">Přihlásit</a>
+      {% endif %}
+    </div>
+  </div>
+</nav>

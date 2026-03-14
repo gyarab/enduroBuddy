@@ -1,92 +1,66 @@
 from __future__ import annotations
 
-import json
-from decimal import Decimal
-
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 
-from dashboard.services.planned_km import estimate_running_km_from_title
-from training.models import PlannedTraining
+from dashboard.api import json_error
+from dashboard.handlers.planned_training_api import (
+    load_planned_training,
+    parse_json_body,
+    planned_athlete_id,
+    save_planned_field,
+    validate_completed_update_payload,
+    validate_planned_id_payload,
+    validate_planned_update_payload,
+)
+from dashboard.texts import ApiText
 from .views_shared import (
     _create_second_phase_for_planned,
     _remove_second_phase_for_planned,
     _update_completed_training_for_planned,
 )
 
-_MAX_PLANNED_DISTANCE_KM = Decimal("999.99")
 
 @login_required
 @require_POST
 def athlete_update_planned_training(request):
-    try:
-        payload = json.loads(request.body.decode("utf-8"))
-    except (UnicodeDecodeError, json.JSONDecodeError):
-        return JsonResponse({"ok": False, "error": "Invalid JSON body."}, status=400)
+    payload, error = parse_json_body(request)
+    if error:
+        return error
 
-    planned_id = payload.get("planned_id")
-    field = payload.get("field")
-    value = payload.get("value", "")
+    parsed_payload, error = validate_planned_update_payload(payload)
+    if error:
+        return error
 
-    if not isinstance(planned_id, int):
-        return JsonResponse({"ok": False, "error": "Invalid planned_id."}, status=400)
-    if field not in {"title", "notes", "session_type"}:
-        return JsonResponse({"ok": False, "error": "Invalid field."}, status=400)
-    if not isinstance(value, str):
-        return JsonResponse({"ok": False, "error": "Invalid value."}, status=400)
-    if field == "session_type" and value not in {
-        PlannedTraining.SessionType.RUN,
-        PlannedTraining.SessionType.WORKOUT,
-    }:
-        return JsonResponse({"ok": False, "error": "Invalid session_type value."}, status=400)
+    planned_id, field, value = parsed_payload
+    planned, error = load_planned_training(planned_id)
+    if error:
+        return error
+    if planned_athlete_id(planned) != request.user.id:
+        return json_error(ApiText.FORBIDDEN_FOR_ATHLETE, status=403)
 
-    planned = (
-        PlannedTraining.objects.select_related("week__training_month")
-        .filter(id=planned_id)
-        .first()
-    )
-    if planned is None:
-        return JsonResponse({"ok": False, "error": "Planned training not found."}, status=404)
-
-    if planned.week.training_month.athlete_id != request.user.id:
-        return JsonResponse({"ok": False, "error": "Forbidden for this athlete."}, status=403)
-
-    setattr(planned, field, value)
-    update_fields = [field]
-    if field == "title":
-        estimated = estimate_running_km_from_title(value)
-        if estimated is not None:
-            estimated = min(estimated, _MAX_PLANNED_DISTANCE_KM)
-        planned.planned_distance_km = estimated
-        update_fields.append("planned_distance_km")
-    planned.save(update_fields=update_fields)
+    save_planned_field(planned=planned, field=field, value=value)
     return JsonResponse({"ok": True, "planned_id": planned.id, "field": field, "value": value})
-
 
 
 @login_required
 @require_POST
 def athlete_update_completed_training(request):
-    try:
-        payload = json.loads(request.body.decode("utf-8"))
-    except (UnicodeDecodeError, json.JSONDecodeError):
-        return JsonResponse({"ok": False, "error": "Invalid JSON body."}, status=400)
+    payload, error = parse_json_body(request)
+    if error:
+        return error
 
-    planned_id = payload.get("planned_id")
-    field = payload.get("field")
-    value = payload.get("value", "")
+    parsed_payload, error = validate_completed_update_payload(payload)
+    if error:
+        return error
 
-    if not isinstance(planned_id, int):
-        return JsonResponse({"ok": False, "error": "Invalid planned_id."}, status=400)
-    if field not in {"km", "min", "third", "avg_hr", "max_hr"}:
-        return JsonResponse({"ok": False, "error": "Invalid field."}, status=400)
-
-    planned = PlannedTraining.objects.select_related("week__training_month", "activity").filter(id=planned_id).first()
-    if planned is None:
-        return JsonResponse({"ok": False, "error": "Planned training not found."}, status=404)
-    if planned.week.training_month.athlete_id != request.user.id:
-        return JsonResponse({"ok": False, "error": "Forbidden for this athlete."}, status=403)
+    planned_id, field, value = parsed_payload
+    planned, error = load_planned_training(planned_id, include_activity=True)
+    if error:
+        return error
+    if planned_athlete_id(planned) != request.user.id:
+        return json_error(ApiText.FORBIDDEN_FOR_ATHLETE, status=403)
 
     try:
         normalized = _update_completed_training_for_planned(planned=planned, field=field, value=value)
@@ -99,24 +73,19 @@ def athlete_update_completed_training(request):
 @login_required
 @require_POST
 def athlete_add_second_phase_training(request):
-    try:
-        payload = json.loads(request.body.decode("utf-8"))
-    except (UnicodeDecodeError, json.JSONDecodeError):
-        return JsonResponse({"ok": False, "error": "Invalid JSON body."}, status=400)
+    payload, error = parse_json_body(request)
+    if error:
+        return error
 
-    planned_id = payload.get("planned_id")
-    if not isinstance(planned_id, int):
-        return JsonResponse({"ok": False, "error": "Invalid planned_id."}, status=400)
+    planned_id, error = validate_planned_id_payload(payload)
+    if error:
+        return error
 
-    planned = (
-        PlannedTraining.objects.select_related("week__training_month")
-        .filter(id=planned_id)
-        .first()
-    )
-    if planned is None:
-        return JsonResponse({"ok": False, "error": "Planned training not found."}, status=404)
-    if planned.week.training_month.athlete_id != request.user.id:
-        return JsonResponse({"ok": False, "error": "Forbidden for this athlete."}, status=403)
+    planned, error = load_planned_training(planned_id)
+    if error:
+        return error
+    if planned_athlete_id(planned) != request.user.id:
+        return json_error(ApiText.FORBIDDEN_FOR_ATHLETE, status=403)
 
     try:
         created = _create_second_phase_for_planned(planned=planned)
@@ -135,24 +104,19 @@ def athlete_add_second_phase_training(request):
 @login_required
 @require_POST
 def athlete_remove_second_phase_training(request):
-    try:
-        payload = json.loads(request.body.decode("utf-8"))
-    except (UnicodeDecodeError, json.JSONDecodeError):
-        return JsonResponse({"ok": False, "error": "Invalid JSON body."}, status=400)
+    payload, error = parse_json_body(request)
+    if error:
+        return error
 
-    planned_id = payload.get("planned_id")
-    if not isinstance(planned_id, int):
-        return JsonResponse({"ok": False, "error": "Invalid planned_id."}, status=400)
+    planned_id, error = validate_planned_id_payload(payload)
+    if error:
+        return error
 
-    planned = (
-        PlannedTraining.objects.select_related("week__training_month")
-        .filter(id=planned_id)
-        .first()
-    )
-    if planned is None:
-        return JsonResponse({"ok": False, "error": "Planned training not found."}, status=404)
-    if planned.week.training_month.athlete_id != request.user.id:
-        return JsonResponse({"ok": False, "error": "Forbidden for this athlete."}, status=403)
+    planned, error = load_planned_training(planned_id)
+    if error:
+        return error
+    if planned_athlete_id(planned) != request.user.id:
+        return json_error(ApiText.FORBIDDEN_FOR_ATHLETE, status=403)
 
     try:
         removed_planned_id = _remove_second_phase_for_planned(planned=planned)
@@ -166,5 +130,3 @@ def athlete_remove_second_phase_training(request):
             "removed_planned_id": removed_planned_id,
         }
     )
-
-

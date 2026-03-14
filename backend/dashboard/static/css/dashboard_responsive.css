@@ -1,0 +1,74 @@
+@media (max-width: 991.98px) {
+  body.eb-coach-page {
+    overflow: auto;
+  }
+
+  body.eb-coach-page main {
+    height: auto;
+    overflow: visible;
+  }
+
+  body.eb-coach-page main > .container-fluid.py-3 {
+    height: auto;
+    display: block;
+    padding-bottom: 1rem !important;
+  }
+
+  .eb-coach-shell {
+    grid-template-columns: 1fr;
+    height: auto;
+    overflow: visible;
+  }
+
+  .eb-coach-sidebar {
+    position: static;
+    max-height: none;
+    overflow: visible;
+  }
+
+  .eb-coach-main {
+    overflow: visible;
+    min-height: auto;
+    padding-right: 0;
+    display: block;
+  }
+
+  .eb-coach-main .eb-month-widget {
+    height: auto;
+    display: block;
+  }
+
+  .eb-coach-main .eb-scrollwrap--embedded {
+    overflow: visible;
+  }
+
+  .eb-coach-main .eb-month-scroll {
+    height: auto;
+  }
+
+  .eb-coach-toast-stack {
+    position: static;
+    width: 100%;
+    margin-bottom: 10px;
+    pointer-events: auto;
+  }
+
+  .eb-manage-left {
+    border-right: 0;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .eb-coach-manage-modal .modal-content {
+    height: auto;
+    max-height: calc(100vh - 20px);
+  }
+
+  .eb-plan-legend-modal .modal-content {
+    height: auto;
+    max-height: none;
+  }
+
+  .eb-legend-layout {
+    grid-template-columns: 1fr;
+  }
+}

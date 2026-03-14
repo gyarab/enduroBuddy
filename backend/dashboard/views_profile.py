@@ -11,6 +11,7 @@ from django.shortcuts import redirect
 from django.urls import reverse
 
 from accounts.models import CoachAthlete, CoachJoinRequest
+from dashboard.texts import HomeText, ProfileText
 from .views_shared import _resolve_coach_from_code
 
 
@@ -28,7 +29,7 @@ def profile_manage(request):
         user.first_name = first_name
         user.last_name = last_name
         user.save(update_fields=["first_name", "last_name"])
-        messages.success(request, "Profil byl ulozen.")
+        messages.success(request, ProfileText.PROFILE_SAVED)
         return _redirect_back(request)
 
     if action == "change_password":
@@ -37,10 +38,10 @@ def profile_manage(request):
         new_password_confirm = request.POST.get("new_password_confirm") or ""
 
         if not request.user.check_password(old_password):
-            messages.error(request, "Stare heslo neni spravne.")
+            messages.error(request, ProfileText.OLD_PASSWORD_INVALID)
             return _redirect_back(request)
         if new_password != new_password_confirm:
-            messages.error(request, "Nove heslo a potvrzeni se neshoduji.")
+            messages.error(request, ProfileText.PASSWORD_CONFIRM_MISMATCH)
             return _redirect_back(request)
 
         try:
@@ -52,7 +53,7 @@ def profile_manage(request):
         request.user.set_password(new_password)
         request.user.save(update_fields=["password"])
         update_session_auth_hash(request, request.user)
-        messages.success(request, "Heslo bylo zmeneno.")
+        messages.success(request, ProfileText.PASSWORD_CHANGED)
         return _redirect_back(request)
 
     if action == "request_coach_by_code":
@@ -62,30 +63,30 @@ def profile_manage(request):
         coach_code = (request.POST.get("coach_code") or "").strip().upper()
         coach_user = _resolve_coach_from_code(coach_code)
         if coach_user is None:
-            messages.error(request, "Kod trenera nebyl nalezen.")
+            messages.error(request, HomeText.COACH_CODE_NOT_FOUND)
             return _redirect_back(request)
         if coach_user.id == request.user.id:
-            messages.error(request, "Nemuzes zadat vlastni kod trenera.")
+            messages.error(request, HomeText.OWN_COACH_CODE)
             return _redirect_back(request)
         if CoachAthlete.objects.filter(coach=coach_user, athlete=request.user).exists():
-            messages.info(request, "Uz jsi u tohoto trenera prirazeny.")
+            messages.info(request, HomeText.ALREADY_ASSIGNED_TO_COACH)
             return _redirect_back(request)
         if CoachJoinRequest.objects.filter(
             coach=coach_user,
             athlete=request.user,
             status=CoachJoinRequest.Status.PENDING,
         ).exists():
-            messages.info(request, "Pozadavek uz ceka na schvaleni.")
+            messages.info(request, HomeText.JOIN_REQUEST_ALREADY_PENDING)
             return _redirect_back(request)
         CoachJoinRequest.objects.create(
             coach=coach_user,
             athlete=request.user,
             status=CoachJoinRequest.Status.PENDING,
         )
-        messages.success(request, "Pozadavek byl odeslan trenerovi ke schvaleni.")
+        messages.success(request, HomeText.JOIN_REQUEST_SENT)
         return _redirect_back(request)
 
-    messages.error(request, "Neznamy pozadavek.")
+    messages.error(request, ProfileText.UNKNOWN_ACTION)
     return _redirect_back(request)
 
 

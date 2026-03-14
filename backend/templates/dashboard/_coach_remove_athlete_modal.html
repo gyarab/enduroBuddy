@@ -1,0 +1,33 @@
+<div class="modal fade" id="coachRemoveAthleteModal" tabindex="-1" aria-labelledby="coachRemoveAthleteModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form method="post">
+        <div class="modal-header">
+          <h5 class="modal-title" id="coachRemoveAthleteModalLabel">Odebrat sverence</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Zavrit"></button>
+        </div>
+        <div class="modal-body">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="remove_athlete">
+          <input type="hidden" name="athlete_id" id="coachRemoveAthleteIdInput" value="">
+          <p class="mb-2">
+            Pro potvrzeni opis jmeno:
+            <strong id="coachRemoveAthleteExpectedName"></strong>
+          </p>
+          <label class="form-label form-label-sm" for="coachRemoveAthleteConfirmInput">Potvrzovaci jmeno</label>
+          <input
+            id="coachRemoveAthleteConfirmInput"
+            class="form-control"
+            type="text"
+            name="confirm_name"
+            autocomplete="off"
+          >
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Zrusit</button>
+          <button type="submit" class="btn btn-danger btn-sm" id="coachRemoveAthleteSubmitBtn" disabled>Odebrat sverence</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
