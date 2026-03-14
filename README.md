@@ -266,11 +266,3 @@ Testy v projektu pokrývají mimo jiné:
   wireframy a návrhy obrazovek
 - `docker-compose.yml`
   lokální stack pro web a PostgreSQL
-
-## Stav projektu
-
-README je napsaný podle aktuální implementace v repozitáři, ne podle původního konceptu. Pokud budeš chtít, můžu v dalším kroku ještě doplnit i:
-
-- stručný popis coach workflow krok za krokem
-- technický popis FIT a Garmin import pipeline
-- anglickou verzi README
