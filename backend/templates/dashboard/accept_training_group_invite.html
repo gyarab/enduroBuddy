@@ -17,9 +17,9 @@
       </p>
 
       {% if is_used %}
-        <div class="alert alert-warning py-2">Tato pozvánka už byla použita.</div>
+        <p class="text-muted mb-0">Tato pozvánka už byla použita.</p>
       {% elif is_expired %}
-        <div class="alert alert-warning py-2">Tato pozvánka už vypršela.</div>
+        <p class="text-muted mb-0">Tato pozvánka už vypršela.</p>
       {% else %}
         <form method="post">
           {% csrf_token %}
@@ -31,4 +31,31 @@
     </div>
   </div>
 </div>
+{% if is_used %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    if (window.EB && window.EB.notifications) {
+      window.EB.notifications.addNotification({
+        id: "invite-used",
+        text: "Tato pozvanka uz byla pouzita.",
+        tone: "warning",
+        unread: true
+      });
+    }
+  });
+</script>
+{% elif is_expired %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    if (window.EB && window.EB.notifications) {
+      window.EB.notifications.addNotification({
+        id: "invite-expired",
+        text: "Tato pozvanka uz vyprsela.",
+        tone: "warning",
+        unread: true
+      });
+    }
+  });
+</script>
+{% endif %}
 {% endblock %}
