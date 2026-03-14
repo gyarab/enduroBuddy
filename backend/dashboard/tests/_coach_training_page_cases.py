@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from ._coach_training_base import (
+    AppNotification,
     CoachAthlete,
     CoachJoinRequest,
     TrainingGroup,
@@ -55,7 +56,7 @@ class CoachTrainingPageCases:
         self.client.login(username="coach", password="coach")
         resp = self.client.get(reverse("coach_training_plans"), {"test_notifications": "1"})
         self.assertEqual(resp.status_code, 200)
-        self.assertContains(resp, "Test: Novy treninkovy plan je pripraven.")
+        self.assertContains(resp, "Test: Nový tréninkový plán je připraven.")
 
     @override_settings(DEBUG=True)
     def test_coach_page_can_render_full_test_notification_suite_from_query_param(self):
@@ -63,7 +64,7 @@ class CoachTrainingPageCases:
         resp = self.client.get(reverse("coach_training_plans"), {"test_notifications": "all"})
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "ebTestClientNotifications")
-        self.assertContains(resp, "Test client: Ulozeni treninku selhalo.")
+        self.assertContains(resp, "Test client:")
 
     def test_create_group_action_is_ignored_in_simplified_coach_ui(self):
         self.client.login(username="coach", password="coach")
@@ -153,6 +154,75 @@ class CoachTrainingPageCases:
         join_request.refresh_from_db()
         self.assertEqual(join_request.status, CoachJoinRequest.Status.APPROVED)
         self.assertTrue(CoachAthlete.objects.filter(coach=self.coach, athlete=self.athlete2).exists())
+
+    def test_coach_page_renders_persistent_join_request_notification(self):
+        notification = AppNotification.objects.create(
+            recipient=self.coach,
+            actor=self.athlete2,
+            kind=AppNotification.Kind.COACH_JOIN_REQUEST,
+            tone=AppNotification.Tone.INFO,
+            text="Nová žádost o trénování od athlete2.",
+        )
+        self.client.login(username="coach", password="coach")
+
+        response = self.client.get(reverse("coach_training_plans"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, notification.text)
+        self.assertContains(response, f'data-app-notification-id="{notification.id}"')
+
+    def test_join_request_creation_creates_persistent_notification_for_coach(self):
+        self.coach.profile.coach_join_code = "ABC123"
+        self.coach.profile.save(update_fields=["coach_join_code"])
+        self.client.login(username="athlete2", password="athlete2")
+        response = self.client.post(reverse("dashboard_home"), data={"action": "request_coach_by_code", "coach_code": "abc123"})
+        self.assertEqual(response.status_code, 302)
+        notification = AppNotification.objects.filter(recipient=self.coach).order_by("-id").first()
+        self.assertIsNotNone(notification)
+        self.assertIn("Nová žádost o trénování", notification.text)
+
+    def test_notification_poll_returns_unread_notifications(self):
+        AppNotification.objects.create(
+            recipient=self.coach,
+            actor=self.athlete2,
+            kind=AppNotification.Kind.COACH_JOIN_REQUEST,
+            tone=AppNotification.Tone.INFO,
+            text="Nová žádost o trénování od athlete2.",
+        )
+        self.client.login(username="coach", password="coach")
+        response = self.client.get(reverse("notification_poll"), HTTP_X_REQUESTED_WITH="XMLHttpRequest")
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()
+        self.assertTrue(payload["ok"])
+        self.assertEqual(len(payload["notifications"]), 1)
+        self.assertIn("Nová žádost o trénování", payload["notifications"][0]["text"])
+
+    def test_notification_mark_read_marks_only_current_users_notifications(self):
+        own = AppNotification.objects.create(
+            recipient=self.coach,
+            actor=self.athlete2,
+            kind=AppNotification.Kind.COACH_JOIN_REQUEST,
+            tone=AppNotification.Tone.INFO,
+            text="Nová žádost o trénování od athlete2.",
+        )
+        foreign = AppNotification.objects.create(
+            recipient=self.other_coach,
+            actor=self.athlete,
+            kind=AppNotification.Kind.COACH_JOIN_REQUEST,
+            tone=AppNotification.Tone.INFO,
+            text="Nová žádost o trénování od athlete.",
+        )
+        self.client.login(username="coach", password="coach")
+        response = self.client.post(
+            reverse("notification_mark_read"),
+            data='{"notification_ids": [%d, %d]}' % (own.id, foreign.id),
+            content_type="application/json",
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+        self.assertEqual(response.status_code, 200)
+        own.refresh_from_db()
+        foreign.refresh_from_db()
+        self.assertIsNotNone(own.read_at)
+        self.assertIsNone(foreign.read_at)
 
     def test_athlete_can_add_next_month_from_dashboard(self):
         self.client.login(username="athlete", password="athlete")

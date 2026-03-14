@@ -22,7 +22,7 @@ class Command(BaseCommand):
             defaults={
                 "email": "coach_demo@endurobuddy.local",
                 "first_name": "Petr",
-                "last_name": "Novak",
+                "last_name": "Novák",
             },
         )
         coach.set_password("demo12345")
@@ -32,9 +32,9 @@ class Command(BaseCommand):
         coach.profile.save(update_fields=["role"])
 
         athlete_specs = [
-            ("athlete_lucie", "Lucie", "Kralova"),
-            ("athlete_tomas", "Tomas", "Svoboda"),
-            ("athlete_anna", "Anna", "Dvorakova"),
+            ("athlete_lucie", "Lucie", "Králová"),
+            ("athlete_tomas", "Tomáš", "Svoboda"),
+            ("athlete_anna", "Anna", "Dvořáková"),
         ]
         athletes = []
         for username, first_name, last_name in athlete_specs:
@@ -56,7 +56,7 @@ class Command(BaseCommand):
         group, _ = TrainingGroup.objects.get_or_create(
             coach=coach,
             name="A-team",
-            defaults={"description": "Vytrvalostni skupina"},
+            defaults={"description": "Vytrvalostní skupina"},
         )
 
         for athlete in athletes:
@@ -77,10 +77,10 @@ class Command(BaseCommand):
         base_month = today.month
 
         weekly_templates = [
-            ("Po", "Lehky vyklus", 8, "Plynule tempo Z2"),
+            ("Po", "Lehký výklus", 8, "Plynulé tempo Z2"),
             ("Ut", "Intervaly 6x800m", 11, "Meziklus 2 min"),
-            ("Ct", "Tempovy beh", 10, "20 min v prahu"),
-            ("So", "Dlouhy beh", 18, "Posledni 3 km svizne"),
+            ("Čt", "Tempový běh", 10, "20 min v prahu"),
+            ("So", "Dlouhý běh", 18, "Poslední 3 km svižně"),
         ]
 
         # 4 months back including current month, each with up to 4 training weeks.

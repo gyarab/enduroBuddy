@@ -5,6 +5,7 @@
     const metrics = (window.EB && window.EB.metrics) || {};
     const metricStart = metrics.start || (() => null);
     const metricEnd = metrics.end || (() => null);
+    const getNotifications = () => (window.EB && window.EB.notifications) || null;
     const getWidgetState = (deps && deps.getWidgetState) || ((widget) => widget || {});
     const postForm = (deps && deps.postForm) || (async (url, formData, csrfToken) => {
       const response = await fetch(url, {
@@ -310,6 +311,10 @@
             const html = await response.text();
             const parser = new DOMParser();
             const doc = parser.parseFromString(html, "text/html");
+            const notifications = getNotifications();
+            if (notifications && typeof notifications.ingestNotificationsFromDocument === "function") {
+              notifications.ingestNotificationsFromDocument(doc);
+            }
             const replacement = doc.querySelector(".eb-month-widget");
             if (!replacement) {
               window.location.reload();
@@ -326,6 +331,15 @@
             if (typeof onWidgetReady === "function") onWidgetReady(replacement);
             enhanceAddMonthForms(replacement, onWidgetReady);
           } catch (err) {
+            const notifications = getNotifications();
+            if (notifications) {
+              notifications.addNotification({
+                id: "add-month-error",
+                text: (err && err.message) || "Přidání dalšího měsíce selhalo.",
+                tone: "danger",
+                unread: true,
+              });
+            }
             console.error(err);
             window.location.reload();
           } finally {

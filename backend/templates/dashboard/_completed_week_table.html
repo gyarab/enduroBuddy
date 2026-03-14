@@ -9,8 +9,8 @@
               type="button"
               class="btn btn-outline-secondary btn-sm rounded-circle d-inline-flex align-items-center justify-content-center eb-garmin-week-sync-btn"
               data-week-start="{{ week.week_start|date:'Y-m-d' }}"
-              aria-label="Importovat Garmin aktivity z tohoto tydne"
-              title="{% if not week.has_started %}Tento tyden jeste nezacal.{% else %}Importovat Garmin aktivity z tohoto tydne{% endif %}"
+              aria-label="Importovat Garmin aktivity z tohoto týdne"
+              title="{% if not week.has_started %}Tento týden ještě nezačal.{% else %}Importovat Garmin aktivity z tohoto týdne{% endif %}"
               {% if not garmin_week_sync_connected or not week.has_started %}disabled{% endif %}
             >
               <span class="spinner-border spinner-border-sm d-none eb-garmin-week-sync-spinner" role="status" aria-hidden="true"></span>

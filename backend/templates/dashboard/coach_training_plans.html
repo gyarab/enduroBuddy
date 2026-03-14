@@ -3,7 +3,7 @@
 {% load i18n %}
 {% get_current_language as CURRENT_LANGUAGE %}
 
-{% block title %}Sprava treninkovych planu | EnduroBuddy{% endblock %}
+{% block title %}Správa tréninkových plánů | EnduroBuddy{% endblock %}
 {% block body_class %}eb-coach-page{% endblock %}
 
 {% block content %}
@@ -16,7 +16,7 @@
       {% if selected_athlete %}
         {% include "dashboard/_month_cards.html" with month_switcher_embedded=True month_state_key=selected_athlete.id plan_editable=plan_editable plan_update_url=plan_update_url completed_editable=completed_editable completed_update_url=completed_update_url garmin_week_sync_enabled=False garmin_week_sync_connected=False add_month_enabled=add_month_enabled add_month_action=add_month_action add_month_athlete_id=add_month_athlete_id %}
       {% else %}
-        <p class="text-muted mb-0">Vyber sverence ze sloupce vlevo.</p>
+        <p class="text-muted mb-0">Vyber svěřence ze sloupce vlevo.</p>
       {% endif %}
     </section>
   </div>
@@ -36,7 +36,7 @@
     if (window.EB && window.EB.notifications) {
       window.EB.notifications.addNotification({
         id: "coach-select-athlete-hint",
-        text: "Vyber sverence ze sloupce vlevo.",
+        text: "Vyber svěřence ze sloupce vlevo.",
         tone: "secondary",
         unread: true
       });

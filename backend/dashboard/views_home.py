@@ -15,7 +15,8 @@ from django.utils import timezone
 from django.views.decorators.http import require_GET, require_POST
 
 from dashboard.api import json_error
-from accounts.models import CoachAthlete, CoachJoinRequest, GarminConnection, GarminSyncAudit, ImportJob
+from accounts.models import AppNotification, CoachAthlete, CoachJoinRequest, GarminConnection, GarminSyncAudit, ImportJob
+from accounts.services.notifications import mark_notifications_read, serialize_notification
 from accounts.services.garmin_secret_store import GarminSecretStoreError
 from activities.models import Activity, ActivityImportLedger
 from activities.services.garmin_importer import GarminImportError
@@ -422,3 +423,35 @@ def import_job_status(request, job_id: int):
         return json_error(ApiText.JOB_NOT_FOUND, status=404)
 
     return JsonResponse({"ok": True, "job": _serialize_import_job(job)})
+
+
+@login_required
+@require_GET
+def notification_poll(request):
+    notifications = list(
+        AppNotification.objects.filter(recipient=request.user, read_at__isnull=True)
+        .select_related("actor")
+        .order_by("-created_at", "-id")[:20]
+    )
+    return JsonResponse(
+        {
+            "ok": True,
+            "notifications": [serialize_notification(notification) for notification in notifications],
+        }
+    )
+
+
+@login_required
+@require_POST
+def notification_mark_read(request):
+    try:
+        payload = json.loads(request.body.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        return json_error(ApiText.INVALID_JSON_BODY, status=400)
+
+    notification_ids = payload.get("notification_ids")
+    if not isinstance(notification_ids, list):
+        return json_error("notification_ids must be a list.", status=400)
+
+    marked_count = mark_notifications_read(recipient=request.user, notification_ids=notification_ids)
+    return JsonResponse({"ok": True, "marked_count": marked_count})

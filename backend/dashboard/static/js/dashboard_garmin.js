@@ -11,7 +11,7 @@
     if (!startUrl || !statusUrlTemplate) return;
 
     const defaultLabel = label.textContent || "Sync Garmin";
-    const notifications = (window.EB && window.EB.notifications) || null;
+    const getNotifications = () => (window.EB && window.EB.notifications) || null;
     const dashboardApp = (window.EB && window.EB.dashboardApp) || {};
     const getCsrfToken = dashboardApp.getCsrfToken || (() => "");
     const refreshDashboardMonthCards = dashboardApp.refreshDashboardMonthCards || (async () => {});
@@ -66,6 +66,7 @@
           const job = payload.job;
           const isSuccess = job.status === "SUCCESS";
 
+          const notifications = getNotifications();
           if (notifications && activeNotificationId) {
             if (job.status === "RUNNING" || job.status === "QUEUED") {
               notifications.updateNotification({
@@ -135,6 +136,7 @@
 
         const jobId = payload.job_id;
         activeNotificationId = `garmin-sync-job-${jobId}`;
+        const notifications = getNotifications();
         if (notifications) {
           notifications.addNotification({
             id: activeNotificationId,
@@ -149,6 +151,7 @@
         startPolling(jobId);
       } catch (error) {
         setLoading(false);
+        const notifications = getNotifications();
         if (notifications) {
           notifications.addNotification({
             id: `garmin-sync-error-${Date.now()}`,
@@ -166,7 +169,7 @@
     if (document.body.dataset.ebGarminWeekSyncInit === "1") return;
     document.body.dataset.ebGarminWeekSyncInit = "1";
 
-    const notifications = (window.EB && window.EB.notifications) || null;
+    const getNotifications = () => (window.EB && window.EB.notifications) || null;
     const dashboardApp = (window.EB && window.EB.dashboardApp) || {};
     const getCsrfToken = dashboardApp.getCsrfToken || (() => "");
     const refreshDashboardMonthCards = dashboardApp.refreshDashboardMonthCards || (async () => {});
@@ -210,6 +213,7 @@
       const formData = new FormData();
       formData.append("week_start", weekStart);
 
+      const notifications = getNotifications();
       if (notifications) {
         notifications.addNotification({
           id: activeNotificationId,
@@ -242,6 +246,7 @@
           throw new Error((payload && payload.error) || "Tydenni Garmin import selhal.");
         }
 
+        const notifications = getNotifications();
         if (notifications) {
           notifications.updateNotification({
             id: activeNotificationId,
@@ -255,6 +260,7 @@
         }
         await refreshDashboardMonthCards();
       } catch (error) {
+        const notifications = getNotifications();
         if (notifications) {
           notifications.updateNotification({
             id: activeNotificationId,

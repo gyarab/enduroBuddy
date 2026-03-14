@@ -41,7 +41,7 @@
                 <div class="tab-pane fade show active" id="profileTabPane" role="tabpanel" aria-labelledby="profileTabBtn" tabindex="0">
                   <div class="eb-profile-block">
                     <h6 class="mb-3">Profil</h6>
-                    <form method="post" action="{% url 'profile_manage' %}" class="d-grid gap-2 eb-profile-form-sm">
+                    <form method="post" action="{% url 'profile_manage' %}" class="d-grid gap-2 eb-profile-form-sm" data-profile-ajax="1">
                       {% csrf_token %}
                       <input type="hidden" name="action" value="update_profile">
                       <input type="hidden" name="next" value="{{ request.get_full_path }}#profileModal">
@@ -74,7 +74,7 @@
                 <div class="tab-pane fade" id="passwordTabPane" role="tabpanel" aria-labelledby="passwordTabBtn" tabindex="0">
                   <div class="eb-profile-block">
                     <h6 class="mb-3">Změna hesla</h6>
-                    <form method="post" action="{% url 'profile_manage' %}" class="d-grid gap-2 eb-profile-form-sm">
+                    <form method="post" action="{% url 'profile_manage' %}" class="d-grid gap-2 eb-profile-form-sm" data-profile-ajax="1">
                       {% csrf_token %}
                       <input type="hidden" name="action" value="change_password">
                       <input type="hidden" name="next" value="{{ request.get_full_path }}#profileModal">
@@ -100,7 +100,7 @@
                 <div class="tab-pane fade" id="coachTabPane" role="tabpanel" aria-labelledby="coachTabBtn" tabindex="0">
                   <div class="eb-profile-block">
                     <h6 class="mb-3">Trenér</h6>
-                    <form method="post" action="{% url 'profile_manage' %}" class="d-grid gap-2 mb-2 eb-profile-form-sm">
+                    <form method="post" action="{% url 'profile_manage' %}" class="d-grid gap-2 mb-2 eb-profile-form-sm" data-profile-ajax="1">
                       {% csrf_token %}
                       <input type="hidden" name="action" value="request_coach_by_code">
                       <input type="hidden" name="next" value="{{ request.get_full_path }}#profileModal">

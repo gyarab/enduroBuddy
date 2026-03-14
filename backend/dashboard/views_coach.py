@@ -11,6 +11,7 @@ from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from accounts.models import CoachAthlete, CoachJoinRequest, Role, TrainingGroup
+from accounts.services.notifications import notify_athlete_plan_updated
 from dashboard.api import json_error
 from dashboard.handlers.coach_page_actions import handle_coach_month_actions, handle_coach_preselection_post
 from dashboard.handlers.planned_training_api import (
@@ -138,7 +139,6 @@ def coach_training_plans(request):
         .filter(coach=request.user, status=CoachJoinRequest.Status.PENDING)
         .order_by("-created_at")
     )
-
     if request.method == "POST":
         post_response = handle_coach_month_actions(request, athletes=athletes)
         if post_response is not None:
@@ -224,7 +224,15 @@ def coach_update_planned_training(request):
     if not _coach_can_access_athlete(coach_user=request.user, athlete_id=athlete_id, accessible_ids=accessible_ids):
         return json_error(ApiText.FORBIDDEN_FOR_ATHLETE, status=403)
 
+    old_value = getattr(planned, field, "")
     save_planned_field(planned=planned, field=field, value=value)
+    notify_athlete_plan_updated(
+        planned=planned,
+        actor=request.user,
+        field=field,
+        old_value=old_value,
+        new_value=value,
+    )
     return JsonResponse({"ok": True, "planned_id": planned.id, "field": field, "value": value})
 
 

@@ -9,7 +9,7 @@ from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
 
-from accounts.models import CoachAthlete, CoachJoinRequest, Role, TrainingGroup, TrainingGroupAthlete, TrainingGroupInvite
+from accounts.models import AppNotification, CoachAthlete, CoachJoinRequest, Role, TrainingGroup, TrainingGroupAthlete, TrainingGroupInvite
 from activities.models import Activity
 from dashboard.views import _resolve_week_for_day
 from training.models import CompletedTraining, PlannedTraining, TrainingMonth, TrainingWeek
