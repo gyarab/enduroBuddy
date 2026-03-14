@@ -1,5 +1,6 @@
 from accounts.models import AppNotification, CoachAthlete, CoachJoinRequest, Role
 from django.conf import settings
+from django.db.models import Q
 
 
 def role_flags(request):
@@ -21,10 +22,13 @@ def role_flags(request):
             .filter(athlete=user)
             .order_by("coach__username", "coach__id")
         )
+        app_notifications_qs = AppNotification.objects.filter(recipient=user, read_at__isnull=True)
+        if not getattr(request, "eb_include_test_app_notifications", False):
+            app_notifications_qs = app_notifications_qs.exclude(
+                Q(dedupe_key__startswith="test-live-") | Q(text__startswith="Test live:")
+            )
         app_notifications = list(
-            AppNotification.objects.filter(recipient=user, read_at__isnull=True)
-            .select_related("actor")
-            .order_by("-created_at", "-id")[:20]
+            app_notifications_qs.select_related("actor").order_by("-created_at", "-id")[:20]
         )
     return {
         "is_coach": is_coach,
