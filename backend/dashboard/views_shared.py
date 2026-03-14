@@ -39,6 +39,57 @@ _TEST_NOTIFICATION_TEXTS = (
     ("error", "Test: Nepodarilo se nacist jednu aktivitu."),
 )
 
+_TEST_CLIENT_NOTIFICATION_SCENARIOS = [
+    {
+        "delay_ms": 0,
+        "action": "add",
+        "id": "test-client-secondary",
+        "text": "Test client: Tip v notifikacnim baru.",
+        "tone": "secondary",
+        "unread": True,
+        "persistent": False,
+    },
+    {
+        "delay_ms": 120,
+        "action": "add",
+        "id": "test-client-warning",
+        "text": "Test client: Garmin synchronizace bezi.",
+        "tone": "warning",
+        "unread": True,
+        "persistent": True,
+        "statusLabel": "Running",
+        "progressPercent": 24,
+    },
+    {
+        "delay_ms": 900,
+        "action": "update",
+        "id": "test-client-warning",
+        "text": "Test client: Garmin synchronizace dokoncena.",
+        "tone": "success",
+        "persistent": False,
+        "statusLabel": "Done",
+        "progressPercent": 100,
+    },
+    {
+        "delay_ms": 260,
+        "action": "add",
+        "id": "test-client-danger",
+        "text": "Test client: Ulozeni treninku selhalo.",
+        "tone": "danger",
+        "unread": True,
+        "persistent": False,
+    },
+    {
+        "delay_ms": 420,
+        "action": "add",
+        "id": "test-client-success",
+        "text": "Test client: Druha faze byla pridana.",
+        "tone": "success",
+        "unread": True,
+        "persistent": False,
+    },
+]
+
 
 def sanitize_legend_state(raw_state: Any) -> dict[str, Any]:
     state = raw_state if isinstance(raw_state, dict) else {}
@@ -95,11 +146,13 @@ def maybe_add_test_notifications(request) -> None:
     if not settings.DEBUG:
         return
     raw_toggle = (request.GET.get("test_notifications") or "").strip().lower()
-    if raw_toggle not in {"1", "true", "yes", "on"}:
+    if raw_toggle not in {"1", "true", "yes", "on", "all", "full"}:
         return
 
     for level, text in _TEST_NOTIFICATION_TEXTS:
         getattr(messages, level)(request, text)
+    if raw_toggle in {"all", "full"}:
+        setattr(request, "eb_test_client_notifications", list(_TEST_CLIENT_NOTIFICATION_SCENARIOS))
 
 def _coach_accessible_athlete_ids(*, coach_user) -> set[int]:
     accessible_ids = set(
