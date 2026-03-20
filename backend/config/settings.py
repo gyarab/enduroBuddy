@@ -50,6 +50,12 @@ ALLOWED_HOSTS = [
     if host.strip()
 ]
 
+CSRF_TRUSTED_ORIGINS = [
+    origin.strip()
+    for origin in os.environ.get("DJANGO_CSRF_TRUSTED_ORIGINS", "").split(",")
+    if origin.strip()
+]
+
 
 # Application definition
 
@@ -258,4 +264,15 @@ GARMIN_KMS_KEYS = os.environ.get("GARMIN_KMS_KEYS", "")
 GARMIN_KMS_KEY_ID = os.environ.get("GARMIN_KMS_KEY_ID", "local-kms-v1")
 IMPORT_TASK_MODE = os.environ.get("IMPORT_TASK_MODE", "inline")
 DASHBOARD_ASSET_VERSION = os.environ.get("DASHBOARD_ASSET_VERSION", "76")
+
+USE_HTTPS = os.environ.get("DJANGO_USE_HTTPS", "false").lower() == "true"
+
+if USE_HTTPS:
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = int(os.environ.get("DJANGO_SECURE_HSTS_SECONDS", "3600"))
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
 
