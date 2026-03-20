@@ -11,6 +11,8 @@ services:
       - "5432:5432"
     volumes:
       - endurobuddy_pgdata:/var/lib/postgresql/data
+    networks:
+      - backend
 
   web:
     build:
@@ -27,6 +29,14 @@ services:
       - .env
     ports:
       - "8000:8000"
+    command: ["sh", "-c", "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"]
+    volumes:
+      - ./backend:/app/backend
+    networks:
+      - backend
 
 volumes:
   endurobuddy_pgdata:
+
+networks:
+  backend:
