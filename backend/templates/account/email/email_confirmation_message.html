@@ -8,39 +8,32 @@
 
 <p style="margin:0 0 14px 0;">Ahoj,</p>
 
-
-
 <p style="margin:0 0 14px 0;">
   Na EnduroBuddy byla vytvořena registrace pro účet <strong>{{ user_display }}</strong>.
   Potvrď e-mailovou adresu kliknutím na tlačítko:
 </p>
 
-
 {% if code %}
 
 <p style="margin:0 0 10px 0;">Ověřovací kód:</p>
 
-<p style="margin:0 0 16px 0;font-size:24px;font-weight:800;letter-spacing:2px;color:#ffa464;">{{ code }}</p>
+<p style="margin:0 0 16px 0;font-size:24px;font-weight:700;letter-spacing:2px;color:#212529;">{{ code }}</p>
 {% else %}
 <table role="presentation" cellspacing="0" cellpadding="0" style="margin:0 0 16px 0;">
   <tr>
-    <td bgcolor="#ff8b46" style="border-radius:10px;background:#ff8b46;">
-      
-      <a href="{{ activate_url }}" style="display:inline-block;padding:12px 18px;font-family:Segoe UI,Arial,sans-serif;font-size:15px;font-weight:700;color:#111111;text-decoration:none;border:1px solid #ffb986;border-radius:10px;background:#ff8b46;">Potvrdit e-mail</a>
-      
+    <td bgcolor="#212529" style="border-radius:8px;background:#212529;">
+      <a href="{{ activate_url }}" style="display:inline-block;padding:12px 18px;font-family:Segoe UI,Arial,sans-serif;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;border:1px solid #212529;border-radius:8px;background:#212529;">Potvrdit e-mail</a>
     </td>
   </tr>
 </table>
 
-
-<p style="margin:0 0 14px 0;color:#b9b9b9;font-size:13px;">
+<p style="margin:0 0 14px 0;color:#6c757d;font-size:13px;">
   Pokud tlačítko nefunguje, otevři tento odkaz:<br>
-  <a href="{{ activate_url }}" style="color:#ffa464;word-break:break-all;">{{ activate_url }}</a>
+  <a href="{{ activate_url }}" style="color:#0d6efd;word-break:break-all;">{{ activate_url }}</a>
 </p>
 
 {% endif %}
 
-
-<p style="margin:0;color:#b9b9b9;">Pokud jsi registraci neprováděl(a), tento e-mail ignoruj.</p>
+<p style="margin:0;color:#6c757d;">Pokud jsi registraci neprováděl(a), tento e-mail ignoruj.</p>
 
 {% endblock content %}
