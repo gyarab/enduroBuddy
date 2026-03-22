@@ -116,6 +116,8 @@ Zkopíruj vzorový konfigurační soubor:
 copy .env.example .env
 ```
 
+Pro local Docker/Compose obvykle nech `POSTGRES_HOST=db`.
+
 Do `.env` doplň minimálně tyto hodnoty:
 
 ```env
