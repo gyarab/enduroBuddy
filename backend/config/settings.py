@@ -93,6 +93,7 @@ MIDDLEWARE = [
     "config.middleware.GoogleOAuthRateLimitMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "config.middleware.GoogleProfileCompletionMiddleware",
 
     "allauth.account.middleware.AccountMiddleware",
 

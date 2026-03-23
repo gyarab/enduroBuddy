@@ -25,7 +25,12 @@ FIXTURES_DIR = Path(__file__).resolve().parent.parent.parent / "activities" / "t
 TEST_KMS_KEY = "IO1tJrYVYrSgHUy4iJ5wsIXv89hRiYxYEyg2asOlVtE="
 
 
-@override_settings(GARMIN_KMS_KEYS=TEST_KMS_KEY, GARMIN_KMS_KEY_ID="test-kms")
+@override_settings(
+    GARMIN_KMS_KEYS=TEST_KMS_KEY,
+    GARMIN_KMS_KEY_ID="test-kms",
+    GARMIN_CONNECT_ENABLED=True,
+    GARMIN_SYNC_ENABLED=True,
+)
 class DashboardFitImportBase(TestCase):
     def setUp(self):
         User = get_user_model()

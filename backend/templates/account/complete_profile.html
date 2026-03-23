@@ -1,0 +1,88 @@
+{% load static %}
+
+<!doctype html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Doplnění profilu | EnduroBuddy</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/base.css' %}">
+</head>
+
+<body class="bg-light">
+  <div id="notificationCenterRoot" hidden>
+    <div class="eb-notification-list">
+      {% if messages %}
+        {% for message in messages %}
+          <div class="eb-notification-item is-unread eb-notification-item--{% if message.tags == 'error' %}danger{% elif message.tags %}{{ message.tags }}{% else %}secondary{% endif %}" data-notification-item="1">
+            <span class="eb-notification-dot" aria-hidden="true"></span>
+            <span class="eb-notification-text">{{ message }}</span>
+          </div>
+        {% endfor %}
+      {% endif %}
+      {% if form.non_field_errors %}
+        {% for error in form.non_field_errors %}
+          <div class="eb-notification-item is-unread eb-notification-item--danger" data-notification-item="1">
+            <span class="eb-notification-dot" aria-hidden="true"></span>
+            <span class="eb-notification-text">{{ error }}</span>
+          </div>
+        {% endfor %}
+      {% endif %}
+    </div>
+  </div>
+
+  <main class="container py-5">
+    <div class="row justify-content-center">
+      <div class="col-12 col-md-8 col-lg-6 col-xl-5">
+        <div class="card shadow-sm border-0 eb-shell">
+          <div class="card-body p-4 p-lg-5">
+            <div class="text-center mb-4">
+              <h1 class="h3 mb-2">Doplň svůj profil</h1>
+              <p class="text-muted mb-0">Než budeš pokračovat do aplikace, potřebujeme doplnit jméno a příjmení.</p>
+            </div>
+
+            <form method="post" action="{% url 'account_complete_profile' %}" novalidate>
+              {% csrf_token %}
+
+              {% for field in form.visible_fields %}
+                <div class="mb-3">
+                  <label class="form-label" for="{{ field.id_for_label }}">
+                    {% if field.name == "first_name" %}
+                      Jméno
+                    {% elif field.name == "last_name" %}
+                      Příjmení
+                    {% else %}
+                      {{ field.label }}
+                    {% endif %}
+                  </label>
+                  {{ field }}
+                  {% if field.errors %}
+                    <div class="text-danger small mt-1">{{ field.errors }}</div>
+                  {% endif %}
+                </div>
+              {% endfor %}
+
+              <input type="hidden" name="next" value="{{ next_url }}">
+
+              <button type="submit" class="btn btn-dark w-100 mb-3">
+                Pokračovat
+              </button>
+            </form>
+
+            <form method="post" action="{% url 'account_logout' %}" class="m-0">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-outline-secondary w-100">Odhlásit se</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="{% static 'js/base_ui.js' %}"></script>
+  <script src="{% static 'js/login.js' %}?v=1"></script>
+</body>
+</html>
