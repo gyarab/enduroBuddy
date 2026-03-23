@@ -16,6 +16,7 @@ class Profile(models.Model):
         role = models.CharField(max_length=20, choices=Role.choices, default=Role.ATHLETE)
         coach_join_code = models.CharField(max_length=12, unique=True, null=True, blank=True, db_index=True)
         legend_state = models.JSONField(default=dict, blank=True)
+        google_profile_completed = models.BooleanField(default=False)
 
         def __str__(self):
             return f"{self.user.username} ({self.role})"

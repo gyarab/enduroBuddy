@@ -1,6 +1,10 @@
 from django.conf import settings
 from django.core.cache import cache
-from django.shortcuts import render
+from django.shortcuts import redirect, render
+from django.urls import reverse
+from urllib.parse import urlencode
+
+from allauth.socialaccount.models import SocialAccount
 
 
 def _client_ip(request) -> str:
@@ -34,3 +38,28 @@ class GoogleOAuthRateLimitMiddleware:
                 return render(request, "account/ratelimit.html", status=429)
 
         return self.get_response(request)
+
+
+class GoogleProfileCompletionMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+        self.complete_profile_path = reverse("account_complete_profile")
+        self.logout_path = reverse("account_logout")
+
+    def __call__(self, request):
+        if self._should_redirect(request):
+            next_url = request.get_full_path()
+            return redirect(f"{self.complete_profile_path}?{urlencode({'next': next_url})}")
+        return self.get_response(request)
+
+    def _should_redirect(self, request) -> bool:
+        user = getattr(request, "user", None)
+        if not getattr(user, "is_authenticated", False):
+            return False
+        if request.path in {self.complete_profile_path, self.logout_path}:
+            return False
+        if request.path.startswith("/admin/"):
+            return False
+        if not SocialAccount.objects.filter(user=user, provider="google").exists():
+            return False
+        return not getattr(user.profile, "google_profile_completed", False)
