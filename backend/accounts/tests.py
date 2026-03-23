@@ -13,6 +13,8 @@ from allauth.core import context
 from allauth.socialaccount.internal.flows.login import complete_login
 from allauth.socialaccount.models import SocialAccount, SocialLogin
 
+from accounts.models import Role
+
 
 class GoogleProfileCompletionTests(TestCase):
     def setUp(self):
@@ -84,6 +86,7 @@ class GoogleProfileCompletionTests(TestCase):
             data={
                 "first_name": "Petr",
                 "last_name": "Svoboda",
+                "role": Role.COACH,
                 "next": reverse("dashboard_home"),
             },
         )
@@ -93,7 +96,10 @@ class GoogleProfileCompletionTests(TestCase):
         user.refresh_from_db()
         self.assertEqual(user.first_name, "Petr")
         self.assertEqual(user.last_name, "Svoboda")
+        self.assertEqual(user.profile.role, Role.COACH)
         self.assertTrue(user.profile.google_profile_completed)
+        self.assertTrue(user.profile.google_role_confirmed)
+        self.assertTrue(user.profile.coach_join_code)
 
     def test_completion_page_is_accessible_for_redirected_google_user(self):
         user = self.User.objects.create_user(
@@ -118,7 +124,8 @@ class GoogleProfileCompletionTests(TestCase):
             last_name="Novak",
         )
         user.profile.google_profile_completed = True
-        user.profile.save(update_fields=["google_profile_completed"])
+        user.profile.google_role_confirmed = True
+        user.profile.save(update_fields=["google_profile_completed", "google_role_confirmed"])
         SocialAccount.objects.create(user=user, provider="google", uid="google-confirmed")
 
         self.client.force_login(user)
@@ -149,6 +156,7 @@ class GoogleProfileCompletionTests(TestCase):
             ).exists()
         )
         self.assertFalse(created_user.profile.google_profile_completed)
+        self.assertFalse(created_user.profile.google_role_confirmed)
 
         self.client.force_login(created_user)
         dashboard_response = self.client.get(reverse("dashboard_home"))
@@ -196,6 +204,47 @@ class GoogleProfileCompletionTests(TestCase):
     def test_anonymous_user_can_open_login_page(self):
         response = self.client.get(reverse("account_login"))
         self.assertEqual(response.status_code, 200)
+
+    def test_google_user_with_old_completion_but_unconfirmed_role_is_redirected(self):
+        user = self.User.objects.create_user(
+            username="google-old-completion",
+            email="google-old-completion@example.com",
+            password="unused-pass",
+            first_name="Old",
+            last_name="User",
+        )
+        user.profile.google_profile_completed = True
+        user.profile.google_role_confirmed = False
+        user.profile.save(update_fields=["google_profile_completed", "google_role_confirmed"])
+        SocialAccount.objects.create(user=user, provider="google", uid="google-old-completion")
+
+        self.client.force_login(user)
+
+        response = self.client.get(reverse("dashboard_home"))
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(
+            response.url,
+            f"{reverse('account_complete_profile')}?{urlencode({'next': reverse('dashboard_home')})}",
+        )
+
+    def test_email_signup_persists_selected_role(self):
+        response = self.client.post(
+            reverse("account_signup"),
+            data={
+                "first_name": "Coach",
+                "last_name": "User",
+                "role": Role.COACH,
+                "email": "coach-signup@example.com",
+                "password1": "strong-pass-12345",
+                "password2": "strong-pass-12345",
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        user = self.User.objects.get(email="coach-signup@example.com")
+        self.assertEqual(user.profile.role, Role.COACH)
+        self.assertTrue(user.profile.coach_join_code)
 
     def _build_request(self, *, path: str):
         request = self.factory.get(path, HTTP_HOST="localhost")

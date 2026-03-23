@@ -62,4 +62,8 @@ class GoogleProfileCompletionMiddleware:
             return False
         if not SocialAccount.objects.filter(user=user, provider="google").exists():
             return False
-        return not getattr(user.profile, "google_profile_completed", False)
+        profile = user.profile
+        return not bool(
+            getattr(profile, "google_profile_completed", False)
+            and getattr(profile, "google_role_confirmed", False)
+        )

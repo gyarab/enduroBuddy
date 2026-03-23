@@ -26,7 +26,8 @@ def complete_profile(request):
         if form.is_valid():
             form.save()
             request.user.profile.google_profile_completed = True
-            request.user.profile.save(update_fields=["google_profile_completed"])
+            request.user.profile.google_role_confirmed = True
+            request.user.profile.save(update_fields=["google_profile_completed", "google_role_confirmed"])
             messages.success(request, "Profil byl doplněn.")
             return redirect(next_url or reverse("dashboard_home"))
     else:
@@ -54,4 +55,8 @@ def _safe_next_url(request) -> str:
 
 
 def _google_profile_is_complete(user) -> bool:
-    return bool(getattr(user.profile, "google_profile_completed", False))
+    profile = user.profile
+    return bool(
+        getattr(profile, "google_profile_completed", False)
+        and getattr(profile, "google_role_confirmed", False)
+    )

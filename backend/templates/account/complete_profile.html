@@ -40,7 +40,7 @@
           <div class="card-body p-4 p-lg-5">
             <div class="text-center mb-4">
               <h1 class="h3 mb-2">Doplň svůj profil</h1>
-              <p class="text-muted mb-0">Než budeš pokračovat do aplikace, potřebujeme doplnit jméno a příjmení.</p>
+              <p class="text-muted mb-0">Než budeš pokračovat do aplikace, potřebujeme doplnit jméno, příjmení a vybrat roli.</p>
             </div>
 
             <form method="post" action="{% url 'account_complete_profile' %}" novalidate>
@@ -53,6 +53,8 @@
                       Jméno
                     {% elif field.name == "last_name" %}
                       Příjmení
+                    {% elif field.name == "role" %}
+                      Role
                     {% else %}
                       {{ field.label }}
                     {% endif %}
