@@ -24,7 +24,6 @@
     const setClipboardText = (deps && deps.setClipboardText) || (() => false);
     const parsePasteMatrix = (deps && deps.parsePasteMatrix) || (() => []);
     const createHistoryManager = (deps && deps.createHistoryManager) || (() => ({ push() {}, undo() {}, redo() {} }));
-    const RULES_ONBOARDING_KEY = "eb_planned_rules_onboarding_dismissed_v1";
     const NUM_RE = "\\d+(?:[.,]\\d+)?";
     const MULT_RANGE_PAREN_RE = new RegExp(`(${NUM_RE})\\s*-\\s*(${NUM_RE})\\s*[xX×]\\s*\\(([^)]*)\\)`, "gi");
     const MULT_PAREN_WITH_TAIL_SERIES_RE = new RegExp(`(${NUM_RE})\\s*[xX×]\\s*\\(([^)]*)\\)\\s*(?:mk|mch)?\\s*(\\d{3,4}(?:\\s*-\\s*\\d{3,4})+)m\\b`, "gi");
@@ -514,28 +513,6 @@
       });
     }
 
-    function initRulesOnboarding(widget) {
-      const onboarding = widget.querySelector(".eb-plan-rules-onboarding");
-      if (!onboarding) return;
-      let dismissed = false;
-      try {
-        dismissed = window.localStorage.getItem(RULES_ONBOARDING_KEY) === "1";
-      } catch (_err) {
-        dismissed = false;
-      }
-      if (!dismissed) onboarding.classList.remove("d-none");
-
-      const dismissBtn = onboarding.querySelector(".eb-plan-rules-dismiss");
-      if (!dismissBtn || dismissBtn.dataset.ebBound === "1") return;
-      dismissBtn.dataset.ebBound = "1";
-      dismissBtn.addEventListener("click", () => {
-        onboarding.classList.add("d-none");
-        try {
-          window.localStorage.setItem(RULES_ONBOARDING_KEY, "1");
-        } catch (_err) {}
-      });
-    }
-
     async function saveInlineField(node, updateUrl, csrfToken, widget, scheduleEqualize) {
       if (node.dataset.saving === "1") {
         node.dataset.queued = "1";
@@ -651,7 +628,6 @@
     }
 
     function initCoachInlineEditing(widget, scheduleEqualize) {
-      initRulesOnboarding(widget);
       if (widget.dataset.ebKmDotClickInit !== "1") {
         widget.dataset.ebKmDotClickInit = "1";
         let activeKmPopover = null;
