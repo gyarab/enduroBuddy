@@ -276,6 +276,8 @@ def home(request):
             "month_cards": month_cards,
             "month_state_key": request.user.id,
             "garmin_connection": garmin_connection,
+            "garmin_connect_enabled": settings.GARMIN_CONNECT_ENABLED,
+            "garmin_sync_enabled": settings.GARMIN_SYNC_ENABLED,
             "is_coach": is_coach(request.user),
             "plan_editable": True,
             "plan_update_url": reverse("athlete_update_planned_training"),
@@ -284,7 +286,7 @@ def home(request):
             "completed_editable": True,
             "completed_lock_linked_activity": False,
             "completed_update_url": reverse("athlete_update_completed_training"),
-            "garmin_week_sync_enabled": True,
+            "garmin_week_sync_enabled": settings.GARMIN_SYNC_ENABLED,
             "garmin_week_sync_url": reverse("garmin_sync_week"),
             "garmin_week_sync_connected": bool(garmin_connection),
             "add_month_enabled": True,
@@ -319,6 +321,8 @@ def athlete_update_legend_state(request):
 @login_required
 @require_POST
 def garmin_sync_start(request):
+    if not settings.GARMIN_SYNC_ENABLED:
+        return json_error(ApiText.GARMIN_SYNC_DISABLED, status=503)
     selected_range = request.POST.get("garmin_range", "last_30_days")
     if selected_range not in GARMIN_RANGE_OPTIONS:
         selected_range = "last_30_days"
@@ -347,6 +351,8 @@ def garmin_sync_start(request):
 @login_required
 @require_POST
 def garmin_sync_week(request):
+    if not settings.GARMIN_SYNC_ENABLED:
+        return json_error(ApiText.GARMIN_SYNC_DISABLED, status=503)
     raw_week_start = (request.POST.get("week_start") or "").strip()
     try:
         week_start = date.fromisoformat(raw_week_start)

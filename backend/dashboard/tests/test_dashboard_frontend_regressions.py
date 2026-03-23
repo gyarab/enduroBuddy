@@ -291,6 +291,14 @@ class DashboardFrontendRegressionTests(SimpleTestCase):
         self.assertIn('id="fitImportLink"', import_modal_html)
         self.assertIn('id="garminSyncForm"', import_modal_html)
 
+    def test_import_modal_supports_garmin_feature_flags(self):
+        import_modal_html = IMPORT_MODAL_TEMPLATE_PATH.read_text(encoding="utf-8")
+
+        self.assertIn("{% elif garmin_connect_enabled %}", import_modal_html)
+        self.assertIn("{% if garmin_sync_enabled %}", import_modal_html)
+        self.assertIn("Garmin propojení je teď v produkci dočasně vypnuté.", import_modal_html)
+        self.assertIn("Garmin synchronizace je teď v produkci dočasně vypnutá.", import_modal_html)
+
     def test_coach_template_uses_split_sidebar_toolbar_and_modals(self):
         coach_html = COACH_TEMPLATE_PATH.read_text(encoding="utf-8")
         coach_sidebar_html = COACH_SIDEBAR_TEMPLATE_PATH.read_text(encoding="utf-8")

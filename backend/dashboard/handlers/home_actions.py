@@ -69,6 +69,8 @@ def handle_home_post(request, *, logger, queue_garmin_sync_job_for_user):
 
 
 def _handle_garmin_connect(request, *, logger):
+    if not settings.GARMIN_CONNECT_ENABLED:
+        return _home_response(request, ok=False, message=HomeText.GARMIN_CONNECT_DISABLED, tone="warning", status=503)
     email = (request.POST.get("garmin_email") or "").strip()
     password = (request.POST.get("garmin_password") or "").strip()
     if not email or not password:
@@ -134,6 +136,9 @@ def _handle_garmin_revoke(request):
 
 
 def _handle_garmin_sync(request, *, logger, queue_garmin_sync_job_for_user):
+    if not settings.GARMIN_SYNC_ENABLED:
+        messages.warning(request, HomeText.GARMIN_SYNC_DISABLED)
+        return redirect("dashboard_home")
     selected_range = request.POST.get("garmin_range", "last_30_days")
     if selected_range not in GARMIN_RANGE_OPTIONS:
         selected_range = "last_30_days"

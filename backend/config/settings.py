@@ -279,6 +279,8 @@ GOOGLE_AUTH_RATE_LIMIT_PATHS = (
 GARMIN_SYNC_LIMIT = int(os.environ.get("GARMIN_SYNC_LIMIT", "20"))
 GARMIN_KMS_KEYS = os.environ.get("GARMIN_KMS_KEYS", "")
 GARMIN_KMS_KEY_ID = os.environ.get("GARMIN_KMS_KEY_ID", "local-kms-v1")
+GARMIN_CONNECT_ENABLED = os.environ.get("GARMIN_CONNECT_ENABLED", "true").lower() == "true"
+GARMIN_SYNC_ENABLED = os.environ.get("GARMIN_SYNC_ENABLED", "true").lower() == "true"
 IMPORT_TASK_MODE = os.environ.get("IMPORT_TASK_MODE", "inline")
 DASHBOARD_ASSET_VERSION = os.environ.get("DASHBOARD_ASSET_VERSION", "76")
 

@@ -23,6 +23,8 @@ class ApiText:
     GARMIN_WEEK_UNAVAILABLE = "Garmin import týdne je dostupný až od začátku týdne."
     GARMIN_SYNC_START_FAILED = "Synchronizaci se nepodařilo spustit."
     GARMIN_SYNC_FAILED = "Garmin sync failed."
+    GARMIN_CONNECT_DISABLED = "Garmin connect is temporarily disabled."
+    GARMIN_SYNC_DISABLED = "Garmin sync is temporarily disabled."
     JOB_NOT_FOUND = "Job nenalezen."
 
 
@@ -78,6 +80,8 @@ class HomeText:
     GARMIN_SYNC_QUEUED = "Garmin sync queued."
     GARMIN_SYNC_ALREADY_RUNNING = "Garmin sync už běží."
     GARMIN_SYNC_FAILED = "Garmin sync failed."
+    GARMIN_CONNECT_DISABLED = "Garmin propojení je dočasně vypnuté."
+    GARMIN_SYNC_DISABLED = "Garmin synchronizace je dočasně vypnutá."
     FIT_FILE_REQUIRED = "Please select a FIT file."
     FIT_IMPORT_QUEUED = "FIT import queued."
     FIT_FILE_IMPORTED = "FIT file imported."

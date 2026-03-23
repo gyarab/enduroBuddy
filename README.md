@@ -215,6 +215,8 @@ Projekt používá zejména tyto proměnné prostředí:
 - `GARMIN_SYNC_LIMIT`
 - `GARMIN_KMS_KEY_ID`
 - `GARMIN_KMS_KEYS`
+- `GARMIN_CONNECT_ENABLED`
+- `GARMIN_SYNC_ENABLED`
 - `IMPORT_TASK_MODE`
 
 ### Poznámky ke konfiguraci
@@ -223,6 +225,8 @@ Projekt používá zejména tyto proměnné prostředí:
 - databáze je v `settings.py` nastavena na PostgreSQL
 - výchozí `IMPORT_TASK_MODE=inline` spouští import v procesu aplikace
 - pro Garmin synchronizaci je potřeba mít nakonfigurované ukládání tokenů
+- `GARMIN_CONNECT_ENABLED=false` schová a zablokuje nové připojení Garmin účtu
+- `GARMIN_SYNC_ENABLED=false` schová a zablokuje Garmin synchronizaci, ale ponechá možnost účet odpojit
 
 ## Demo data
 
