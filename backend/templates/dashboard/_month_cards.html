@@ -10,20 +10,6 @@
   {% if completed_editable and completed_update_url %}data-completed-inline-editable="1" data-completed-update-url="{{ completed_update_url }}"{% endif %}
   {% if garmin_week_sync_enabled and garmin_week_sync_url %}data-garmin-week-sync-url="{{ garmin_week_sync_url }}"{% endif %}
 >
-  <div class="alert alert-info py-2 px-3 mb-2 d-none eb-plan-rules-onboarding" role="alert">
-    <div class="d-flex align-items-center justify-content-between gap-2">
-      <div class="small mb-0">
-        Pro přesné sčítání km piš vzdálenosti jako <code>8 km</code>, <code>6-8 km</code>, <code>6x300m</code>, <code>2R/2V</code>.
-      </div>
-      <div class="d-flex align-items-center gap-2">
-        <button type="button" class="btn btn-link btn-sm p-0 eb-plan-rules-open" data-bs-toggle="modal" data-bs-target="#ebPlannedKmRulesModal">
-          Příklady
-        </button>
-        <button type="button" class="btn-close eb-plan-rules-dismiss" aria-label="Zavřít"></button>
-      </div>
-    </div>
-  </div>
-
   <div class="eb-scrollwrap {% if month_switcher_embedded %}eb-scrollwrap--embedded{% endif %}">
     <div class="eb-month-scroll border rounded-3 bg-white p-2" id="monthContentArea">
       {% for m in month_cards %}
