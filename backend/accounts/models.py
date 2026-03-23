@@ -17,6 +17,7 @@ class Profile(models.Model):
         coach_join_code = models.CharField(max_length=12, unique=True, null=True, blank=True, db_index=True)
         legend_state = models.JSONField(default=dict, blank=True)
         google_profile_completed = models.BooleanField(default=False)
+        google_role_confirmed = models.BooleanField(default=False)
 
         def __str__(self):
             return f"{self.user.username} ({self.role})"
@@ -35,6 +36,15 @@ class Profile(models.Model):
             self.coach_join_code = code
             self.save(update_fields=["coach_join_code"])
             return code
+
+        def apply_role(self, role: str) -> None:
+            normalized_role = role if role in Role.values else Role.ATHLETE
+            self.role = normalized_role
+            if normalized_role == Role.COACH:
+                self.save(update_fields=["role"])
+                self.ensure_coach_join_code()
+                return
+            self.save(update_fields=["role"])
 
 class CoachAthlete(models.Model):
     coach = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='coached_athletes')
