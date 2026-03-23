@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from django.test import override_settings
+
 from ._fit_import_base import (
     Activity,
     ActivityFile,
@@ -175,3 +177,21 @@ class DashboardFitImportGarminCases:
         conn.refresh_from_db()
         self.assertFalse(conn.is_active)
         self.assertTrue(GarminSyncAudit.objects.filter(user=self.user, action=GarminSyncAudit.Action.REVOKE, status=GarminSyncAudit.Status.SUCCESS).exists())
+
+    @override_settings(GARMIN_CONNECT_ENABLED=False)
+    def test_garmin_connect_can_be_disabled_via_settings(self):
+        resp = self.client.post(reverse("dashboard_home"), data={"import_source": "garmin_connect", "garmin_email": "runner@example.com", "garmin_password": "secret"})
+        self.assertEqual(resp.status_code, 302)
+        self.assertFalse(GarminConnection.objects.filter(user=self.user).exists())
+
+    @override_settings(GARMIN_SYNC_ENABLED=False)
+    def test_garmin_sync_can_be_disabled_via_settings(self):
+        self._connect_garmin()
+        resp = self.client.post(reverse("dashboard_home"), data={"import_source": "garmin_sync"})
+        self.assertEqual(resp.status_code, 302)
+
+    @override_settings(GARMIN_SYNC_ENABLED=False)
+    def test_garmin_week_sync_endpoint_can_be_disabled_via_settings(self):
+        self._connect_garmin()
+        resp = self.client.post(reverse("garmin_sync_week"), data={"week_start": "2026-03-02"}, HTTP_X_REQUESTED_WITH="XMLHttpRequest")
+        self.assertEqual(resp.status_code, 503)

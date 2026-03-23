@@ -25,7 +25,7 @@
             </button>
           </form>
         </div>
-        {% else %}
+        {% elif garmin_connect_enabled %}
         <form method="post" class="eb-import-block eb-import-block-auth" data-import-ajax="1">
           {% csrf_token %}
           <input type="hidden" name="import_source" value="garmin_connect">
@@ -42,8 +42,16 @@
           </div>
           <button class="btn btn-primary btn-sm w-100" type="submit">Připojit Garmin</button>
         </form>
+        {% else %}
+        <div class="eb-import-block eb-import-block-auth">
+          <div class="eb-import-block-head">
+            <div class="eb-import-title">Připojit Garmin účet</div>
+          </div>
+          <div class="text-muted small">Garmin propojení je teď v produkci dočasně vypnuté.</div>
+        </div>
         {% endif %}
 
+        {% if garmin_sync_enabled %}
         <form
           method="post"
           class="eb-import-block eb-import-block-sync"
@@ -72,6 +80,14 @@
             </button>
           </div>
         </form>
+        {% else %}
+        <div class="eb-import-block eb-import-block-sync">
+          <div class="eb-import-block-head">
+            <div class="eb-import-title">Synchronizace z Garminu</div>
+          </div>
+          <div class="text-muted small">Garmin synchronizace je teď v produkci dočasně vypnutá.</div>
+        </div>
+        {% endif %}
 
         <form method="post" enctype="multipart/form-data" id="fitImportForm" class="eb-import-block eb-import-block-fit m-0" data-import-ajax="1">
           {% csrf_token %}
