@@ -19,6 +19,7 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from accounts.views import EnduroLoginView, complete_profile
+from config import error_views
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -26,9 +27,16 @@ urlpatterns = [
     path("accounts/login/", EnduroLoginView.as_view(), name="account_login"),
     path("accounts/complete-profile/", complete_profile, name="account_complete_profile"),
     path("accounts/", include("allauth.urls")),
+    path("__debug/ui/errors/", error_views.error_preview_index, name="error_preview_index"),
+    path("__debug/ui/errors/<int:status_code>/", error_views.error_preview_status, name="error_preview_status"),
     path("", include("dashboard.urls")),
 ]
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+handler400 = "config.error_views.bad_request"
+handler403 = "config.error_views.permission_denied"
+handler404 = "config.error_views.page_not_found"
+handler500 = "config.error_views.server_error"
 

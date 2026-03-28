@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}UI Error Preview | EnduroBuddy{% endblock %}
+
+{% block content %}
+<div class="container py-4" style="max-width: 920px;">
+  <div class="card shadow-sm border-0 eb-shell mb-4">
+    <div class="card-body p-4 p-lg-5">
+      <h1 class="h3 mb-2">UI fallback preview</h1>
+      <p class="text-muted mb-0">Tahle stránka je dostupná jen v debug režimu a slouží k rychlé kontrole fallbacků a méně častých auth stavů.</p>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-12 col-lg-6">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-body p-4">
+          <h2 class="h5 mb-3">Systémové chyby</h2>
+          <div class="list-group list-group-flush">
+            {% for item in previews %}
+              <div class="list-group-item px-0">
+                <div class="d-flex justify-content-between align-items-start gap-3">
+                  <div>
+                    <div class="fw-semibold">{{ item.label }}</div>
+                    <div class="small text-muted">{{ item.description }}</div>
+                    <div class="small text-muted mt-1"><strong>Kdy nastane:</strong> {{ item.real_case }}</div>
+                  </div>
+                  <a class="btn btn-sm btn-outline-dark" href="{{ item.url }}">Otevřít</a>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-lg-6">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-body p-4">
+          <h2 class="h5 mb-3">Account a Social flow</h2>
+          <div class="list-group list-group-flush">
+            {% for item in account_pages %}
+              <div class="list-group-item px-0">
+                <div class="d-flex justify-content-between align-items-start gap-3">
+                  <div>
+                    <div class="fw-semibold">{{ item.label }}</div>
+                    <div class="small text-muted"><strong>Kdy nastane:</strong> {{ item.real_case }}</div>
+                  </div>
+                  <a class="btn btn-sm btn-outline-dark" href="{{ item.url }}">Otevřít</a>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
