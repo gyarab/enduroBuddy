@@ -1,3 +1,13 @@
+.eb-legend-dialog {
+  width: 1140px;
+  max-width: min(1140px, calc(100vw - 28px));
+}
+
+.eb-legend-subdialog {
+  width: 560px;
+  max-width: min(560px, calc(100vw - 28px));
+}
+
 .eb-plan-legend-modal .modal-dialog {
   width: 1140px;
   max-width: min(1140px, calc(100vw - 28px));
@@ -130,4 +140,73 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+}
+
+@media (max-width: 767.98px) {
+  .eb-plan-legend-modal .modal-dialog,
+  .eb-legend-dialog,
+  .eb-legend-subdialog {
+    width: calc(100vw - 16px);
+    max-width: calc(100vw - 16px);
+    margin: 8px auto;
+  }
+
+  .eb-plan-legend-modal .modal-content,
+  #coachLegendZonesModal .modal-content,
+  #coachLegendThresholdModal .modal-content,
+  #coachLegendPrModal .modal-content {
+    border-radius: 18px;
+    max-height: calc(100vh - 16px);
+  }
+
+  .eb-legend-modal-body {
+    padding: 0.9rem;
+  }
+
+  .eb-legend-layout {
+    grid-template-columns: 1fr;
+    gap: 0.8rem;
+  }
+
+  .eb-legend-section {
+    padding: 0.8rem;
+  }
+
+  .eb-legend-table thead th,
+  .eb-legend-table tbody td {
+    font-size: 0.83rem;
+  }
+
+  .eb-legend-zone-col,
+  .eb-legend-threshold-value-col,
+  .eb-legend-range-col,
+  .eb-legend-threshold-name-col,
+  .eb-legend-pr-time-col,
+  .eb-legend-zone-edit-col {
+    width: auto;
+  }
+
+  .eb-legend-plus-btn {
+    width: 2.15rem;
+    height: 2.15rem;
+    flex: 0 0 auto;
+  }
+
+  #coachLegendZonesModal .modal-body,
+  #coachLegendThresholdModal .modal-body,
+  #coachLegendPrModal .modal-body {
+    padding: 0.9rem;
+  }
+
+  #coachLegendZonesModal .modal-footer,
+  #coachLegendThresholdModal .modal-footer,
+  #coachLegendPrModal .modal-footer {
+    padding: 0.75rem 0.9rem 0.9rem;
+  }
+
+  #coachLegendZonesModal .modal-footer .btn,
+  #coachLegendThresholdModal .modal-footer .btn,
+  #coachLegendPrModal .modal-footer .btn {
+    width: 100%;
+  }
 }

@@ -2,16 +2,16 @@
   <div class="card shadow-sm">
     <div class="card-body">
       <div class="d-flex align-items-center justify-content-between mb-3 eb-sidebar-header-row">
-        <h5 class="mb-0">Svěřenci</h5>
+        <h5 class="mb-0">Sv&#283;&#345;enci</h5>
         <div class="d-flex align-items-center gap-1 eb-sidebar-controls">
-          <button class="btn btn-sm btn-outline-dark eb-gear-btn" type="button" data-bs-toggle="modal" data-bs-target="#coachManageModal" title="Správa svěřenců">
+          <button class="btn btn-sm btn-outline-dark eb-gear-btn" type="button" data-bs-toggle="modal" data-bs-target="#coachManageModal" title="Spr&aacute;va sv&#283;&#345;enc&#367;">
             <svg class="eb-gear-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
               <path d="M6.7 1.7h2.6l.3 1.4c.4.1.8.3 1.2.5l1.3-.7 1.3 1.3-.7 1.3c.2.4.4.8.5 1.2l1.4.3v2.6l-1.4.3c-.1.4-.3.8-.5 1.2l.7 1.3-1.3 1.3-1.3-.7c-.4.2-.8.4-1.2.5l-.3 1.4H6.7l-.3-1.4c-.4-.1-.8-.3-1.2-.5l-1.3.7-1.3-1.3.7-1.3c-.2-.4-.4-.8-.5-1.2L1.4 9.3V6.7l1.4-.3c.1-.4.3-.8.5-1.2l-.7-1.3 1.3-1.3 1.3.7c.4-.2.8-.4 1.2-.5l.3-1.4Z" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>
               <circle cx="8" cy="8" r="2.2" fill="none" stroke="currentColor" stroke-width="1.2"/>
             </svg>
           </button>
-          <button id="coachAthletesToggleBtnSidebar" type="button" class="btn btn-sm btn-outline-dark eb-sidebar-collapse-btn" data-athlete-sidebar-toggle="1" data-title-expand="Schovat svěřence" data-title-collapse="Zobrazit svěřence" aria-controls="coachShell" aria-expanded="true">
-            <span aria-hidden="true">&#9776;</span>
+          <button id="coachAthletesToggleBtnSidebar" type="button" class="btn btn-sm btn-outline-dark eb-sidebar-collapse-btn" data-athlete-sidebar-toggle="1" data-title-expand="Skr&yacute;t p&#345;ehled sv&#283;&#345;enc&#367;" data-title-collapse="Zobrazit p&#345;ehled sv&#283;&#345;enc&#367;" aria-controls="coachShell" aria-expanded="true">
+            <span class="eb-sidebar-collapse-icon" aria-hidden="true">&#9776;</span>
           </button>
         </div>
       </div>
@@ -19,24 +19,24 @@
       <div class="d-grid gap-2 eb-athlete-list" id="coachAthleteList" data-reorder-url="{{ coach_athlete_reorder_url }}">
         {% for athlete in athletes %}
           {% if not athlete.is_self_plan and forloop.counter == 2 %}
-            <div class="eb-athlete-section-label">Svěřenci</div>
+            <div class="eb-athlete-section-label">Sv&#283;&#345;enci</div>
           {% endif %}
           <div class="eb-athlete-item {% if athlete.is_self_plan %}eb-athlete-item--self{% else %}eb-athlete-item--member{% endif %}" {% if not athlete.is_self_plan %}draggable="true" data-reorderable="1"{% else %}data-reorderable="0"{% endif %} data-athlete-id="{{ athlete.id }}">
             <a href="{% url 'coach_training_plans' %}?athlete={{ athlete.id }}" draggable="false" class="btn btn-sm text-start eb-athlete-switch-item {% if selected_athlete and selected_athlete.id == athlete.id %}btn-dark active{% else %}btn-outline-dark{% endif %}">
               <span class="eb-athlete-row-label">
                 {% if athlete.is_self_plan %}
-                  <span class="eb-athlete-summary eb-athlete-summary--self">Můj plán</span>
+                  <span class="eb-athlete-summary eb-athlete-summary--self">M&#367;j pl&aacute;n</span>
                 {% else %}
                   <span class="eb-athlete-summary" data-athlete-summary data-athlete-name="{{ athlete.display_name_short|default:athlete.username }}" data-empty-focus-label="{{ athlete.sidebar_empty_focus_label|default:'' }}">{{ athlete.sidebar_summary|default:athlete.username }}</span>
                 {% endif %}
                 {% if not athlete.is_self_plan %}
-                  <span class="eb-athlete-drag-handle" draggable="false" title="Přesunout">&#8801;</span>
+                  <span class="eb-athlete-drag-handle" draggable="false" title="P&#345;esunout">&#8801;</span>
                 {% endif %}
               </span>
             </a>
           </div>
         {% empty %}
-          <span class="text-muted small">Zatím nemáš žádné svěřence.</span>
+          <span class="text-muted small">Zat&iacute;m nem&aacute;&scaron; &#382;&aacute;dn&eacute; sv&#283;&#345;ence.</span>
         {% endfor %}
       </div>
     </div>

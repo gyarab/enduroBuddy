@@ -230,6 +230,8 @@ class DashboardFrontendRegressionTests(SimpleTestCase):
         self.assertIn('id="coachLegendZonesModal"', legend_html)
         self.assertIn('id="coachLegendThresholdModal"', legend_html)
         self.assertIn('id="coachLegendPrModal"', legend_html)
+        self.assertIn("modal-dialog-scrollable eb-legend-dialog", legend_html)
+        self.assertIn("modal-dialog-scrollable eb-legend-subdialog", legend_html)
 
     def test_base_template_keeps_top_nav_sticky(self):
         base_html = BASE_TEMPLATE_PATH.read_text(encoding="utf-8")
@@ -241,6 +243,11 @@ class DashboardFrontendRegressionTests(SimpleTestCase):
         self.assertIn("position: sticky;", base_css)
         self.assertIn("top: 0;", base_css)
         self.assertIn('class="navbar navbar-expand-lg navbar-light bg-white border-bottom eb-top-nav"', top_nav_html)
+        self.assertIn('class="navbar-toggler"', top_nav_html)
+        self.assertIn('data-bs-target="#mainNavbar"', top_nav_html)
+        self.assertIn('id="mainNavbar"', top_nav_html)
+        self.assertIn(".eb-top-nav-links {", base_css)
+        self.assertIn(".eb-top-nav-link {", base_css)
 
     def test_base_template_uses_shared_partials_and_static_ui_assets(self):
         base_html = BASE_TEMPLATE_PATH.read_text(encoding="utf-8")
@@ -265,9 +272,15 @@ class DashboardFrontendRegressionTests(SimpleTestCase):
         dashboard_header_html = DASHBOARD_HEADER_TEMPLATE_PATH.read_text(encoding="utf-8")
         self.assertIn('{% include "dashboard/_dashboard_header.html" %}', dashboard_html)
         self.assertIn("eb-dashboard-toolbar", dashboard_header_html)
+        self.assertIn("eb-dashboard-toolbar-title", dashboard_header_html)
+        self.assertIn("eb-dashboard-toolbar-actions", dashboard_header_html)
+        self.assertIn('data-bs-target="#coachLegendModal"', dashboard_header_html)
+        self.assertIn('data-bs-target="#importActivitiesModal"', dashboard_header_html)
         self.assertIn(".eb-dashboard-toolbar {", css)
         self.assertIn("position: sticky;", css)
         self.assertIn("top: 57px;", css)
+        self.assertIn(".eb-dashboard-toolbar-title,", css)
+        self.assertIn(".eb-dashboard-toolbar-actions .btn {", css)
 
     def test_dashboard_css_legacy_entrypoint_reexports_split_files(self):
         css = CSS_PATH.read_text(encoding="utf-8")
@@ -313,6 +326,7 @@ class DashboardFrontendRegressionTests(SimpleTestCase):
         self.assertIn('id="coachAthleteList"', coach_sidebar_html)
         self.assertIn('id="coachAthletesToggleBtnSidebar"', coach_sidebar_html)
         self.assertIn('id="coachAthletesToggleBtnMain"', coach_toolbar_html)
+        self.assertIn('eb-coach-legend-trigger', coach_toolbar_html)
         self.assertIn('id="coachManageModal"', coach_manage_modal_html)
         self.assertIn('data-athlete-visibility-form="1"', coach_manage_modal_html)
         self.assertIn('data-remove-athlete-id="{{ athlete.id }}"', coach_manage_modal_html)
@@ -320,3 +334,21 @@ class DashboardFrontendRegressionTests(SimpleTestCase):
         self.assertIn('id="coachRemoveAthleteIdInput"', coach_remove_modal_html)
         self.assertIn('id="coachRemoveAthleteConfirmInput"', coach_remove_modal_html)
         self.assertIn('id="coachRemoveAthleteSubmitBtn"', coach_remove_modal_html)
+
+    def test_coach_mobile_responsive_rules_keep_sidebar_and_toolbar_usable(self):
+        css = CSS_RESPONSIVE_PATH.read_text(encoding="utf-8")
+        coach_toolbar_html = COACH_MAIN_TOOLBAR_TEMPLATE_PATH.read_text(encoding="utf-8")
+        coach_sidebar_html = COACH_SIDEBAR_TEMPLATE_PATH.read_text(encoding="utf-8")
+        coach_css = CSS_COACH_PATH.read_text(encoding="utf-8")
+        legend_css = CSS_LEGEND_PATH.read_text(encoding="utf-8")
+        coach_js = JS_COACH_PATH.read_text(encoding="utf-8")
+
+        self.assertIn("eb-coach-main-toolbar", coach_toolbar_html)
+        self.assertIn("eb-athlete-list", coach_sidebar_html)
+        self.assertIn(".eb-coach-main-toolbar {", css)
+        self.assertIn("grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));", css)
+        self.assertIn(".eb-athlete-focus-input {", css)
+        self.assertIn(".eb-collapsed-summary-card {", css)
+        self.assertIn(".eb-coach-legend-trigger {", coach_css)
+        self.assertIn(".eb-legend-dialog {", legend_css)
+        self.assertIn("@media (max-width: 767.98px)", legend_css)

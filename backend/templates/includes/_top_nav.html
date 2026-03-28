@@ -2,14 +2,7 @@
   <div class="container-fluid">
     <a class="navbar-brand fw-bold" href="/">EnduroBuddy</a>
 
-    <div class="d-flex gap-2 align-items-center">
-      <a class="btn btn-sm btn-outline-dark" href="/">Tréninkový přehled</a>
-      {% if user.is_authenticated and is_coach %}
-        <a class="btn btn-sm btn-dark" href="{% url 'coach_training_plans' %}">Spravovat tréninkové plány</a>
-      {% endif %}
-    </div>
-
-    <div class="ms-auto d-flex align-items-center gap-2">
+    <div class="d-flex align-items-center gap-2 order-lg-3 ms-auto">
       {% if user.is_authenticated %}
         {% include "includes/_notifications_dropdown.html" %}
         <div class="dropdown">
@@ -18,8 +11,8 @@
             class="eb-profile-trigger"
             data-bs-toggle="dropdown"
             aria-expanded="false"
-            title="Uživatel"
-            aria-label="Uživatel"
+            title="U&#382;ivatel"
+            aria-label="U&#382;ivatel"
           >
             <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
               <circle cx="8" cy="5" r="3" fill="none" stroke="currentColor" stroke-width="1.2"></circle>
@@ -40,17 +33,38 @@
               {% endif %}
             </div>
             <button type="button" class="dropdown-item rounded-2" data-bs-toggle="modal" data-bs-target="#profileModal">
-              Nastavení
+              Nastaven&iacute;
             </button>
             <form method="post" action="{% url 'account_logout' %}" class="m-0">
               {% csrf_token %}
-              <button type="submit" class="dropdown-item rounded-2 text-danger">Odhlásit se</button>
+              <button type="submit" class="dropdown-item rounded-2 text-danger">Odhl&aacute;sit se</button>
             </form>
           </div>
         </div>
       {% else %}
-        <a class="btn btn-sm btn-outline-dark" href="{% url 'account_login' %}">Přihlásit</a>
+        <a class="btn btn-sm btn-outline-dark" href="{% url 'account_login' %}">P&#345;ihl&aacute;sit</a>
       {% endif %}
+
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#mainNavbar"
+        aria-controls="mainNavbar"
+        aria-expanded="false"
+        aria-label="P&#345;epnout navigaci"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+    </div>
+
+    <div class="collapse navbar-collapse order-lg-2 eb-top-nav-collapse" id="mainNavbar">
+      <div class="navbar-nav eb-top-nav-links">
+        <a class="btn btn-sm btn-outline-dark eb-top-nav-link" href="/">Tr&eacute;ninkov&yacute; p&#345;ehled</a>
+        {% if user.is_authenticated and is_coach %}
+          <a class="btn btn-sm btn-dark eb-top-nav-link" href="{% url 'coach_training_plans' %}">Spravovat tr&eacute;ninkov&eacute; pl&aacute;ny</a>
+        {% endif %}
+      </div>
     </div>
   </div>
 </nav>
