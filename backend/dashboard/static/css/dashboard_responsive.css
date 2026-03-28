@@ -1,4 +1,29 @@
 @media (max-width: 991.98px) {
+  #importActivitiesModal .modal-dialog,
+  #coachRemoveAthleteModal .modal-dialog,
+  #ebPlannedKmRulesModal .modal-dialog {
+    width: min(720px, calc(100vw - 20px));
+    max-width: calc(100vw - 20px);
+    margin: 10px auto;
+  }
+
+  #importActivitiesModal .modal-content,
+  #coachRemoveAthleteModal .modal-content,
+  #ebPlannedKmRulesModal .modal-content,
+  .eb-coach-manage-modal .modal-content {
+    max-height: calc(100vh - 20px);
+    overflow: hidden;
+  }
+
+  #importActivitiesModal .modal-body,
+  #coachRemoveAthleteModal .modal-body,
+  #ebPlannedKmRulesModal .modal-body,
+  .eb-coach-manage-modal .modal-body {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+
   body.eb-plan-page {
     overflow: auto;
   }
@@ -56,12 +81,41 @@
 
   .eb-coach-sidebar .card-body,
   .eb-collapsed-summary-card .card-body {
-    padding: 0.85rem;
+    padding: 0.55rem 0.75rem;
+  }
+
+  .eb-coach-sidebar .eb-sidebar-header-row {
+    min-height: 1.95rem;
+    align-items: center !important;
+  }
+
+  .eb-coach-sidebar .eb-sidebar-header-row h5 {
+    font-size: 0.98rem;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    min-height: 1.8rem;
+  }
+
+  .eb-coach-sidebar .eb-sidebar-controls .btn {
+    min-width: 1.85rem;
+    width: 1.85rem;
+    height: 1.85rem;
   }
 
   .eb-athlete-list {
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     align-items: start;
+  }
+
+  .eb-collapsed-summary-card {
+    display: none !important;
+  }
+
+  .eb-coach-shell.is-athletes-collapsed .eb-collapsed-summary-card,
+  .eb-coach-shell.is-mobile-athlete-selection-required .eb-collapsed-summary-card,
+  .eb-coach-shell.is-mobile-plan-visible .eb-collapsed-summary-card {
+    display: none !important;
   }
 
   .eb-coach-main-toolbar {
@@ -70,7 +124,8 @@
     z-index: 1034;
     background: #f8f9fa;
     padding-top: 0.75rem;
-    padding-bottom: 0.75rem;
+    padding-bottom: 0.35rem;
+    margin-bottom: 0.35rem !important;
   }
 
   .eb-coach-main-title-row,
@@ -79,10 +134,16 @@
     min-width: 0;
   }
 
+  .eb-coach-main-title-row {
+    gap: 0.75rem;
+  }
+
   .eb-coach-main-title-row h4 {
-    font-size: 1.1rem;
-    line-height: 1.3;
+    font-size: 1.2rem;
+    line-height: 1.2;
     margin-right: 0;
+    flex: 1 1 auto;
+    min-width: 0;
   }
 
   .eb-coach-main-toolbar > div:last-child {
@@ -94,10 +155,76 @@
     width: 100%;
   }
 
+  .eb-coach-main-toolbar label[for="coachAthleteFocusInput"],
+  .eb-coach-main-toolbar #coachAthleteFocusInput {
+    display: none !important;
+  }
+
+  .eb-coach-shell.is-mobile-athlete-selection-required .eb-coach-main .eb-month-widget {
+    display: none;
+  }
+
+  .eb-coach-shell.is-athletes-collapsed .eb-coach-sidebar,
+  .eb-coach-shell.is-mobile-athlete-picker-open .eb-coach-sidebar {
+    display: block !important;
+  }
+
+  .eb-coach-shell.is-mobile-athlete-picker-open {
+    position: relative;
+  }
+
+  .eb-coach-shell.is-mobile-athlete-picker-open .eb-coach-sidebar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1036;
+  }
+
+  .eb-coach-shell.is-mobile-athlete-picker-open .eb-coach-sidebar .card {
+    box-shadow: 0 14px 30px rgba(0, 0, 0, 0.12);
+  }
+
+  .eb-coach-shell.is-mobile-athlete-picker-open .eb-athlete-list {
+    display: grid;
+    max-height: min(60vh, 26rem);
+    overflow-y: auto;
+    padding-right: 0.1rem;
+  }
+
+  .eb-coach-shell.is-mobile-athlete-selection-required .eb-athlete-list,
+  .eb-coach-shell.is-mobile-plan-visible .eb-athlete-list {
+    display: none;
+  }
+
+  .eb-coach-shell.is-mobile-athlete-selection-required .eb-sidebar-header-row,
+  .eb-coach-shell.is-mobile-plan-visible .eb-sidebar-header-row {
+    margin-bottom: 0 !important;
+  }
+
+  .eb-coach-shell.is-mobile-athlete-selection-required .eb-coach-sidebar .card-body,
+  .eb-coach-shell.is-mobile-plan-visible .eb-coach-sidebar .card-body {
+    padding-left: 0.85rem;
+    padding-right: 0.85rem;
+  }
+
+  .eb-coach-shell.is-mobile-plan-visible .eb-coach-main .eb-month-widget {
+    display: block;
+  }
+
+  .eb-coach-shell.is-mobile-athlete-selection-required .eb-coach-main-toolbar,
+  .eb-coach-shell.is-mobile-athlete-picker-open .eb-coach-main-toolbar {
+    display: none;
+  }
+
   .eb-athlete-focus-input {
     width: min(100%, 18rem);
     min-width: 0;
     max-width: 100%;
+  }
+
+  .eb-coach-shell.is-mobile-plan-visible .eb-coach-main-toolbar > div:last-child {
+    display: none !important;
   }
 
   .eb-dashboard-toolbar {
@@ -195,6 +322,13 @@
     max-height: calc(100vh - 20px);
   }
 
+  .eb-coach-manage-modal .row.g-0.h-100,
+  .eb-manage-menu-panel,
+  .eb-manage-content-panel {
+    height: auto;
+    max-height: none;
+  }
+
   .eb-plan-legend-modal .modal-content {
     height: auto;
     max-height: none;
@@ -206,6 +340,75 @@
 }
 
 @media (max-width: 575.98px) {
+  #importActivitiesModal .modal-dialog,
+  #coachRemoveAthleteModal .modal-dialog,
+  #ebPlannedKmRulesModal .modal-dialog,
+  .eb-coach-manage-modal .modal-dialog {
+    width: calc(100vw - 12px);
+    max-width: calc(100vw - 12px);
+    margin: 6px auto;
+    min-height: calc(100vh - 12px);
+    align-items: stretch;
+  }
+
+  #importActivitiesModal .modal-content,
+  #coachRemoveAthleteModal .modal-content,
+  #ebPlannedKmRulesModal .modal-content,
+  .eb-coach-manage-modal .modal-content {
+    border-radius: 16px;
+    max-height: calc(100vh - 12px);
+  }
+
+  #importActivitiesModal .modal-header,
+  #importActivitiesModal .modal-body,
+  #importActivitiesModal .modal-footer,
+  #coachRemoveAthleteModal .modal-header,
+  #coachRemoveAthleteModal .modal-body,
+  #coachRemoveAthleteModal .modal-footer,
+  #ebPlannedKmRulesModal .modal-header,
+  #ebPlannedKmRulesModal .modal-body,
+  .eb-coach-manage-modal .modal-header,
+  .eb-coach-manage-modal .modal-body {
+    padding-left: 0.9rem;
+    padding-right: 0.9rem;
+  }
+
+  #coachRemoveAthleteModal .modal-footer .btn,
+  .eb-coach-manage-modal .modal-footer .btn {
+    width: 100%;
+  }
+
+  .eb-manage-menu {
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  .eb-manage-menu .nav-link {
+    width: 100%;
+  }
+
+  .eb-manage-content-panel .d-flex.align-items-center.justify-content-between.gap-2.mb-3 {
+    align-items: flex-start !important;
+    flex-direction: column;
+  }
+
+  .eb-manage-athlete-row .d-flex.align-items-center.justify-content-between.gap-2.flex-wrap {
+    align-items: stretch !important;
+  }
+
+  .eb-manage-athlete-row .d-flex.align-items-center.gap-2 {
+    width: 100%;
+  }
+
+  .eb-manage-athlete-row .d-flex.align-items-center.gap-2 > form,
+  .eb-manage-athlete-row .d-flex.align-items-center.gap-2 > button {
+    flex: 1 1 0;
+  }
+
+  .eb-manage-athlete-row .btn {
+    width: 100%;
+  }
+
   body.eb-plan-page main > .container-fluid.py-3 {
     padding-left: 0.75rem;
     padding-right: 0.75rem;

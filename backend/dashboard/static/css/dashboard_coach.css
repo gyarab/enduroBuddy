@@ -237,6 +237,11 @@
   gap: 14px;
 }
 
+.eb-coach-main-title-row h4 {
+  font-size: 1.18rem;
+  line-height: 1.2;
+}
+
 .eb-collapsed-summary-card {
   width: var(--eb-sidebar-width);
   max-width: 100%;
@@ -245,7 +250,15 @@
 }
 
 .eb-coach-legend-trigger {
-  min-width: 7rem;
+  flex: 0 0 auto;
+  width: 1.9rem;
+  height: 1.9rem;
+  min-width: 1.9rem;
+  border-width: 1px;
+}
+
+.eb-coach-legend-trigger .eb-top-nav-icon-btn__glyph {
+  font-size: 0.9rem;
 }
 
 .eb-athlete-dropdown-menu {

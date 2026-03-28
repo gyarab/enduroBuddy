@@ -46,6 +46,8 @@
     const initCoachMainContent = (deps && deps.initCoachMainContent) || (() => {});
     const ui = (window.EB && window.EB.ui) || {};
     const setButtonBusy = ui.setButtonBusy || (() => {});
+    const mobileAthletePickerMedia = window.matchMedia ? window.matchMedia("(max-width: 991.98px)") : null;
+    const mobilePlanRevealKey = "eb_coach_mobile_show_plan_once";
 
     function initCoachAthleteFocus() {
       const input = document.getElementById("coachAthleteFocusInput");
@@ -736,9 +738,62 @@
       if (!toggleButtons.length) return;
 
       const storageKey = "eb_coach_athletes_collapsed";
+      const state = {
+        desktopCollapsed: window.localStorage.getItem(storageKey) === "1",
+        mobilePickerOpen: false,
+        mobileSelectionRequired: false,
+        mobilePlanVisible: false,
+      };
+
+      function isMobileViewport() {
+        return !!(mobileAthletePickerMedia && mobileAthletePickerMedia.matches);
+      }
+
+      function consumeMobilePlanRevealFlag() {
+        try {
+          if (window.sessionStorage.getItem(mobilePlanRevealKey) === "1") {
+            window.sessionStorage.removeItem(mobilePlanRevealKey);
+            return true;
+          }
+        } catch (_err) {
+          return false;
+        }
+        return false;
+      }
+
+      function setMobilePlanRevealFlag() {
+        try {
+          window.sessionStorage.setItem(mobilePlanRevealKey, "1");
+        } catch (_err) {
+          // Ignore storage failures; navigation will still work.
+        }
+      }
+
+      function syncMobileState() {
+        if (!isMobileViewport()) {
+          state.mobilePickerOpen = false;
+          state.mobileSelectionRequired = false;
+          state.mobilePlanVisible = false;
+          return;
+        }
+        const shouldRevealPlan = consumeMobilePlanRevealFlag();
+        state.mobilePickerOpen = false;
+        state.mobileSelectionRequired = false;
+        state.mobilePlanVisible = true;
+        if (shouldRevealPlan) {
+          state.mobileSelectionRequired = false;
+          state.mobilePlanVisible = true;
+        }
+      }
 
       function applyState(isCollapsed) {
+        const mobileSelectionRequired = isMobileViewport() && state.mobileSelectionRequired;
+        const mobilePickerOpen = isMobileViewport() && state.mobilePickerOpen;
+        const mobilePlanVisible = isMobileViewport() && state.mobilePlanVisible;
         shell.classList.toggle("is-athletes-collapsed", isCollapsed);
+        shell.classList.toggle("is-mobile-athlete-selection-required", mobileSelectionRequired);
+        shell.classList.toggle("is-mobile-athlete-picker-open", mobilePickerOpen);
+        shell.classList.toggle("is-mobile-plan-visible", mobilePlanVisible);
         toggleButtons.forEach((button) => {
           button.setAttribute("aria-expanded", isCollapsed ? "false" : "true");
           const expandedTitle = button.getAttribute("data-title-expand") || "Hide athletes";
@@ -749,17 +804,43 @@
         });
       }
 
-      applyState(window.localStorage.getItem(storageKey) === "1");
+      syncMobileState();
+      applyState(isMobileViewport() ? !state.mobilePickerOpen : state.desktopCollapsed);
 
       toggleButtons.forEach((button) => {
         if (button.dataset.toggleSidebarInit === "1") return;
         button.dataset.toggleSidebarInit = "1";
         button.addEventListener("click", () => {
-          const nextCollapsed = !shell.classList.contains("is-athletes-collapsed");
-          applyState(nextCollapsed);
-          window.localStorage.setItem(storageKey, nextCollapsed ? "1" : "0");
+          if (isMobileViewport()) {
+            state.mobilePickerOpen = !state.mobilePickerOpen;
+            state.mobileSelectionRequired = false;
+            state.mobilePlanVisible = true;
+            applyState(!state.mobilePickerOpen);
+            return;
+          }
+          state.desktopCollapsed = !shell.classList.contains("is-athletes-collapsed");
+          applyState(state.desktopCollapsed);
+          window.localStorage.setItem(storageKey, state.desktopCollapsed ? "1" : "0");
         });
       });
+
+      if (mobileAthletePickerMedia && shell.dataset.mobileSidebarListenerInit !== "1") {
+        shell.dataset.mobileSidebarListenerInit = "1";
+        const handleViewportChange = () => {
+          syncMobileState();
+          applyState(isMobileViewport() ? !state.mobilePickerOpen : state.desktopCollapsed);
+        };
+        if (typeof mobileAthletePickerMedia.addEventListener === "function") {
+          mobileAthletePickerMedia.addEventListener("change", handleViewportChange);
+        } else if (typeof mobileAthletePickerMedia.addListener === "function") {
+          mobileAthletePickerMedia.addListener(handleViewportChange);
+        }
+      }
+
+      shell._coachRevealPlanAfterSelection = () => {
+        if (!isMobileViewport()) return;
+        setMobilePlanRevealFlag();
+      };
     }
 
     function updateCoachSidebarActiveState(targetUrl) {
@@ -901,6 +982,25 @@
         const target = items[nextIndex];
         if (!target || !target.href) return;
         softNavigateToCoachAthlete(target.href);
+      });
+
+      document.addEventListener("click", (event) => {
+        const target = event.target && typeof event.target.closest === "function"
+          ? event.target.closest(".eb-athlete-switch-item[href]")
+          : null;
+        if (!target) return;
+        if (event.defaultPrevented) return;
+        if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+        const href = target.getAttribute("href") || target.href;
+        if (!href) return;
+
+        const shell = document.getElementById("coachShell");
+        if (shell && typeof shell._coachRevealPlanAfterSelection === "function") {
+          shell._coachRevealPlanAfterSelection();
+        }
+
+        event.preventDefault();
+        softNavigateToCoachAthlete(href);
       });
     }
 

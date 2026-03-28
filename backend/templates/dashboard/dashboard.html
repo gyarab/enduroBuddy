@@ -7,7 +7,6 @@
 
 {% block content %}
 <div class="container-fluid py-3">
-  {% include "dashboard/_dashboard_header.html" %}
   {% include "dashboard/_import_modal.html" %}
 
   {% include "dashboard/_legend_modals.html" with legend_athlete_id=user.id legend_state_json_value=legend_state_json legend_editable=legend_editable legend_update_url=legend_update_url %}

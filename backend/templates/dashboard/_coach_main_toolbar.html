@@ -1,5 +1,5 @@
 <div class="d-flex align-items-center justify-content-between gap-2 mb-3 eb-coach-main-toolbar">
-  <div class="d-flex align-items-center eb-coach-main-title-row">
+  <div class="d-flex align-items-center justify-content-between eb-coach-main-title-row">
     <div class="card shadow-sm eb-collapsed-summary-card eb-collapsed-only">
       <div class="card-body py-2 px-2">
         <div class="d-flex align-items-center justify-content-between eb-sidebar-header-row mb-0">
@@ -20,6 +20,9 @@
     </div>
     {% if selected_athlete %}
       <h4 class="mb-0">{{ selected_athlete.first_name }} {{ selected_athlete.last_name }}</h4>
+      <button type="button" class="eb-profile-trigger eb-top-nav-icon-btn eb-top-nav-icon-btn--legend eb-coach-legend-trigger" data-bs-toggle="modal" data-bs-target="#coachLegendModal" title="Legenda" aria-label="Legenda">
+        <span class="eb-top-nav-icon-btn__glyph" aria-hidden="true">?</span>
+      </button>
     {% endif %}
   </div>
   {% if selected_athlete %}
@@ -29,9 +32,6 @@
           <label class="small text-muted mb-0" for="coachAthleteFocusInput">Zam&#283;&#345;en&iacute;:</label>
           <input id="coachAthleteFocusInput" class="form-control form-control-sm eb-athlete-focus-input" type="text" value="{{ selected_athlete_focus }}" data-athlete-id="{{ selected_athlete.id }}" data-focus-update-url="{{ coach_athlete_focus_update_url }}" maxlength="10">
         {% endif %}
-        <button type="button" class="btn btn-sm btn-outline-dark eb-coach-legend-trigger" data-bs-toggle="modal" data-bs-target="#coachLegendModal">
-          Legenda
-        </button>
       </div>
     </div>
   {% endif %}
