@@ -19,7 +19,7 @@
       </div>
     </div>
     {% if selected_athlete %}
-      <h4 class="mb-0">Tr&eacute;ninkov&yacute; pl&aacute;n - {{ selected_athlete_name }}</h4>
+      <h4 class="mb-0">{{ selected_athlete.first_name }} {{ selected_athlete.last_name }}</h4>
     {% endif %}
   </div>
   {% if selected_athlete %}

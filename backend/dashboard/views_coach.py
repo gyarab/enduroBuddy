@@ -174,7 +174,6 @@ def coach_training_plans(request):
             "athletes": athletes,
             "active_invites": active_invites,
             "selected_athlete": selected_athlete,
-            "selected_athlete_name": display_name(selected_athlete) if selected_athlete else "",
             "selected_athlete_focus": selected_athlete_focus,
             "selected_athlete_is_self": selected_athlete_is_self,
             "selected_athlete_legend_state_json": selected_athlete_legend_state_json,
