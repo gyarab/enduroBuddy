@@ -920,10 +920,15 @@
           const doc = parser.parseFromString(html, "text/html");
           const replacement = doc.getElementById("coachShell");
           if (!replacement) throw new Error("Replacement shell not found.");
+          const replacementSidebar = replacement.querySelector(".eb-coach-sidebar");
           const replacementMain = replacement.querySelector(".eb-coach-main");
+          const currentSidebar = shell.querySelector(".eb-coach-sidebar");
           const currentMain = shell.querySelector(".eb-coach-main");
-          if (!replacementMain || !currentMain) throw new Error("Replacement main content not found.");
+          if (!replacementSidebar || !currentSidebar || !replacementMain || !currentMain) {
+            throw new Error("Replacement coach content not found.");
+          }
 
+          currentSidebar.replaceWith(replacementSidebar);
           currentMain.replaceWith(replacementMain);
           ["coachLegendModal", "coachLegendZonesModal", "coachLegendThresholdModal", "coachLegendPrModal"].forEach((modalId) => {
             const currentModal = document.getElementById(modalId);
@@ -942,17 +947,13 @@
           if (doc.title) {
             document.title = doc.title;
           }
-          updateCoachSidebarActiveState(url);
-          initCoachMainContent(document.getElementById("coachShell") || document);
-          initCoachAthleteFocus();
-          initCoachLegendModal();
+          initCoachShellContent();
           if (legendWasOpen && window.bootstrap && window.bootstrap.Modal) {
             const nextLegendModal = document.getElementById("coachLegendModal");
             if (nextLegendModal) {
               window.bootstrap.Modal.getOrCreateInstance(nextLegendModal).show();
             }
           }
-          initCoachSidebarToggle();
         } catch (err) {
           console.error(err);
           closeMetric({ target: url, fallback: "hard_nav_error" });

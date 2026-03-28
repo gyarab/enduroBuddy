@@ -41,4 +41,22 @@
       </div>
     </div>
   </div>
+  {% if selected_athlete %}
+    <div class="card shadow-sm d-lg-none eb-sidebar-current-athlete-card">
+      <div class="card-body">
+        <div class="d-flex align-items-center justify-content-between gap-2 eb-sidebar-current-athlete-row">
+          <span class="eb-sidebar-current-athlete-name">
+            {% if selected_athlete.first_name or selected_athlete.last_name %}
+              {{ selected_athlete.first_name }} {{ selected_athlete.last_name }}
+            {% else %}
+              {{ selected_athlete.username }}
+            {% endif %}
+          </span>
+          <button type="button" class="eb-profile-trigger eb-top-nav-icon-btn eb-top-nav-icon-btn--legend eb-coach-legend-trigger eb-sidebar-legend-trigger" data-bs-toggle="modal" data-bs-target="#coachLegendModal" title="Legenda" aria-label="Legenda">
+            <span class="eb-top-nav-icon-btn__glyph" aria-hidden="true">?</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  {% endif %}
 </aside>

@@ -18,12 +18,6 @@
         </div>
       </div>
     </div>
-    {% if selected_athlete %}
-      <h4 class="mb-0">{{ selected_athlete.first_name }} {{ selected_athlete.last_name }}</h4>
-      <button type="button" class="eb-profile-trigger eb-top-nav-icon-btn eb-top-nav-icon-btn--legend eb-coach-legend-trigger" data-bs-toggle="modal" data-bs-target="#coachLegendModal" title="Legenda" aria-label="Legenda">
-        <span class="eb-top-nav-icon-btn__glyph" aria-hidden="true">?</span>
-      </button>
-    {% endif %}
   </div>
   {% if selected_athlete %}
     <div class="d-flex align-items-center gap-3">
