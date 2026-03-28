@@ -2,8 +2,35 @@
   <div class="container-fluid">
     <a class="navbar-brand fw-bold" href="/">EnduroBuddy</a>
 
+    {% with current_url_name=request.resolver_match.url_name %}
     <div class="d-flex align-items-center gap-2 order-lg-3 ms-auto">
       {% if user.is_authenticated %}
+        {% if current_url_name == "dashboard_home" %}
+          <button
+            type="button"
+            class="eb-profile-trigger eb-top-nav-icon-btn eb-top-nav-icon-btn--legend"
+            data-bs-toggle="modal"
+            data-bs-target="#coachLegendModal"
+            title="Legenda"
+            aria-label="Legenda"
+          >
+            <span class="eb-top-nav-icon-btn__glyph" aria-hidden="true">?</span>
+          </button>
+          <button
+            type="button"
+            class="eb-profile-trigger eb-top-nav-icon-btn eb-top-nav-icon-btn--import"
+            data-bs-toggle="modal"
+            data-bs-target="#importActivitiesModal"
+            title="Import aktivit"
+            aria-label="Import aktivit"
+          >
+            <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+              <path d="M8 2.2v7.1" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path>
+              <path d="M5.6 7.6 8 10l2.4-2.4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+              <path d="M3.2 11.8h9.6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path>
+            </svg>
+          </button>
+        {% endif %}
         {% include "includes/_notifications_dropdown.html" %}
         <div class="dropdown">
           <button
@@ -66,5 +93,6 @@
         {% endif %}
       </div>
     </div>
+    {% endwith %}
   </div>
 </nav>
