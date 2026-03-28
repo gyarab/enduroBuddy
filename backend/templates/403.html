@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+
+{% block title %}Přístup Zamítnut | EnduroBuddy{% endblock %}
+
+{% block content %}
+  {% include "errors/_status_card.html" with status_code="403" title="Přístup zamítnut" message="Na tuto stránku nebo akci nemáš oprávnění." %}
+{% endblock %}

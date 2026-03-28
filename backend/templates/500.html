@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+
+{% block title %}Chyba Serveru | EnduroBuddy{% endblock %}
+
+{% block content %}
+  {% include "errors/_status_card.html" with status_code="500" title="Něco se pokazilo" message="Na serveru nastala neočekávaná chyba. Zkus to prosím znovu za chvíli." %}
+{% endblock %}

@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+
+{% block title %}Neplatný požadavek | EnduroBuddy{% endblock %}
+
+{% block content %}
+  {% include "errors/_status_card.html" with status_code="400" title="Neplatný požadavek" message="Požadavek se nepodařilo zpracovat. Zkus stránku obnovit nebo akci zopakovat." %}
+{% endblock %}
