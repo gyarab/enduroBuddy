@@ -282,3 +282,31 @@
   border-width: .14em;
   flex: 0 0 auto;
 }
+
+@media (max-width: 991.98px) {
+  .eb-top-nav .container-fluid {
+    gap: 0.75rem;
+  }
+
+  .eb-top-nav-collapse {
+    flex-basis: 100%;
+  }
+
+  .eb-top-nav-links {
+    display: grid;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.25rem 0 0.5rem;
+  }
+
+  .eb-top-nav-link {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .eb-notification-dropdown,
+  .eb-profile-dropdown {
+    min-width: min(320px, calc(100vw - 24px));
+    max-width: min(360px, calc(100vw - 24px));
+  }
+}

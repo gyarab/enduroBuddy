@@ -24,6 +24,7 @@
     position: static;
     max-height: none;
     overflow: visible;
+    order: 0;
   }
 
   .eb-coach-main {
@@ -31,6 +32,8 @@
     min-height: auto;
     padding-right: 0;
     display: block;
+    order: 1;
+    min-width: 0;
   }
 
   .eb-coach-main .eb-month-widget {
@@ -44,6 +47,130 @@
 
   .eb-coach-main .eb-month-scroll {
     height: auto;
+  }
+
+  .eb-coach-sidebar .card,
+  .eb-collapsed-summary-card {
+    border-radius: 0.9rem;
+  }
+
+  .eb-coach-sidebar .card-body,
+  .eb-collapsed-summary-card .card-body {
+    padding: 0.85rem;
+  }
+
+  .eb-athlete-list {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    align-items: start;
+  }
+
+  .eb-coach-main-toolbar {
+    position: sticky;
+    top: 56px;
+    z-index: 1034;
+    background: #f8f9fa;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+  }
+
+  .eb-coach-main-title-row,
+  .eb-coach-main-toolbar > div:last-child {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .eb-coach-main-title-row h4 {
+    font-size: 1.1rem;
+    line-height: 1.3;
+    margin-right: 0;
+  }
+
+  .eb-coach-main-toolbar > div:last-child {
+    justify-content: flex-start;
+  }
+
+  .eb-coach-main-toolbar > div:last-child > div {
+    flex-wrap: wrap;
+    width: 100%;
+  }
+
+  .eb-athlete-focus-input {
+    width: min(100%, 18rem);
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .eb-dashboard-toolbar {
+    top: 56px;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+  }
+
+  .eb-dashboard-toolbar-title,
+  .eb-dashboard-toolbar-actions {
+    width: 100%;
+  }
+
+  .eb-dashboard-toolbar-title h3 {
+    font-size: 1.1rem;
+  }
+
+  .eb-dashboard-toolbar-actions .btn {
+    flex: 1 1 180px;
+  }
+
+  .eb-month-scroll {
+    width: 100%;
+    min-width: 100%;
+    padding: 0.5rem;
+  }
+
+  .eb-scrollwrap {
+    padding-bottom: 84px;
+  }
+
+  .eb-week-row {
+    gap: 0.75rem;
+  }
+
+  .eb-col-planned,
+  .eb-col-completed {
+    min-width: min(760px, calc(100vw - 2rem));
+  }
+
+  .eb-col .card {
+    border-radius: 0.9rem;
+  }
+
+  .eb-col .card-body {
+    padding: 0.85rem;
+  }
+
+  .eb-col th,
+  .eb-col td {
+    font-size: 0.9rem;
+  }
+
+  .eb-col-planned th.eb-planned-training-col,
+  .eb-col-planned td.eb-planned-training-col {
+    min-width: 280px;
+  }
+
+  .eb-col-planned th.eb-planned-notes-col,
+  .eb-col-planned td.eb-planned-notes-col {
+    min-width: 160px;
+  }
+
+  .eb-completed-pace-col {
+    min-width: 280px;
+  }
+
+  .eb-month-switcher {
+    padding: 0.5rem 0;
+  }
+
+  .eb-month-switcher-track {
+    padding-bottom: 0.1rem;
   }
 
   .eb-coach-toast-stack {
@@ -75,5 +202,156 @@
 
   .eb-legend-layout {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 575.98px) {
+  body.eb-plan-page main > .container-fluid.py-3 {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+
+  .eb-dashboard-toolbar {
+    gap: 0.75rem;
+  }
+
+  .eb-dashboard-toolbar-title h3 {
+    width: 100%;
+  }
+
+  .eb-dashboard-toolbar-actions .btn {
+    width: 100%;
+    flex-basis: 100%;
+  }
+
+  .eb-dashboard-toolbar-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .eb-dashboard-toolbar-actions .btn {
+    width: 100%;
+    flex-basis: 100%;
+  }
+
+  .eb-coach-shell {
+    gap: 0.75rem;
+  }
+
+  .eb-coach-sidebar .card-body,
+  .eb-collapsed-summary-card .card-body {
+    padding: 0.7rem;
+  }
+
+  .eb-athlete-list {
+    grid-template-columns: 1fr;
+    gap: 0.5rem !important;
+  }
+
+  .eb-athlete-list .btn {
+    min-height: 2.4rem;
+  }
+
+  .eb-coach-main-toolbar {
+    gap: 0.75rem;
+  }
+
+  .eb-coach-main-title-row,
+  .eb-coach-main-toolbar > div:last-child,
+  .eb-coach-main-toolbar > div:last-child > div {
+    width: 100%;
+  }
+
+  .eb-coach-main-title-row {
+    align-items: stretch !important;
+    gap: 0.75rem;
+  }
+
+  .eb-collapsed-summary-card {
+    width: 100%;
+  }
+
+  .eb-coach-main-title-row h4 {
+    width: 100%;
+    font-size: 1rem;
+  }
+
+  .eb-coach-main-toolbar > div:last-child > div > label {
+    width: 100%;
+  }
+
+  .eb-athlete-focus-input,
+  .eb-coach-main-toolbar > div:last-child .btn {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .eb-scrollwrap {
+    margin-left: -0.15rem;
+    margin-right: -0.15rem;
+  }
+
+  .eb-month-scroll {
+    border-radius: 0.85rem;
+    padding: 0.35rem;
+  }
+
+  .eb-week-row {
+    gap: 0.5rem;
+  }
+
+  .eb-col-planned,
+  .eb-col-completed {
+    min-width: min(720px, calc(100vw - 1.5rem));
+  }
+
+  .eb-col .card-body {
+    padding: 0.7rem;
+  }
+
+  .eb-col th,
+  .eb-col td {
+    font-size: 0.84rem;
+    padding: 0.45rem;
+  }
+
+  .eb-col-planned th.eb-planned-date-col,
+  .eb-col-planned td.eb-planned-date-col {
+    min-width: 84px;
+  }
+
+  .eb-col-planned th.eb-planned-day-col,
+  .eb-col-planned td.eb-planned-day-col {
+    min-width: 88px;
+  }
+
+  .eb-col-planned th.eb-planned-type-col,
+  .eb-col-planned td.eb-planned-type-col {
+    min-width: 96px;
+    width: 96px;
+  }
+
+  .eb-col-planned th.eb-planned-training-col,
+  .eb-col-planned td.eb-planned-training-col {
+    min-width: 220px;
+  }
+
+  .eb-col-planned th.eb-planned-notes-col,
+  .eb-col-planned td.eb-planned-notes-col {
+    min-width: 140px;
+  }
+
+  .eb-completed-km-col,
+  .eb-completed-avg-hr-col,
+  .eb-completed-max-hr-col {
+    width: 74px;
+  }
+
+  .eb-completed-min-col {
+    width: 86px;
+  }
+
+  .eb-completed-pace-col {
+    min-width: 220px;
   }
 }

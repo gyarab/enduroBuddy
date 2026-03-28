@@ -3,33 +3,33 @@
     <div class="card shadow-sm eb-collapsed-summary-card eb-collapsed-only">
       <div class="card-body py-2 px-2">
         <div class="d-flex align-items-center justify-content-between eb-sidebar-header-row mb-0">
-          <h5 class="mb-0">Svěřenci</h5>
+          <h5 class="mb-0">Sv&#283;&#345;enci</h5>
           <div class="d-flex align-items-center gap-1 eb-sidebar-controls">
-            <button class="btn btn-sm btn-outline-dark eb-gear-btn" type="button" data-bs-toggle="modal" data-bs-target="#coachManageModal" title="Správa svěřenců">
+            <button class="btn btn-sm btn-outline-dark eb-gear-btn" type="button" data-bs-toggle="modal" data-bs-target="#coachManageModal" title="Spr&aacute;va sv&#283;&#345;enc&#367;">
               <svg class="eb-gear-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
                 <path d="M6.7 1.7h2.6l.3 1.4c.4.1.8.3 1.2.5l1.3-.7 1.3 1.3-.7 1.3c.2.4.4.8.5 1.2l1.4.3v2.6l-1.4.3c-.1.4-.3.8-.5 1.2l.7 1.3-1.3 1.3-1.3-.7c-.4.2-.8.4-1.2.5l-.3 1.4H6.7l-.3-1.4c-.4-.1-.8-.3-1.2-.5l-1.3.7-1.3-1.3.7-1.3c-.2-.4-.4-.8-.5-1.2L1.4 9.3V6.7l1.4-.3c.1-.4.3-.8.5-1.2l-.7-1.3 1.3-1.3 1.3.7c.4-.2.8-.4 1.2-.5l.3-1.4Z" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>
                 <circle cx="8" cy="8" r="2.2" fill="none" stroke="currentColor" stroke-width="1.2"/>
               </svg>
             </button>
-            <button id="coachAthletesToggleBtnMain" type="button" class="btn btn-sm btn-outline-dark eb-sidebar-collapse-btn" data-athlete-sidebar-toggle="1" data-title-expand="Schovat svěřence" data-title-collapse="Zobrazit svěřence" aria-controls="coachShell" aria-expanded="true">
-              <span aria-hidden="true">&#9776;</span>
+            <button id="coachAthletesToggleBtnMain" type="button" class="btn btn-sm btn-outline-dark eb-sidebar-collapse-btn" data-athlete-sidebar-toggle="1" data-title-expand="Skr&yacute;t p&#345;ehled sv&#283;&#345;enc&#367;" data-title-collapse="Zobrazit p&#345;ehled sv&#283;&#345;enc&#367;" aria-controls="coachShell" aria-expanded="true">
+              <span class="eb-sidebar-collapse-icon" aria-hidden="true">&#9776;</span>
             </button>
           </div>
         </div>
       </div>
     </div>
     {% if selected_athlete %}
-      <h4 class="mb-0">Tréninkový plán - {{ selected_athlete_name }}</h4>
+      <h4 class="mb-0">Tr&eacute;ninkov&yacute; pl&aacute;n - {{ selected_athlete_name }}</h4>
     {% endif %}
   </div>
   {% if selected_athlete %}
     <div class="d-flex align-items-center gap-3">
       <div class="d-flex align-items-center gap-2">
         {% if not selected_athlete_is_self %}
-          <label class="small text-muted mb-0" for="coachAthleteFocusInput">Zaměření:</label>
+          <label class="small text-muted mb-0" for="coachAthleteFocusInput">Zam&#283;&#345;en&iacute;:</label>
           <input id="coachAthleteFocusInput" class="form-control form-control-sm eb-athlete-focus-input" type="text" value="{{ selected_athlete_focus }}" data-athlete-id="{{ selected_athlete.id }}" data-focus-update-url="{{ coach_athlete_focus_update_url }}" maxlength="10">
         {% endif %}
-        <button type="button" class="btn btn-sm btn-outline-dark" data-bs-toggle="modal" data-bs-target="#coachLegendModal">
+        <button type="button" class="btn btn-sm btn-outline-dark eb-coach-legend-trigger" data-bs-toggle="modal" data-bs-target="#coachLegendModal">
           Legenda
         </button>
       </div>

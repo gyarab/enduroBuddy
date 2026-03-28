@@ -69,9 +69,19 @@
 
 .eb-sidebar-collapse-btn {
   min-width: 2rem;
+  width: 2rem;
+  height: 2rem;
   padding-left: 0.45rem;
   padding-right: 0.45rem;
   font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.eb-sidebar-collapse-icon {
+  line-height: 1;
+  font-size: 0.95rem;
 }
 
 .eb-sidebar-header-row {
@@ -234,14 +244,8 @@
   border-color: #e5e7eb;
 }
 
-.eb-collapsed-summary-text {
-  min-width: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  font-size: 0.95rem;
-  color: #111827;
-  font-weight: 600;
+.eb-coach-legend-trigger {
+  min-width: 7rem;
 }
 
 .eb-athlete-dropdown-menu {
