@@ -25,24 +25,26 @@
   }
 
   body.eb-plan-page {
-    overflow: auto;
+    overflow: hidden;
   }
 
   body.eb-plan-page main {
-    height: auto;
-    overflow: visible;
+    height: calc(100vh - 56px);
+    overflow: hidden;
   }
 
   body.eb-plan-page main > .container-fluid.py-3 {
-    height: auto;
-    display: block;
-    padding-bottom: 1rem !important;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 0 !important;
   }
 
   .eb-coach-shell {
     grid-template-columns: 1fr;
-    height: auto;
-    overflow: visible;
+    grid-template-rows: auto minmax(0, 1fr);
+    height: 100%;
+    overflow: hidden;
   }
 
   .eb-coach-sidebar {
@@ -52,26 +54,75 @@
     order: 0;
   }
 
+  .eb-sidebar-current-athlete-row {
+    min-width: 0;
+  }
+
+  .eb-sidebar-current-athlete-card {
+    margin-bottom: 0;
+    border-radius: 0.9rem;
+    border-color: #e5e7eb;
+  }
+
+  .eb-sidebar-current-athlete-card .card-body {
+    padding: 0.55rem 0.75rem;
+  }
+
+  .eb-sidebar-current-athlete-name {
+    min-width: 0;
+    flex: 1 1 auto;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 1.05rem;
+    line-height: 1.15;
+    font-weight: 600;
+  }
+
+  .eb-sidebar-legend-trigger {
+    width: 1.85rem;
+    height: 1.85rem;
+    min-width: 1.85rem;
+  }
+
   .eb-coach-main {
-    overflow: visible;
-    min-height: auto;
+    overflow: hidden;
+    min-height: 0;
     padding-right: 0;
-    display: block;
+    padding-top: 0;
+    display: flex;
+    flex-direction: column;
     order: 1;
     min-width: 0;
   }
 
   .eb-coach-main .eb-month-widget {
-    height: auto;
-    display: block;
+    flex: 1 1 auto;
+    min-height: 0;
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) auto;
+    overflow: hidden;
   }
 
   .eb-coach-main .eb-scrollwrap--embedded {
-    overflow: visible;
+    flex: none;
+    min-height: 0;
+    height: 100%;
+    max-height: 100%;
+    overflow-x: auto;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
   }
 
   .eb-coach-main .eb-month-scroll {
     height: auto;
+    min-height: auto;
+    padding-top: 0.1rem !important;
+  }
+
+  .eb-coach-main .month-container > .mb-3 {
+    margin-bottom: 0.55rem !important;
   }
 
   .eb-coach-sidebar .card,
@@ -119,13 +170,7 @@
   }
 
   .eb-coach-main-toolbar {
-    position: sticky;
-    top: 56px;
-    z-index: 1034;
-    background: #f8f9fa;
-    padding-top: 0.75rem;
-    padding-bottom: 0.35rem;
-    margin-bottom: 0.35rem !important;
+    display: none;
   }
 
   .eb-coach-main-title-row,
@@ -192,13 +237,17 @@
     padding-right: 0.1rem;
   }
 
-  .eb-coach-shell.is-mobile-athlete-selection-required .eb-athlete-list,
-  .eb-coach-shell.is-mobile-plan-visible .eb-athlete-list {
+  .eb-coach-shell.is-mobile-athlete-selection-required .eb-athlete-list {
     display: none;
   }
 
   .eb-coach-shell.is-mobile-athlete-selection-required .eb-sidebar-header-row,
   .eb-coach-shell.is-mobile-plan-visible .eb-sidebar-header-row {
+    margin-bottom: 0 !important;
+  }
+
+  .eb-coach-shell.is-mobile-athlete-selection-required .eb-sidebar-current-athlete-row,
+  .eb-coach-shell.is-mobile-plan-visible .eb-sidebar-current-athlete-row {
     margin-bottom: 0 !important;
   }
 
@@ -212,19 +261,34 @@
     display: block;
   }
 
-  .eb-coach-shell.is-mobile-athlete-selection-required .eb-coach-main-toolbar,
-  .eb-coach-shell.is-mobile-athlete-picker-open .eb-coach-main-toolbar {
-    display: none;
-  }
-
   .eb-athlete-focus-input {
     width: min(100%, 18rem);
     min-width: 0;
     max-width: 100%;
   }
 
-  .eb-coach-shell.is-mobile-plan-visible .eb-coach-main-toolbar > div:last-child {
-    display: none !important;
+  .eb-month-switcher--embedded {
+    position: sticky;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: #fff;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 12px 12px 0 0;
+    margin-top: auto;
+    margin-bottom: 0;
+    z-index: 1030;
+    box-shadow: 0 -8px 18px rgba(15, 23, 42, 0.08);
+  }
+
+  .eb-month-switcher--embedded .container-fluid {
+    padding-left: 0.25rem;
+    padding-right: 0.25rem;
+  }
+
+  .eb-month-switcher--embedded .eb-month-switcher-track {
+    padding-left: 0.35rem !important;
+    padding-right: 0.35rem !important;
   }
 
   .eb-dashboard-toolbar {
@@ -247,7 +311,7 @@
   }
 
   .eb-month-scroll {
-    width: 100%;
+    width: max-content;
     min-width: 100%;
     padding: 0.5rem;
   }
