@@ -1,4 +1,5 @@
 {% extends "public/base_public.html" %}
+{% load static %}
 
 {% block title %}EnduroBuddy | Tréninkový workspace pro atleta i trenéra{% endblock %}
 
@@ -76,6 +77,19 @@
     .eb-hero {
       padding-top: 3rem;
       padding-bottom: 1.5rem;
+    }
+
+    .eb-hero-brand {
+      display: inline-flex;
+      align-items: center;
+      margin-bottom: 1.4rem;
+    }
+
+    .eb-hero-brand img {
+      display: block;
+      width: min(100%, 430px);
+      height: auto;
+      filter: drop-shadow(0 16px 30px rgba(0, 0, 0, 0.28));
     }
 
     .eb-hero-grid {
@@ -203,6 +217,24 @@
       font-size: 1rem;
       font-weight: 700;
       color: var(--eb-text-strong);
+    }
+
+    .eb-logo-panel {
+      display: grid;
+      place-items: center;
+      min-height: 100%;
+      padding: 20px;
+      border-radius: 14px;
+      border: 1px solid rgba(97, 196, 143, 0.14);
+      background:
+        radial-gradient(circle at center, rgba(97, 196, 143, 0.12), transparent 55%),
+        rgba(255, 255, 255, 0.03);
+    }
+
+    .eb-logo-panel img {
+      width: min(100%, 320px);
+      height: auto;
+      filter: drop-shadow(0 14px 32px rgba(97, 196, 143, 0.18));
     }
 
     .eb-mini-screen {
@@ -426,6 +458,10 @@
       .eb-section {
         padding: 22px;
       }
+
+      .eb-hero-brand img {
+        width: min(100%, 360px);
+      }
     }
 
     @media (max-width: 575.98px) {
@@ -456,6 +492,9 @@
         <div class="eb-hero-grid">
           <div class="eb-section eb-reveal">
             <div class="eb-kicker">Plán. Splnění. Import aktivit.</div>
+            <div class="eb-hero-brand">
+              <img src="{% static 'brand/biglogo.png' %}" alt="EnduroBuddy">
+            </div>
             <h1 class="eb-display">Tréninkový workspace pro vytrvalostní sport.</h1>
             <p class="eb-lead">
               EnduroBuddy propojuje trenéra a sportovce v jednom rozhraní. Obsahuje měsíční plán s týdenní strukturou,
@@ -553,6 +592,10 @@
               </div>
 
               <div class="eb-preview-column">
+                <div class="eb-logo-panel">
+                  <img src="{% static 'brand/logo.png' %}" alt="EnduroBuddy symbol">
+                </div>
+
                 <div class="eb-preview-panel">
                   <div class="eb-eyebrow">Import aktivit</div>
                   <div class="d-grid gap-2">
