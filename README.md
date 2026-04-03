@@ -142,28 +142,50 @@ http://127.0.0.1:8000
 
 Kontejner `web` při startu automaticky spouští migrace a následně Django development server.
 
-## Lokální vývoj bez Dockeru
+## Lokální vývoj
 
-### 1. Vytvoř a aktivuj virtuální prostředí
+Doporučený postup pro běžný vývoj je spustit PostgreSQL přes Docker Compose a Django lokálně ve vlastním virtuálním prostředí.
+
+### 1. Naklonuj repozitář
+
+```bash
+git clone <repo-url>
+cd endurobuddy-private
+```
+
+### 2. Vytvoř a aktivuj virtuální prostředí
 
 ```bash
 py -3.12 -m venv .venv
 .venv\Scripts\activate
 ```
 
-### 2. Nainstaluj závislosti
+### 3. Nainstaluj závislosti
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 3. Připrav `.env`
+### 4. Připrav `.env`
 
-Zkopíruj `.env.example` do `.env` a doplň:
+Zkopíruj vzorový soubor:
+
+```bash
+cp .env.example .env
+```
+
+Ve Windows PowerShell můžeš použít i:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+Pak v `.env` nastav alespoň:
 
 ```env
 DJANGO_SECRET_KEY=replace-with-long-random-secret-key
 DJANGO_DEBUG=true
+DJANGO_ALLOWED_HOSTS=127.0.0.1,localhost
 POSTGRES_DB=endurobuddy
 POSTGRES_USER=endurobuddy
 POSTGRES_PASSWORD=endurobuddy_password
@@ -171,22 +193,42 @@ POSTGRES_HOST=127.0.0.1
 POSTGRES_PORT=5432
 ```
 
+Poznámky:
+
+- `DJANGO_SECRET_KEY` je povinný, bez něj aplikace nenaběhne
+- `DJANGO_ALLOWED_HOSTS=127.0.0.1,localhost` stačí pro lokální vývoj
+- hodnoty `POSTGRES_DB`, `POSTGRES_USER` a `POSTGRES_PASSWORD` musí odpovídat databázi, kterou spustíš níže přes Docker Compose
+
 Pokud chceš používat Google login nebo odesílání emailů přes SMTP, doplň také příslušné proměnné z `.env.example`.
 
-### 4. Proveď migrace
+### 5. Spusť databázi
+
+```bash
+docker compose up db -d
+```
+
+`docker-compose.yml` ve výchozím stavu vytvoří PostgreSQL s těmito údaji:
+
+```env
+POSTGRES_DB=endurobuddy
+POSTGRES_USER=endurobuddy
+POSTGRES_PASSWORD=endurobuddy_password
+```
+
+### 6. Proveď migrace
 
 ```bash
 cd backend
 python manage.py migrate
 ```
 
-### 5. Vytvoř administrátora
+### 7. Volitelně vytvoř administrátora
 
 ```bash
 python manage.py createsuperuser
 ```
 
-### 6. Spusť vývojový server
+### 8. Spusť vývojový server
 
 ```bash
 python manage.py runserver
