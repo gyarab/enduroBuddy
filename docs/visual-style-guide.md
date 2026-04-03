@@ -37,7 +37,7 @@ Výše uvedené odlišení je návrhová syntéza na základě veřejně dostupn
 
 ### Primární identitní font
 
-Používej `Godens Demo` jako display font:
+Používej `Space Grotesk` jako display font:
 
 - logo
 - hlavní H1
@@ -53,7 +53,7 @@ Nepoužívej ho pro:
 - husté dashboardy
 
 Důvod:
-U vytrvalostní a plánovací aplikace je rozhodující čitelnost. `Godens Demo` může dodat charakter značce, ale hlavní provozní text potřebuje neutrálnější sans-serif.
+U vytrvalostní a plánovací aplikace je rozhodující čitelnost. `Space Grotesk` může dodat charakter značce, ale hlavní provozní text potřebuje neutrálnější sans-serif.
 
 ### Doporučený pracovní font
 
@@ -65,8 +65,8 @@ font-family: "Segoe UI Variable Text", "Segoe UI", "Inter", sans-serif;
 
 ### Typografická hierarchie
 
-- `Display / Hero`: Godens Demo, 44-56 px, tracking lehce utažený
-- `H1`: Godens Demo, 32-40 px
+- `Display / Hero`: Space Grotesk, 44-56 px, tracking lehce utažený
+- `H1`: Space Grotesk, 32-40 px
 - `H2`: sans-serif, 24-28 px, 600-700
 - `H3`: sans-serif, 18-20 px, 600
 - `Body`: sans-serif, 15-16 px, 400-500
@@ -260,7 +260,7 @@ Doporučení:
 }
 ```
 
-## Doporučené použití Godens Demo
+## Doporučené použití Space Grotesk
 
 Silné použití:
 
@@ -303,7 +303,7 @@ Soubor `docs/visual-style-preview.html` obsahuje:
 
 Pokud se ti tenhle směr bude líbit, další rozumný krok je:
 
-1. dodat skutečný soubor fontu `Godens Demo`
+1. připojit open-source font `Space Grotesk`
 2. převést tokeny do jedné centrální CSS vrstvy
 3. aplikovat styl nejdřív na login, top nav a dashboard shell
 4. až potom řešit detailní stavy tabulek, kalendáře a modálů
