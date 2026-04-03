@@ -1,0 +1,61 @@
+{% extends "public/base_public.html" %}
+
+{% block title %}O nás | EnduroBuddy{% endblock %}
+
+{% block page_styles %}
+  <style>
+    .eb-main {
+      padding: 3rem 0 4rem;
+    }
+
+    .eb-card {
+      padding: 28px;
+      border-radius: var(--eb-radius-lg);
+      border: 1px solid var(--eb-line);
+      background: rgba(29, 41, 36, 0.82);
+      box-shadow: var(--eb-shadow-1);
+    }
+
+    .eb-kicker {
+      color: var(--eb-accent);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 0.82rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
+
+    .eb-title {
+      font-size: clamp(2.3rem, 5vw, 4rem);
+      line-height: 0.95;
+      margin: 0 0 1rem;
+    }
+
+    .eb-copy {
+      color: var(--eb-text-muted);
+      line-height: 1.75;
+      font-size: 1.02rem;
+      margin: 0 0 1rem;
+      max-width: 68ch;
+    }
+
+  </style>
+{% endblock %}
+
+{% block content %}
+  <main class="eb-main">
+    <div class="eb-shell">
+      <section class="eb-card">
+        <div class="eb-kicker">O nás</div>
+        <h1 class="eb-title">Tuhle stránku doplníme.</h1>
+        <p class="eb-copy">
+          Přidal jsem samostatnou veřejnou záložku `O nás`, aby bylo kam postupně rozepsat pozadí projektu,
+          produktové rozhodnutí, roadmapu nebo třeba přístup k tréninkovému workflow.
+        </p>
+        <p class="eb-copy">
+          Zatím zůstává jako jednoduchý placeholder a homepage dál slouží jako hlavní produktová stránka.
+        </p>
+      </section>
+    </div>
+  </main>
+{% endblock %}

@@ -44,7 +44,8 @@ Projekt je rozdělený do několika Django aplikací:
 
 ### Důležité URL
 
-- `/` dashboard sportovce
+- `/` veřejná produktová stránka
+- `/app/` dashboard sportovce
 - `/coach/plans/` dashboard trenéra
 - `/accounts/` autentizace
 - `/admin/` administrační rozhraní
