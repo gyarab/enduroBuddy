@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EnduroBuddy Visual Style Preview</title>
+  <style>
+    :root {
+      --bg: #101714;
+      --bg-elevated: #16201c;
+      --surface: #1d2924;
+      --surface-soft: #22312b;
+      --surface-strong: #283932;
+      --text: #e9efec;
+      --text-muted: #9eb0a8;
+      --text-dim: #7f9088;
+      --line: #2d3a35;
+      --line-soft: #3a4a43;
+      --accent: #61c48f;
+      --accent-hover: #4bad79;
+      --danger: #ff7a59;
+      --warning: #d9a441;
+      --info: #77b7d7;
+      --white-panel: #edf2ef;
+      --white-line: #cad4cf;
+      --shadow-1: 0 10px 30px rgba(0, 0, 0, 0.2);
+      --shadow-2: 0 22px 50px rgba(0, 0, 0, 0.28);
+      --radius-sm: 10px;
+      --radius-md: 14px;
+      --radius-lg: 18px;
+      --radius-pill: 999px;
+    }
+
+    * { box-sizing: border-box; }
+    html { color-scheme: dark; scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI Variable Text", "Segoe UI", "Inter", sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(97, 196, 143, 0.1), transparent 22%),
+        radial-gradient(circle at top right, rgba(119, 183, 215, 0.08), transparent 18%),
+        linear-gradient(180deg, #0e1512 0%, var(--bg) 100%);
+      color: var(--text);
+    }
+
+    ::selection { background: rgba(97, 196, 143, 0.25); }
+    ::-webkit-scrollbar { width: 10px; height: 10px; }
+    ::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.04); }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(158, 176, 168, 0.35);
+      border-radius: 999px;
+      border: 2px solid transparent;
+      background-clip: padding-box;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(158, 176, 168, 0.55);
+      border: 2px solid transparent;
+      background-clip: padding-box;
+    }
+
+    .page {
+      width: min(1380px, calc(100% - 40px));
+      margin: 0 auto;
+      padding: 32px 0 80px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+
+    .panel {
+      background: rgba(29, 41, 36, 0.82);
+      border: 1px solid rgba(58, 74, 67, 0.8);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-1);
+      backdrop-filter: blur(10px);
+    }
+
+    .hero-main {
+      padding: 28px;
+      min-height: 250px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-main::after {
+      content: "";
+      position: absolute;
+      right: -40px;
+      top: -10px;
+      width: 240px;
+      height: 240px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(97, 196, 143, 0.18), transparent 60%);
+      pointer-events: none;
+    }
+
+    .brand,
+    .hero h1,
+    .section-heading h2,
+    .display {
+      font-family: "Godens Demo", "Arial Black", "Segoe UI", sans-serif;
+    }
+
+    .brand {
+      font-size: 1rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 12px;
+    }
+
+    .hero h1 {
+      font-size: clamp(2.3rem, 4vw, 3.7rem);
+      line-height: 0.95;
+      max-width: 10ch;
+      margin: 0;
+    }
+
+    .hero p {
+      max-width: 58ch;
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin: 16px 0 24px;
+    }
+
+    .hero-actions,
+    .button-row,
+    .form-grid,
+    .chip-row,
+    .segmented,
+    .switch-row,
+    .palette-grid,
+    .type-grid,
+    .cards-grid,
+    .layout-grid,
+    .toast-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .hero-side {
+      padding: 24px;
+      display: grid;
+      gap: 14px;
+      align-content: start;
+    }
+
+    .mini-stat {
+      padding: 16px;
+      border-radius: var(--radius-md);
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--line);
+    }
+
+    .eyebrow {
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: 8px;
+    }
+
+    .metric {
+      font-size: 1.9rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .section { margin-top: 28px; }
+
+    .section-heading {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .section-heading h2 {
+      font-size: clamp(1.6rem, 2vw, 2.1rem);
+      margin: 0;
+    }
+
+    .section-heading p {
+      margin: 0;
+      color: var(--text-muted);
+      max-width: 56ch;
+    }
+
+    .surface { padding: 24px; }
+
+    .swatch {
+      min-width: 170px;
+      flex: 1 1 170px;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .swatch-color { height: 88px; }
+
+    .swatch-meta {
+      padding: 12px 14px;
+      display: grid;
+      gap: 4px;
+      font-size: 0.92rem;
+    }
+
+    .type-sample {
+      flex: 1 1 280px;
+      padding: 18px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .type-sample .meta {
+      color: var(--text-dim);
+      margin-bottom: 10px;
+      font-size: 0.82rem;
+    }
+
+    .display {
+      font-size: clamp(2.4rem, 4vw, 4rem);
+      line-height: 0.95;
+    }
+
+    h3 { margin: 0 0 12px; font-size: 1.05rem; }
+
+    .btn {
+      appearance: none;
+      border: 1px solid var(--line-soft);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text);
+      border-radius: var(--radius-pill);
+      min-height: 44px;
+      padding: 0 18px;
+      font-size: 0.96rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 180ms ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      border-color: rgba(97, 196, 143, 0.45);
+    }
+
+    .btn-primary {
+      background: linear-gradient(180deg, var(--accent), var(--accent-hover));
+      color: #0c120f;
+      border-color: transparent;
+    }
+
+    .btn-secondary {
+      background: rgba(97, 196, 143, 0.12);
+      border-color: rgba(97, 196, 143, 0.3);
+    }
+
+    .btn-ghost { background: transparent; }
+
+    .btn-danger {
+      background: rgba(255, 122, 89, 0.14);
+      border-color: rgba(255, 122, 89, 0.3);
+      color: #ffd7ce;
+    }
+
+    .btn-icon {
+      width: 44px;
+      padding: 0;
+      display: inline-grid;
+      place-items: center;
+    }
+
+    .form-grid > * { flex: 1 1 220px; }
+
+    .field { display: grid; gap: 8px; }
+
+    .field label {
+      font-size: 0.84rem;
+      color: var(--text-dim);
+      font-weight: 600;
+    }
+
+    .input,
+    .select {
+      min-height: 46px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text);
+      padding: 0 14px;
+      outline: none;
+      transition: 160ms ease;
+    }
+
+    .input:focus,
+    .select:focus {
+      border-color: rgba(97, 196, 143, 0.55);
+      box-shadow: 0 0 0 4px rgba(97, 196, 143, 0.12);
+    }
+
+    .search-wrap {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .search-shell {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 52px;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      padding: 0 14px;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .search-shell input {
+      flex: 1;
+      border: 0;
+      background: transparent;
+      color: var(--text);
+      min-width: 0;
+      outline: none;
+      font: inherit;
+    }
+
+    .search-kicker {
+      font-size: 0.78rem;
+      color: var(--text-dim);
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.03);
+      white-space: nowrap;
+    }
+
+    .segmented {
+      padding: 6px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.03);
+      width: fit-content;
+    }
+
+    .segment {
+      min-height: 38px;
+      padding: 0 14px;
+      border-radius: 999px;
+      border: 0;
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .segment.is-active {
+      background: rgba(97, 196, 143, 0.14);
+      color: var(--text);
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      min-height: 32px;
+      padding: 0 12px;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .chip-accent {
+      color: #c8f3dc;
+      background: rgba(97, 196, 143, 0.12);
+      border-color: rgba(97, 196, 143, 0.3);
+    }
+
+    .chip-warning {
+      color: #f6e7ba;
+      background: rgba(217, 164, 65, 0.12);
+      border-color: rgba(217, 164, 65, 0.28);
+    }
+
+    .chip-danger {
+      color: #ffd7ce;
+      background: rgba(255, 122, 89, 0.12);
+      border-color: rgba(255, 122, 89, 0.26);
+    }
+
+    .switch-row { align-items: center; }
+
+    .switch {
+      width: 52px;
+      height: 32px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--line);
+      position: relative;
+    }
+
+    .switch::after {
+      content: "";
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: #f8fbf9;
+    }
+
+    .switch.is-on {
+      background: rgba(97, 196, 143, 0.32);
+      border-color: rgba(97, 196, 143, 0.35);
+    }
+
+    .switch.is-on::after {
+      left: 23px;
+      background: #dff7eb;
+    }
+
+    .checkbox {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--text-muted);
+    }
+
+    .checkbox-box {
+      width: 20px;
+      height: 20px;
+      border-radius: 6px;
+      border: 1px solid rgba(97, 196, 143, 0.4);
+      background: rgba(97, 196, 143, 0.14);
+      box-shadow: inset 0 0 0 3px rgba(12, 18, 15, 0.8);
+    }
+
+    .cards-grid > * { flex: 1 1 220px; }
+
+    .stat-card,
+    .table-shell,
+    .modal-shell,
+    .toast,
+    .skeleton-card {
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .stat-card {
+      padding: 18px;
+      min-height: 160px;
+      display: grid;
+      align-content: space-between;
+    }
+
+    .stat-card .big {
+      font-size: 2.2rem;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .stat-card .trend {
+      color: var(--accent);
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
+
+    .layout-grid { align-items: start; }
+    .layout-grid > * { flex: 1 1 420px; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th,
+    td {
+      text-align: left;
+      padding: 14px 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      font-size: 0.94rem;
+    }
+
+    th {
+      font-size: 0.78rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+    }
+
+    tr:hover td { background: rgba(255, 255, 255, 0.02); }
+
+    .scroll-shell {
+      max-height: 260px;
+      overflow: auto;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--line);
+      background: rgba(0, 0, 0, 0.08);
+      padding: 10px;
+    }
+
+    .activity-item {
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      background: rgba(255, 255, 255, 0.03);
+      display: grid;
+      gap: 6px;
+    }
+
+    .activity-item + .activity-item { margin-top: 10px; }
+    .toast-row { align-items: flex-start; }
+
+    .toast {
+      padding: 14px 16px;
+      width: min(360px, 100%);
+      box-shadow: var(--shadow-1);
+    }
+
+    .toast strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .toast-success {
+      border-color: rgba(97, 196, 143, 0.28);
+      background: rgba(97, 196, 143, 0.08);
+    }
+
+    .toast-warning {
+      border-color: rgba(217, 164, 65, 0.26);
+      background: rgba(217, 164, 65, 0.08);
+    }
+
+    .modal-shell {
+      padding: 0;
+      overflow: hidden;
+      box-shadow: var(--shadow-2);
+    }
+
+    .modal-head,
+    .modal-body,
+    .modal-foot {
+      padding: 18px 20px;
+    }
+
+    .modal-head,
+    .modal-foot { background: rgba(255, 255, 255, 0.03); }
+
+    .modal-head {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .modal-foot {
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      display: flex;
+      justify-content: end;
+      gap: 10px;
+    }
+
+    .skeleton {
+      border-radius: 10px;
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.04));
+      background-size: 200% 100%;
+      animation: shimmer 1.5s linear infinite;
+    }
+
+    .skeleton-card {
+      padding: 18px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .skeleton-line { height: 12px; }
+    .skeleton-line.large { height: 28px; width: 48%; }
+    .skeleton-line.short { width: 34%; }
+
+    .light-surface {
+      background: var(--white-panel);
+      color: #122019;
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      border: 1px solid var(--white-line);
+    }
+
+    .light-surface .btn {
+      color: #122019;
+      border-color: #b6c3bd;
+      background: rgba(16, 23, 20, 0.04);
+    }
+
+    .light-surface .btn-primary {
+      background: linear-gradient(180deg, var(--accent), var(--accent-hover));
+      border-color: transparent;
+      color: #0c120f;
+    }
+
+    .footnote {
+      margin-top: 18px;
+      color: var(--text-dim);
+      font-size: 0.88rem;
+      line-height: 1.6;
+    }
+
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    @media (max-width: 980px) {
+      .hero { grid-template-columns: 1fr; }
+      .page { width: min(100% - 24px, 1380px); padding-top: 20px; }
+      .section-heading { align-items: start; flex-direction: column; }
+      .search-wrap { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <div class="panel hero-main">
+        <div class="brand">EnduroBuddy</div>
+        <h1>Precision training workspace.</h1>
+        <p>
+          Návrhový preview pro minimalistickou vytrvalostní aplikaci, která staví na klidu, rytmu a čitelnosti.
+          `Godens Demo` zde funguje jako identitní display font, zatímco provozní UI zůstává čisté a efektivní.
+        </p>
+        <div class="hero-actions">
+          <button class="btn btn-primary">Nový trénink</button>
+          <button class="btn btn-secondary">Importovat aktivitu</button>
+          <button class="btn btn-ghost">Otevřít plán týdne</button>
+        </div>
+      </div>
+
+      <aside class="panel hero-side">
+        <div class="mini-stat">
+          <div class="eyebrow">Týdenní objem</div>
+          <div class="metric">82 km</div>
+          <div class="footnote">Rozloženo do 6 dní, dominantní je sobotní long run.</div>
+        </div>
+        <div class="mini-stat">
+          <div class="eyebrow">Akcentní princip</div>
+          <div class="metric" style="font-size:1.2rem;">Calm, technical, focused</div>
+          <div class="footnote">Méně marketingu, více provozní jistoty a čisté datové hierarchie.</div>
+        </div>
+      </aside>
+    </section>
+
+    <section class="section">
+      <div class="section-heading">
+        <h2>Palette</h2>
+        <p>Tmavá základna, nízký vizuální šum a opatrný zelený akcent. Cílem je soustředěné pracovní prostředí, ne fitness reklama.</p>
+      </div>
+      <div class="panel surface">
+        <div class="palette-grid">
+          <div class="swatch"><div class="swatch-color" style="background:#101714;"></div><div class="swatch-meta"><strong>Ink 950</strong><span>#101714</span></div></div>
+          <div class="swatch"><div class="swatch-color" style="background:#16201c;"></div><div class="swatch-meta"><strong>Ink 900</strong><span>#16201c</span></div></div>
+          <div class="swatch"><div class="swatch-color" style="background:#1d2924;"></div><div class="swatch-meta"><strong>Panel 800</strong><span>#1d2924</span></div></div>
+          <div class="swatch"><div class="swatch-color" style="background:#61c48f;"></div><div class="swatch-meta"><strong>Accent</strong><span>#61c48f</span></div></div>
+          <div class="swatch"><div class="swatch-color" style="background:#ff7a59;"></div><div class="swatch-meta"><strong>Alert</strong><span>#ff7a59</span></div></div>
+          <div class="swatch"><div class="swatch-color" style="background:#edf2ef;"></div><div class="swatch-meta"><strong>Light Panel</strong><span>#edf2ef</span></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-heading">
+        <h2>Typography</h2>
+        <p>`Godens Demo` je display vrstva. Hlavní provozní text a čísla drží neutrální sans-serif kvůli čitelnosti při plánování a analýze.</p>
+      </div>
+      <div class="panel surface">
+        <div class="type-grid">
+          <div class="type-sample">
+            <div class="meta">Display / Godens Demo</div>
+            <div class="display">EnduroBuddy</div>
+          </div>
+          <div class="type-sample">
+            <div class="meta">Heading / Sans</div>
+            <div style="font-size:2rem;font-weight:700;">Weekly training overview</div>
+          </div>
+          <div class="type-sample">
+            <div class="meta">Body / Sans</div>
+            <div style="line-height:1.7;color:var(--text-muted);">Tréninkový plán má působit klidně, čitelně a rychle skenovatelně i při větší hustotě informací.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-heading">
+        <h2>Controls</h2>
+        <p>Základní ovládací prvky drží konzistentní výšku, jemný border a klidný focus state. Primární CTA je vždy omezené na minimum.</p>
+      </div>
+      <div class="panel surface">
+        <h3>Buttons</h3>
+        <div class="button-row">
+          <button class="btn btn-primary">Uložit změny</button>
+          <button class="btn btn-secondary">Přidat interval</button>
+          <button class="btn btn-ghost">Filtrovat</button>
+          <button class="btn btn-danger">Smazat plán</button>
+          <button class="btn btn-icon" aria-label="Open settings">+</button>
+        </div>
+
+        <h3 style="margin-top:24px;">Search Bar</h3>
+        <div class="search-wrap">
+          <div class="search-shell">
+            <span aria-hidden="true">⌕</span>
+            <input type="text" value="Najít sportovce, trénink nebo aktivitu">
+            <span class="search-kicker">⌘K</span>
+          </div>
+          <button class="btn btn-secondary">Rozšířené filtry</button>
+        </div>
+
+        <h3 style="margin-top:24px;">Forms</h3>
+        <div class="form-grid">
+          <div class="field">
+            <label>Název tréninku</label>
+            <input class="input" type="text" value="Long run s progresí">
+          </div>
+          <div class="field">
+            <label>Typ</label>
+            <select class="select">
+              <option>Tempo</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Objem</label>
+            <input class="input" type="text" value="24 km">
+          </div>
+        </div>
+
+        <h3 style="margin-top:24px;">Segments, Toggles, States</h3>
+        <div class="segmented">
+          <button class="segment is-active">Měsíc</button>
+          <button class="segment">Týden</button>
+          <button class="segment">Den</button>
+        </div>
+        <div class="switch-row" style="margin-top:16px;">
+          <div class="checkbox">
+            <span class="checkbox-box"></span>
+            <span>Označit jako splněné</span>
+          </div>
+          <div class="switch is-on" aria-hidden="true"></div>
+          <span style="color:var(--text-muted);">Automatický import Garmin</span>
+        </div>
+
+        <h3 style="margin-top:24px;">Chips & Status</h3>
+        <div class="chip-row">
+          <span class="chip chip-accent">Planned</span>
+          <span class="chip chip-warning">Pending Import</span>
+          <span class="chip chip-danger">Missed</span>
+          <span class="chip">Coach</span>
+          <span class="chip">Intervals</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-heading">
+        <h2>Dashboard Blocks</h2>
+        <p>Metriky mají být stručné, prioritizované a dobře čitelné i při rychlém průchodu. Jedna karta, jeden význam.</p>
+      </div>
+      <div class="panel surface">
+        <div class="cards-grid">
+          <article class="stat-card">
+            <div>
+              <div class="eyebrow">Akutní zátěž</div>
+              <div class="big">648</div>
+            </div>
+            <div>
+              <div class="trend">+8.4 % proti minulému týdnu</div>
+              <div class="footnote">Růst je stále v bezpečném rozmezí.</div>
+            </div>
+          </article>
+          <article class="stat-card">
+            <div>
+              <div class="eyebrow">Dlouhý běh</div>
+              <div class="big">30 km</div>
+            </div>
+            <div>
+              <div class="trend" style="color:var(--info);">Neděle 08:00</div>
+              <div class="footnote">Posledních 6 km v maratonském tempu.</div>
+            </div>
+          </article>
+          <article class="stat-card">
+            <div>
+              <div class="eyebrow">Recovery index</div>
+              <div class="big">72 %</div>
+            </div>
+            <div>
+              <div class="trend" style="color:var(--warning);">Potřeba hlídat spánek</div>
+              <div class="footnote">Poslední dva dny nižší readiness.</div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-heading">
+        <h2>Data Views</h2>
+        <p>Tabulky a scrollovatelné panely mají být datově silné, ale ne přeplněné. Hover, sticky rytmus a sekundární text musí zůstat nenápadné.</p>
+      </div>
+      <div class="layout-grid">
+        <div class="panel surface table-shell">
+          <h3>Týdenní plán</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Den</th>
+                <th>Trénink</th>
+                <th>Objem</th>
+                <th>Stav</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Pondělí</td>
+                <td>Recovery jog</td>
+                <td>10 km</td>
+                <td><span class="chip chip-accent">Done</span></td>
+              </tr>
+              <tr>
+                <td>Úterý</td>
+                <td>6× 1 km @ threshold</td>
+                <td>16 km</td>
+                <td><span class="chip chip-warning">Pending</span></td>
+              </tr>
+              <tr>
+                <td>Čtvrtek</td>
+                <td>Tempo blocks</td>
+                <td>18 km</td>
+                <td><span class="chip">Planned</span></td>
+              </tr>
+              <tr>
+                <td>Neděle</td>
+                <td>Long run</td>
+                <td>30 km</td>
+                <td><span class="chip">Planned</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="panel surface">
+          <h3>Scroll Panel</h3>
+          <div class="scroll-shell">
+            <div class="activity-item">
+              <strong>Garmin import dokončen</strong>
+              <span style="color:var(--text-muted);">Aktivita spárována s úterním intervalovým tréninkem.</span>
+            </div>
+            <div class="activity-item">
+              <strong>Coach note</strong>
+              <span style="color:var(--text-muted);">Příští týden nech první tempový blok konzervativnější.</span>
+            </div>
+            <div class="activity-item">
+              <strong>Detected mismatch</strong>
+              <span style="color:var(--text-muted);">Skutečný objem je o 2.1 km vyšší než plán.</span>
+            </div>
+            <div class="activity-item">
+              <strong>Recovery warning</strong>
+              <span style="color:var(--text-muted);">Noční tep je 3 dny nad osobním baseline.</span>
+            </div>
+            <div class="activity-item">
+              <strong>Upcoming race block</strong>
+              <span style="color:var(--text-muted);">Za 18 dní začíná taper. Zkontroluj čtvrteční intenzitu.</span>
+            </div>
+            <div class="activity-item">
+              <strong>Manual note</strong>
+              <span style="color:var(--text-muted);">Subjektivní únava po práci, ale nohy bez ztuhlosti.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-heading">
+        <h2>Feedback & Overlay</h2>
+        <p>Notifikace a modaly zůstávají klidné. Pouze obsah je důležitý, ne efektní gesto.</p>
+      </div>
+      <div class="panel surface">
+        <div class="toast-row">
+          <div class="toast toast-success">
+            <strong>Plán uložen</strong>
+            <div>Čtvrteční tempo bylo aktualizováno a propsáno do týdenního souhrnu.</div>
+          </div>
+          <div class="toast toast-warning">
+            <strong>Čeká na potvrzení</strong>
+            <div>Jedna aktivita se nepodařila automaticky spárovat s plánem.</div>
+          </div>
+        </div>
+
+        <div style="margin-top:22px;" class="modal-shell">
+          <div class="modal-head">
+            <div class="eyebrow">Confirm action</div>
+            <strong style="font-size:1.1rem;">Smazat plánovaný trénink?</strong>
+          </div>
+          <div class="modal-body">
+            Trénink bude odebrán z aktuálního týdne. Historie importovaných aktivit zůstane zachována.
+          </div>
+          <div class="modal-foot">
+            <button class="btn btn-ghost">Zrušit</button>
+            <button class="btn btn-danger">Smazat</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-heading">
+        <h2>Loading & Light Surface</h2>
+        <p>Součástí systému je i kostra pro loading a světlá varianta plochy pro exportní nebo tiskové kontexty.</p>
+      </div>
+      <div class="layout-grid">
+        <div class="panel surface">
+          <h3>Skeleton</h3>
+          <div class="skeleton-card">
+            <div class="skeleton skeleton-line large"></div>
+            <div class="skeleton skeleton-line"></div>
+            <div class="skeleton skeleton-line"></div>
+            <div class="skeleton skeleton-line short"></div>
+          </div>
+        </div>
+        <div class="light-surface">
+          <div class="eyebrow" style="color:#5f746a;">Light Context</div>
+          <div style="font-size:1.8rem;font-weight:700;margin-bottom:10px;">Printable summary card</div>
+          <p style="margin:0 0 16px;color:#44574f;line-height:1.65;">
+            Světlý mód není primární identita, ale může fungovat pro export, přehled na tisk nebo sdílený report.
+          </p>
+          <button class="btn btn-primary">Export PDF</button>
+        </div>
+      </div>
+      <p class="footnote">
+        Pokud není v systému nainstalovaný font `Godens Demo`, preview automaticky spadne na fallback display stack.
+        Pro skutečné nasazení bude potřeba dodat licencovaný font soubor a připojit ho přes `@font-face`.
+      </p>
+    </section>
+  </main>
+</body>
+</html>

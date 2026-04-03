@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EnduroBuddy Dashboard Visual Preview</title>
+  <style>
+    :root {
+      --eb-bg: #101714;
+      --eb-bg-elevated: #16201c;
+      --eb-surface: #1d2924;
+      --eb-surface-soft: #22312b;
+      --eb-surface-strong: #283932;
+      --eb-text: #e9efec;
+      --eb-text-muted: #9eb0a8;
+      --eb-text-dim: #7f9088;
+      --eb-text-strong: #ffffff;
+      --eb-line: #2d3a35;
+      --eb-line-soft: #3a4a43;
+      --eb-accent: #61c48f;
+      --eb-accent-hover: #4bad79;
+      --eb-danger: #ff7a59;
+      --eb-warning: #d9a441;
+      --eb-info: #77b7d7;
+      --eb-radius-sm: 10px;
+      --eb-radius-md: 14px;
+      --eb-radius-lg: 18px;
+      --eb-radius-pill: 999px;
+      --eb-shadow-1: 0 10px 30px rgba(0, 0, 0, 0.22);
+      --eb-shadow-2: 0 20px 48px rgba(0, 0, 0, 0.28);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      color-scheme: dark;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI Variable Text", "Segoe UI", "Inter", sans-serif;
+      color: var(--eb-text);
+      background:
+        radial-gradient(circle at top left, rgba(97, 196, 143, 0.08), transparent 22%),
+        radial-gradient(circle at top right, rgba(119, 183, 215, 0.07), transparent 18%),
+        linear-gradient(180deg, #0d1411 0%, var(--eb-bg) 100%);
+    }
+
+    ::selection {
+      background: rgba(97, 196, 143, 0.24);
+    }
+
+    ::-webkit-scrollbar {
+      width: 10px;
+      height: 10px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(158, 176, 168, 0.35);
+      border-radius: 999px;
+      border: 2px solid transparent;
+      background-clip: padding-box;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(158, 176, 168, 0.56);
+      border: 2px solid transparent;
+      background-clip: padding-box;
+    }
+
+    .page {
+      width: min(100% - 32px, 1480px);
+      margin: 0 auto;
+      padding: 24px 0 112px;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 14px;
+      z-index: 20;
+      margin-bottom: 18px;
+    }
+
+    .topbar-shell {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 14px 18px;
+      border: 1px solid rgba(58, 74, 67, 0.75);
+      border-radius: 18px;
+      background: rgba(22, 32, 28, 0.86);
+      backdrop-filter: blur(12px);
+      box-shadow: var(--eb-shadow-1);
+    }
+
+    .brand {
+      font-family: "Godens Demo", "Arial Black", "Segoe UI", sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 0.94rem;
+      color: var(--eb-accent);
+      margin-bottom: 6px;
+    }
+
+    .hero-title {
+      margin: 0;
+      font-family: "Godens Demo", "Arial Black", "Segoe UI", sans-serif;
+      letter-spacing: 0.02em;
+    }
+
+    .topbar h1 {
+      margin: 0;
+      font-family: "Segoe UI Variable Text", "Segoe UI", "Inter", sans-serif;
+      font-size: 1.45rem;
+      line-height: 1.1;
+      font-weight: 700;
+    }
+
+    .topbar-meta {
+      color: var(--eb-text-muted);
+      font-size: 0.94rem;
+      margin-top: 6px;
+    }
+
+    .topbar-actions,
+    .hero-actions,
+    .metric-row,
+    .week-grid,
+    .month-switcher-track,
+    .toolbar-row,
+    .summary-grid,
+    .legend-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .btn {
+      appearance: none;
+      border: 1px solid var(--eb-line-soft);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--eb-text);
+      border-radius: var(--eb-radius-pill);
+      min-height: 42px;
+      padding: 0 16px;
+      font-size: 0.94rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 180ms ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      border-color: rgba(97, 196, 143, 0.45);
+    }
+
+    .btn-primary {
+      background: linear-gradient(180deg, var(--eb-accent), var(--eb-accent-hover));
+      color: #0c120f;
+      border-color: transparent;
+    }
+
+    .btn-secondary {
+      background: rgba(97, 196, 143, 0.1);
+      border-color: rgba(97, 196, 143, 0.28);
+    }
+
+    .btn-ghost {
+      background: transparent;
+    }
+
+    .btn-icon {
+      width: 42px;
+      padding: 0;
+      display: inline-grid;
+      place-items: center;
+      font-size: 1.1rem;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    .panel {
+      border: 1px solid rgba(58, 74, 67, 0.75);
+      border-radius: var(--eb-radius-lg);
+      background: rgba(29, 41, 36, 0.82);
+      box-shadow: var(--eb-shadow-1);
+      backdrop-filter: blur(10px);
+    }
+
+    .panel-pad {
+      padding: 22px;
+    }
+
+    .hero-main {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-main::after {
+      content: "";
+      position: absolute;
+      top: -48px;
+      right: -38px;
+      width: 260px;
+      height: 260px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(97, 196, 143, 0.18), transparent 64%);
+      pointer-events: none;
+    }
+
+    .eyebrow {
+      font-size: 0.74rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--eb-text-dim);
+      margin-bottom: 10px;
+    }
+
+    .hero-title {
+      font-size: clamp(2.2rem, 4vw, 3.5rem);
+      line-height: 0.94;
+      max-width: 11ch;
+    }
+
+    .hero-copy {
+      max-width: 56ch;
+      color: var(--eb-text-muted);
+      line-height: 1.65;
+      margin: 16px 0 20px;
+    }
+
+    .mini-panel {
+      padding: 18px;
+      border-radius: var(--eb-radius-md);
+      border: 1px solid var(--eb-line);
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .mini-value {
+      font-size: 2rem;
+      line-height: 1;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .mini-copy {
+      color: var(--eb-text-muted);
+      line-height: 1.55;
+      font-size: 0.92rem;
+    }
+
+    .summary-grid > * {
+      flex: 1 1 210px;
+    }
+
+    .summary-card {
+      padding: 18px;
+      border-radius: var(--eb-radius-md);
+      border: 1px solid var(--eb-line);
+      background: rgba(255, 255, 255, 0.03);
+      min-height: 142px;
+      display: grid;
+      align-content: space-between;
+    }
+
+    .summary-value {
+      font-size: 2.05rem;
+      line-height: 1;
+      font-weight: 700;
+    }
+
+    .summary-trend {
+      font-size: 0.84rem;
+      font-weight: 700;
+      color: var(--eb-accent);
+    }
+
+    .summary-sub {
+      color: var(--eb-text-muted);
+      font-size: 0.9rem;
+      line-height: 1.55;
+    }
+
+    .month-shell {
+      display: grid;
+      gap: 16px;
+    }
+
+    .month-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 14px;
+      padding: 18px 22px 0;
+    }
+
+    .month-title {
+      margin: 0;
+      font-family: "Segoe UI Variable Text", "Segoe UI", "Inter", sans-serif;
+      font-size: 1.12rem;
+      line-height: 1.15;
+      font-weight: 700;
+    }
+
+    .month-subtitle {
+      color: var(--eb-text-muted);
+      margin-top: 6px;
+      font-size: 0.94rem;
+    }
+
+    .toolbar-row {
+      align-items: center;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      min-height: 30px;
+      padding: 0 12px;
+      border-radius: 999px;
+      border: 1px solid var(--eb-line);
+      background: rgba(255, 255, 255, 0.04);
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--eb-text-muted);
+    }
+
+    .chip-accent {
+      color: #c8f3dc;
+      background: rgba(97, 196, 143, 0.12);
+      border-color: rgba(97, 196, 143, 0.3);
+    }
+
+    .chip-warning {
+      color: #f6e7ba;
+      background: rgba(217, 164, 65, 0.12);
+      border-color: rgba(217, 164, 65, 0.28);
+    }
+
+    .scroll-area {
+      overflow-x: auto;
+      overflow-y: hidden;
+      padding: 0 22px 22px;
+    }
+
+    .month-track {
+      width: max-content;
+      min-width: 100%;
+      display: grid;
+      gap: 18px;
+    }
+
+    .week-grid {
+      flex-wrap: nowrap;
+      width: max-content;
+      align-items: stretch;
+    }
+
+    .week-card {
+      width: 840px;
+      flex: 0 0 auto;
+      border: 1px solid var(--eb-line);
+      border-radius: var(--eb-radius-lg);
+      background: rgba(255, 255, 255, 0.03);
+      overflow: hidden;
+    }
+
+    .week-card--compact {
+      width: 560px;
+    }
+
+    .week-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 18px;
+      background: rgba(255, 255, 255, 0.03);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .week-head h3 {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 700;
+    }
+
+    .week-head small {
+      color: var(--eb-text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 0.72rem;
+    }
+
+    .week-body {
+      padding: 8px 0 0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th,
+    td {
+      text-align: left;
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      vertical-align: top;
+      white-space: nowrap;
+    }
+
+    th {
+      color: var(--eb-text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 0.72rem;
+      font-weight: 700;
+    }
+
+    td {
+      font-size: 0.92rem;
+    }
+
+    tbody tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .col-date { min-width: 84px; }
+    .col-day { min-width: 96px; }
+    .col-type { min-width: 112px; }
+    .col-training { min-width: 280px; width: 52%; }
+    .col-notes { min-width: 220px; width: 30%; }
+    .col-km { min-width: 74px; }
+    .col-min { min-width: 92px; }
+    .col-pace { min-width: 220px; width: 48%; }
+    .col-hr { min-width: 86px; }
+
+    .training-title {
+      font-weight: 600;
+      color: var(--eb-text-strong);
+      margin-bottom: 6px;
+      white-space: normal;
+    }
+
+    .training-meta,
+    .note-copy {
+      color: var(--eb-text-muted);
+      font-size: 0.86rem;
+      line-height: 1.5;
+      white-space: normal;
+    }
+
+    .badge-run,
+    .badge-workout {
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      padding: 0 10px;
+      border-radius: 999px;
+      border: 1px solid var(--eb-line);
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+
+    .badge-run {
+      background: rgba(119, 183, 215, 0.12);
+      border-color: rgba(119, 183, 215, 0.26);
+      color: #cae6f2;
+    }
+
+    .badge-workout {
+      background: rgba(97, 196, 143, 0.12);
+      border-color: rgba(97, 196, 143, 0.28);
+      color: #c8f3dc;
+    }
+
+    .km-dot {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px;
+      font-size: 0.8rem;
+      color: var(--eb-text-dim);
+    }
+
+    .km-dot::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--eb-warning);
+      box-shadow: 0 0 0 4px rgba(217, 164, 65, 0.12);
+    }
+
+    tfoot th {
+      color: var(--eb-text);
+      background: rgba(255, 255, 255, 0.03);
+      border-bottom: 0;
+    }
+
+    .month-switcher {
+      position: fixed;
+      left: 16px;
+      right: 16px;
+      bottom: 16px;
+      z-index: 30;
+    }
+
+    .month-switcher-shell {
+      padding: 10px;
+      border: 1px solid rgba(58, 74, 67, 0.78);
+      border-radius: 18px;
+      background: rgba(22, 32, 28, 0.9);
+      backdrop-filter: blur(14px);
+      box-shadow: var(--eb-shadow-2);
+    }
+
+    .month-switcher-track {
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      white-space: nowrap;
+    }
+
+    .month-btn {
+      min-height: 38px;
+      padding: 0 14px;
+      border-radius: 999px;
+      border: 1px solid var(--eb-line-soft);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--eb-text-muted);
+      font-weight: 600;
+      cursor: pointer;
+      flex: 0 0 auto;
+    }
+
+    .month-btn.is-active {
+      border-color: rgba(97, 196, 143, 0.32);
+      background: rgba(97, 196, 143, 0.14);
+      color: var(--eb-text);
+    }
+
+    .legend-row {
+      margin-top: 14px;
+    }
+
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--eb-text-dim);
+      font-size: 0.82rem;
+    }
+
+    .legend-mark {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .legend-mark.run { background: var(--eb-info); }
+    .legend-mark.workout { background: var(--eb-accent); }
+    .legend-mark.pending { background: var(--eb-warning); }
+
+    @media (max-width: 1180px) {
+      .hero {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .page {
+        width: min(100% - 20px, 1480px);
+        padding-top: 16px;
+      }
+
+      .topbar-shell,
+      .month-header {
+        align-items: start;
+        flex-direction: column;
+      }
+
+      .month-switcher {
+        left: 10px;
+        right: 10px;
+        bottom: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="topbar">
+      <div class="topbar-shell">
+        <div>
+          <div class="brand">EnduroBuddy</div>
+          <h1>Adam Novak</h1>
+        </div>
+        <div class="topbar-actions">
+          <button class="btn btn-ghost">Legenda</button>
+          <button class="btn btn-primary">Import aktivit</button>
+        </div>
+      </div>
+    </header>
+
+    <section class="panel month-shell">
+      <div class="month-header">
+        <div>
+          <h2 class="month-title">Duben 2026</h2>
+        </div>
+        <div class="toolbar-row">
+          <span class="chip">Athlete</span>
+          <span class="chip chip-accent">Plan editable</span>
+        </div>
+      </div>
+
+      <div class="scroll-area">
+        <div class="month-track">
+          <div class="week-grid">
+            <section class="week-card">
+              <div class="week-head">
+                <h3>Tyden 1.</h3>
+                <small>Plan</small>
+              </div>
+              <div class="week-body">
+                <table>
+                  <thead>
+                    <tr>
+                      <th class="col-date">Datum</th>
+                      <th class="col-day">Den</th>
+                      <th class="col-type">Typ</th>
+                      <th class="col-training">Trenink</th>
+                      <th class="col-notes">Poznamky trenera</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>1.4.</td>
+                      <td>Pondeli</td>
+                      <td><span class="badge-run">Beh</span></td>
+                      <td>
+                        <div class="training-title">Recovery jog 10 km</div>
+                        <div class="training-meta">Lehce, bez tlaku na tempo. Drzet krok i dech volne.</div>
+                      </td>
+                      <td><div class="note-copy">Po vikendu jen rozhybat nohy a nehonit cisla.</div></td>
+                    </tr>
+                    <tr>
+                      <td>2.4.</td>
+                      <td>Utery</td>
+                      <td><span class="badge-workout">Trenink</span></td>
+                      <td>
+                        <div class="training-title">6x 1 km @ threshold</div>
+                        <div class="training-meta">3 km warm-up, meziklusem 90 s, 2 km cool-down.</div>
+                        <div class="km-dot">Kontrola km: odhad 16 km</div>
+                      </td>
+                      <td><div class="note-copy">Prvni dva useky konzervativne, az pak se srovnat do rytmu.</div></td>
+                    </tr>
+                    <tr>
+                      <td>4.4.</td>
+                      <td>Ctvrtek</td>
+                      <td><span class="badge-workout">Trenink</span></td>
+                      <td>
+                        <div class="training-title">Tempo blocks 3x 10 min</div>
+                        <div class="training-meta">Plynule, ne na krev. Cilem je drzet techniku.</div>
+                      </td>
+                      <td><div class="note-copy">Jestli bude rano unava, zkratit posledni blok.</div></td>
+                    </tr>
+                    <tr>
+                      <td>6.4.</td>
+                      <td>Sobota</td>
+                      <td><span class="badge-run">Beh</span></td>
+                      <td>
+                        <div class="training-title">Long run 24 km s progresi</div>
+                        <div class="training-meta">Poslednich 6 km zvedat intenzitu do maratonskeho rytmu.</div>
+                      </td>
+                      <td><div class="note-copy">Hydratace a gel po 45 min. Udrzet ekonomiku kroku.</div></td>
+                    </tr>
+                  </tbody>
+                  <tfoot>
+                    <tr>
+                      <th colspan="3">&nbsp;</th>
+                      <th>Celkem 50 km</th>
+                      <th>&nbsp;</th>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </section>
+
+            <section class="week-card week-card--compact">
+              <div class="week-head">
+                <h3>Splneno</h3>
+                <small>Splits</small>
+              </div>
+              <div class="week-body">
+                <table>
+                  <thead>
+                    <tr>
+                      <th class="col-km">km</th>
+                      <th class="col-min">min</th>
+                      <th class="col-pace">pace / intervals</th>
+                      <th class="col-hr">avg HR</th>
+                      <th class="col-hr">max HR</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>10.1</td>
+                      <td>52</td>
+                      <td><div class="training-title">5:08 / km</div><div class="training-meta">Lehky beh, bez lapu.</div></td>
+                      <td>138</td>
+                      <td>149</td>
+                    </tr>
+                    <tr>
+                      <td>15.8</td>
+                      <td>74</td>
+                      <td><div class="training-title">6x 1 km</div><div class="training-meta">3:42, 3:41, 3:40, 3:40, 3:39, 3:38</div></td>
+                      <td>164</td>
+                      <td>178</td>
+                    </tr>
+                    <tr>
+                      <td>22.4</td>
+                      <td>111</td>
+                      <td><div class="training-title">4:57 / km</div><div class="training-meta">Poslednich 6 km progresivne.</div></td>
+                      <td>151</td>
+                      <td>168</td>
+                    </tr>
+                  </tbody>
+                  <tfoot>
+                    <tr>
+                      <th>48.3</th>
+                      <th>237</th>
+                      <th>Celkem</th>
+                      <th>151</th>
+                      <th>178</th>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </section>
+          </div>
+
+          <div class="week-grid">
+            <section class="week-card">
+              <div class="week-head">
+                <h3>Tyden 2.</h3>
+                <small>Plan</small>
+              </div>
+              <div class="week-body">
+                <table>
+                  <thead>
+                    <tr>
+                      <th class="col-date">Datum</th>
+                      <th class="col-day">Den</th>
+                      <th class="col-type">Typ</th>
+                      <th class="col-training">Trenink</th>
+                      <th class="col-notes">Poznamky trenera</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>8.4.</td>
+                      <td>Pondeli</td>
+                      <td><span class="badge-run">Beh</span></td>
+                      <td>
+                        <div class="training-title">Easy run 12 km</div>
+                        <div class="training-meta">Volne, bez tlaku na pace. Jen dorovnat objem.</div>
+                      </td>
+                      <td><div class="note-copy">Po long runu hlidat lehkost a kadenci.</div></td>
+                    </tr>
+                    <tr>
+                      <td>10.4.</td>
+                      <td>Streda</td>
+                      <td><span class="badge-workout">Trenink</span></td>
+                      <td>
+                        <div class="training-title">10x 400 m / 200 m float</div>
+                        <div class="training-meta">Kratke useky, cisty rytmus, ne sprint.</div>
+                        <div class="km-dot">Kontrola km: odhad 14 km</div>
+                      </td>
+                      <td><div class="note-copy">Jestli nohy zustanou tezke, uber dva useky.</div></td>
+                    </tr>
+                    <tr>
+                      <td>13.4.</td>
+                      <td>Sobota</td>
+                      <td><span class="badge-run">Beh</span></td>
+                      <td>
+                        <div class="training-title">Long run 30 km</div>
+                        <div class="training-meta">Prvni dve tretiny kontrolovane, zaver steady.</div>
+                      </td>
+                      <td><div class="note-copy">Je to hlavni anchor tydne. Nic dalsiho uz netlacit.</div></td>
+                    </tr>
+                  </tbody>
+                  <tfoot>
+                    <tr>
+                      <th colspan="3">&nbsp;</th>
+                      <th>Celkem 46 km</th>
+                      <th>&nbsp;</th>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </section>
+
+            <section class="week-card week-card--compact">
+              <div class="week-head">
+                <h3>Splneno</h3>
+                <small>Imported + manual</small>
+              </div>
+              <div class="week-body">
+                <table>
+                  <thead>
+                    <tr>
+                      <th class="col-km">km</th>
+                      <th class="col-min">min</th>
+                      <th class="col-pace">pace / intervals</th>
+                      <th class="col-hr">avg HR</th>
+                      <th class="col-hr">max HR</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>11.7</td>
+                      <td>59</td>
+                      <td><div class="training-title">5:03 / km</div><div class="training-meta">Easy, Garmin linked.</div></td>
+                      <td>142</td>
+                      <td>153</td>
+                    </tr>
+                    <tr>
+                      <td>13.9</td>
+                      <td>67</td>
+                      <td><div class="training-title">10x 400 m</div><div class="training-meta">Rytmus cisty, posledni dva useky lehce pomalejsi.</div></td>
+                      <td>166</td>
+                      <td>181</td>
+                    </tr>
+                  </tbody>
+                  <tfoot>
+                    <tr>
+                      <th>25.6</th>
+                      <th>126</th>
+                      <th>Celkem</th>
+                      <th>154</th>
+                      <th>181</th>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <nav class="month-switcher" aria-label="Month switcher preview">
+    <div class="month-switcher-shell">
+      <div class="month-switcher-track">
+        <button class="btn btn-primary btn-icon" aria-label="Pridat mesic">+</button>
+        <button class="month-btn is-active">Duben 2026</button>
+        <button class="month-btn">Kveten 2026</button>
+        <button class="month-btn">Cerven 2026</button>
+        <button class="month-btn">Cervenec 2026</button>
+      </div>
+    </div>
+  </nav>
+</body>
+</html>
