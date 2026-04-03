@@ -11,6 +11,14 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="{% static 'css/base.css' %}">
   <style>
+    @font-face {
+      font-family: "League Gothic";
+      src: url("{% static 'font/LeagueGothic-Regular-VariableFont_wdth.ttf' %}") format("truetype");
+      font-weight: 400 700;
+      font-style: normal;
+      font-display: swap;
+    }
+
     :root {
       --eb-bg: #101714;
       --eb-bg-elevated: #16201c;
@@ -69,8 +77,8 @@
     .eb-section-title,
     .eb-metric-value,
     .eb-title {
-      font-family: "Godens Demo", "Arial Black", "Segoe UI", sans-serif;
-      letter-spacing: -0.02em;
+      font-family: "League Gothic", "Arial Narrow", "Segoe UI", sans-serif;
+      letter-spacing: 0.01em;
     }
 
     .eb-topbar {
@@ -88,6 +96,8 @@
     }
 
     .eb-navbar-brand {
+      display: inline-flex;
+      align-items: center;
       color: var(--eb-text-strong);
       text-decoration: none;
       font-size: 1.05rem;
@@ -97,10 +107,18 @@
       color: var(--eb-accent);
     }
 
+    .eb-navbar-brand img {
+      display: block;
+      width: min(100%, 210px);
+      height: auto;
+      filter: drop-shadow(0 10px 22px rgba(0, 0, 0, 0.24));
+    }
+
     .eb-nav-links {
       display: flex;
       align-items: center;
       gap: 0.55rem;
+      flex-wrap: nowrap;
     }
 
     .eb-nav-link {
@@ -113,6 +131,7 @@
       color: var(--eb-text-muted);
       text-decoration: none;
       font-weight: 700;
+      white-space: nowrap;
       transition: color 180ms ease, border-color 180ms ease, background-color 180ms ease;
     }
 
@@ -172,6 +191,10 @@
       .eb-shell {
         width: min(var(--eb-container), calc(100% - 20px));
       }
+
+      .eb-navbar-brand img {
+        width: min(100%, 168px);
+      }
     }
   </style>
   {% block page_styles %}{% endblock %}
@@ -180,7 +203,9 @@
   <div class="eb-topbar">
     <div class="eb-shell">
       <nav class="navbar navbar-expand-lg">
-        <a class="navbar-brand eb-navbar-brand eb-wordmark" href="{% url 'public_home' %}">EnduroBuddy</a>
+        <a class="navbar-brand eb-navbar-brand" href="{% url 'public_home' %}" aria-label="EnduroBuddy">
+          <img src="{% static 'brand/biglogo.png' %}" alt="EnduroBuddy">
+        </a>
         <div class="ms-auto d-flex align-items-center gap-2">
           <div class="eb-nav-links d-none d-md-flex">
             <a class="eb-nav-link {% if current_public_page == 'home' %}is-active{% endif %}" href="{% url 'public_home' %}">Home</a>
