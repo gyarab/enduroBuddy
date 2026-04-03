@@ -1,0 +1,1361 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EnduroBuddy App Shell Preview</title>
+  <style>
+    :root {
+      --bg: #101714;
+      --bg-elevated: #16201c;
+      --surface: #1d2924;
+      --surface-soft: #22312b;
+      --surface-strong: #283932;
+      --text: #e9efec;
+      --text-muted: #9eb0a8;
+      --text-dim: #7f9088;
+      --line: #2d3a35;
+      --line-soft: #3a4a43;
+      --accent: #61c48f;
+      --accent-hover: #4bad79;
+      --danger: #ff7a59;
+      --warning: #d9a441;
+      --info: #77b7d7;
+      --radius-sm: 10px;
+      --radius-md: 14px;
+      --radius-lg: 18px;
+      --radius-pill: 999px;
+      --shadow-1: 0 10px 30px rgba(0, 0, 0, 0.22);
+      --shadow-2: 0 22px 56px rgba(0, 0, 0, 0.3);
+    }
+
+    * { box-sizing: border-box; }
+    html { color-scheme: dark; }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI Variable Text", "Segoe UI", "Inter", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(97, 196, 143, 0.08), transparent 22%),
+        radial-gradient(circle at top right, rgba(119, 183, 215, 0.07), transparent 18%),
+        linear-gradient(180deg, #0d1411 0%, var(--bg) 100%);
+    }
+
+    ::selection { background: rgba(97, 196, 143, 0.24); }
+    ::-webkit-scrollbar { width: 10px; height: 10px; }
+    ::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.04); }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(158, 176, 168, 0.35);
+      border-radius: 999px;
+      border: 2px solid transparent;
+      background-clip: padding-box;
+    }
+
+    .page {
+      min-height: 100vh;
+      position: relative;
+    }
+
+    .top-nav {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      border-bottom: 1px solid rgba(58, 74, 67, 0.78);
+      background: rgba(22, 32, 28, 0.88);
+      backdrop-filter: blur(14px);
+    }
+
+    .top-nav-inner,
+    .main-shell {
+      width: min(100% - 32px, 1480px);
+      margin: 0 auto;
+    }
+
+    .top-nav-inner {
+      min-height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+    }
+
+    .brand {
+      font-family: "Godens Demo", "Arial Black", "Segoe UI", sans-serif;
+      font-size: 1.15rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    .nav-links,
+    .nav-actions,
+    .toolbar-row,
+    .month-switcher-track {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .btn,
+    .nav-link-btn,
+    .month-btn,
+    .tab-btn {
+      appearance: none;
+      border: 1px solid var(--line-soft);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text);
+      border-radius: var(--radius-pill);
+      min-height: 40px;
+      padding: 0 14px;
+      font-size: 0.92rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 180ms ease;
+    }
+
+    .btn:hover,
+    .nav-link-btn:hover,
+    .month-btn:hover,
+    .tab-btn:hover {
+      transform: translateY(-1px);
+      border-color: rgba(97, 196, 143, 0.42);
+    }
+
+    .btn-primary,
+    .nav-link-btn.is-active,
+    .tab-btn.is-active {
+      background: linear-gradient(180deg, var(--accent), var(--accent-hover));
+      color: #0c120f;
+      border-color: transparent;
+    }
+
+    .btn-secondary {
+      background: rgba(97, 196, 143, 0.1);
+      border-color: rgba(97, 196, 143, 0.28);
+    }
+
+    .btn-icon {
+      width: 40px;
+      padding: 0;
+      display: inline-grid;
+      place-items: center;
+      border-radius: 999px;
+      position: relative;
+    }
+
+    .icon-circle {
+      width: 40px;
+      height: 40px;
+      border-radius: 999px;
+      border: 1px solid var(--line-soft);
+      background: rgba(255, 255, 255, 0.05);
+      display: inline-grid;
+      place-items: center;
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    .badge-dot {
+      position: absolute;
+      top: -2px;
+      right: -2px;
+      min-width: 18px;
+      height: 18px;
+      border-radius: 999px;
+      background: var(--danger);
+      color: white;
+      font-size: 0.7rem;
+      display: inline-grid;
+      place-items: center;
+      padding: 0 4px;
+    }
+
+    .main-shell {
+      padding: 18px 0 112px;
+    }
+
+    .dashboard-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .dashboard-toolbar h1 {
+      margin: 0;
+      font-size: 1.45rem;
+      line-height: 1.1;
+      font-weight: 700;
+    }
+
+    .panel {
+      border: 1px solid rgba(58, 74, 67, 0.78);
+      border-radius: var(--radius-lg);
+      background: rgba(29, 41, 36, 0.82);
+      box-shadow: var(--shadow-1);
+      backdrop-filter: blur(10px);
+    }
+
+    .month-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      padding: 18px 22px 0;
+    }
+
+    .month-header h2 {
+      margin: 0;
+      font-size: 1.08rem;
+      font-weight: 700;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      min-height: 30px;
+      padding: 0 12px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.04);
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+
+    .chip-accent {
+      color: #c8f3dc;
+      background: rgba(97, 196, 143, 0.12);
+      border-color: rgba(97, 196, 143, 0.3);
+    }
+
+    .scroll-area {
+      overflow-x: auto;
+      overflow-y: hidden;
+      padding: 0 22px 22px;
+    }
+
+    .month-track {
+      width: max-content;
+      min-width: 100%;
+      display: grid;
+      gap: 18px;
+    }
+
+    .week-grid {
+      display: flex;
+      flex-wrap: nowrap;
+      gap: 12px;
+      width: max-content;
+      align-items: stretch;
+    }
+
+    .week-card {
+      width: 840px;
+      flex: 0 0 auto;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      background: rgba(255, 255, 255, 0.03);
+      overflow: hidden;
+    }
+
+    .week-card--compact {
+      width: 560px;
+    }
+
+    .week-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 18px;
+      background: rgba(255, 255, 255, 0.03);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .week-head h3 {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 700;
+    }
+
+    .week-head small {
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 0.72rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th,
+    td {
+      text-align: left;
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      vertical-align: top;
+      white-space: nowrap;
+    }
+
+    th {
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 0.72rem;
+      font-weight: 700;
+    }
+
+    td {
+      font-size: 0.92rem;
+    }
+
+    tbody tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .col-date { min-width: 84px; }
+    .col-day { min-width: 96px; }
+    .col-type { min-width: 112px; }
+    .col-training { min-width: 280px; width: 52%; }
+    .col-notes { min-width: 220px; width: 30%; }
+    .col-km { min-width: 74px; }
+    .col-min { min-width: 92px; }
+    .col-pace { min-width: 220px; width: 48%; }
+    .col-hr { min-width: 86px; }
+
+    .training-title {
+      font-weight: 600;
+      color: white;
+      margin-bottom: 6px;
+      white-space: normal;
+    }
+
+    .training-meta,
+    .note-copy {
+      color: var(--text-muted);
+      font-size: 0.86rem;
+      line-height: 1.5;
+      white-space: normal;
+    }
+
+    .badge-run,
+    .badge-workout {
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      padding: 0 10px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+
+    .badge-run {
+      background: rgba(119, 183, 215, 0.12);
+      border-color: rgba(119, 183, 215, 0.26);
+      color: #cae6f2;
+    }
+
+    .badge-workout {
+      background: rgba(97, 196, 143, 0.12);
+      border-color: rgba(97, 196, 143, 0.28);
+      color: #c8f3dc;
+    }
+
+    .km-dot {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px;
+      font-size: 0.8rem;
+      color: var(--text-dim);
+    }
+
+    .km-dot::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--warning);
+      box-shadow: 0 0 0 4px rgba(217, 164, 65, 0.12);
+    }
+
+    tfoot th {
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.03);
+      border-bottom: 0;
+    }
+
+    .month-switcher {
+      position: fixed;
+      left: 16px;
+      right: 16px;
+      bottom: 16px;
+      z-index: 24;
+    }
+
+    .month-switcher-shell {
+      padding: 10px;
+      border: 1px solid rgba(58, 74, 67, 0.78);
+      border-radius: 18px;
+      background: rgba(22, 32, 28, 0.9);
+      backdrop-filter: blur(14px);
+      box-shadow: var(--shadow-2);
+    }
+
+    .month-switcher-track {
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      white-space: nowrap;
+    }
+
+    .month-btn.is-active {
+      border-color: rgba(97, 196, 143, 0.32);
+      background: rgba(97, 196, 143, 0.14);
+      color: var(--text);
+    }
+
+    .dropdown-preview,
+    .profile-dropdown,
+    .modal-preview {
+      border: 1px solid rgba(58, 74, 67, 0.82);
+      border-radius: 16px;
+      background: rgba(22, 32, 28, 0.96);
+      box-shadow: var(--shadow-2);
+      backdrop-filter: blur(14px);
+    }
+
+    .dropdown-preview {
+      position: absolute;
+      top: 70px;
+      right: 160px;
+      width: 340px;
+      padding: 10px;
+      z-index: 35;
+    }
+
+    .dropdown-title {
+      padding: 4px 6px 10px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      margin-bottom: 10px;
+      font-weight: 700;
+    }
+
+    .notification-item {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.03);
+      font-size: 0.9rem;
+      line-height: 1.45;
+    }
+
+    .notification-item + .notification-item {
+      margin-top: 8px;
+    }
+
+    .notification-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      margin-top: 6px;
+      flex: 0 0 auto;
+    }
+
+    .notification-item.warning .notification-dot { background: var(--warning); }
+    .notification-item.danger .notification-dot { background: var(--danger); }
+
+    .profile-dropdown {
+      position: absolute;
+      top: 70px;
+      right: 24px;
+      width: 280px;
+      padding: 10px;
+      z-index: 34;
+    }
+
+    .is-hidden {
+      display: none !important;
+    }
+
+    .profile-head {
+      padding: 8px 10px 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      margin-bottom: 8px;
+    }
+
+    .profile-name {
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .profile-email {
+      font-size: 0.86rem;
+      color: var(--text-muted);
+    }
+
+    .dropdown-row {
+      min-height: 42px;
+      padding: 0 12px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      color: var(--text);
+      background: transparent;
+    }
+
+    .dropdown-row + .dropdown-row {
+      margin-top: 4px;
+    }
+
+    .dropdown-row.danger {
+      color: #ffd7ce;
+    }
+
+    .modal-layer {
+      position: fixed;
+      inset: 0;
+      background: rgba(7, 11, 9, 0.54);
+      z-index: 40;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      pointer-events: auto;
+    }
+
+    .modal-preview {
+      position: relative;
+      width: min(980px, 100%);
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      overflow: hidden;
+    }
+
+    .modal-side,
+    .modal-main {
+      padding: 22px;
+    }
+
+    .modal-side {
+      border-right: 1px solid rgba(255, 255, 255, 0.06);
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .modal-main {
+      background: rgba(255, 255, 255, 0.01);
+    }
+
+    .modal-content-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) minmax(280px, 0.85fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .modal-head {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .avatar {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      border: 1px solid var(--line-soft);
+      background: rgba(255, 255, 255, 0.05);
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+    }
+
+    .modal-title {
+      font-size: 1.08rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .modal-subtitle {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .tabs {
+      display: grid;
+      gap: 8px;
+    }
+
+    .tab-panel {
+      display: none;
+    }
+
+    .tab-panel.is-active {
+      display: block;
+    }
+
+    .tab-btn {
+      justify-content: flex-start;
+      border-radius: 12px;
+      min-height: 42px;
+      text-align: left;
+    }
+
+    .form-grid {
+      display: grid;
+      gap: 12px;
+    }
+
+    .stack {
+      display: grid;
+      gap: 18px;
+    }
+
+    .subpanel {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.03);
+      padding: 16px;
+    }
+
+    .account-meta {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .meta-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      font-size: 0.9rem;
+    }
+
+    .meta-label {
+      color: var(--text-dim);
+    }
+
+    .meta-value {
+      color: var(--text);
+      font-weight: 600;
+      text-align: right;
+    }
+
+    .field {
+      display: grid;
+      gap: 8px;
+    }
+
+    .field label {
+      font-size: 0.84rem;
+      color: var(--text-dim);
+      font-weight: 600;
+    }
+
+    .input {
+      min-height: 44px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text);
+      padding: 0 14px;
+      outline: none;
+    }
+
+    .section-title {
+      font-size: 0.98rem;
+      font-weight: 700;
+      margin-bottom: 14px;
+    }
+
+    .coach-row {
+      min-height: 42px;
+      padding: 0 12px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.03);
+      display: flex;
+      align-items: center;
+      font-size: 0.9rem;
+    }
+
+    .helper-copy {
+      color: var(--text-muted);
+      font-size: 0.88rem;
+      line-height: 1.55;
+      margin-bottom: 14px;
+    }
+
+    .overlay-label {
+      position: fixed;
+      right: 22px;
+      bottom: 104px;
+      z-index: 45;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(97, 196, 143, 0.26);
+      background: rgba(97, 196, 143, 0.1);
+      color: #c8f3dc;
+      font-size: 0.84rem;
+      font-weight: 700;
+    }
+
+    .overlay-label button {
+      all: unset;
+      cursor: pointer;
+      color: inherit;
+    }
+
+    @media (max-width: 1080px) {
+      .dropdown-preview,
+      .profile-dropdown {
+        display: none;
+      }
+
+      .modal-preview {
+        grid-template-columns: 1fr;
+      }
+
+      .modal-side {
+        border-right: 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      }
+
+      .modal-content-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .top-nav-inner,
+      .main-shell {
+        width: min(100% - 20px, 1480px);
+      }
+
+      .top-nav-inner,
+      .dashboard-toolbar,
+      .month-header {
+        align-items: start;
+        flex-direction: column;
+      }
+
+      .month-switcher {
+        left: 10px;
+        right: 10px;
+        bottom: 10px;
+      }
+
+      .overlay-label {
+        right: 10px;
+        bottom: 90px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <nav class="top-nav">
+      <div class="top-nav-inner">
+        <div class="brand">EnduroBuddy</div>
+
+        <div class="nav-links">
+          <button class="nav-link-btn is-active">Treninkovy prehled</button>
+          <button class="nav-link-btn">Spravovat treninkove plany</button>
+        </div>
+
+        <div class="nav-actions">
+          <button class="btn-icon" aria-label="Legenda"><span class="icon-circle">?</span></button>
+          <button class="btn-icon" aria-label="Import aktivit"><span class="icon-circle">↓</span></button>
+          <button class="btn-icon" aria-label="Notifikace" data-toggle="notifications">
+            <span class="icon-circle">◌</span>
+            <span class="badge-dot">3</span>
+          </button>
+          <button class="btn-icon" aria-label="Uzivatel" data-toggle="profile-menu"><span class="icon-circle">A</span></button>
+        </div>
+      </div>
+    </nav>
+
+    <div class="dropdown-preview is-hidden" id="notificationsDropdown">
+      <div class="dropdown-title">Notifikace</div>
+      <div class="notification-item">
+        <span class="notification-dot"></span>
+        <div>Garmin import byl dokoncen a dve aktivity se sparovaly s planem.</div>
+      </div>
+      <div class="notification-item warning">
+        <span class="notification-dot"></span>
+        <div>Jedna aktivita ceka na rucni potvrzeni, protoze nesedi objem.</div>
+      </div>
+      <div class="notification-item danger">
+        <span class="notification-dot"></span>
+        <div>Recovery signal je treti den pod osobnim standardem.</div>
+      </div>
+    </div>
+
+    <div class="profile-dropdown is-hidden" id="profileMenu">
+      <div class="profile-head">
+        <div class="profile-name">Adam Novak</div>
+        <div class="profile-email">adam.novak@endurobuddy.dev</div>
+      </div>
+      <button class="dropdown-row" type="button" data-open-modal="profileModal">Nastaveni</button>
+      <div class="dropdown-row danger">Odhlasit se</div>
+    </div>
+
+    <main class="main-shell">
+      <section class="dashboard-toolbar">
+        <div>
+          <h1>Adam Novak</h1>
+        </div>
+        <div class="toolbar-row">
+          <button class="btn">Legenda</button>
+          <button class="btn btn-primary">Import aktivit</button>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="month-header">
+          <div>
+            <h2>Duben 2026</h2>
+          </div>
+          <div class="toolbar-row">
+            <span class="chip">Athlete</span>
+            <span class="chip chip-accent">Plan editable</span>
+          </div>
+        </div>
+
+        <div class="scroll-area">
+          <div class="month-track">
+            <div class="week-grid">
+              <section class="week-card">
+                <div class="week-head">
+                  <h3>Tyden 1.</h3>
+                  <small>Plan</small>
+                </div>
+                <table>
+                  <thead>
+                    <tr>
+                      <th class="col-date">Datum</th>
+                      <th class="col-day">Den</th>
+                      <th class="col-type">Typ</th>
+                      <th class="col-training">Trenink</th>
+                      <th class="col-notes">Poznamky trenera</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>1.4.</td>
+                      <td>Pondeli</td>
+                      <td><span class="badge-run">Beh</span></td>
+                      <td>
+                        <div class="training-title">Recovery jog 10 km</div>
+                        <div class="training-meta">Lehce, bez tlaku na tempo. Drzet krok i dech volne.</div>
+                      </td>
+                      <td><div class="note-copy">Po vikendu jen rozhybat nohy a nehonit cisla.</div></td>
+                    </tr>
+                    <tr>
+                      <td>2.4.</td>
+                      <td>Utery</td>
+                      <td><span class="badge-workout">Trenink</span></td>
+                      <td>
+                        <div class="training-title">6x 1 km @ threshold</div>
+                        <div class="training-meta">3 km warm-up, meziklusem 90 s, 2 km cool-down.</div>
+                        <div class="km-dot">Kontrola km: odhad 16 km</div>
+                      </td>
+                      <td><div class="note-copy">Prvni dva useky konzervativne, az pak se srovnat do rytmu.</div></td>
+                    </tr>
+                    <tr>
+                      <td>4.4.</td>
+                      <td>Ctvrtek</td>
+                      <td><span class="badge-workout">Trenink</span></td>
+                      <td>
+                        <div class="training-title">Tempo blocks 3x 10 min</div>
+                        <div class="training-meta">Plynule, ne na krev. Cilem je drzet techniku.</div>
+                      </td>
+                      <td><div class="note-copy">Jestli bude rano unava, zkratit posledni blok.</div></td>
+                    </tr>
+                    <tr>
+                      <td>6.4.</td>
+                      <td>Sobota</td>
+                      <td><span class="badge-run">Beh</span></td>
+                      <td>
+                        <div class="training-title">Long run 24 km s progresi</div>
+                        <div class="training-meta">Poslednich 6 km zvedat intenzitu do maratonskeho rytmu.</div>
+                      </td>
+                      <td><div class="note-copy">Hydratace a gel po 45 min. Udrzet ekonomiku kroku.</div></td>
+                    </tr>
+                  </tbody>
+                  <tfoot>
+                    <tr>
+                      <th colspan="3">&nbsp;</th>
+                      <th>Celkem 50 km</th>
+                      <th>&nbsp;</th>
+                    </tr>
+                  </tfoot>
+                </table>
+              </section>
+
+              <section class="week-card week-card--compact">
+                <div class="week-head">
+                  <h3>Splneno</h3>
+                  <small>Splits</small>
+                </div>
+                <table>
+                  <thead>
+                    <tr>
+                      <th class="col-km">km</th>
+                      <th class="col-min">min</th>
+                      <th class="col-pace">pace / intervals</th>
+                      <th class="col-hr">avg HR</th>
+                      <th class="col-hr">max HR</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>10.1</td>
+                      <td>52</td>
+                      <td><div class="training-title">5:08 / km</div><div class="training-meta">Lehky beh, bez lapu.</div></td>
+                      <td>138</td>
+                      <td>149</td>
+                    </tr>
+                    <tr>
+                      <td>15.8</td>
+                      <td>74</td>
+                      <td><div class="training-title">6x 1 km</div><div class="training-meta">3:42, 3:41, 3:40, 3:40, 3:39, 3:38</div></td>
+                      <td>164</td>
+                      <td>178</td>
+                    </tr>
+                    <tr>
+                      <td>22.4</td>
+                      <td>111</td>
+                      <td><div class="training-title">4:57 / km</div><div class="training-meta">Poslednich 6 km progresivne.</div></td>
+                      <td>151</td>
+                      <td>168</td>
+                    </tr>
+                  </tbody>
+                  <tfoot>
+                    <tr>
+                      <th>48.3</th>
+                      <th>237</th>
+                      <th>Celkem</th>
+                      <th>151</th>
+                      <th>178</th>
+                    </tr>
+                  </tfoot>
+                </table>
+              </section>
+            </div>
+
+            <div class="week-grid">
+              <section class="week-card">
+                <div class="week-head">
+                  <h3>Tyden 2.</h3>
+                  <small>Plan</small>
+                </div>
+                <table>
+                  <thead>
+                    <tr>
+                      <th class="col-date">Datum</th>
+                      <th class="col-day">Den</th>
+                      <th class="col-type">Typ</th>
+                      <th class="col-training">Trenink</th>
+                      <th class="col-notes">Poznamky trenera</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>8.4.</td>
+                      <td>Pondeli</td>
+                      <td><span class="badge-run">Beh</span></td>
+                      <td>
+                        <div class="training-title">Easy run 12 km</div>
+                        <div class="training-meta">Volne, bez tlaku na pace. Jen dorovnat objem.</div>
+                      </td>
+                      <td><div class="note-copy">Po long runu hlidat lehkost a kadenci.</div></td>
+                    </tr>
+                    <tr>
+                      <td>10.4.</td>
+                      <td>Streda</td>
+                      <td><span class="badge-workout">Trenink</span></td>
+                      <td>
+                        <div class="training-title">10x 400 m / 200 m float</div>
+                        <div class="training-meta">Kratke useky, cisty rytmus, ne sprint.</div>
+                        <div class="km-dot">Kontrola km: odhad 14 km</div>
+                      </td>
+                      <td><div class="note-copy">Jestli nohy zustanou tezke, uber dva useky.</div></td>
+                    </tr>
+                    <tr>
+                      <td>13.4.</td>
+                      <td>Sobota</td>
+                      <td><span class="badge-run">Beh</span></td>
+                      <td>
+                        <div class="training-title">Long run 30 km</div>
+                        <div class="training-meta">Prvni dve tretiny kontrolovane, zaver steady.</div>
+                      </td>
+                      <td><div class="note-copy">Je to hlavni anchor tydne. Nic dalsiho uz netlacit.</div></td>
+                    </tr>
+                  </tbody>
+                  <tfoot>
+                    <tr>
+                      <th colspan="3">&nbsp;</th>
+                      <th>Celkem 46 km</th>
+                      <th>&nbsp;</th>
+                    </tr>
+                  </tfoot>
+                </table>
+              </section>
+
+              <section class="week-card week-card--compact">
+                <div class="week-head">
+                  <h3>Splneno</h3>
+                  <small>Imported + manual</small>
+                </div>
+                <table>
+                  <thead>
+                    <tr>
+                      <th class="col-km">km</th>
+                      <th class="col-min">min</th>
+                      <th class="col-pace">pace / intervals</th>
+                      <th class="col-hr">avg HR</th>
+                      <th class="col-hr">max HR</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>11.7</td>
+                      <td>59</td>
+                      <td><div class="training-title">5:03 / km</div><div class="training-meta">Easy, Garmin linked.</div></td>
+                      <td>142</td>
+                      <td>153</td>
+                    </tr>
+                    <tr>
+                      <td>13.9</td>
+                      <td>67</td>
+                      <td><div class="training-title">10x 400 m</div><div class="training-meta">Rytmus cisty, posledni dva useky lehce pomalejsi.</div></td>
+                      <td>166</td>
+                      <td>181</td>
+                    </tr>
+                  </tbody>
+                  <tfoot>
+                    <tr>
+                      <th>25.6</th>
+                      <th>126</th>
+                      <th>Celkem</th>
+                      <th>154</th>
+                      <th>181</th>
+                    </tr>
+                  </tfoot>
+                </table>
+              </section>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <nav class="month-switcher" aria-label="Month switcher preview">
+      <div class="month-switcher-shell">
+        <div class="month-switcher-track">
+          <button class="btn btn-primary btn-icon" aria-label="Pridat mesic">+</button>
+          <button class="month-btn is-active">Duben 2026</button>
+          <button class="month-btn">Kveten 2026</button>
+          <button class="month-btn">Cerven 2026</button>
+          <button class="month-btn">Cervenec 2026</button>
+        </div>
+      </div>
+    </nav>
+
+    <div class="modal-layer is-hidden" id="profileModal">
+      <div class="modal-preview">
+        <aside class="modal-side">
+          <div class="tabs">
+            <button class="tab-btn is-active" type="button" data-tab-target="tab-profile">Profil</button>
+            <button class="tab-btn" type="button" data-tab-target="tab-account">Nastaveni uctu</button>
+            <button class="tab-btn" type="button" data-tab-target="tab-password">Zmena hesla</button>
+            <button class="tab-btn" type="button" data-tab-target="tab-coach">Trener</button>
+          </div>
+        </aside>
+        <section class="modal-main">
+          <div class="modal-head">
+            <div class="avatar">A</div>
+            <div>
+              <div class="modal-title">Sprava profilu</div>
+              <div class="modal-subtitle">Adam Novak | adam.novak@endurobuddy.dev</div>
+            </div>
+            <button class="btn" type="button" style="margin-left:auto;" data-close-modal="profileModal">Zavrit</button>
+          </div>
+
+          <div class="tab-panel is-active" id="tab-profile">
+            <div class="modal-content-grid">
+              <div class="stack">
+                <div class="subpanel">
+                  <div class="section-title">Profil</div>
+                  <div class="form-grid">
+                    <div class="field">
+                      <label>Jmeno</label>
+                      <input class="input" type="text" value="Adam">
+                    </div>
+                    <div class="field">
+                      <label>Prijmeni</label>
+                      <input class="input" type="text" value="Novak">
+                    </div>
+                    <div class="toolbar-row">
+                      <button class="btn btn-primary">Ulozit profil</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="stack">
+                <div class="subpanel">
+                  <div class="section-title">Souhrn uctu</div>
+                  <div class="account-meta">
+                    <div class="meta-row">
+                      <span class="meta-label">Uzivatelske jmeno</span>
+                      <span class="meta-value">adamnovak</span>
+                    </div>
+                    <div class="meta-row">
+                      <span class="meta-label">E-mail</span>
+                      <span class="meta-value">adam.novak@endurobuddy.dev</span>
+                    </div>
+                    <div class="meta-row">
+                      <span class="meta-label">Role</span>
+                      <span class="meta-value">Athlete</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="tab-panel" id="tab-account">
+            <div class="modal-content-grid">
+              <div class="stack">
+                <div class="subpanel">
+                  <div class="section-title">Nastaveni uctu</div>
+                  <div class="helper-copy">Tady je videt jednoduchy account blok podobne jako v realnem modalu, ale v plne sirce a s vyuzitim prostoru.</div>
+                  <div class="account-meta">
+                    <div class="meta-row">
+                      <span class="meta-label">Uzivatelske jmeno</span>
+                      <span class="meta-value">adamnovak</span>
+                    </div>
+                    <div class="meta-row">
+                      <span class="meta-label">E-mail</span>
+                      <span class="meta-value">adam.novak@endurobuddy.dev</span>
+                    </div>
+                    <div class="meta-row">
+                      <span class="meta-label">Pripojeni</span>
+                      <span class="meta-value">Google + e-mail</span>
+                    </div>
+                  </div>
+                  <div class="toolbar-row">
+                    <button class="btn">Nastaveni</button>
+                    <button class="btn" style="border-color: rgba(255,122,89,0.3); color:#ffd7ce;">Odhlasit</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="stack">
+                <div class="subpanel">
+                  <div class="section-title">Stav profilu</div>
+                  <div class="account-meta">
+                    <div class="meta-row">
+                      <span class="meta-label">Role</span>
+                      <span class="meta-value">Athlete</span>
+                    </div>
+                    <div class="meta-row">
+                      <span class="meta-label">Jazyk</span>
+                      <span class="meta-value">cs-CZ</span>
+                    </div>
+                    <div class="meta-row">
+                      <span class="meta-label">Garmin</span>
+                      <span class="meta-value">Pripojeno</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="tab-panel" id="tab-password">
+            <div class="modal-content-grid">
+              <div class="stack">
+                <div class="subpanel">
+                  <div class="section-title">Zmena hesla</div>
+                  <div class="form-grid">
+                    <div class="field">
+                      <label>Stare heslo</label>
+                      <input class="input" type="password" value="password123">
+                    </div>
+                    <div class="field">
+                      <label>Nove heslo</label>
+                      <input class="input" type="password" value="newpassword123">
+                    </div>
+                    <div class="field">
+                      <label>Potvrdit nove heslo</label>
+                      <input class="input" type="password" value="newpassword123">
+                    </div>
+                    <div class="toolbar-row">
+                      <button class="btn btn-primary">Zmenit heslo</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="stack">
+                <div class="subpanel">
+                  <div class="section-title">Bezpecnost</div>
+                  <div class="helper-copy">Druhy sloupec muze zobrazovat pomocne informace, doporuceni k heslu nebo audit bez toho, aby zustal prazdny.</div>
+                  <div class="account-meta">
+                    <div class="meta-row">
+                      <span class="meta-label">Posledni zmena</span>
+                      <span class="meta-value">pred 47 dny</span>
+                    </div>
+                    <div class="meta-row">
+                      <span class="meta-label">Sila hesla</span>
+                      <span class="meta-value">Strong</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="tab-panel" id="tab-coach">
+            <div class="modal-content-grid">
+              <div class="stack">
+              <div class="subpanel">
+                <div class="section-title">Trener</div>
+                <div class="helper-copy">Pridani trenera zustava jednoduche a neschovava se za dalsi klik.</div>
+                <div class="form-grid">
+                  <div class="field">
+                    <label>Kod trenera</label>
+                    <input class="input" type="text" value="AB7K9Q2M5T8R">
+                  </div>
+                  <div class="toolbar-row">
+                    <button class="btn btn-secondary">Pridat trenera</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="subpanel">
+                <div class="section-title" style="margin-top: 18px;">Aktualne me trenuje</div>
+                <div class="coach-row"><strong>coach.martin</strong></div>
+                <div class="coach-row"><strong>endurance.lab</strong></div>
+              </div>
+              </div>
+
+              <div class="stack">
+                <div class="subpanel">
+                  <div class="section-title">Cekajici zadosti</div>
+                  <div class="coach-row">coach.pavel</div>
+                  <div class="coach-row">marathon.lab</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <div class="overlay-label"><button type="button" data-open-modal="profileModal">Otevrit profilovy modal</button></div>
+  </div>
+  <script>
+    (function () {
+      const notificationsButton = document.querySelector('[data-toggle="notifications"]');
+      const profileButton = document.querySelector('[data-toggle="profile-menu"]');
+      const notificationsDropdown = document.getElementById('notificationsDropdown');
+      const profileMenu = document.getElementById('profileMenu');
+      const profileModal = document.getElementById('profileModal');
+      const tabButtons = Array.from(document.querySelectorAll('[data-tab-target]'));
+      const tabPanels = Array.from(document.querySelectorAll('.tab-panel'));
+      const openModalButtons = Array.from(document.querySelectorAll('[data-open-modal="profileModal"]'));
+      const closeModalButtons = Array.from(document.querySelectorAll('[data-close-modal="profileModal"]'));
+
+      function hidePopovers() {
+        notificationsDropdown.classList.add('is-hidden');
+        profileMenu.classList.add('is-hidden');
+      }
+
+      function openModal() {
+        profileModal.classList.remove('is-hidden');
+        hidePopovers();
+      }
+
+      function closeModal() {
+        profileModal.classList.add('is-hidden');
+      }
+
+      notificationsButton.addEventListener('click', function (event) {
+        event.stopPropagation();
+        const nextHidden = !notificationsDropdown.classList.contains('is-hidden');
+        hidePopovers();
+        if (nextHidden) return;
+        notificationsDropdown.classList.remove('is-hidden');
+      });
+
+      profileButton.addEventListener('click', function (event) {
+        event.stopPropagation();
+        const nextHidden = !profileMenu.classList.contains('is-hidden');
+        hidePopovers();
+        if (nextHidden) return;
+        profileMenu.classList.remove('is-hidden');
+      });
+
+      openModalButtons.forEach(function (button) {
+        button.addEventListener('click', function (event) {
+          event.stopPropagation();
+          openModal();
+        });
+      });
+
+      closeModalButtons.forEach(function (button) {
+        button.addEventListener('click', function () {
+          closeModal();
+        });
+      });
+
+      profileModal.addEventListener('click', function (event) {
+        if (event.target === profileModal) {
+          closeModal();
+        }
+      });
+
+      tabButtons.forEach(function (button) {
+        button.addEventListener('click', function () {
+          const targetId = button.getAttribute('data-tab-target');
+          tabButtons.forEach(function (item) { item.classList.remove('is-active'); });
+          tabPanels.forEach(function (panel) { panel.classList.remove('is-active'); });
+          button.classList.add('is-active');
+          const target = document.getElementById(targetId);
+          if (target) target.classList.add('is-active');
+        });
+      });
+
+      document.addEventListener('click', function () {
+        hidePopovers();
+      });
+
+      [notificationsDropdown, profileMenu].forEach(function (menu) {
+        menu.addEventListener('click', function (event) {
+          event.stopPropagation();
+        });
+      });
+    }());
+  </script>
+</body>
+</html>
