@@ -20,6 +20,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from accounts.views import EnduroLoginView, complete_profile
 from config import error_views
+from config.views_public import public_about, public_home
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -29,6 +30,8 @@ urlpatterns = [
     path("accounts/", include("allauth.urls")),
     path("__debug/ui/errors/", error_views.error_preview_index, name="error_preview_index"),
     path("__debug/ui/errors/<int:status_code>/", error_views.error_preview_status, name="error_preview_status"),
+    path("", public_home, name="public_home"),
+    path("about/", public_about, name="public_about"),
     path("", include("dashboard.urls")),
 ]
 

@@ -1,0 +1,852 @@
+{% extends "public/base_public.html" %}
+
+{% block title %}EnduroBuddy | Tréninkový workspace pro atleta i trenéra{% endblock %}
+
+{% block page_styles %}
+  <style>
+    .eb-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      min-height: 2rem;
+      padding: 0 0.85rem;
+      border-radius: var(--eb-radius-pill);
+      border: 1px solid rgba(97, 196, 143, 0.28);
+      background: rgba(97, 196, 143, 0.12);
+      color: #cbf3dc;
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+
+    .eb-chip--muted {
+      color: var(--eb-text-muted);
+      border-color: var(--eb-line);
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .eb-chip--warning {
+      color: #f6e7ba;
+      border-color: rgba(217, 164, 65, 0.3);
+      background: rgba(217, 164, 65, 0.12);
+    }
+
+    .eb-btn {
+      border-radius: var(--eb-radius-pill);
+      min-height: 44px;
+      padding: 0.7rem 1.15rem;
+      font-weight: 700;
+      border: 1px solid var(--eb-line-soft);
+      transition: transform 180ms ease, border-color 180ms ease, background-color 180ms ease, color 180ms ease, box-shadow 180ms ease;
+    }
+
+    .eb-btn:hover,
+    .eb-btn:focus-visible {
+      transform: translateY(-1px);
+      border-color: rgba(97, 196, 143, 0.45);
+      box-shadow: 0 0 0 4px rgba(97, 196, 143, 0.12);
+    }
+
+    .eb-btn-primary {
+      color: #0d1411;
+      border-color: transparent;
+      background: linear-gradient(180deg, var(--eb-accent), var(--eb-accent-hover));
+    }
+
+    .eb-btn-primary:hover,
+    .eb-btn-primary:focus-visible {
+      color: #0d1411;
+      background: linear-gradient(180deg, #6fd09a, var(--eb-accent-hover));
+    }
+
+    .eb-btn-secondary {
+      color: var(--eb-text);
+      background: rgba(255, 255, 255, 0.03);
+      border-color: var(--eb-line);
+    }
+
+    .eb-section {
+      padding: 28px;
+      border: 1px solid rgba(58, 74, 67, 0.78);
+      border-radius: var(--eb-radius-lg);
+      background: rgba(29, 41, 36, 0.82);
+      box-shadow: var(--eb-shadow-1);
+      backdrop-filter: blur(10px);
+    }
+
+    .eb-hero {
+      padding-top: 3rem;
+      padding-bottom: 1.5rem;
+    }
+
+    .eb-hero-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
+      gap: 24px;
+      align-items: stretch;
+    }
+
+    .eb-kicker {
+      margin-bottom: 0.9rem;
+      color: var(--eb-accent);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+
+    .eb-display {
+      font-size: clamp(2.8rem, 6vw, 5rem);
+      line-height: 0.92;
+      max-width: 10ch;
+      margin: 0;
+      color: var(--eb-text-strong);
+    }
+
+    .eb-lead {
+      margin: 1.25rem 0 1.6rem;
+      max-width: 60ch;
+      color: var(--eb-text-muted);
+      font-size: 1.05rem;
+      line-height: 1.7;
+    }
+
+    .eb-action-row,
+    .eb-chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+
+    .eb-hero-note {
+      margin-top: 1rem;
+      color: var(--eb-text-dim);
+      font-size: 0.92rem;
+    }
+
+    .eb-stack {
+      display: grid;
+      gap: 14px;
+    }
+
+    .eb-metric-card,
+    .eb-list-card,
+    .eb-flow-card,
+    .eb-role-card,
+    .eb-feature-card,
+    .eb-cta-card {
+      border-radius: var(--eb-radius-md);
+      border: 1px solid var(--eb-line);
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .eb-metric-card,
+    .eb-flow-card,
+    .eb-role-card,
+    .eb-feature-card,
+    .eb-list-card {
+      padding: 18px;
+    }
+
+    .eb-eyebrow {
+      margin-bottom: 0.55rem;
+      color: var(--eb-text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 0.76rem;
+      font-weight: 700;
+    }
+
+    .eb-metric-value {
+      margin-bottom: 0.25rem;
+      font-size: 2rem;
+      line-height: 1;
+      color: var(--eb-text-strong);
+    }
+
+    .eb-metric-copy,
+    .eb-card-copy,
+    .eb-feature-copy,
+    .eb-role-copy,
+    .eb-flow-copy {
+      margin: 0;
+      color: var(--eb-text-muted);
+      line-height: 1.6;
+    }
+
+    .eb-preview {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .eb-preview::after {
+      content: "";
+      position: absolute;
+      right: -60px;
+      top: -50px;
+      width: 220px;
+      height: 220px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(97, 196, 143, 0.16), transparent 62%);
+      pointer-events: none;
+    }
+
+    .eb-mini-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .eb-mini-toolbar h2 {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--eb-text-strong);
+    }
+
+    .eb-mini-screen {
+      border-radius: 16px;
+      border: 1px solid var(--eb-line-soft);
+      background: linear-gradient(180deg, rgba(34, 49, 43, 0.95), rgba(24, 34, 30, 0.95));
+      padding: 14px;
+      box-shadow: var(--eb-shadow-2);
+    }
+
+    .eb-preview-grid {
+      display: grid;
+      grid-template-columns: 1.08fr 0.92fr;
+      gap: 12px;
+    }
+
+    .eb-preview-column {
+      display: grid;
+      gap: 12px;
+    }
+
+    .eb-preview-panel {
+      padding: 14px;
+      border-radius: 14px;
+      border: 1px solid var(--eb-line);
+      background: rgba(255, 255, 255, 0.035);
+    }
+
+    .eb-table {
+      width: 100%;
+      border-collapse: collapse;
+      color: var(--eb-text);
+      font-size: 0.9rem;
+    }
+
+    .eb-table th,
+    .eb-table td {
+      padding: 0.55rem 0;
+      border-bottom: 1px solid rgba(58, 74, 67, 0.65);
+      vertical-align: top;
+    }
+
+    .eb-table th {
+      color: var(--eb-text-dim);
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      font-weight: 700;
+    }
+
+    .eb-table tbody tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .eb-faint {
+      color: var(--eb-text-dim);
+    }
+
+    .eb-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      min-height: 28px;
+      padding: 0 0.75rem;
+      border-radius: var(--eb-radius-pill);
+      font-size: 0.78rem;
+      font-weight: 700;
+      border: 1px solid var(--eb-line);
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .eb-status--done {
+      color: #cbf3dc;
+      border-color: rgba(97, 196, 143, 0.28);
+      background: rgba(97, 196, 143, 0.12);
+    }
+
+    .eb-status--pending {
+      color: #f6e7ba;
+      border-color: rgba(217, 164, 65, 0.3);
+      background: rgba(217, 164, 65, 0.12);
+    }
+
+    .eb-status--info {
+      color: #d3ebf6;
+      border-color: rgba(119, 183, 215, 0.28);
+      background: rgba(119, 183, 215, 0.12);
+    }
+
+    .eb-section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .eb-section-title {
+      margin: 0;
+      font-size: clamp(1.8rem, 3vw, 2.45rem);
+      color: var(--eb-text-strong);
+    }
+
+    .eb-section-copy {
+      margin: 0;
+      max-width: 60ch;
+      color: var(--eb-text-muted);
+      line-height: 1.7;
+    }
+
+    .eb-grid-2,
+    .eb-grid-3 {
+      display: grid;
+      gap: 16px;
+    }
+
+    .eb-grid-2 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .eb-grid-3 {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .eb-role-title,
+    .eb-feature-title,
+    .eb-flow-title {
+      margin: 0 0 0.55rem;
+      font-size: 1.08rem;
+      font-weight: 700;
+      color: var(--eb-text-strong);
+    }
+
+    .eb-bullet-list {
+      margin: 0;
+      padding-left: 1.1rem;
+      color: var(--eb-text-muted);
+    }
+
+    .eb-bullet-list li + li {
+      margin-top: 0.45rem;
+    }
+
+    .eb-flow-card {
+      min-height: 100%;
+    }
+
+    .eb-story-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+      gap: 16px;
+    }
+
+    .eb-story-list {
+      margin: 0;
+      padding-left: 1.1rem;
+      color: var(--eb-text-muted);
+      line-height: 1.7;
+    }
+
+    .eb-story-list li + li {
+      margin-top: 0.55rem;
+    }
+
+    .eb-flow-index {
+      display: inline-grid;
+      place-items: center;
+      width: 42px;
+      height: 42px;
+      margin-bottom: 0.9rem;
+      border-radius: 50%;
+      color: var(--eb-text-strong);
+      font-weight: 800;
+      background: rgba(97, 196, 143, 0.14);
+      border: 1px solid rgba(97, 196, 143, 0.3);
+    }
+
+    .eb-cta-card {
+      padding: 26px;
+      background:
+        radial-gradient(circle at top right, rgba(97, 196, 143, 0.14), transparent 32%),
+        rgba(255, 255, 255, 0.03);
+    }
+
+    .eb-footer {
+      padding: 1.4rem 0 3rem;
+      color: var(--eb-text-dim);
+      font-size: 0.92rem;
+    }
+
+    .eb-reveal {
+      opacity: 0;
+      transform: translateY(12px);
+      animation: ebReveal 180ms ease-out forwards;
+    }
+
+    .eb-reveal-delay-1 { animation-delay: 40ms; }
+    .eb-reveal-delay-2 { animation-delay: 90ms; }
+    .eb-reveal-delay-3 { animation-delay: 140ms; }
+
+    @keyframes ebReveal {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 991.98px) {
+      .eb-hero-grid,
+      .eb-preview-grid,
+      .eb-story-grid,
+      .eb-grid-2,
+      .eb-grid-3 {
+        grid-template-columns: 1fr;
+      }
+
+      .eb-display {
+        max-width: 12ch;
+      }
+
+      .eb-section {
+        padding: 22px;
+      }
+    }
+
+    @media (max-width: 575.98px) {
+      .eb-shell {
+        width: min(var(--eb-container), calc(100% - 20px));
+      }
+
+      .eb-hero {
+        padding-top: 1.4rem;
+      }
+
+      .eb-display {
+        font-size: 2.6rem;
+      }
+
+      .eb-action-row .btn,
+      .eb-action-row a {
+        width: 100%;
+      }
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+  <main>
+    <section class="eb-hero">
+      <div class="eb-shell">
+        <div class="eb-hero-grid">
+          <div class="eb-section eb-reveal">
+            <div class="eb-kicker">Plán. Splnění. Import aktivit.</div>
+            <h1 class="eb-display">Tréninkový workspace pro vytrvalostní sport.</h1>
+            <p class="eb-lead">
+              EnduroBuddy propojuje trenéra a sportovce v jednom rozhraní. Obsahuje měsíční plán s týdenní strukturou,
+              evidenci splněných tréninků, import aktivit z FIT souborů a synchronizaci z Garmin Connect.
+            </p>
+            <div class="eb-action-row">
+              <a class="btn eb-btn eb-btn-primary" href="{% url 'account_login' %}">Vstoupit do aplikace</a>
+              <a class="btn eb-btn eb-btn-secondary" href="{% url 'account_signup' %}">Vytvořit účet</a>
+            </div>
+            <div class="eb-chip-row mt-4">
+              <span class="eb-chip">Měsíční plánování</span>
+              <span class="eb-chip eb-chip--muted">FIT import</span>
+              <span class="eb-chip eb-chip--warning">Garmin Connect</span>
+            </div>
+            <p class="eb-hero-note">Server-rendered aplikace v Django pro každodenní plánování a práci s tréninkem.</p>
+          </div>
+
+          <div class="eb-stack eb-reveal eb-reveal-delay-1">
+            <div class="eb-metric-card">
+              <div class="eb-eyebrow">Role</div>
+              <div class="eb-metric-value">2</div>
+              <p class="eb-metric-copy">Coach připravuje plán. Athlete doplňuje splněné tréninky a importuje aktivity.</p>
+            </div>
+            <div class="eb-metric-card">
+              <div class="eb-eyebrow">Import</div>
+              <div class="eb-metric-value">FIT + Garmin</div>
+              <p class="eb-metric-copy">Aktivity můžeš přidat z FIT souboru nebo synchronizovat ze služby Garmin Connect.</p>
+            </div>
+            <div class="eb-list-card">
+              <div class="eb-eyebrow">Na co je EnduroBuddy dobrý</div>
+              <p class="eb-card-copy">
+                Projekt staví plán, splnění a import aktivit do jednoho workflow. Neřeší sociální feed ani širokou analytiku,
+                ale čistý pracovní přehled pro trenéra a sportovce.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="pb-4">
+      <div class="eb-shell">
+        <div class="eb-section eb-preview eb-reveal eb-reveal-delay-2">
+          <div class="eb-mini-toolbar">
+            <div>
+              <div class="eb-eyebrow">Náhled prostředí</div>
+              <h2>Plánovací vrstva a import na jednom místě</h2>
+            </div>
+            <span class="eb-status eb-status--info">Přehled týdne</span>
+          </div>
+
+          <div class="eb-mini-screen">
+            <div class="eb-preview-grid">
+              <div class="eb-preview-column">
+                <div class="eb-preview-panel">
+                  <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                      <div class="eb-eyebrow mb-1">Plán</div>
+                      <div class="fw-semibold">Březen 2026 · Týden 3</div>
+                    </div>
+                    <span class="eb-status eb-status--pending">Pending import</span>
+                  </div>
+                  <table class="eb-table">
+                    <thead>
+                      <tr>
+                        <th>Den</th>
+                        <th>Typ</th>
+                        <th>Trénink</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>Po</td>
+                        <td class="eb-faint">Běh</td>
+                        <td>12 km volně</td>
+                      </tr>
+                      <tr>
+                        <td>St</td>
+                        <td class="eb-faint">Trénink</td>
+                        <td>5x 1 km / mezikl. 2 min</td>
+                      </tr>
+                      <tr>
+                        <td>Ne</td>
+                        <td class="eb-faint">Běh</td>
+                        <td>28 km dlouhý běh</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <div class="eb-preview-panel">
+                  <div class="eb-eyebrow">Poznámky trenéra</div>
+                  <p class="eb-card-copy">Ke každému plánovanému tréninku lze doplnit poznámku a držet kontext týdne pohromadě.</p>
+                </div>
+              </div>
+
+              <div class="eb-preview-column">
+                <div class="eb-preview-panel">
+                  <div class="eb-eyebrow">Import aktivit</div>
+                  <div class="d-grid gap-2">
+                    <div class="d-flex justify-content-between align-items-center">
+                      <span class="eb-card-copy">Garmin účet</span>
+                      <span class="eb-status eb-status--done">Connected</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                      <span class="eb-card-copy">Sync týdne</span>
+                      <span class="eb-status eb-status--info">Ready</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                      <span class="eb-card-copy">FIT soubor</span>
+                      <span class="eb-status eb-status--pending">Upload</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="eb-preview-panel">
+                  <div class="eb-eyebrow">Splněno</div>
+                  <table class="eb-table">
+                    <tbody>
+                      <tr>
+                        <td>Objem</td>
+                        <td class="text-end">54 km</td>
+                      </tr>
+                      <tr>
+                        <td>Čas</td>
+                        <td class="text-end">4 h 41 min</td>
+                      </tr>
+                      <tr>
+                        <td>Avg HR</td>
+                        <td class="text-end">149</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="py-4">
+      <div class="eb-shell">
+        <div class="eb-section eb-reveal">
+          <div class="eb-section-head">
+            <div>
+              <div class="eb-eyebrow">Pro koho</div>
+              <h2 class="eb-section-title">Jedna aplikace, dvě pracovní role</h2>
+            </div>
+            <p class="eb-section-copy">
+              Produkt není sociální síť ani datový cockpit. Soustředí se na plánování, splnění a navázané importy aktivit.
+            </p>
+          </div>
+
+          <div class="eb-grid-2">
+            <article class="eb-role-card">
+              <div class="eb-chip mb-3">Athlete</div>
+              <h3 class="eb-role-title">Sportovec má denní přehled bez zbytečného přepínání.</h3>
+              <p class="eb-role-copy mb-3">
+                Vidí měsíční plán, doplňuje splněné tréninky a může importovat aktivity přes FIT nebo Garmin.
+              </p>
+              <ul class="eb-bullet-list">
+                <li>vlastní plán a splnění na jednom místě</li>
+                <li>import ze `.fit` souboru</li>
+                <li>synchronizace z Garmin Connect</li>
+              </ul>
+            </article>
+
+            <article class="eb-role-card">
+              <div class="eb-chip eb-chip--muted mb-3">Coach</div>
+              <h3 class="eb-role-title">Trenér připravuje plán a spravuje svěřence v jednom toku.</h3>
+              <p class="eb-role-copy mb-3">
+                Může spravovat své plány i plány svěřenců, vytvářet skupiny a pracovat s pozvánkami a join requesty.
+              </p>
+              <ul class="eb-bullet-list">
+                <li>coach join code a join requesty</li>
+                <li>správa skupin a pozvánek přes token</li>
+                <li>měsíční plánovací dashboard</li>
+              </ul>
+            </article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="py-4">
+      <div class="eb-shell">
+        <div class="eb-section eb-reveal eb-reveal-delay-1">
+          <div class="eb-section-head">
+            <div>
+              <div class="eb-eyebrow">Jak to funguje</div>
+              <h2 class="eb-section-title">Tréninkový tok bez bočních uliček</h2>
+            </div>
+          </div>
+
+          <div class="eb-grid-3">
+            <article class="eb-flow-card">
+              <div class="eb-flow-index">1</div>
+              <h3 class="eb-flow-title">Naplánovat měsíc</h3>
+              <p class="eb-flow-copy">
+                Trenér nebo sportovec připraví měsíc s týdenní strukturou a konkrétními plánovanými tréninky.
+              </p>
+            </article>
+
+            <article class="eb-flow-card">
+              <div class="eb-flow-index">2</div>
+              <h3 class="eb-flow-title">Zapsat splnění</h3>
+              <p class="eb-flow-copy">
+                Po tréninku se k plánovanému řádku doplní splnění, například čas, vzdálenost nebo tep.
+              </p>
+            </article>
+
+            <article class="eb-flow-card">
+              <div class="eb-flow-index">3</div>
+              <h3 class="eb-flow-title">Doplnit aktivitu</h3>
+              <p class="eb-flow-copy">
+                Aktivita se importuje přes FIT nebo Garmin a může se propojit s plánovaným tréninkem.
+              </p>
+            </article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="py-4">
+      <div class="eb-shell">
+        <div class="eb-section eb-reveal eb-reveal-delay-2">
+          <div class="eb-section-head">
+            <div>
+              <div class="eb-eyebrow">Klíčové vlastnosti</div>
+              <h2 class="eb-section-title">To podstatné zůstává čitelné</h2>
+            </div>
+          </div>
+
+          <div class="eb-grid-3">
+            <article class="eb-feature-card">
+              <h3 class="eb-feature-title">Měsíční dashboard</h3>
+              <p class="eb-feature-copy">Týdenní struktura, plánované tréninky, poznámky a součty v jednom přehledu.</p>
+            </article>
+            <article class="eb-feature-card">
+              <h3 class="eb-feature-title">Coach workflow</h3>
+              <p class="eb-feature-copy">Role Coach a Athlete, vazby mezi účty, join requesty, skupiny a pozvánky.</p>
+            </article>
+            <article class="eb-feature-card">
+              <h3 class="eb-feature-title">Import aktivit</h3>
+              <p class="eb-feature-copy">Podpora `.fit` souborů i Garmin Connect, včetně stavů synchronizace a importních úloh.</p>
+            </article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="py-4">
+      <div class="eb-shell">
+        <div class="eb-section eb-reveal">
+          <div class="eb-section-head">
+            <div>
+              <div class="eb-eyebrow">Co v aplikaci opravdu je</div>
+              <h2 class="eb-section-title">Funkce postavené kolem konkrétního tréninku</h2>
+            </div>
+            <p class="eb-section-copy">
+              Homepage teď popisuje jen funkce, které v projektu skutečně existují v modelech, views a šablonách.
+            </p>
+          </div>
+
+          <div class="eb-story-grid">
+            <article class="eb-role-card">
+              <h3 class="eb-role-title">Autentizace a role</h3>
+              <p class="eb-role-copy mb-3">
+                Vstup do aplikace běží přes `django-allauth`. K dispozici je emailový signup/login, potvrzení emailu,
+                reset hesla a volitelný Google login. Uživatel má roli `Coach` nebo `Athlete`.
+              </p>
+              <ul class="eb-story-list">
+                <li>registrace a přihlášení přes email</li>
+                <li>volitelný Google login</li>
+                <li>workflow pro dokončení Google profilu</li>
+                <li>role uložená na profilu uživatele</li>
+              </ul>
+            </article>
+
+            <article class="eb-role-card">
+              <h3 class="eb-role-title">Plán a splnění</h3>
+              <p class="eb-role-copy mb-3">
+                Tréninková vrstva je postavená na měsících, týdnech a plánovaných řádcích. Ke každému plánovanému tréninku
+                jde doplnit splnění a aplikace podporuje i dvoufázové dny.
+              </p>
+              <ul class="eb-story-list">
+                <li>měsíce a týdny pro konkrétního atleta</li>
+                <li>plánované tréninky s typem, poznámkou a pořadím v dni</li>
+                <li>completed data jako čas, vzdálenost, tep a poznámka</li>
+                <li>přidání další fáze v jednom dni</li>
+              </ul>
+            </article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="py-4">
+      <div class="eb-shell">
+        <div class="eb-section eb-reveal eb-reveal-delay-1">
+          <div class="eb-section-head">
+            <div>
+              <div class="eb-eyebrow">Coach část</div>
+              <h2 class="eb-section-title">Správa svěřenců, skupin a pozvánek</h2>
+            </div>
+          </div>
+
+          <div class="eb-grid-3">
+            <article class="eb-feature-card">
+              <h3 class="eb-feature-title">Coach join code</h3>
+              <p class="eb-feature-copy">
+                Coach má vlastní join code. Athlete může poslat join request a coach ho následně zpracuje.
+              </p>
+            </article>
+            <article class="eb-feature-card">
+              <h3 class="eb-feature-title">Training groups</h3>
+              <p class="eb-feature-copy">
+                Coach může vytvářet skupiny, přiřazovat do nich sportovce a pracovat s aktivními pozvánkami.
+              </p>
+            </article>
+            <article class="eb-feature-card">
+              <h3 class="eb-feature-title">Invite tokeny</h3>
+              <p class="eb-feature-copy">
+                Pozvánky fungují přes token a mají expiraci. Po přijetí se vytvoří vazba na skupinu i coach-athlete link.
+              </p>
+            </article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="py-4">
+      <div class="eb-shell">
+        <div class="eb-section eb-reveal eb-reveal-delay-2">
+          <div class="eb-section-head">
+            <div>
+              <div class="eb-eyebrow">Import a návaznost</div>
+              <h2 class="eb-section-title">Aktivity nejsou bokem mimo plán</h2>
+            </div>
+          </div>
+
+          <div class="eb-grid-2">
+            <article class="eb-role-card">
+              <h3 class="eb-role-title">FIT import</h3>
+              <p class="eb-role-copy mb-3">
+                Aplikace umí import `.fit` souborů, vede si deduplikaci přes checksum a ukládá minimální aktivitu,
+                soubory, intervaly i časovou řadu pro další použití.
+              </p>
+              <ul class="eb-bullet-list">
+                <li>aktivita s časem, vzdáleností, tepem a tempem</li>
+                <li>uložený checksum pro deduplikaci</li>
+                <li>intervaly a samples v databázi</li>
+              </ul>
+            </article>
+
+            <article class="eb-role-card">
+              <h3 class="eb-role-title">Garmin Connect</h3>
+              <p class="eb-role-copy mb-3">
+                K dispozici je připojení Garmin účtu, sync po časových oknech i sync konkrétního týdne.
+                Systém drží audit synchronizací a import joby se stavem průběhu.
+              </p>
+              <ul class="eb-bullet-list">
+                <li>connect, revoke a sync flow</li>
+                <li>audit akcí nad Garmin účtem</li>
+                <li>import job status a průběh synchronizace</li>
+              </ul>
+            </article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="pt-4 pb-5">
+      <div class="eb-shell">
+        <div class="eb-cta-card eb-reveal eb-reveal-delay-3">
+          <div class="eb-grid-2 align-items-center">
+            <div>
+              <div class="eb-eyebrow">Připraveno ke vstupu</div>
+              <h2 class="eb-section-title mb-2">Pokračovat do aplikace</h2>
+              <p class="eb-section-copy">
+                Pokud už účet máš, přejdi rovnou do EnduroBuddy. Jestli začínáš, můžeš si vytvořit nový účet přes email nebo Google.
+              </p>
+            </div>
+            <div class="d-flex flex-wrap justify-content-lg-end gap-2">
+              <a class="btn eb-btn eb-btn-primary" href="{% url 'account_login' %}">Přihlásit se</a>
+              <a class="btn eb-btn eb-btn-secondary" href="{% url 'account_signup' %}">Registrovat se</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+{% endblock %}

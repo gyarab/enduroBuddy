@@ -1,6 +1,6 @@
 <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom eb-top-nav">
   <div class="container-fluid">
-    <a class="navbar-brand fw-bold" href="/">EnduroBuddy</a>
+    <a class="navbar-brand fw-bold" href="{% url 'public_home' %}">EnduroBuddy</a>
 
     {% with current_url_name=request.resolver_match.url_name %}
     <div class="d-flex align-items-center gap-2 order-lg-3 ms-auto">
@@ -87,7 +87,7 @@
 
     <div class="collapse navbar-collapse order-lg-2 eb-top-nav-collapse" id="mainNavbar">
       <div class="navbar-nav eb-top-nav-links">
-        <a class="btn btn-sm btn-outline-dark eb-top-nav-link" href="/">Tr&eacute;ninkov&yacute; p&#345;ehled</a>
+        <a class="btn btn-sm btn-outline-dark eb-top-nav-link" href="{% url 'dashboard_home' %}">Tr&eacute;ninkov&yacute; p&#345;ehled</a>
         {% if user.is_authenticated and is_coach %}
           <a class="btn btn-sm btn-dark eb-top-nav-link" href="{% url 'coach_training_plans' %}">Spravovat tr&eacute;ninkov&eacute; pl&aacute;ny</a>
         {% endif %}
