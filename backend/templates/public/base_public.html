@@ -10,195 +10,12 @@
   <link rel="icon" type="image/png" href="{% static 'brand/logo.png' %}">
   <link rel="shortcut icon" href="{% static 'brand/logo.png' %}">
   <link rel="apple-touch-icon" href="{% static 'brand/logo.png' %}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=League+Gothic&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="{% static 'css/base.css' %}">
-  <style>
-    @font-face {
-      font-family: "League Gothic";
-      src: url("{% static 'font/LeagueGothic-Regular-VariableFont_wdth.ttf' %}") format("truetype");
-      font-weight: 400 700;
-      font-style: normal;
-      font-display: swap;
-    }
-
-    :root {
-      --eb-bg: #101714;
-      --eb-bg-elevated: #16201c;
-      --eb-surface: #1d2924;
-      --eb-surface-soft: #22312b;
-      --eb-surface-strong: #283932;
-      --eb-text: #e9efec;
-      --eb-text-muted: #9eb0a8;
-      --eb-text-dim: #7f9088;
-      --eb-text-strong: #ffffff;
-      --eb-line: #2d3a35;
-      --eb-line-soft: #3a4a43;
-      --eb-accent: #61c48f;
-      --eb-accent-hover: #4bad79;
-      --eb-warning: #d9a441;
-      --eb-info: #77b7d7;
-      --eb-radius-sm: 10px;
-      --eb-radius-md: 14px;
-      --eb-radius-lg: 18px;
-      --eb-radius-pill: 999px;
-      --eb-shadow-1: 0 8px 24px rgba(0, 0, 0, 0.18);
-      --eb-shadow-2: 0 18px 48px rgba(0, 0, 0, 0.24);
-      --eb-container: 1320px;
-    }
-
-    * {
-      box-sizing: border-box;
-    }
-
-    html {
-      scroll-behavior: smooth;
-    }
-
-    body {
-      margin: 0;
-      color: var(--eb-text);
-      font-family: "Segoe UI Variable Text", "Segoe UI", "Inter", sans-serif;
-      background:
-        radial-gradient(circle at top left, rgba(97, 196, 143, 0.12), transparent 24%),
-        radial-gradient(circle at top right, rgba(119, 183, 215, 0.08), transparent 18%),
-        linear-gradient(180deg, #0d1411 0%, var(--eb-bg) 100%);
-      min-height: 100vh;
-    }
-
-    ::selection {
-      background: rgba(97, 196, 143, 0.24);
-    }
-
-    .eb-shell {
-      width: min(var(--eb-container), calc(100% - 32px));
-      margin: 0 auto;
-    }
-
-    .eb-wordmark,
-    .eb-display,
-    .eb-section-title,
-    .eb-metric-value,
-    .eb-title {
-      font-family: "League Gothic", "Arial Narrow", "Segoe UI", sans-serif;
-      letter-spacing: 0.01em;
-    }
-
-    .eb-topbar {
-      position: sticky;
-      top: 0;
-      z-index: 20;
-      backdrop-filter: blur(12px);
-      background: rgba(16, 23, 20, 0.82);
-      border-bottom: 1px solid rgba(58, 74, 67, 0.7);
-    }
-
-    .eb-topbar .navbar {
-      padding-top: 0.9rem;
-      padding-bottom: 0.9rem;
-    }
-
-    .eb-navbar-brand {
-      display: inline-flex;
-      align-items: center;
-      color: var(--eb-text-strong);
-      text-decoration: none;
-      font-size: 1.05rem;
-    }
-
-    .eb-navbar-brand:hover {
-      color: var(--eb-accent);
-    }
-
-    .eb-navbar-brand img {
-      display: block;
-      width: min(100%, 210px);
-      height: auto;
-      filter: drop-shadow(0 10px 22px rgba(0, 0, 0, 0.24));
-    }
-
-    .eb-nav-links {
-      display: flex;
-      align-items: center;
-      gap: 0.55rem;
-      flex-wrap: nowrap;
-    }
-
-    .eb-nav-link {
-      display: inline-flex;
-      align-items: center;
-      min-height: 40px;
-      padding: 0 0.95rem;
-      border-radius: var(--eb-radius-pill);
-      border: 1px solid transparent;
-      color: var(--eb-text-muted);
-      text-decoration: none;
-      font-weight: 700;
-      white-space: nowrap;
-      transition: color 180ms ease, border-color 180ms ease, background-color 180ms ease;
-    }
-
-    .eb-nav-link:hover {
-      color: var(--eb-text);
-      border-color: var(--eb-line);
-      background: rgba(255, 255, 255, 0.03);
-    }
-
-    .eb-nav-link.is-active {
-      color: var(--eb-text-strong);
-      border-color: var(--eb-line);
-      background: rgba(255, 255, 255, 0.04);
-    }
-
-    .eb-btn {
-      border-radius: var(--eb-radius-pill);
-      min-height: 44px;
-      padding: 0.7rem 1.15rem;
-      font-weight: 700;
-      border: 1px solid var(--eb-line-soft);
-      transition: transform 180ms ease, border-color 180ms ease, background-color 180ms ease, color 180ms ease, box-shadow 180ms ease;
-    }
-
-    .eb-btn:hover,
-    .eb-btn:focus-visible {
-      transform: translateY(-1px);
-      border-color: rgba(97, 196, 143, 0.45);
-      box-shadow: 0 0 0 4px rgba(97, 196, 143, 0.12);
-    }
-
-    .eb-btn-primary {
-      color: #0d1411;
-      border-color: transparent;
-      background: linear-gradient(180deg, var(--eb-accent), var(--eb-accent-hover));
-    }
-
-    .eb-btn-primary:hover,
-    .eb-btn-primary:focus-visible {
-      color: #0d1411;
-      background: linear-gradient(180deg, #6fd09a, var(--eb-accent-hover));
-    }
-
-    .eb-btn-secondary {
-      color: var(--eb-text);
-      background: rgba(255, 255, 255, 0.03);
-      border-color: var(--eb-line);
-    }
-
-    .eb-footer {
-      padding: 1.4rem 0 3rem;
-      color: var(--eb-text-dim);
-      font-size: 0.92rem;
-    }
-
-    @media (max-width: 575.98px) {
-      .eb-shell {
-        width: min(var(--eb-container), calc(100% - 20px));
-      }
-
-      .eb-navbar-brand img {
-        width: min(100%, 168px);
-      }
-    }
-  </style>
+  <link rel="stylesheet" href="{% static 'css/public-base.css' %}">
   {% block page_styles %}{% endblock %}
 </head>
 <body>
@@ -210,10 +27,14 @@
         </a>
         <div class="ms-auto d-flex align-items-center gap-2">
           <div class="eb-nav-links d-none d-md-flex">
-            <a class="eb-nav-link {% if current_public_page == 'home' %}is-active{% endif %}" href="{% url 'public_home' %}">{% if CURRENT_LANGUAGE == "en" %}Home{% else %}Domů{% endif %}</a>
-            <a class="eb-nav-link {% if current_public_page == 'about' %}is-active{% endif %}" href="{% url 'public_about' %}">{% if CURRENT_LANGUAGE == "en" %}About{% else %}O nás{% endif %}</a>
+            {% block topbar_links %}
+              <a class="eb-nav-link {% if current_public_page == 'home' %}is-active{% endif %}" href="{% url 'public_home' %}">{% if CURRENT_LANGUAGE == "en" %}Home{% else %}Domů{% endif %}</a>
+              <a class="eb-nav-link {% if current_public_page == 'about' %}is-active{% endif %}" href="{% url 'public_about' %}">{% if CURRENT_LANGUAGE == "en" %}About{% else %}O nás{% endif %}</a>
+            {% endblock %}
           </div>
-          <a class="btn eb-btn eb-btn-secondary" href="{% url 'account_login' %}">{% if CURRENT_LANGUAGE == "en" %}Log in{% else %}Přihlášení{% endif %}</a>
+          {% block topbar_actions %}
+            <a class="btn eb-btn eb-btn-secondary" href="{% url 'account_login' %}">{% if CURRENT_LANGUAGE == "en" %}Log in{% else %}Přihlášení{% endif %}</a>
+          {% endblock %}
         </div>
       </nav>
     </div>
@@ -223,13 +44,35 @@
 
   {% block footer %}
   <footer class="eb-footer">
-    <div class="eb-shell d-flex flex-column flex-md-row justify-content-between gap-2">
-      <span>EnduroBuddy</span>
-      <span>{% if CURRENT_LANGUAGE == "en" %}Monthly training plans and completed sessions for coach and athlete.{% else %}Měsíční tréninkové plány a evidence splněných tréninků pro trenéra i sportovce.{% endif %}</span>
+    <div class="eb-shell eb-footer-main">
+      <div class="eb-footer-meta">
+        <span>EnduroBuddy</span>
+        <span>{% if CURRENT_LANGUAGE == "en" %}Monthly training plans and completed sessions for coach and athlete.{% else %}Měsíční tréninkové plány a evidence splněných tréninků pro trenéra i sportovce.{% endif %}</span>
+      </div>
+      <div class="eb-footer-links">
+        <div class="eb-footer-language" aria-label="{% if CURRENT_LANGUAGE == 'en' %}Language switcher{% else %}Přepínač jazyka{% endif %}">
+          <form action="{% url 'set_language' %}" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+            <input type="hidden" name="language" value="cs">
+            <button class="eb-language-btn {% if CURRENT_LANGUAGE == 'cs' %}is-active{% endif %}" type="submit">CZ</button>
+          </form>
+          <form action="{% url 'set_language' %}" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+            <input type="hidden" name="language" value="en">
+            <button class="eb-language-btn {% if CURRENT_LANGUAGE == 'en' %}is-active{% endif %}" type="submit">EN</button>
+          </form>
+        </div>
+        <span class="eb-footer-sep">|</span>
+        <a class="eb-footer-link" href="{% url 'public_terms' %}">{% if CURRENT_LANGUAGE == "en" %}Terms of Use{% else %}Podmínky použití{% endif %}</a>
+        <a class="eb-footer-link" href="{% url 'public_privacy' %}">{% if CURRENT_LANGUAGE == "en" %}Privacy Policy{% else %}Zásady ochrany soukromí{% endif %}</a>
+      </div>
     </div>
   </footer>
   {% endblock %}
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  {% block page_scripts %}{% endblock %}
 </body>
 </html>
