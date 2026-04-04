@@ -1,0 +1,212 @@
+{% extends "public/base_public.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% get_current_language as CURRENT_LANGUAGE %}{% if CURRENT_LANGUAGE == "en" %}Terms of Use | EnduroBuddy{% else %}Podmínky použití | EnduroBuddy{% endif %}{% endblock %}
+
+{% block page_styles %}
+  <link rel="stylesheet" href="{% static 'css/public-legal.css' %}">
+{% endblock %}
+
+{% block content %}
+  {% get_current_language as CURRENT_LANGUAGE %}
+  <main class="eb-legal-main">
+    <div class="eb-shell">
+      <article class="eb-legal-card">
+        {% if CURRENT_LANGUAGE == "en" %}
+          <p class="eb-legal-kicker">Legal Information</p>
+          <h1 class="eb-legal-title">Terms of Use</h1>
+          <p class="eb-legal-lead">EnduroBuddy - effective from April 1, 2026</p>
+
+          <section class="eb-legal-section">
+            <h2>1. Operator and contact details</h2>
+            <p class="eb-legal-copy">
+              The operator of the EnduroBuddy application is:<br>
+              <strong>Name:</strong> Vojtěch Holcman<br>
+              <strong>Address:</strong> K lánu 496/2, 160 00 Praha 6, Czech Republic<br>
+              <strong>Email:</strong> support@endurobuddy.cz
+            </p>
+          </section>
+
+          <section class="eb-legal-section">
+            <h2>2. Description of the service</h2>
+            <p class="eb-legal-copy">EnduroBuddy is a web application designed for training planning and endurance activity management. It enables collaboration between coach and athlete in a single interface, including training plan creation, completed session records, and activity import from FIT files or Garmin Connect.</p>
+          </section>
+
+          <section class="eb-legal-section">
+            <h2>3. Registration and user account</h2>
+            <p class="eb-legal-copy">3.1 Registration is required to use the service. By registering, you confirm that you have read and agree to these Terms and the Privacy Policy.</p>
+            <p class="eb-legal-copy">3.2 You must provide truthful and complete information during registration. You agree to keep your contact details up to date.</p>
+            <p class="eb-legal-copy">3.3 You are responsible for maintaining the confidentiality of your login credentials and for all activity carried out under your account. If you suspect unauthorized access, please contact us without delay at support@endurobuddy.cz.</p>
+            <p class="eb-legal-copy">3.4 One user may only have one active account.</p>
+          </section>
+
+          <section class="eb-legal-section">
+            <h2>4. Permitted use</h2>
+            <p class="eb-legal-copy">4.1 You may use the service only for lawful purposes and in accordance with these Terms.</p>
+            <p class="eb-legal-copy">4.2 You agree not to:</p>
+            <ul class="eb-legal-list">
+              <li>upload or share content that infringes third-party rights, is unlawful, offensive, or false</li>
+              <li>attempt unauthorized access to systems, other users' data, or the application infrastructure</li>
+              <li>use the application for automated data collection or scraping without prior written consent</li>
+              <li>bypass technical or security measures of the application</li>
+              <li>impersonate another person or another user</li>
+            </ul>
+          </section>
+
+          <section class="eb-legal-section">
+            <h2>5. Coach-athlete relationship and responsibility for personal data processing</h2>
+            <p class="eb-legal-copy">5.1 A coach may invite athletes to a team by email invitation. By accepting the invitation, the athlete agrees that the coach will have access to the athlete's training data and activities within the application.</p>
+            <p class="eb-legal-copy">5.2 Vojtěch Holcman, as the operator, acts as controller of personal data to the extent necessary for the technical operation of the platform. A coach who processes the personal data of athletes through the application as part of professional or business activity may be considered a joint controller under Article 26 GDPR. In such a case, the coach is required to:</p>
+            <ul class="eb-legal-list">
+              <li>enter into a joint controller arrangement with the operator under Article 26 GDPR at support@endurobuddy.cz</li>
+              <li>ensure there is an independent legal basis for processing the athletes' personal data</li>
+              <li>inform athletes about the processing of their personal data to the extent required by Article 13 GDPR</li>
+            </ul>
+            <p class="eb-legal-copy">If the coach uses the application exclusively for personal, non-business purposes, for example for a family member, this obligation does not apply.</p>
+            <p class="eb-legal-copy">5.3 The athlete may terminate the connection with the coach at any time through account settings.</p>
+          </section>
+
+          <section class="eb-legal-section">
+            <h2>6. Minors</h2>
+            <p class="eb-legal-copy">For users under 15 years of age, parental or guardian consent is a condition for using the service. The legal guardian who gives consent accepts responsibility for the minor's use of the service. More details are provided in Section 7 of the Privacy Policy.</p>
+          </section>
+
+          <section class="eb-legal-section">
+            <h2>7. User content and data</h2>
+            <p class="eb-legal-copy">7.1 Training data, activities, and other content you upload to the application remain your property.</p>
+            <p class="eb-legal-copy">7.2 By uploading content, you grant the operator a non-exclusive, royalty-free, worldwide license to store, display, and process that content for the duration of service use and for a reasonable technical period necessary for deletion, up to 30 days after deletion of the account or the content, solely for the purpose of operating and providing the service.</p>
+            <p class="eb-legal-copy">7.3 You agree not to upload FIT files or other data that do not belong to you or that you are not authorized to share.</p>
+          </section>
+
+          <section class="eb-legal-section">
+            <h2>8. Service availability and changes</h2>
+            <p class="eb-legal-copy">8.1 The operator seeks to maximize service availability but does not guarantee uninterrupted operation. The service may be temporarily unavailable due to maintenance, technical issues, or circumstances beyond the operator's control.</p>
+            <p class="eb-legal-copy">8.2 The operator reserves the right to change, limit, or discontinue the service at any time. In the event of a planned shutdown, users will be given at least 30 days to export their data.</p>
+            <p class="eb-legal-copy">8.3 The operator reserves the right to amend these Terms. You will be informed of material changes by email or in-app notice at least 30 days before they take effect. You have the right to terminate the agreement without penalty by deleting your account before the changes become effective. If you do not delete your account within 30 days, the changes are deemed accepted.</p>
+          </section>
+
+          <section class="eb-legal-section">
+            <h2>9. Liability and disclaimers</h2>
+            <p class="eb-legal-copy">9.1 The service is provided on an "as is" basis. The operator makes no warranties regarding the accuracy, completeness, or suitability of the data and outputs for any specific training or health purpose. This limitation does not apply to the extent prohibited by applicable law, including mandatory consumer rights.</p>
+            <p class="eb-legal-copy">9.2 EnduroBuddy is not a medical application and does not provide medical advice. Any training recommendations are informational only. Before starting intensive training, consultation with a physician is recommended.</p>
+            <p class="eb-legal-copy">9.3 The operator is not liable for damages arising from the use of or inability to use the service, except where caused intentionally or by gross negligence, and except where consumer rights cannot be limited by contract.</p>
+            <p class="eb-legal-copy">9.4 The operator is not responsible for the content or availability of third-party services connected to the application, including Garmin Connect and Google.</p>
+          </section>
+
+          <section class="eb-legal-section">
+            <h2>10. Account termination</h2>
+            <p class="eb-legal-copy">10.1 You may delete your account at any time through the account settings in the application. After deletion, your personal data will be removed in accordance with the Privacy Policy.</p>
+            <p class="eb-legal-copy">10.2 The operator reserves the right to suspend or cancel the account of a user who violates these Terms, even without prior notice.</p>
+          </section>
+
+          <section class="eb-legal-section">
+            <h2>11. Governing law and dispute resolution</h2>
+            <p class="eb-legal-copy">These Terms are governed by the laws of the Czech Republic. Any disputes shall be resolved by the competent court in the Czech Republic. If you are a consumer residing in another EU Member State, you may also contact the consumer court in your country or use the EU online dispute resolution platform at <a href="https://ec.europa.eu/consumers/odr" target="_blank" rel="noreferrer">https://ec.europa.eu/consumers/odr</a>.</p>
+          </section>
+
+          <section class="eb-legal-section">
+            <h2>12. Final provisions</h2>
+            <p class="eb-legal-copy">If any provision of these Terms is or becomes invalid or unenforceable, the remaining provisions shall remain valid and effective. The invalid provision shall be replaced by a provision that most closely reflects its original intent.</p>
+          </section>
+        {% else %}
+          <p class="eb-legal-kicker">Právní informace</p>
+          <h1 class="eb-legal-title">Podmínky použití</h1>
+          <p class="eb-legal-lead">EnduroBuddy - účinné od 1. 4. 2026</p>
+
+          <section class="eb-legal-section">
+            <h2>1. Provozovatel a kontakt</h2>
+            <p class="eb-legal-copy">
+              Provozovatelem aplikace EnduroBuddy je:<br>
+              <strong>Jméno:</strong> Vojtěch Holcman<br>
+              <strong>Adresa:</strong> K lánu 496/2, 160 00 Praha 6, Česká republika<br>
+              <strong>E-mail:</strong> support@endurobuddy.cz
+            </p>
+          </section>
+
+          <section class="eb-legal-section">
+            <h2>2. Popis služby</h2>
+            <p class="eb-legal-copy">EnduroBuddy je webová aplikace určená pro plánování tréninku a správu vytrvalostních aktivit. Umožňuje spolupráci mezi trenérem a sportovcem v rámci jednoho rozhraní, včetně tvorby tréninkových plánů, záznamu splněných tréninků a importu aktivit ze souborů FIT nebo ze služby Garmin Connect.</p>
+          </section>
+
+          <section class="eb-legal-section">
+            <h2>3. Registrace a uživatelský účet</h2>
+            <p class="eb-legal-copy">3.1 Pro využívání služby je nutná registrace. Registrací potvrzujete, že jste si přečetli a souhlasíte s těmito Podmínkami a se Zásadami ochrany osobních údajů.</p>
+            <p class="eb-legal-copy">3.2 Při registraci jste povinni uvést pravdivé a úplné informace. Zavazujete se udržovat své kontaktní údaje aktuální.</p>
+            <p class="eb-legal-copy">3.3 Jste odpovědní za zachování důvěrnosti přihlašovacích údajů a za veškeré aktivity provedené pod Vaším účtem. V případě podezření na neoprávněný přístup nás neprodleně kontaktujte na support@endurobuddy.cz.</p>
+            <p class="eb-legal-copy">3.4 Jeden uživatel smí mít pouze jeden aktivní účet.</p>
+          </section>
+
+          <section class="eb-legal-section">
+            <h2>4. Oprávněné použití</h2>
+            <p class="eb-legal-copy">4.1 Službu smíte využívat výhradně pro zákonné účely a v souladu s těmito Podmínkami.</p>
+            <p class="eb-legal-copy">4.2 Zavazujete se, že nebudete:</p>
+            <ul class="eb-legal-list">
+              <li>nahrávat nebo sdílet obsah, který porušuje práva třetích osob, je nezákonný, urážlivý nebo nepravdivý</li>
+              <li>pokoušet se o neoprávněný přístup k systémům, datům jiných uživatelů nebo infrastruktuře aplikace</li>
+              <li>využívat aplikaci k automatizovanému sběru dat bez předchozího písemného souhlasu</li>
+              <li>obcházet technická nebo bezpečnostní opatření aplikace</li>
+              <li>vydávat se za jinou osobu nebo jiného uživatele</li>
+            </ul>
+          </section>
+
+          <section class="eb-legal-section">
+            <h2>5. Vztah trenér-sportovec a odpovědnost za zpracování osobních údajů</h2>
+            <p class="eb-legal-copy">5.1 Trenér může přizvat sportovce do svého týmu prostřednictvím e-mailové pozvánky. Sportovec svým přijetím pozvánky souhlasí s tím, že trenér bude mít přístup k jeho tréninkovým datům a aktivitám v rámci aplikace.</p>
+            <p class="eb-legal-copy">5.2 Vojtěch Holcman, jako provozovatel, je správcem osobních údajů uživatelů v rozsahu technického provozu platformy. Trenér, který prostřednictvím aplikace zpracovává osobní údaje svých svěřenců v rámci své profesionální nebo podnikatelské činnosti, může být v postavení společného správce ve smyslu čl. 26 GDPR. V takovém případě je trenér povinen:</p>
+            <ul class="eb-legal-list">
+              <li>uzavřít s provozovatelem dohodu společných správců dle čl. 26 GDPR na support@endurobuddy.cz</li>
+              <li>zajistit, že má pro zpracování osobních údajů svěřenců vlastní právní základ</li>
+              <li>informovat své svěřence o zpracování jejich osobních údajů v rozsahu stanoveném čl. 13 GDPR</li>
+            </ul>
+            <p class="eb-legal-copy">Pokud trenér využívá aplikaci výhradně pro osobní, nepodnikatelské účely, např. pro vedení rodinného člena, tato povinnost se na něj nevztahuje.</p>
+            <p class="eb-legal-copy">5.3 Sportovec může kdykoli ukončit propojení s trenérem prostřednictvím nastavení svého účtu.</p>
+          </section>
+
+          <section class="eb-legal-section">
+            <h2>6. Nezletilí uživatelé</h2>
+            <p class="eb-legal-copy">Pro uživatele mladší 15 let je podmínkou používání služby souhlas zákonného zástupce. Zákonný zástupce, který udělí souhlas, přijímá odpovědnost za používání služby nezletilým. Podrobnosti jsou uvedeny v oddíle 7 Zásad ochrany osobních údajů.</p>
+          </section>
+
+          <section class="eb-legal-section">
+            <h2>7. Obsah a data uživatele</h2>
+            <p class="eb-legal-copy">7.1 Tréninková data, aktivity a další obsah, který do aplikace nahráváte, zůstávají Vaším vlastnictvím.</p>
+            <p class="eb-legal-copy">7.2 Nahráváním obsahu udělujete provozovateli nevýhradní, bezplatnou, celosvětovou licenci k uložení, zobrazení a zpracování tohoto obsahu po dobu používání služby a po přiměřenou technickou lhůtu nezbytnou k jeho výmazu, nejvýše 30 dní od smazání účtu nebo obsahu, a to výhradně za účelem provozování a poskytování služby.</p>
+            <p class="eb-legal-copy">7.3 Souhlasíte s tím, že nebudete nahrávat soubory FIT ani jiná data, která Vám nepatří nebo k jejichž sdílení nemáte oprávnění.</p>
+          </section>
+
+          <section class="eb-legal-section">
+            <h2>8. Dostupnost a změny služby</h2>
+            <p class="eb-legal-copy">8.1 Provozovatel usiluje o maximální dostupnost služby, avšak nezaručuje nepřetržitý provoz. Služba může být dočasně nedostupná z důvodu údržby, technických problémů nebo okolností mimo kontrolu provozovatele.</p>
+            <p class="eb-legal-copy">8.2 Provozovatel si vyhrazuje právo kdykoli změnit, omezit nebo ukončit poskytování služby. V případě plánovaného ukončení provozu bude uživatelům poskytnuta lhůta minimálně 30 dní k exportu jejich dat.</p>
+            <p class="eb-legal-copy">8.3 Provozovatel si vyhrazuje právo tyto Podmínky změnit. O podstatných změnách budete informováni e-mailem nebo oznámením v aplikaci nejméně 30 dní před jejich účinností. Máte právo před účinností změn smlouvu vypovědět bez sankce smazáním svého účtu. Pokud účet ve lhůtě 30 dní nesmažete, platí, že se změnami souhlasíte.</p>
+          </section>
+
+          <section class="eb-legal-section">
+            <h2>9. Odpovědnost a vyloučení záruk</h2>
+            <p class="eb-legal-copy">9.1 Služba je poskytována "tak jak je". Provozovatel neposkytuje záruky týkající se přesnosti, úplnosti nebo vhodnosti dat a výstupů aplikace pro konkrétní tréninkové nebo zdravotní účely. Toto omezení se neuplatní v rozsahu, v jakém to zakazují příslušné právní předpisy, zejména práva spotřebitelů.</p>
+            <p class="eb-legal-copy">9.2 EnduroBuddy není zdravotnickou aplikací a neposkytuje lékařské rady. Veškerá tréninková doporučení jsou orientační. Před zahájením intenzivního tréninku doporučujeme konzultaci s lékařem.</p>
+            <p class="eb-legal-copy">9.3 Provozovatel neodpovídá za škody vzniklé z používání nebo nemožnosti používání služby, s výjimkou případů způsobených úmyslně nebo hrubou nedbalostí, a s výjimkou práv spotřebitelů, která nelze smluvně omezit.</p>
+            <p class="eb-legal-copy">9.4 Provozovatel neodpovídá za obsah nebo dostupnost služeb třetích stran propojených s aplikací, včetně Garmin Connect a Google.</p>
+          </section>
+
+          <section class="eb-legal-section">
+            <h2>10. Ukončení účtu</h2>
+            <p class="eb-legal-copy">10.1 Svůj účet můžete kdykoli smazat prostřednictvím nastavení účtu v aplikaci. Po smazání budou Vaše osobní údaje odstraněny v souladu se Zásadami ochrany osobních údajů.</p>
+            <p class="eb-legal-copy">10.2 Provozovatel si vyhrazuje právo pozastavit nebo zrušit účet uživatele, který porušuje tyto Podmínky, a to i bez předchozího upozornění.</p>
+          </section>
+
+          <section class="eb-legal-section">
+            <h2>11. Rozhodné právo a řešení sporů</h2>
+            <p class="eb-legal-copy">Tyto Podmínky se řídí právním řádem České republiky. Případné spory budou řešeny příslušným soudem v České republice. Pokud jste spotřebitel s bydlištěm v jiném členském státě EU, máte právo obrátit se na spotřebitelský soud ve své zemi nebo využít platformu pro online řešení sporů EU dostupnou na <a href="https://ec.europa.eu/consumers/odr" target="_blank" rel="noreferrer">https://ec.europa.eu/consumers/odr</a>.</p>
+          </section>
+
+          <section class="eb-legal-section">
+            <h2>12. Závěrečná ustanovení</h2>
+            <p class="eb-legal-copy">Pokud je nebo se stane jakékoli ustanovení těchto Podmínek neplatným nebo nevymahatelným, ostatní ustanovení zůstávají v platnosti a účinnosti. Neplatné ustanovení bude nahrazeno ustanovením, které se svým smyslem co nejvíce přibližuje původnímu záměru.</p>
+          </section>
+        {% endif %}
+      </article>
+    </div>
+  </main>
+{% endblock %}

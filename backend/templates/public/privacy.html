@@ -1,0 +1,394 @@
+{% extends "public/base_public.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% get_current_language as CURRENT_LANGUAGE %}{% if CURRENT_LANGUAGE == "en" %}Privacy Policy | EnduroBuddy{% else %}Zásady ochrany osobních údajů | EnduroBuddy{% endif %}{% endblock %}
+
+{% block page_styles %}
+  <link rel="stylesheet" href="{% static 'css/public-legal.css' %}">
+{% endblock %}
+
+{% block content %}
+  {% get_current_language as CURRENT_LANGUAGE %}
+  <main class="eb-legal-main">
+    <div class="eb-shell">
+      <article class="eb-legal-card">
+        {% if CURRENT_LANGUAGE == "en" %}
+          <p class="eb-legal-kicker">Legal Information</p>
+          <h1 class="eb-legal-title">Privacy Policy</h1>
+          <p class="eb-legal-lead">EnduroBuddy - effective from April 1, 2026</p>
+
+          <section class="eb-legal-section">
+            <h2>1. Controller of personal data</h2>
+            <p class="eb-legal-copy">
+              The controller of personal data is:<br>
+              <strong>Name:</strong> Vojtěch Holcman<br>
+              <strong>Address:</strong> K lánu 496/2, 160 00 Praha 6, Czech Republic<br>
+              <strong>Email:</strong> support@endurobuddy.cz<br>
+              (If the application is operated as part of a business activity, the company registration number will be added.)
+            </p>
+          </section>
+
+          <section class="eb-legal-section">
+            <h2>2. What personal data we process</h2>
+            <p class="eb-legal-copy">We process the following categories of personal data:</p>
+            <p class="eb-legal-copy"><strong>Registration and profile data</strong></p>
+            <ul class="eb-legal-list">
+              <li>first name and last name</li>
+              <li>email address</li>
+              <li>role in the application, coach or athlete</li>
+              <li>login credentials, with passwords stored in hashed form using Django PBKDF2</li>
+              <li>optionally, Google profile data when signing in with Google</li>
+            </ul>
+            <p class="eb-legal-copy"><strong>Training and performance data</strong></p>
+            <ul class="eb-legal-list">
+              <li>planned sessions, including date, title, distance, notes, and two-phase days</li>
+              <li>completed sessions, including time, distance, average heart rate, subjective feeling, and notes</li>
+              <li>imported activity data from FIT files or Garmin, including start time, duration, distance, average and maximum heart rate, pace, cadence, power, elevation, interval data, and time series</li>
+              <li>metadata of imported files, including original filename and SHA-256 checksum</li>
+            </ul>
+            <p class="eb-legal-copy">Note regarding GPS data: the application currently stores activity time series without persistent GPS coordinates. FIT files may technically contain GPS data; these data are processed temporarily in server memory during import and are not stored permanently. A technical audit has confirmed that GPS coordinates are not written to the database. If this behavior changes in the future, this policy will be updated accordingly and the relevant legal basis will be ensured.</p>
+            <p class="eb-legal-copy"><strong>Relationship and organizational data</strong></p>
+            <ul class="eb-legal-list">
+              <li>coach-athlete links, groups, and invitations</li>
+              <li>email address entered when inviting another user</li>
+            </ul>
+            <p class="eb-legal-copy"><strong>Garmin Connect integration, optional</strong></p>
+            <ul class="eb-legal-list">
+              <li>Garmin email and displayed name</li>
+              <li>encrypted authentication token for access to Garmin Connect</li>
+              <li>the Garmin Connect password is used only during initial linking and is not stored permanently</li>
+            </ul>
+          </section>
+
+          <section class="eb-legal-section">
+            <h2>3. Purpose and legal basis of processing</h2>
+            <table class="eb-legal-table">
+              <thead>
+                <tr>
+                  <th>Purpose</th>
+                  <th>Legal basis under GDPR</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Provision of the service, including training plan management and coach-athlete communication</td>
+                  <td>Performance of a contract under Article 6(1)(b)</td>
+                </tr>
+                <tr>
+                  <td>Connection to Garmin Connect</td>
+                  <td>Consent under Article 6(1)(a)</td>
+                </tr>
+                <tr>
+                  <td>Sending transactional emails, including invitations and notifications</td>
+                  <td>Performance of a contract under Article 6(1)(b)</td>
+                </tr>
+                <tr>
+                  <td>Ensuring service security and integrity, including CSRF and session protection</td>
+                  <td>Legitimate interest under Article 6(1)(f)</td>
+                </tr>
+                <tr>
+                  <td>Security logging and audit trail, operational logs retained for up to 90 days</td>
+                  <td>Legitimate interest under Article 6(1)(f), with processing limited to what is necessary and proportionate</td>
+                </tr>
+                <tr>
+                  <td>Compliance with legal obligations</td>
+                  <td>Legal obligation under Article 6(1)(c)</td>
+                </tr>
+              </tbody>
+            </table>
+            <p class="eb-legal-copy">Automated decision-making and profiling: the application does not carry out automated decision-making or profiling within the meaning of Article 22 GDPR. No decisions with legal or similarly significant effects are made solely on the basis of automated processing.</p>
+          </section>
+
+          <section class="eb-legal-section">
+            <h2>4. Recipients of personal data and transfers to third parties</h2>
+            <p class="eb-legal-copy">Your personal data may be transferred to the following third parties, only to the extent necessary for operating the service:</p>
+            <ul class="eb-legal-list">
+              <li><strong>Hetzner Online GmbH, hosting provider</strong><br>Server infrastructure is located in Germany within the EU. Processing takes place under a data processing agreement compliant with GDPR.</li>
+              <li><strong>Google LLC, sign-in with Google</strong><br>If you use sign-in with Google, basic profile data are transferred through OAuth 2.0. This processing is subject to Google's own privacy policy.</li>
+              <li><strong>Resend Inc., email service provider</strong><br>Transactional emails such as invitations and notifications are sent through Resend. Only the recipient's email address and message content are transferred.</li>
+              <li><strong>Garmin Ltd., Garmin Connect integration</strong><br>When optional Garmin Connect integration is used, communication with Garmin Connect APIs takes place. This processing is subject to Garmin's own terms and privacy rules.</li>
+            </ul>
+            <p class="eb-legal-copy">We do not sell personal data and do not transfer them to third parties for marketing or profiling purposes.</p>
+          </section>
+
+          <section class="eb-legal-section">
+            <h2>5. Transfers of data outside the EEA</h2>
+            <p class="eb-legal-copy">Google LLC and Resend Inc. are companies based in the United States. Transfers of personal data to the United States take place on the basis of Standard Contractual Clauses approved by the European Commission. Participation of the respective companies in the EU-US Data Privacy Framework is continuously verified on dataprivacyframework.gov, and the currently recorded status is as follows:</p>
+            <ul class="eb-legal-list">
+              <li>Google LLC - participant in the EU-US Data Privacy Framework</li>
+              <li>Resend Inc. - participant in the EU-US Data Privacy Framework and the UK Extension to the EU-US DPF, verified on April 4, 2026</li>
+            </ul>
+            <p class="eb-legal-copy">Hosting infrastructure operated by Hetzner is located exclusively within the EU, and no transfer outside the EEA takes place in that part of the service.</p>
+          </section>
+
+          <section class="eb-legal-section">
+            <h2>6. Cookies and technical means</h2>
+            <p class="eb-legal-copy">The application uses only technically necessary cookies:</p>
+            <ul class="eb-legal-list">
+              <li>session cookie used to keep the user signed in during the visit</li>
+              <li>CSRF token used to protect against Cross-Site Request Forgery attacks</li>
+            </ul>
+            <p class="eb-legal-copy">These cookies are necessary for the functioning of the service. We do not use any analytics, marketing, or tracking cookies, nor any tools for monitoring user behavior such as Google Analytics or Meta Pixel.</p>
+          </section>
+
+          <section class="eb-legal-section">
+            <h2>7. Minors</h2>
+            <p class="eb-legal-copy">The service may be used by persons under 18 years of age. For users under 15 years of age, parental or guardian consent is required. This threshold follows from Article 8 GDPR in conjunction with Section 7(3) of Czech Act No. 110/2019 Coll., which lowers the age for independent consent from 16 to 15 in the Czech Republic.</p>
+            <p class="eb-legal-copy">If you are a legal guardian and learn that your child created an account without your knowledge, please contact us at support@endurobuddy.cz and we will delete the account without undue delay.</p>
+          </section>
+
+          <section class="eb-legal-section">
+            <h2>8. Data retention period</h2>
+            <table class="eb-legal-table">
+              <thead>
+                <tr>
+                  <th>Data category</th>
+                  <th>Retention period</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Registration and profile data</td>
+                  <td>For the duration of the account, then up to 30 days after account deletion</td>
+                </tr>
+                <tr>
+                  <td>Training and performance data</td>
+                  <td>For the duration of the account, then up to 30 days after account deletion</td>
+                </tr>
+                <tr>
+                  <td>Garmin authentication token</td>
+                  <td>Until the integration is disconnected or the account is deleted</td>
+                </tr>
+                <tr>
+                  <td>Operational and security logs</td>
+                  <td>Up to 90 days</td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section class="eb-legal-section">
+            <h2>9. Your rights</h2>
+            <p class="eb-legal-copy">As a data subject, you have the following rights:</p>
+            <ul class="eb-legal-list">
+              <li>right of access under Article 15 GDPR</li>
+              <li>right to rectification under Article 16 GDPR</li>
+              <li>right to erasure under Article 17 GDPR</li>
+              <li>right to restriction of processing under Article 18 GDPR</li>
+              <li>right to data portability under Article 20 GDPR</li>
+              <li>right to object under Article 21 GDPR where processing is based on legitimate interest</li>
+              <li>right to withdraw consent at any time where processing is based on consent, without affecting the lawfulness of prior processing</li>
+            </ul>
+            <p class="eb-legal-copy">You may exercise your rights by email at support@endurobuddy.cz. Requests will be handled without undue delay and no later than one month after receipt. In exceptional cases, due to complexity or the number of requests, this period may be extended by an additional two months, and you will be informed of such extension.</p>
+            <p class="eb-legal-copy">If you believe that the processing of your personal data violates GDPR, you have the right to lodge a complaint with the supervisory authority:<br>Úřad pro ochranu osobních údajů, Czech Republic<br>Pplk. Sochora 27, 170 00 Praha 7<br><a href="https://www.uoou.cz" target="_blank" rel="noreferrer">www.uoou.cz</a></p>
+          </section>
+
+          <section class="eb-legal-section">
+            <h2>10. Security of personal data</h2>
+            <p class="eb-legal-copy">We implement technical and organizational measures to protect your personal data, in particular:</p>
+            <ul class="eb-legal-list">
+              <li>data transmission is encrypted using TLS and HTTPS, terminated by Traefik</li>
+              <li>passwords are stored in hashed form using Django PBKDF2</li>
+              <li>Garmin authentication tokens are stored in encrypted form</li>
+              <li>access to data is restricted by roles, and coaches can only see the data of their own athletes</li>
+              <li>server infrastructure is operated in a secure Hetzner data center within the EU</li>
+            </ul>
+          </section>
+
+          <section class="eb-legal-section">
+            <h2>11. Changes to this policy</h2>
+            <p class="eb-legal-copy">We will inform you of material changes to this policy by email or by notice in the application at least 30 days before such changes take effect. The current version is always available on the Privacy Policy page within the application.</p>
+          </section>
+        {% else %}
+          <p class="eb-legal-kicker">Právní informace</p>
+          <h1 class="eb-legal-title">Zásady ochrany osobních údajů</h1>
+          <p class="eb-legal-lead">EnduroBuddy - účinné od 1. 4. 2026</p>
+
+          <section class="eb-legal-section">
+            <h2>1. Správce osobních údajů</h2>
+            <p class="eb-legal-copy">
+              Správcem osobních údajů je:<br>
+              <strong>Jméno:</strong> Vojtěch Holcman<br>
+              <strong>Adresa:</strong> K lánu 496/2, 160 00 Praha 6, Česká republika<br>
+              <strong>E-mail:</strong> support@endurobuddy.cz<br>
+              (Pokud bude aplikace provozována v rámci podnikatelské činnosti, bude doplněno IČO.)
+            </p>
+          </section>
+
+          <section class="eb-legal-section">
+            <h2>2. Jaké osobní údaje zpracováváme</h2>
+            <p class="eb-legal-copy">Zpracováváme následující kategorie osobních údajů:</p>
+            <p class="eb-legal-copy"><strong>Registrační a profilové údaje</strong></p>
+            <ul class="eb-legal-list">
+              <li>jméno a příjmení</li>
+              <li>e-mailová adresa</li>
+              <li>role v aplikaci, trenér nebo sportovec</li>
+              <li>přihlašovací údaje, heslo je uloženo v zahashované podobě pomocí Django PBKDF2</li>
+              <li>volitelně Google profil při přihlášení přes Google</li>
+            </ul>
+            <p class="eb-legal-copy"><strong>Tréninková a výkonnostní data</strong></p>
+            <ul class="eb-legal-list">
+              <li>plánované tréninky, včetně data, názvu, vzdálenosti, poznámek a dvoufázových dní</li>
+              <li>splněné tréninky, včetně času, vzdálenosti, průměrné srdeční frekvence, subjektivního pocitu a poznámek</li>
+              <li>importované aktivity ze souborů FIT nebo Garminu, včetně času startu, trvání, vzdálenosti, průměrné a maximální srdeční frekvence, tempa, kadence, výkonu, nadmořské výšky, intervalových dat a časových řad</li>
+              <li>metadata importovaných souborů, včetně původního názvu souboru a SHA-256 kontrolního součtu</li>
+            </ul>
+            <p class="eb-legal-copy">Poznámka k GPS datům: aplikace aktuálně ukládá časové řady aktivit bez perzistentních GPS souřadnic. Soubory FIT mohou GPS data technicky obsahovat, tato data jsou při importu zpracovávána dočasně v paměti serveru a trvale se neukládají. Technický audit potvrdil, že GPS souřadnice nejsou zapisovány do databáze. Pokud by se toto chování v budoucnu změnilo, bude tato politika odpovídajícím způsobem aktualizována a bude zajištěn příslušný právní základ.</p>
+            <p class="eb-legal-copy"><strong>Vztahová a organizační data</strong></p>
+            <ul class="eb-legal-list">
+              <li>propojení trenér-sportovec, skupiny a pozvánky</li>
+              <li>e-mailová adresa zadaná při pozvání jiného uživatele</li>
+            </ul>
+            <p class="eb-legal-copy"><strong>Garmin Connect integrace, volitelná</strong></p>
+            <ul class="eb-legal-list">
+              <li>Garmin e-mail a zobrazované jméno</li>
+              <li>šifrovaný autentizační token pro přístup ke Garmin Connect</li>
+              <li>heslo ke Garmin Connect se používá pouze při prvotním propojení a trvale se neukládá</li>
+            </ul>
+          </section>
+
+          <section class="eb-legal-section">
+            <h2>3. Účel a právní základ zpracování</h2>
+            <table class="eb-legal-table">
+              <thead>
+                <tr>
+                  <th>Ucel</th>
+                  <th>Právní základ podle GDPR</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Poskytování služby, vedení tréninkových plánů a komunikace trenér-sportovec</td>
+                  <td>Plnění smlouvy podle čl. 6 odst. 1 písm. b)</td>
+                </tr>
+                <tr>
+                  <td>Propojení s Garmin Connect</td>
+                  <td>Souhlas podle čl. 6 odst. 1 písm. a)</td>
+                </tr>
+                <tr>
+                  <td>Zasílání transakčních e-mailů, pozvánek a upozornění</td>
+                  <td>Plnění smlouvy podle čl. 6 odst. 1 písm. b)</td>
+                </tr>
+                <tr>
+                  <td>Zajištění bezpečnosti a integrity služby, včetně CSRF a session ochrany</td>
+                  <td>Oprávněný zájem podle čl. 6 odst. 1 písm. f)</td>
+                </tr>
+                <tr>
+                  <td>Bezpečnostní logování a auditní záznamy, provozní logy uchovávané maximálně 90 dní</td>
+                  <td>Oprávněný zájem podle čl. 6 odst. 1 písm. f), zpracování je omezeno na nezbytný a přiměřený rozsah</td>
+                </tr>
+                <tr>
+                  <td>Plnění zákonných povinností</td>
+                  <td>Právní povinnost podle čl. 6 odst. 1 písm. c)</td>
+                </tr>
+              </tbody>
+            </table>
+            <p class="eb-legal-copy">Automatizované rozhodování a profilování: aplikace neprovádí žádné automatizované rozhodování ani profilování ve smyslu čl. 22 GDPR. Nedochází k žádnému rozhodování s právními nebo obdobně závažnými účinky založenému výhradně na automatizovaném zpracování.</p>
+          </section>
+
+          <section class="eb-legal-section">
+            <h2>4. Příjemci osobních údajů a předávání třetím stranám</h2>
+            <p class="eb-legal-copy">Vaše osobní údaje mohou být předány následujícím třetím stranám, a to pouze v rozsahu nezbytném pro provoz služby:</p>
+            <ul class="eb-legal-list">
+              <li><strong>Hetzner Online GmbH, hostingový poskytovatel</strong><br>Serverová infrastruktura je umístěna v Německu v rámci EU. Zpracování probíhá na základě smlouvy o zpracování osobních údajů v souladu s GDPR.</li>
+              <li><strong>Google LLC, přihlašování přes Google</strong><br>Pokud využijete přihlašování přes Google, přenášejí se základní profilové údaje prostřednictvím OAuth 2.0. Na toto zpracování se vztahují zásady ochrany osobních údajů společnosti Google.</li>
+              <li><strong>Resend Inc., e-mailová služba</strong><br>Transakční e-maily, jako jsou pozvánky a notifikace, jsou odesílány prostřednictvím služby Resend. Předává se pouze e-mailová adresa příjemce a obsah zprávy.</li>
+              <li><strong>Garmin Ltd., Garmin Connect integrace</strong><br>Při volitelném propojení s Garmin Connect dochází ke komunikaci s API Garmin Connect. Na toto zpracování se vztahují podmínky a zásady ochrany osobních údajů společnosti Garmin.</li>
+            </ul>
+            <p class="eb-legal-copy">Osobní údaje neprodáváme ani nepředáváme třetím stranám za účelem marketingu nebo profilování.</p>
+          </section>
+
+          <section class="eb-legal-section">
+            <h2>5. Předávání údajů mimo EHP</h2>
+            <p class="eb-legal-copy">Služby Google LLC a Resend Inc. jsou provozovány společnostmi se sídlem ve Spojených státech. Předávání osobních údajů do USA probíhá na základě standardních smluvních doložek schválených Evropskou komisí. Účast jednotlivých společností v rámci EU-US Data Privacy Framework je průběžně ověřována na dataprivacyframework.gov a aktuálně evidovaný stav je následující:</p>
+            <ul class="eb-legal-list">
+              <li>Google LLC - účastník EU-US Data Privacy Framework</li>
+              <li>Resend Inc. - účastník EU-US Data Privacy Framework a UK Extension to the EU-US DPF, ověřeno k 4. 4. 2026</li>
+            </ul>
+            <p class="eb-legal-copy">Hostingová infrastruktura Hetzneru je umístěna výhradně v EU a v této části služby k předávání mimo EHP nedochází.</p>
+          </section>
+
+          <section class="eb-legal-section">
+            <h2>6. Cookies a technické prostředky</h2>
+            <p class="eb-legal-copy">Aplikace používá výhradně technicky nezbytné cookies:</p>
+            <ul class="eb-legal-list">
+              <li>session cookie pro udržení přihlášení uživatele po dobu návštěvy</li>
+              <li>CSRF token pro ochranu proti útokům typu Cross-Site Request Forgery</li>
+            </ul>
+            <p class="eb-legal-copy">Tyto cookies jsou nezbytné pro fungování služby. Nepoužíváme žádné analytické, marketingové ani sledovací cookies ani nástroje pro sledování chování uživatelů, jako je Google Analytics nebo Meta Pixel.</p>
+          </section>
+
+          <section class="eb-legal-section">
+            <h2>7. Nezletilí uživatelé</h2>
+            <p class="eb-legal-copy">Službu mohou využívat osoby mladší 18 let. Pro uživatele mladší 15 let je vyžadován souhlas zákonného zástupce. Tato hranice vychází z čl. 8 GDPR ve spojení s paragrafem 7 odst. 3 zákona č. 110/2019 Sb., který v České republice snižuje věkovou hranici pro samostatný souhlas z 16 na 15 let.</p>
+            <p class="eb-legal-copy">Pokud jste zákonný zástupce a zjistíte, že Vaše dítě vytvořilo účet bez Vašeho vědomí, kontaktujte nás prosím na support@endurobuddy.cz a účet neprodleně smažeme.</p>
+          </section>
+
+          <section class="eb-legal-section">
+            <h2>8. Doba uchovávání osobních údajů</h2>
+            <table class="eb-legal-table">
+              <thead>
+                <tr>
+                  <th>Kategorie dat</th>
+                  <th>Doba uchovávání</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Registrační a profilové údaje</td>
+                  <td>Po dobu trvání účtu, poté maximálně 30 dní po smazání účtu</td>
+                </tr>
+                <tr>
+                  <td>Tréninková a výkonnostní data</td>
+                  <td>Po dobu trvání účtu, poté maximálně 30 dní po smazání účtu</td>
+                </tr>
+                <tr>
+                  <td>Garmin autentizační token</td>
+                  <td>Do odpojení integrace nebo smazání účtu</td>
+                </tr>
+                <tr>
+                  <td>Provozní a bezpečnostní logy</td>
+                  <td>Maximálně 90 dní</td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section class="eb-legal-section">
+            <h2>9. Vaše práva</h2>
+            <p class="eb-legal-copy">Jako subjekt údajů máte tato práva:</p>
+            <ul class="eb-legal-list">
+              <li>právo na přístup podle čl. 15 GDPR</li>
+              <li>právo na opravu podle čl. 16 GDPR</li>
+              <li>právo na výmaz podle čl. 17 GDPR</li>
+              <li>právo na omezení zpracování podle čl. 18 GDPR</li>
+              <li>právo na přenositelnost údajů podle čl. 20 GDPR</li>
+              <li>právo vznést námitku podle čl. 21 GDPR, pokud je zpracování založeno na oprávněném zájmu</li>
+              <li>právo odvolat souhlas kdykoli, pokud je zpracování založeno na souhlasu, aniž by byla dotčena zákonnost předchozího zpracování</li>
+            </ul>
+            <p class="eb-legal-copy">Svá práva můžete uplatnit e-mailem na support@endurobuddy.cz. Žádost bude vyřízena bez zbytečného odkladu, nejpozději do jednoho měsíce od obdržení. Ve výjimečných případech lze tuto lhůtu z důvodu složitosti nebo počtu žádostí prodloužit o další dva měsíce a budete o tom informováni.</p>
+            <p class="eb-legal-copy">Pokud se domníváte, že zpracování Vašich osobních údajů porušuje GDPR, máte právo podat stížnost u dozorového úřadu:<br>Úřad pro ochranu osobních údajů<br>Pplk. Sochora 27, 170 00 Praha 7<br><a href="https://www.uoou.cz" target="_blank" rel="noreferrer">www.uoou.cz</a></p>
+          </section>
+
+          <section class="eb-legal-section">
+            <h2>10. Zabezpečení osobních údajů</h2>
+            <p class="eb-legal-copy">Přijímáme technická a organizační opatření k ochraně Vašich osobních údajů, zejména:</p>
+            <ul class="eb-legal-list">
+              <li>přenos dat je šifrován pomocí TLS a HTTPS, ukončovaný přes Traefik</li>
+              <li>hesla jsou uložena v zahashované podobě pomocí Django PBKDF2</li>
+              <li>Garmin autentizační tokeny jsou uloženy šifrovaně</li>
+              <li>přístup k datům je omezen rolemi a trenér vidí pouze data svých svěřenců</li>
+              <li>serverová infrastruktura je provozována v zabezpečeném datovém centru Hetzner v EU</li>
+            </ul>
+          </section>
+
+          <section class="eb-legal-section">
+            <h2>11. Změny těchto zásad</h2>
+            <p class="eb-legal-copy">O podstatných změnách těchto zásad Vás budeme informovat e-mailem nebo oznámením v aplikaci nejméně 30 dní před jejich účinností. Aktuální verze je vždy dostupná na stránce Zásady ochrany osobních údajů v aplikaci.</p>
+          </section>
+        {% endif %}
+      </article>
+    </div>
+  </main>
+{% endblock %}

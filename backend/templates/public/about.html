@@ -1,47 +1,40 @@
 {% extends "public/base_public.html" %}
+{% load static %}
+{% load i18n %}
 
-{% block title %}O nás | EnduroBuddy{% endblock %}
+{% block title %}{% get_current_language as CURRENT_LANGUAGE %}{% if CURRENT_LANGUAGE == "en" %}About | EnduroBuddy{% else %}O aplikaci | EnduroBuddy{% endif %}{% endblock %}
 
 {% block page_styles %}
-  <style>
-    .eb-main {
-      padding: 3rem 0 4rem;
-    }
-
-    .eb-card {
-      padding: 40px 32px;
-      border-radius: var(--eb-radius-lg);
-      border: 1px solid var(--eb-line);
-      background: rgba(29, 41, 36, 0.82);
-      box-shadow: var(--eb-shadow-1);
-      min-height: min(62vh, 560px);
-      display: grid;
-      align-content: center;
-    }
-
-    .eb-kicker {
-      color: var(--eb-accent);
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      font-size: 0.82rem;
-      font-weight: 700;
-      margin-bottom: 1rem;
-    }
-
-    .eb-title {
-      font-size: clamp(3.4rem, 10vw, 7rem);
-      line-height: 0.95;
-      margin: 0;
-    }
-  </style>
+  <link rel="stylesheet" href="{% static 'css/public-about.css' %}">
 {% endblock %}
 
 {% block content %}
+  {% get_current_language as CURRENT_LANGUAGE %}
   <main class="eb-main">
     <div class="eb-shell">
       <section class="eb-card">
-        <div class="eb-kicker">O nás</div>
-        <h1 class="eb-title">Soon</h1>
+        <div class="eb-kicker">{% if CURRENT_LANGUAGE == "en" %}About{% else %}O aplikaci{% endif %}</div>
+        <h1 class="eb-title">{% if CURRENT_LANGUAGE == "en" %}Training planning for coach and athlete{% else %}Plánování tréninku pro trenéra i sportovce{% endif %}</h1>
+        <p class="eb-copy">
+          {% if CURRENT_LANGUAGE == "en" %}
+            EnduroBuddy is a web application for monthly training plans, weekly structure, and completed sessions. It is built for endurance sport and connects the work of coach and athlete in one clear interface.
+          {% else %}
+            EnduroBuddy je webová aplikace pro měsíční tréninkové plány, týdenní strukturu a splněné tréninky. Je postavená pro vytrvalostní sport a propojuje práci trenéra a sportovce v jednom přehledném rozhraní.
+          {% endif %}
+        </p>
+        <ul class="eb-list">
+          {% if CURRENT_LANGUAGE == "en" %}
+            <li>monthly plans and weekly training structure</li>
+            <li>planned sessions with type, notes, and two-phase days</li>
+            <li>completed data linked back to the original plan</li>
+            <li>coach-athlete links, groups, requests, and invitations</li>
+          {% else %}
+            <li>měsíční plány a týdenní struktura tréninku</li>
+            <li>plánované tréninky s typem, poznámkami a dvoufázovými dny</li>
+            <li>splněné údaje navázané zpět na původní plán</li>
+            <li>vazby trenér-sportovec, skupiny, žádosti a pozvánky</li>
+          {% endif %}
+        </ul>
       </section>
     </div>
   </main>

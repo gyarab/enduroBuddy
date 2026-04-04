@@ -1,0 +1,100 @@
+.eb-legal-main {
+  padding: 3rem 0 4rem;
+}
+
+.eb-legal-card {
+  padding: 36px 32px;
+  border-radius: var(--eb-radius-lg);
+  border: 1px solid var(--eb-line);
+  background: rgba(29, 41, 36, 0.82);
+  box-shadow: var(--eb-shadow-1);
+  display: grid;
+  gap: 1.5rem;
+}
+
+.eb-legal-kicker {
+  color: var(--eb-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.82rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.eb-legal-title {
+  margin: 0;
+  font-size: clamp(2.4rem, 6vw, 4rem);
+  line-height: 1.02;
+  color: var(--eb-text-strong);
+}
+
+.eb-legal-lead,
+.eb-legal-copy {
+  margin: 0;
+  max-width: 82ch;
+  color: var(--eb-text-muted);
+  line-height: 1.75;
+}
+
+.eb-legal-section {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.eb-legal-section h2,
+.eb-legal-section h3 {
+  margin: 0;
+  color: var(--eb-text-strong);
+}
+
+.eb-legal-section h2 {
+  font-size: 1.2rem;
+}
+
+.eb-legal-section h3 {
+  font-size: 1rem;
+}
+
+.eb-legal-list {
+  margin: 0;
+  padding-left: 1.1rem;
+  color: var(--eb-text-muted);
+  line-height: 1.75;
+}
+
+.eb-legal-list li + li {
+  margin-top: 0.45rem;
+}
+
+.eb-legal-table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid var(--eb-line);
+  color: var(--eb-text-muted);
+  font-size: 0.98rem;
+}
+
+.eb-legal-table th,
+.eb-legal-table td {
+  padding: 0.9rem 1rem;
+  border-bottom: 1px solid var(--eb-line);
+  border-right: 1px solid var(--eb-line);
+  vertical-align: top;
+  line-height: 1.65;
+  text-align: left;
+}
+
+.eb-legal-table th:last-child,
+.eb-legal-table td:last-child {
+  border-right: 0;
+}
+
+.eb-legal-table tr:last-child td {
+  border-bottom: 0;
+}
+
+.eb-legal-table th {
+  color: var(--eb-text-strong);
+  background: rgba(255, 255, 255, 0.03);
+  font-weight: 700;
+}
