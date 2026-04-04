@@ -6,9 +6,12 @@
   <title>EnduroBuddy Visual Style Preview</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=League+Gothic&display=swap" rel="stylesheet">
   <style>
     :root {
+      --font-display: "League Gothic", "Arial Narrow", sans-serif;
+      --font-ui: "IBM Plex Sans", "Segoe UI Variable Text", "Segoe UI", sans-serif;
+      --font-accent: "Barlow Semi Condensed", "Arial Narrow", "Segoe UI", sans-serif;
       --bg: #101714;
       --bg-elevated: #16201c;
       --surface: #1d2924;
@@ -39,7 +42,7 @@
 
     body {
       margin: 0;
-      font-family: "Segoe UI Variable Text", "Segoe UI", "Inter", sans-serif;
+      font-family: var(--font-ui);
       background:
         radial-gradient(circle at top left, rgba(97, 196, 143, 0.1), transparent 22%),
         radial-gradient(circle at top right, rgba(119, 183, 215, 0.08), transparent 18%),
@@ -90,6 +93,20 @@
       overflow: hidden;
     }
 
+    .brand-lockup {
+      display: inline-flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 12px;
+    }
+
+    .brand-logo {
+      width: 154px;
+      height: auto;
+      display: block;
+      filter: drop-shadow(0 10px 22px rgba(0, 0, 0, 0.24));
+    }
+
     .hero-main::after {
       content: "";
       position: absolute;
@@ -106,12 +123,13 @@
     .hero h1,
     .section-heading h2,
     .display {
-      font-family: "Space Grotesk", "Segoe UI", "Inter", sans-serif;
+      font-family: var(--font-display);
     }
 
     .brand {
-      font-size: 1rem;
-      letter-spacing: 0.12em;
+      font-size: 1.2rem;
+      letter-spacing: 0.08em;
+      font-weight: 400;
       text-transform: uppercase;
       color: var(--accent);
       margin-bottom: 12px;
@@ -162,16 +180,20 @@
     }
 
     .eyebrow {
+      font-family: var(--font-accent);
       font-size: 0.75rem;
-      letter-spacing: 0.08em;
+      letter-spacing: 0.12em;
+      font-weight: 600;
       text-transform: uppercase;
       color: var(--text-dim);
       margin-bottom: 8px;
     }
 
     .metric {
+      font-family: var(--font-display);
       font-size: 1.9rem;
-      font-weight: 700;
+      font-weight: 400;
+      letter-spacing: 0.02em;
       margin-bottom: 4px;
     }
 
@@ -225,9 +247,12 @@
     }
 
     .type-sample .meta {
+      font-family: var(--font-accent);
       color: var(--text-dim);
       margin-bottom: 10px;
       font-size: 0.82rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
     }
 
     .display {
@@ -235,9 +260,15 @@
       line-height: 0.95;
     }
 
-    h3 { margin: 0 0 12px; font-size: 1.05rem; }
+    h3 {
+      margin: 0 0 12px;
+      font-size: 1.05rem;
+      font-family: var(--font-accent);
+      letter-spacing: 0.02em;
+    }
 
     .btn {
+      font-family: var(--font-accent);
       appearance: none;
       border: 1px solid var(--line-soft);
       background: rgba(255, 255, 255, 0.04);
@@ -247,6 +278,7 @@
       padding: 0 18px;
       font-size: 0.96rem;
       font-weight: 600;
+      letter-spacing: 0.02em;
       cursor: pointer;
       transition: 180ms ease;
     }
@@ -287,9 +319,12 @@
     .field { display: grid; gap: 8px; }
 
     .field label {
+      font-family: var(--font-accent);
       font-size: 0.84rem;
       color: var(--text-dim);
       font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
     }
 
     .input,
@@ -339,8 +374,11 @@
     }
 
     .search-kicker {
+      font-family: var(--font-accent);
       font-size: 0.78rem;
       color: var(--text-dim);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
       padding: 6px 10px;
       border-radius: 999px;
       border: 1px solid var(--line);
@@ -357,6 +395,7 @@
     }
 
     .segment {
+      font-family: var(--font-accent);
       min-height: 38px;
       padding: 0 14px;
       border-radius: 999px;
@@ -365,6 +404,7 @@
       color: var(--text-muted);
       cursor: pointer;
       font-weight: 600;
+      letter-spacing: 0.02em;
     }
 
     .segment.is-active {
@@ -373,6 +413,7 @@
     }
 
     .chip {
+      font-family: var(--font-accent);
       display: inline-flex;
       align-items: center;
       min-height: 32px;
@@ -380,6 +421,8 @@
       border-radius: 999px;
       font-size: 0.82rem;
       font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
       border: 1px solid var(--line);
       background: rgba(255, 255, 255, 0.04);
     }
@@ -470,15 +513,20 @@
     }
 
     .stat-card .big {
+      font-family: var(--font-display);
       font-size: 2.2rem;
-      font-weight: 700;
+      font-weight: 400;
+      letter-spacing: 0.02em;
       line-height: 1;
     }
 
     .stat-card .trend {
+      font-family: var(--font-accent);
       color: var(--accent);
       font-size: 0.85rem;
       font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
     }
 
     .layout-grid { align-items: start; }
@@ -498,8 +546,9 @@
     }
 
     th {
+      font-family: var(--font-accent);
       font-size: 0.78rem;
-      letter-spacing: 0.08em;
+      letter-spacing: 0.12em;
       text-transform: uppercase;
       color: var(--text-dim);
     }
@@ -635,11 +684,14 @@
   <main class="page">
     <section class="hero">
       <div class="panel hero-main">
-        <div class="brand">EnduroBuddy</div>
+        <div class="brand-lockup">
+          <img class="brand-logo" src="../backend/static/brand/biglogo.png" alt="EnduroBuddy">
+          <div class="brand">EnduroBuddy</div>
+        </div>
         <h1>Precision training workspace.</h1>
         <p>
           Návrhový preview pro minimalistickou vytrvalostní aplikaci, která staví na klidu, rytmu a čitelnosti.
-          `Space Grotesk` zde funguje jako identitní display font, zatímco provozní UI zůstává čisté a efektivní.
+          `League Gothic` teď nese headline vrstvu, `Barlow Semi Condensed` dodává tah tlačítkům a labelům a `IBM Plex Sans` drží husté UI čitelné.
         </p>
         <div class="hero-actions">
           <button class="btn btn-primary">Nový trénink</button>
@@ -682,20 +734,20 @@
     <section class="section">
       <div class="section-heading">
         <h2>Typography</h2>
-        <p>`Space Grotesk` je display vrstva. Hlavní provozní text a čísla drží neutrální sans-serif kvůli čitelnosti při plánování a analýze.</p>
+        <p>`League Gothic` dává značce tah, `Barlow Semi Condensed` drží sportovně-technické akcenty a `IBM Plex Sans` nechává pracovní vrstvu klidnou a rychle skenovatelnou.</p>
       </div>
       <div class="panel surface">
         <div class="type-grid">
           <div class="type-sample">
-            <div class="meta">Display / Space Grotesk</div>
+            <div class="meta">Display / League Gothic</div>
             <div class="display">EnduroBuddy</div>
           </div>
           <div class="type-sample">
-            <div class="meta">Heading / Sans</div>
-            <div style="font-size:2rem;font-weight:700;">Weekly training overview</div>
+            <div class="meta">Accent UI / Barlow Semi Condensed</div>
+            <div style="font-family:var(--font-accent);font-size:2rem;font-weight:600;letter-spacing:0.02em;">Weekly training overview</div>
           </div>
           <div class="type-sample">
-            <div class="meta">Body / Sans</div>
+            <div class="meta">Body / IBM Plex Sans</div>
             <div style="line-height:1.7;color:var(--text-muted);">Tréninkový plán má působit klidně, čitelně a rychle skenovatelně i při větší hustotě informací.</div>
           </div>
         </div>
@@ -948,8 +1000,8 @@
         </div>
       </div>
       <p class="footnote">
-        Pokud není dostupný font `Space Grotesk`, preview automaticky spadne na fallback display stack.
-        Pro skutečné nasazení bude potřeba dodat licencovaný font soubor a připojit ho přes `@font-face`.
+        Pokud není dostupný webfont, preview automaticky spadne na fallback stack pro display i UI vrstvu.
+        Pro skutečné nasazení je můžeme buď self-hostnout přes `@font-face`, nebo ponechat načítání z Google Fonts.
       </p>
     </section>
   </main>

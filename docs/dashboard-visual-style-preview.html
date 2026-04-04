@@ -6,9 +6,12 @@
   <title>EnduroBuddy Dashboard Visual Preview</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=League+Gothic&display=swap" rel="stylesheet">
   <style>
     :root {
+      --font-display: "League Gothic", "Arial Narrow", sans-serif;
+      --font-ui: "IBM Plex Sans", "Segoe UI Variable Text", "Segoe UI", sans-serif;
+      --font-accent: "Barlow Semi Condensed", "Arial Narrow", "Segoe UI", sans-serif;
       --eb-bg: #101714;
       --eb-bg-elevated: #16201c;
       --eb-surface: #1d2924;
@@ -43,7 +46,7 @@
 
     body {
       margin: 0;
-      font-family: "Segoe UI Variable Text", "Segoe UI", "Inter", sans-serif;
+      font-family: var(--font-ui);
       color: var(--eb-text);
       background:
         radial-gradient(circle at top left, rgba(97, 196, 143, 0.08), transparent 22%),
@@ -103,33 +106,135 @@
       box-shadow: var(--eb-shadow-1);
     }
 
+    .brand-lockup {
+      display: inline-flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 0;
+    }
+
+    .brand-logo {
+      width: 146px;
+      height: auto;
+      display: block;
+      filter: drop-shadow(0 10px 22px rgba(0, 0, 0, 0.24));
+    }
+
+    .brand-copy {
+      display: grid;
+      gap: 3px;
+    }
+
     .brand {
-      font-family: "Space Grotesk", "Segoe UI", "Inter", sans-serif;
+      font-family: var(--font-display);
       text-transform: uppercase;
-      letter-spacing: 0.12em;
-      font-size: 0.94rem;
+      letter-spacing: 0.08em;
+      font-size: 1.08rem;
+      font-weight: 400;
       color: var(--eb-accent);
       margin-bottom: 6px;
     }
 
     .hero-title {
       margin: 0;
-      font-family: "Space Grotesk", "Segoe UI", "Inter", sans-serif;
+      font-family: var(--font-display);
       letter-spacing: 0.02em;
+      font-weight: 400;
     }
 
     .topbar h1 {
       margin: 0;
-      font-family: "Segoe UI Variable Text", "Segoe UI", "Inter", sans-serif;
+      font-family: var(--font-accent);
       font-size: 1.45rem;
       line-height: 1.1;
-      font-weight: 700;
+      font-weight: 600;
+      letter-spacing: 0.02em;
     }
 
     .topbar-meta {
       color: var(--eb-text-muted);
       font-size: 0.94rem;
       margin-top: 6px;
+    }
+
+    .overview-strip {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    .overview-card {
+      padding: 22px;
+    }
+
+    .overview-card--hero {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .overview-card--hero::after {
+      content: "";
+      position: absolute;
+      top: -44px;
+      right: -24px;
+      width: 220px;
+      height: 220px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(97, 196, 143, 0.18), transparent 64%);
+      pointer-events: none;
+    }
+
+    .overview-title {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: clamp(2.3rem, 4vw, 3.6rem);
+      line-height: 0.92;
+      font-weight: 400;
+      max-width: 8ch;
+    }
+
+    .overview-copy {
+      max-width: 58ch;
+      color: var(--eb-text-muted);
+      line-height: 1.6;
+      margin: 14px 0 18px;
+    }
+
+    .overview-kpis {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .kpi-card {
+      padding: 18px;
+      border-radius: var(--eb-radius-md);
+      border: 1px solid var(--eb-line);
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .kpi-label {
+      font-family: var(--font-accent);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-size: 0.75rem;
+      color: var(--eb-text-dim);
+      margin-bottom: 10px;
+    }
+
+    .kpi-value {
+      font-family: var(--font-display);
+      font-size: 2rem;
+      line-height: 1;
+      letter-spacing: 0.02em;
+      margin-bottom: 8px;
+    }
+
+    .kpi-copy {
+      color: var(--eb-text-muted);
+      font-size: 0.88rem;
+      line-height: 1.5;
     }
 
     .topbar-actions,
@@ -146,6 +251,7 @@
     }
 
     .btn {
+      font-family: var(--font-accent);
       appearance: none;
       border: 1px solid var(--eb-line-soft);
       background: rgba(255, 255, 255, 0.04);
@@ -155,6 +261,7 @@
       padding: 0 16px;
       font-size: 0.94rem;
       font-weight: 600;
+      letter-spacing: 0.02em;
       cursor: pointer;
       transition: 180ms ease;
     }
@@ -224,9 +331,11 @@
     }
 
     .eyebrow {
+      font-family: var(--font-accent);
       font-size: 0.74rem;
       text-transform: uppercase;
-      letter-spacing: 0.08em;
+      letter-spacing: 0.12em;
+      font-weight: 600;
       color: var(--eb-text-dim);
       margin-bottom: 10px;
     }
@@ -252,9 +361,11 @@
     }
 
     .mini-value {
+      font-family: var(--font-display);
       font-size: 2rem;
       line-height: 1;
-      font-weight: 700;
+      font-weight: 400;
+      letter-spacing: 0.02em;
       margin-bottom: 6px;
     }
 
@@ -279,15 +390,20 @@
     }
 
     .summary-value {
+      font-family: var(--font-display);
       font-size: 2.05rem;
       line-height: 1;
-      font-weight: 700;
+      font-weight: 400;
+      letter-spacing: 0.02em;
     }
 
     .summary-trend {
+      font-family: var(--font-accent);
       font-size: 0.84rem;
       font-weight: 700;
       color: var(--eb-accent);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
     }
 
     .summary-sub {
@@ -311,10 +427,11 @@
 
     .month-title {
       margin: 0;
-      font-family: "Segoe UI Variable Text", "Segoe UI", "Inter", sans-serif;
+      font-family: var(--font-accent);
       font-size: 1.12rem;
       line-height: 1.15;
-      font-weight: 700;
+      font-weight: 600;
+      letter-spacing: 0.02em;
     }
 
     .month-subtitle {
@@ -328,6 +445,7 @@
     }
 
     .chip {
+      font-family: var(--font-accent);
       display: inline-flex;
       align-items: center;
       min-height: 30px;
@@ -337,6 +455,8 @@
       background: rgba(255, 255, 255, 0.04);
       font-size: 0.8rem;
       font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
       color: var(--eb-text-muted);
     }
 
@@ -578,6 +698,7 @@
     .legend-mark.pending { background: var(--eb-warning); }
 
     @media (max-width: 1180px) {
+      .overview-strip,
       .hero {
         grid-template-columns: 1fr;
       }
@@ -595,6 +716,10 @@
         flex-direction: column;
       }
 
+      .overview-kpis {
+        grid-template-columns: 1fr;
+      }
+
       .month-switcher {
         left: 10px;
         right: 10px;
@@ -608,7 +733,13 @@
     <header class="topbar">
       <div class="topbar-shell">
         <div>
-          <div class="brand">EnduroBuddy</div>
+          <div class="brand-lockup">
+            <img class="brand-logo" src="../backend/static/brand/biglogo.png" alt="EnduroBuddy">
+            <div class="brand-copy">
+              <div class="brand">EnduroBuddy</div>
+              <div class="topbar-meta">Přehled měsíce, splněných aktivit a trenérských poznámek.</div>
+            </div>
+          </div>
           <h1>Adam Novak</h1>
         </div>
         <div class="topbar-actions">
@@ -618,14 +749,48 @@
       </div>
     </header>
 
+    <section class="overview-strip">
+      <article class="panel overview-card overview-card--hero">
+        <div class="eyebrow">Dubnový blok</div>
+        <h2 class="overview-title">Objem roste bez chaosu.</h2>
+        <p class="overview-copy">Měsíc využívá šířku obrazovky pro plán, skutečně odběhané splity i krátký kontext, aby trenér i atlet viděli to důležité bez přepínání.</p>
+        <div class="topbar-actions">
+          <button class="btn btn-primary">Otevřít detail týdne</button>
+          <button class="btn btn-secondary">Přidat poznámku</button>
+        </div>
+      </article>
+      <div class="overview-kpis">
+        <article class="panel kpi-card">
+          <div class="kpi-label">Objem týdne</div>
+          <div class="kpi-value">82 km</div>
+          <div class="kpi-copy">Šest běžeckých dnů a jeden hlavní long run.</div>
+        </article>
+        <article class="panel kpi-card">
+          <div class="kpi-label">Splněno</div>
+          <div class="kpi-value">91 %</div>
+          <div class="kpi-copy">Klíčové tréninky sedí na plán bez větších odchylek.</div>
+        </article>
+        <article class="panel kpi-card">
+          <div class="kpi-label">Recovery</div>
+          <div class="kpi-value">72 %</div>
+          <div class="kpi-copy">Opatrně s další intenzitou mimo plán.</div>
+        </article>
+        <article class="panel kpi-card">
+          <div class="kpi-label">Importy</div>
+          <div class="kpi-value">14 / 15</div>
+          <div class="kpi-copy">Jediná aktivita čeká na ruční potvrzení.</div>
+        </article>
+      </div>
+    </section>
+
     <section class="panel month-shell">
       <div class="month-header">
         <div>
           <h2 class="month-title">Duben 2026</h2>
         </div>
         <div class="toolbar-row">
-          <span class="chip">Athlete</span>
-          <span class="chip chip-accent">Plan editable</span>
+          <span class="chip">Atlet</span>
+          <span class="chip chip-accent">Plán lze upravit</span>
         </div>
       </div>
 
@@ -634,8 +799,8 @@
           <div class="week-grid">
             <section class="week-card">
               <div class="week-head">
-                <h3>Tyden 1.</h3>
-                <small>Plan</small>
+                <h3>Týden 1.</h3>
+                <small>Plán</small>
               </div>
               <div class="week-body">
                 <table>
@@ -644,25 +809,25 @@
                       <th class="col-date">Datum</th>
                       <th class="col-day">Den</th>
                       <th class="col-type">Typ</th>
-                      <th class="col-training">Trenink</th>
-                      <th class="col-notes">Poznamky trenera</th>
+                      <th class="col-training">Trénink</th>
+                      <th class="col-notes">Poznámky trenéra</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr>
                       <td>1.4.</td>
-                      <td>Pondeli</td>
-                      <td><span class="badge-run">Beh</span></td>
+                      <td>Pondělí</td>
+                      <td><span class="badge-run">Běh</span></td>
                       <td>
                         <div class="training-title">Recovery jog 10 km</div>
                         <div class="training-meta">Lehce, bez tlaku na tempo. Drzet krok i dech volne.</div>
                       </td>
-                      <td><div class="note-copy">Po vikendu jen rozhybat nohy a nehonit cisla.</div></td>
+                      <td><div class="note-copy">Po víkendu jen rozhýbat nohy a nehonit čísla.</div></td>
                     </tr>
                     <tr>
                       <td>2.4.</td>
-                      <td>Utery</td>
-                      <td><span class="badge-workout">Trenink</span></td>
+                      <td>Úterý</td>
+                      <td><span class="badge-workout">Trénink</span></td>
                       <td>
                         <div class="training-title">6x 1 km @ threshold</div>
                         <div class="training-meta">3 km warm-up, meziklusem 90 s, 2 km cool-down.</div>
@@ -672,8 +837,8 @@
                     </tr>
                     <tr>
                       <td>4.4.</td>
-                      <td>Ctvrtek</td>
-                      <td><span class="badge-workout">Trenink</span></td>
+                      <td>Čtvrtek</td>
+                      <td><span class="badge-workout">Trénink</span></td>
                       <td>
                         <div class="training-title">Tempo blocks 3x 10 min</div>
                         <div class="training-meta">Plynule, ne na krev. Cilem je drzet techniku.</div>
@@ -683,7 +848,7 @@
                     <tr>
                       <td>6.4.</td>
                       <td>Sobota</td>
-                      <td><span class="badge-run">Beh</span></td>
+                      <td><span class="badge-run">Běh</span></td>
                       <td>
                         <div class="training-title">Long run 24 km s progresi</div>
                         <div class="training-meta">Poslednich 6 km zvedat intenzitu do maratonskeho rytmu.</div>
@@ -704,7 +869,7 @@
 
             <section class="week-card week-card--compact">
               <div class="week-head">
-                <h3>Splneno</h3>
+                <h3>Splněno</h3>
                 <small>Splits</small>
               </div>
               <div class="week-body">
@@ -758,7 +923,7 @@
           <div class="week-grid">
             <section class="week-card">
               <div class="week-head">
-                <h3>Tyden 2.</h3>
+                <h3>Týden 2.</h3>
                 <small>Plan</small>
               </div>
               <div class="week-body">
@@ -768,15 +933,15 @@
                       <th class="col-date">Datum</th>
                       <th class="col-day">Den</th>
                       <th class="col-type">Typ</th>
-                      <th class="col-training">Trenink</th>
-                      <th class="col-notes">Poznamky trenera</th>
+                      <th class="col-training">Trénink</th>
+                      <th class="col-notes">Poznámky trenéra</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr>
                       <td>8.4.</td>
-                      <td>Pondeli</td>
-                      <td><span class="badge-run">Beh</span></td>
+                      <td>Pondělí</td>
+                      <td><span class="badge-run">Běh</span></td>
                       <td>
                         <div class="training-title">Easy run 12 km</div>
                         <div class="training-meta">Volne, bez tlaku na pace. Jen dorovnat objem.</div>
@@ -785,24 +950,24 @@
                     </tr>
                     <tr>
                       <td>10.4.</td>
-                      <td>Streda</td>
-                      <td><span class="badge-workout">Trenink</span></td>
+                      <td>Středa</td>
+                      <td><span class="badge-workout">Trénink</span></td>
                       <td>
                         <div class="training-title">10x 400 m / 200 m float</div>
                         <div class="training-meta">Kratke useky, cisty rytmus, ne sprint.</div>
                         <div class="km-dot">Kontrola km: odhad 14 km</div>
                       </td>
-                      <td><div class="note-copy">Jestli nohy zustanou tezke, uber dva useky.</div></td>
+                      <td><div class="note-copy">Jestli nohy zůstanou těžké, uber dva úseky.</div></td>
                     </tr>
                     <tr>
                       <td>13.4.</td>
                       <td>Sobota</td>
-                      <td><span class="badge-run">Beh</span></td>
+                      <td><span class="badge-run">Běh</span></td>
                       <td>
                         <div class="training-title">Long run 30 km</div>
                         <div class="training-meta">Prvni dve tretiny kontrolovane, zaver steady.</div>
                       </td>
-                      <td><div class="note-copy">Je to hlavni anchor tydne. Nic dalsiho uz netlacit.</div></td>
+                      <td><div class="note-copy">Je to hlavní anchor týdne. Nic dalšího už netlačit.</div></td>
                     </tr>
                   </tbody>
                   <tfoot>
@@ -818,8 +983,8 @@
 
             <section class="week-card week-card--compact">
               <div class="week-head">
-                <h3>Splneno</h3>
-                <small>Imported + manual</small>
+                <h3>Splněno</h3>
+                <small>Import + ručně</small>
               </div>
               <div class="week-body">
                 <table>
@@ -869,11 +1034,11 @@
   <nav class="month-switcher" aria-label="Month switcher preview">
     <div class="month-switcher-shell">
       <div class="month-switcher-track">
-        <button class="btn btn-primary btn-icon" aria-label="Pridat mesic">+</button>
+        <button class="btn btn-primary btn-icon" aria-label="Přidat měsíc">+</button>
         <button class="month-btn is-active">Duben 2026</button>
-        <button class="month-btn">Kveten 2026</button>
-        <button class="month-btn">Cerven 2026</button>
-        <button class="month-btn">Cervenec 2026</button>
+        <button class="month-btn">Květen 2026</button>
+        <button class="month-btn">Červen 2026</button>
+        <button class="month-btn">Červenec 2026</button>
       </div>
     </div>
   </nav>

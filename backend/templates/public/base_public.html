@@ -1,6 +1,8 @@
 {% load static %}
+{% load i18n %}
 <!doctype html>
-<html lang="cs">
+{% get_current_language as CURRENT_LANGUAGE %}
+<html lang="{{ CURRENT_LANGUAGE|default:'cs' }}">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -208,10 +210,10 @@
         </a>
         <div class="ms-auto d-flex align-items-center gap-2">
           <div class="eb-nav-links d-none d-md-flex">
-            <a class="eb-nav-link {% if current_public_page == 'home' %}is-active{% endif %}" href="{% url 'public_home' %}">Home</a>
-            <a class="eb-nav-link {% if current_public_page == 'about' %}is-active{% endif %}" href="{% url 'public_about' %}">O nás</a>
+            <a class="eb-nav-link {% if current_public_page == 'home' %}is-active{% endif %}" href="{% url 'public_home' %}">{% if CURRENT_LANGUAGE == "en" %}Home{% else %}Domů{% endif %}</a>
+            <a class="eb-nav-link {% if current_public_page == 'about' %}is-active{% endif %}" href="{% url 'public_about' %}">{% if CURRENT_LANGUAGE == "en" %}About{% else %}O nás{% endif %}</a>
           </div>
-          <a class="btn eb-btn eb-btn-secondary" href="{% url 'account_login' %}">Přihlášení</a>
+          <a class="btn eb-btn eb-btn-secondary" href="{% url 'account_login' %}">{% if CURRENT_LANGUAGE == "en" %}Log in{% else %}Přihlášení{% endif %}</a>
         </div>
       </nav>
     </div>
@@ -223,7 +225,7 @@
   <footer class="eb-footer">
     <div class="eb-shell d-flex flex-column flex-md-row justify-content-between gap-2">
       <span>EnduroBuddy</span>
-      <span>Plánování tréninku, evidence splnění a import aktivit v jednom workflow.</span>
+      <span>{% if CURRENT_LANGUAGE == "en" %}Monthly training plans and completed sessions for coach and athlete.{% else %}Měsíční tréninkové plány a evidence splněných tréninků pro trenéra i sportovce.{% endif %}</span>
     </div>
   </footer>
   {% endblock %}
