@@ -6,9 +6,12 @@
   <title>EnduroBuddy App Shell Preview</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=League+Gothic&display=swap" rel="stylesheet">
   <style>
     :root {
+      --font-display: "League Gothic", "Arial Narrow", sans-serif;
+      --font-ui: "IBM Plex Sans", "Segoe UI Variable Text", "Segoe UI", sans-serif;
+      --font-accent: "Barlow Semi Condensed", "Arial Narrow", "Segoe UI", sans-serif;
       --bg: #101714;
       --bg-elevated: #16201c;
       --surface: #1d2924;
@@ -37,7 +40,7 @@
 
     body {
       margin: 0;
-      font-family: "Segoe UI Variable Text", "Segoe UI", "Inter", sans-serif;
+      font-family: var(--font-ui);
       color: var(--text);
       background:
         radial-gradient(circle at top left, rgba(97, 196, 143, 0.08), transparent 22%),
@@ -71,7 +74,7 @@
 
     .top-nav-inner,
     .main-shell {
-      width: min(100% - 32px, 1480px);
+      width: min(100% - 24px, 1760px);
       margin: 0 auto;
     }
 
@@ -83,12 +86,22 @@
       gap: 18px;
     }
 
+    .brand-lockup {
+      display: inline-flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 0;
+    }
+
+    .brand-logo {
+      width: 150px;
+      height: auto;
+      display: block;
+      filter: drop-shadow(0 10px 22px rgba(0, 0, 0, 0.24));
+    }
+
     .brand {
-      font-family: "Space Grotesk", "Segoe UI", "Inter", sans-serif;
-      font-size: 1.15rem;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--accent);
+      display: none;
     }
 
     .nav-links,
@@ -105,6 +118,7 @@
     .nav-link-btn,
     .month-btn,
     .tab-btn {
+      font-family: var(--font-accent);
       appearance: none;
       border: 1px solid var(--line-soft);
       background: rgba(255, 255, 255, 0.04);
@@ -114,6 +128,7 @@
       padding: 0 14px;
       font-size: 0.92rem;
       font-weight: 600;
+      letter-spacing: 0.02em;
       cursor: pointer;
       transition: 180ms ease;
     }
@@ -179,6 +194,14 @@
       padding: 18px 0 112px;
     }
 
+    .app-view {
+      display: none;
+    }
+
+    .app-view.is-active {
+      display: block;
+    }
+
     .dashboard-toolbar {
       display: flex;
       align-items: center;
@@ -187,11 +210,19 @@
       margin-bottom: 16px;
     }
 
+    .toolbar-copy {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      margin-top: 6px;
+    }
+
     .dashboard-toolbar h1 {
       margin: 0;
+      font-family: var(--font-accent);
       font-size: 1.45rem;
       line-height: 1.1;
-      font-weight: 700;
+      font-weight: 600;
+      letter-spacing: 0.02em;
     }
 
     .panel {
@@ -202,21 +233,124 @@
       backdrop-filter: blur(10px);
     }
 
+    .coach-plan-shell {
+      display: grid;
+      grid-template-columns: calc(34ch + 1rem) minmax(0, 1fr);
+      gap: 16px;
+      align-items: start;
+      overflow: hidden;
+    }
+
+    .coach-sidebar,
+    .coach-main-card {
+      padding: 16px;
+      border-radius: var(--radius-lg);
+      border: 1px solid rgba(58, 74, 67, 0.78);
+      background: rgba(29, 41, 36, 0.82);
+      box-shadow: var(--shadow-1);
+      backdrop-filter: blur(10px);
+    }
+
+    .coach-sidebar-head,
+    .coach-main-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .coach-sidebar-head h2,
+    .coach-main-head h2 {
+      margin: 0;
+      font-family: var(--font-accent);
+      font-size: 1.02rem;
+      letter-spacing: 0.02em;
+      font-weight: 600;
+    }
+
+    .coach-athlete-list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .coach-athlete-btn {
+      width: 100%;
+      min-height: 48px;
+      padding: 8px 10px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      text-align: left;
+    }
+
+    .coach-athlete-btn.is-active {
+      background: rgba(255, 255, 255, 0.07);
+      border-color: var(--line-soft);
+    }
+
+    .coach-athlete-name {
+      font-family: var(--font-accent);
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .coach-athlete-meta {
+      color: var(--text-dim);
+      font-size: 0.78rem;
+      line-height: 1.35;
+      margin-top: 3px;
+    }
+
+    .coach-main-stack {
+      display: grid;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .coach-month-switcher {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding: 0 12px 12px;
+    }
+
+    .coach-month-block {
+      display: grid;
+      gap: 18px;
+    }
+
+    .coach-month-block.is-hidden {
+      display: none;
+    }
+
+    .is-role-hidden {
+      display: none !important;
+    }
+
     .month-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       gap: 14px;
-      padding: 18px 22px 0;
+      padding: 12px 12px 0;
     }
 
     .month-header h2 {
       margin: 0;
+      font-family: var(--font-accent);
       font-size: 1.08rem;
-      font-weight: 700;
+      font-weight: 600;
+      letter-spacing: 0.02em;
     }
 
     .chip {
+      font-family: var(--font-accent);
       display: inline-flex;
       align-items: center;
       min-height: 30px;
@@ -226,6 +360,8 @@
       background: rgba(255, 255, 255, 0.04);
       font-size: 0.8rem;
       font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
       color: var(--text-muted);
     }
 
@@ -237,8 +373,8 @@
 
     .scroll-area {
       overflow-x: auto;
-      overflow-y: hidden;
-      padding: 0 22px 22px;
+      overflow-y: auto;
+      padding: 0 12px 12px;
     }
 
     .month-track {
@@ -257,7 +393,8 @@
     }
 
     .week-card {
-      width: 840px;
+      width: min(56vw, 980px);
+      min-width: 760px;
       flex: 0 0 auto;
       border: 1px solid var(--line);
       border-radius: var(--radius-lg);
@@ -266,7 +403,33 @@
     }
 
     .week-card--compact {
-      width: 560px;
+      width: min(40vw, 720px);
+      min-width: 520px;
+    }
+
+    .coach-focus-shell {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 38px;
+      padding: 6px 10px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .coach-focus-label {
+      font-family: var(--font-accent);
+      font-size: 0.78rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+    }
+
+    .coach-focus-value {
+      min-width: 12ch;
+      font-size: 0.92rem;
+      color: var(--text);
     }
 
     .week-head {
@@ -281,14 +444,17 @@
 
     .week-head h3 {
       margin: 0;
+      font-family: var(--font-accent);
       font-size: 1rem;
-      font-weight: 700;
+      font-weight: 600;
+      letter-spacing: 0.02em;
     }
 
     .week-head small {
+      font-family: var(--font-accent);
       color: var(--text-dim);
       text-transform: uppercase;
-      letter-spacing: 0.08em;
+      letter-spacing: 0.12em;
       font-size: 0.72rem;
     }
 
@@ -307,9 +473,10 @@
     }
 
     th {
+      font-family: var(--font-accent);
       color: var(--text-dim);
       text-transform: uppercase;
-      letter-spacing: 0.08em;
+      letter-spacing: 0.12em;
       font-size: 0.72rem;
       font-weight: 700;
     }
@@ -349,6 +516,7 @@
 
     .badge-run,
     .badge-workout {
+      font-family: var(--font-accent);
       display: inline-flex;
       align-items: center;
       min-height: 28px;
@@ -357,6 +525,8 @@
       border: 1px solid var(--line);
       font-size: 0.78rem;
       font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
     }
 
     .badge-run {
@@ -447,7 +617,9 @@
       padding: 4px 6px 10px;
       border-bottom: 1px solid rgba(255, 255, 255, 0.06);
       margin-bottom: 10px;
+      font-family: var(--font-accent);
       font-weight: 700;
+      letter-spacing: 0.02em;
     }
 
     .notification-item {
@@ -585,8 +757,10 @@
     }
 
     .modal-title {
+      font-family: var(--font-accent);
       font-size: 1.08rem;
-      font-weight: 700;
+      font-weight: 600;
+      letter-spacing: 0.02em;
       margin-bottom: 4px;
     }
 
@@ -651,7 +825,10 @@
     }
 
     .meta-label {
+      font-family: var(--font-accent);
       color: var(--text-dim);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
     }
 
     .meta-value {
@@ -666,9 +843,12 @@
     }
 
     .field label {
+      font-family: var(--font-accent);
       font-size: 0.84rem;
       color: var(--text-dim);
       font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
     }
 
     .input {
@@ -682,8 +862,10 @@
     }
 
     .section-title {
+      font-family: var(--font-accent);
       font-size: 0.98rem;
-      font-weight: 700;
+      font-weight: 600;
+      letter-spacing: 0.02em;
       margin-bottom: 14px;
     }
 
@@ -731,6 +913,22 @@
         display: none;
       }
 
+      .coach-plan-shell {
+        grid-template-columns: 1fr;
+      }
+
+      .week-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        width: 100%;
+      }
+
+      .week-card,
+      .week-card--compact {
+        width: auto;
+        min-width: 0;
+      }
+
       .modal-preview {
         grid-template-columns: 1fr;
       }
@@ -768,6 +966,7 @@
         right: 10px;
         bottom: 90px;
       }
+
     }
   </style>
 </head>
@@ -775,11 +974,13 @@
   <div class="page">
     <nav class="top-nav">
       <div class="top-nav-inner">
-        <div class="brand">EnduroBuddy</div>
+        <div class="brand-lockup">
+          <img class="brand-logo" src="../backend/static/brand/biglogo.png" alt="EnduroBuddy">
+        </div>
 
         <div class="nav-links">
-          <button class="nav-link-btn is-active">Treninkovy prehled</button>
-          <button class="nav-link-btn">Spravovat treninkove plany</button>
+          <button class="nav-link-btn is-active" type="button" data-app-view-target="overview">Tréninkový přehled</button>
+          <button class="nav-link-btn" type="button" data-app-view-target="coach-plans">Spravovat tréninkové plány</button>
         </div>
 
         <div class="nav-actions">
@@ -789,7 +990,7 @@
             <span class="icon-circle">◌</span>
             <span class="badge-dot">3</span>
           </button>
-          <button class="btn-icon" aria-label="Uzivatel" data-toggle="profile-menu"><span class="icon-circle">A</span></button>
+          <button class="btn-icon" aria-label="Uživatel" data-toggle="profile-menu"><span class="icon-circle">A</span></button>
         </div>
       </div>
     </nav>
@@ -798,15 +999,15 @@
       <div class="dropdown-title">Notifikace</div>
       <div class="notification-item">
         <span class="notification-dot"></span>
-        <div>Garmin import byl dokoncen a dve aktivity se sparovaly s planem.</div>
+        <div>Garmin import byl dokončen a dvě aktivity se spárovaly s plánem.</div>
       </div>
       <div class="notification-item warning">
         <span class="notification-dot"></span>
-        <div>Jedna aktivita ceka na rucni potvrzeni, protoze nesedi objem.</div>
+        <div>Jedna aktivita čeká na ruční potvrzení, protože nesedí objem.</div>
       </div>
       <div class="notification-item danger">
         <span class="notification-dot"></span>
-        <div>Recovery signal je treti den pod osobnim standardem.</div>
+        <div>Recovery signal je třetí den pod osobním standardem.</div>
       </div>
     </div>
 
@@ -815,14 +1016,15 @@
         <div class="profile-name">Adam Novak</div>
         <div class="profile-email">adam.novak@endurobuddy.dev</div>
       </div>
-      <button class="dropdown-row" type="button" data-open-modal="profileModal">Nastaveni</button>
-      <div class="dropdown-row danger">Odhlasit se</div>
+      <button class="dropdown-row" type="button" data-open-modal="profileModal">Nastavení</button>
+      <div class="dropdown-row danger">Odhlásit se</div>
     </div>
 
-    <main class="main-shell">
+    <main class="main-shell app-view is-active" data-app-view="overview">
       <section class="dashboard-toolbar">
         <div>
           <h1>Adam Novak</h1>
+          <div class="toolbar-copy">Přehled dubnového bloku, importů a detailu splněných tréninků na jedné obrazovce.</div>
         </div>
         <div class="toolbar-row">
           <button class="btn">Legenda</button>
@@ -836,8 +1038,8 @@
             <h2>Duben 2026</h2>
           </div>
           <div class="toolbar-row">
-            <span class="chip">Athlete</span>
-            <span class="chip chip-accent">Plan editable</span>
+            <span class="chip" id="roleChip">Trenér</span>
+            <span class="chip chip-accent" id="coachPlanChip">Plán lze upravit</span>
           </div>
         </div>
 
@@ -846,8 +1048,8 @@
             <div class="week-grid">
               <section class="week-card">
                 <div class="week-head">
-                  <h3>Tyden 1.</h3>
-                  <small>Plan</small>
+                  <h3>Týden 1.</h3>
+                  <small>Plán</small>
                 </div>
                 <table>
                   <thead>
@@ -855,51 +1057,51 @@
                       <th class="col-date">Datum</th>
                       <th class="col-day">Den</th>
                       <th class="col-type">Typ</th>
-                      <th class="col-training">Trenink</th>
-                      <th class="col-notes">Poznamky trenera</th>
+                      <th class="col-training">Trénink</th>
+                      <th class="col-notes">Poznámky trenéra</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr>
                       <td>1.4.</td>
-                      <td>Pondeli</td>
-                      <td><span class="badge-run">Beh</span></td>
+                      <td>Pondělí</td>
+                      <td><span class="badge-run">Běh</span></td>
                       <td>
                         <div class="training-title">Recovery jog 10 km</div>
-                        <div class="training-meta">Lehce, bez tlaku na tempo. Drzet krok i dech volne.</div>
+                        <div class="training-meta">Lehce, bez tlaku na tempo. Držet krok i dech volně.</div>
                       </td>
-                      <td><div class="note-copy">Po vikendu jen rozhybat nohy a nehonit cisla.</div></td>
+                      <td><div class="note-copy">Po víkendu jen rozhýbat nohy a nehonit čísla.</div></td>
                     </tr>
                     <tr>
                       <td>2.4.</td>
-                      <td>Utery</td>
-                      <td><span class="badge-workout">Trenink</span></td>
+                      <td>Úterý</td>
+                      <td><span class="badge-workout">Trénink</span></td>
                       <td>
                         <div class="training-title">6x 1 km @ threshold</div>
                         <div class="training-meta">3 km warm-up, meziklusem 90 s, 2 km cool-down.</div>
                         <div class="km-dot">Kontrola km: odhad 16 km</div>
                       </td>
-                      <td><div class="note-copy">Prvni dva useky konzervativne, az pak se srovnat do rytmu.</div></td>
+                      <td><div class="note-copy">První dva úseky konzervativně, až pak se srovnat do rytmu.</div></td>
                     </tr>
                     <tr>
                       <td>4.4.</td>
-                      <td>Ctvrtek</td>
-                      <td><span class="badge-workout">Trenink</span></td>
+                      <td>Čtvrtek</td>
+                      <td><span class="badge-workout">Trénink</span></td>
                       <td>
                         <div class="training-title">Tempo blocks 3x 10 min</div>
-                        <div class="training-meta">Plynule, ne na krev. Cilem je drzet techniku.</div>
+                        <div class="training-meta">Plynule, ne na krev. Cílem je držet techniku.</div>
                       </td>
-                      <td><div class="note-copy">Jestli bude rano unava, zkratit posledni blok.</div></td>
+                      <td><div class="note-copy">Jestli bude ráno únava, zkrátit poslední blok.</div></td>
                     </tr>
                     <tr>
                       <td>6.4.</td>
                       <td>Sobota</td>
-                      <td><span class="badge-run">Beh</span></td>
+                      <td><span class="badge-run">Běh</span></td>
                       <td>
                         <div class="training-title">Long run 24 km s progresi</div>
                         <div class="training-meta">Poslednich 6 km zvedat intenzitu do maratonskeho rytmu.</div>
                       </td>
-                      <td><div class="note-copy">Hydratace a gel po 45 min. Udrzet ekonomiku kroku.</div></td>
+                      <td><div class="note-copy">Hydratace a gel po 45 min. Udržet ekonomiku kroku.</div></td>
                     </tr>
                   </tbody>
                   <tfoot>
@@ -914,7 +1116,7 @@
 
               <section class="week-card week-card--compact">
                 <div class="week-head">
-                  <h3>Splneno</h3>
+                  <h3>Splněno</h3>
                   <small>Splits</small>
                 </div>
                 <table>
@@ -931,7 +1133,7 @@
                     <tr>
                       <td>10.1</td>
                       <td>52</td>
-                      <td><div class="training-title">5:08 / km</div><div class="training-meta">Lehky beh, bez lapu.</div></td>
+                      <td><div class="training-title">5:08 / km</div><div class="training-meta">Lehký běh, bez lapů.</div></td>
                       <td>138</td>
                       <td>149</td>
                     </tr>
@@ -945,7 +1147,7 @@
                     <tr>
                       <td>22.4</td>
                       <td>111</td>
-                      <td><div class="training-title">4:57 / km</div><div class="training-meta">Poslednich 6 km progresivne.</div></td>
+                      <td><div class="training-title">4:57 / km</div><div class="training-meta">Posledních 6 km progresivně.</div></td>
                       <td>151</td>
                       <td>168</td>
                     </tr>
@@ -966,8 +1168,8 @@
             <div class="week-grid">
               <section class="week-card">
                 <div class="week-head">
-                  <h3>Tyden 2.</h3>
-                  <small>Plan</small>
+                  <h3>Týden 2.</h3>
+                  <small>Plán</small>
                 </div>
                 <table>
                   <thead>
@@ -975,41 +1177,41 @@
                       <th class="col-date">Datum</th>
                       <th class="col-day">Den</th>
                       <th class="col-type">Typ</th>
-                      <th class="col-training">Trenink</th>
-                      <th class="col-notes">Poznamky trenera</th>
+                      <th class="col-training">Trénink</th>
+                      <th class="col-notes">Poznámky trenéra</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr>
                       <td>8.4.</td>
-                      <td>Pondeli</td>
-                      <td><span class="badge-run">Beh</span></td>
+                      <td>Pondělí</td>
+                      <td><span class="badge-run">Běh</span></td>
                       <td>
                         <div class="training-title">Easy run 12 km</div>
                         <div class="training-meta">Volne, bez tlaku na pace. Jen dorovnat objem.</div>
                       </td>
-                      <td><div class="note-copy">Po long runu hlidat lehkost a kadenci.</div></td>
+                      <td><div class="note-copy">Po long runu hlídat lehkost a kadenci.</div></td>
                     </tr>
                     <tr>
                       <td>10.4.</td>
-                      <td>Streda</td>
-                      <td><span class="badge-workout">Trenink</span></td>
+                      <td>Středa</td>
+                      <td><span class="badge-workout">Trénink</span></td>
                       <td>
                         <div class="training-title">10x 400 m / 200 m float</div>
-                        <div class="training-meta">Kratke useky, cisty rytmus, ne sprint.</div>
+                        <div class="training-meta">Krátké úseky, čistý rytmus, ne sprint.</div>
                         <div class="km-dot">Kontrola km: odhad 14 km</div>
                       </td>
-                      <td><div class="note-copy">Jestli nohy zustanou tezke, uber dva useky.</div></td>
+                      <td><div class="note-copy">Jestli nohy zůstanou těžké, uber dva úseky.</div></td>
                     </tr>
                     <tr>
                       <td>13.4.</td>
                       <td>Sobota</td>
-                      <td><span class="badge-run">Beh</span></td>
+                      <td><span class="badge-run">Běh</span></td>
                       <td>
                         <div class="training-title">Long run 30 km</div>
                         <div class="training-meta">Prvni dve tretiny kontrolovane, zaver steady.</div>
                       </td>
-                      <td><div class="note-copy">Je to hlavni anchor tydne. Nic dalsiho uz netlacit.</div></td>
+                      <td><div class="note-copy">Je to hlavní anchor týdne. Nic dalšího už netlačit.</div></td>
                     </tr>
                   </tbody>
                   <tfoot>
@@ -1024,8 +1226,8 @@
 
               <section class="week-card week-card--compact">
                 <div class="week-head">
-                  <h3>Splneno</h3>
-                  <small>Imported + manual</small>
+                  <h3>Splněno</h3>
+                  <small>Import + ručně</small>
                 </div>
                 <table>
                   <thead>
@@ -1070,25 +1272,715 @@
       </section>
     </main>
 
-    <nav class="month-switcher" aria-label="Month switcher preview">
-      <div class="month-switcher-shell">
-        <div class="month-switcher-track">
-          <button class="btn btn-primary btn-icon" aria-label="Pridat mesic">+</button>
-          <button class="month-btn is-active">Duben 2026</button>
-          <button class="month-btn">Kveten 2026</button>
-          <button class="month-btn">Cerven 2026</button>
-          <button class="month-btn">Cervenec 2026</button>
+    <main class="main-shell app-view" data-app-view="coach-plans">
+      <section class="dashboard-toolbar">
+        <div>
+          <h1>Správa tréninkových plánů</h1>
+          <div class="toolbar-copy">Trenérský workspace se sidebar přepínáním svěřenců a editovatelným měsíčním plánem.</div>
         </div>
-      </div>
-    </nav>
+        <div class="toolbar-row">
+          <button class="btn">Správa svěřenců</button>
+          <button class="btn btn-primary">Přidat měsíc</button>
+        </div>
+      </section>
+
+      <section class="coach-plan-shell">
+        <aside class="coach-sidebar">
+          <div class="coach-sidebar-head">
+            <h2>Svěřenci</h2>
+            <button class="btn btn-icon" aria-label="Správa svěřenců"><span class="icon-circle">≡</span></button>
+          </div>
+          <div class="coach-athlete-list">
+            <button class="coach-athlete-btn is-active" type="button">
+              <span>
+                <span class="coach-athlete-name">Adam Novák</span>
+                <span class="coach-athlete-meta">Maraton</span>
+              </span>
+              <span class="chip chip-accent">Vybrán</span>
+            </button>
+            <button class="coach-athlete-btn" type="button">
+              <span>
+                <span class="coach-athlete-name">Klára Dvořáková</span>
+                <span class="coach-athlete-meta">Půlmaraton</span>
+              </span>
+              <span class="chip">Stabilní</span>
+            </button>
+            <button class="coach-athlete-btn" type="button">
+              <span>
+                <span class="coach-athlete-name">Martin Veselý</span>
+                <span class="coach-athlete-meta">Trail ultra</span>
+              </span>
+              <span class="chip chip-warning">Pozor</span>
+            </button>
+            <button class="coach-athlete-btn" type="button">
+              <span>
+                <span class="coach-athlete-name">Lucie Králová</span>
+                <span class="coach-athlete-meta">Návrat</span>
+              </span>
+              <span class="chip">Nová</span>
+            </button>
+          </div>
+        </aside>
+
+        <section class="coach-main-card">
+          <div class="coach-main-stack">
+            <div class="coach-main-head">
+              <h2>Adam Novák</h2>
+              <div class="toolbar-row">
+                <div class="coach-focus-shell">
+                  <span class="coach-focus-label">Zaměření:</span>
+                  <span class="coach-focus-value">Maraton</span>
+                </div>
+                <button class="btn">Legenda</button>
+              </div>
+            </div>
+
+            <section class="panel">
+              <div class="month-header">
+                <div>
+                  <h2>Adam Novák · plán napříč měsíci</h2>
+                </div>
+              </div>
+
+              <div class="coach-month-switcher">
+                <button class="btn btn-primary btn-icon" aria-label="Přidat měsíc">+</button>
+                <button class="month-btn is-active" type="button" data-coach-month-target="duben-2026">Duben 2026</button>
+                <button class="month-btn" type="button" data-coach-month-target="kveten-2026">Květen 2026</button>
+                <button class="month-btn" type="button" data-coach-month-target="cerven-2026">Červen 2026</button>
+                <button class="month-btn" type="button" data-coach-month-target="cervenec-2026">Červenec 2026</button>
+                <button class="month-btn" type="button" data-coach-month-target="srpen-2026">Srpen 2026</button>
+                <button class="month-btn" type="button" data-coach-month-target="zari-2026">Září 2026</button>
+              </div>
+
+              <div class="scroll-area">
+                <div class="month-track">
+                  <div class="coach-month-block" data-coach-month="duben-2026">
+                    <div class="week-grid">
+                      <section class="week-card">
+                        <div class="week-head">
+                          <h3>Týden 1.</h3>
+                          <small>6.4. – 12.4.</small>
+                        </div>
+                        <table>
+                          <thead>
+                            <tr>
+                              <th class="col-date">Datum</th>
+                              <th class="col-day">Den</th>
+                              <th class="col-type">Typ</th>
+                              <th class="col-training">Trénink</th>
+                              <th class="col-notes">Poznámky trenéra</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr>
+                              <td>6.4.</td>
+                              <td>Pondělí</td>
+                              <td><span class="badge-run">Běh</span></td>
+                              <td><div class="training-title">Recovery jog 10 km</div><div class="training-meta">Lehce, bez tlaku na tempo. Držet krok i dech volně.</div></td>
+                              <td><div class="note-copy">Po víkendu jen rozhýbat nohy a nehonit čísla.</div></td>
+                            </tr>
+                            <tr>
+                              <td>7.4.</td>
+                              <td>Úterý</td>
+                              <td><span class="badge-workout">Trénink</span></td>
+                              <td><div class="training-title">6x 1 km @ threshold</div><div class="training-meta">3 km warm-up, meziklusem 90 s, 2 km cool-down.</div><div class="km-dot">Kontrola km: odhad 16 km</div></td>
+                              <td><div class="note-copy">První dva úseky konzervativně, až pak se srovnat do rytmu.</div></td>
+                            </tr>
+                            <tr>
+                              <td>9.4.</td>
+                              <td>Čtvrtek</td>
+                              <td><span class="badge-workout">Trénink</span></td>
+                              <td><div class="training-title">Tempo blocks 3x 10 min</div><div class="training-meta">Plynule, ne na krev. Cílem je držet techniku.</div></td>
+                              <td><div class="note-copy">Jestli bude ráno únava, zkrátit poslední blok.</div></td>
+                            </tr>
+                            <tr>
+                              <td>11.4.</td>
+                              <td>Sobota</td>
+                              <td><span class="badge-run">Běh</span></td>
+                              <td><div class="training-title">Long run 24 km s progresí</div><div class="training-meta">Posledních 6 km zvedat intenzitu do maratonského rytmu.</div></td>
+                              <td><div class="note-copy">Hydratace a gel po 45 min. Udržet ekonomiku kroku.</div></td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </section>
+
+                      <section class="week-card week-card--compact">
+                        <div class="week-head">
+                          <h3>Splněno</h3>
+                          <small>splits</small>
+                        </div>
+                        <table>
+                          <thead>
+                            <tr>
+                              <th class="col-km">km</th>
+                              <th class="col-min">min</th>
+                              <th class="col-pace">pace / intervals</th>
+                              <th class="col-hr">avg HR</th>
+                              <th class="col-hr">max HR</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr>
+                              <td>10.1</td>
+                              <td>52</td>
+                              <td><div class="training-title">5:08 / km</div><div class="training-meta">Lehký běh, bez lapů.</div></td>
+                              <td>138</td>
+                              <td>149</td>
+                            </tr>
+                            <tr>
+                              <td>15.8</td>
+                              <td>74</td>
+                              <td><div class="training-title">6x 1 km</div><div class="training-meta">3:42, 3:41, 3:40, 3:40, 3:39, 3:38</div></td>
+                              <td>164</td>
+                              <td>178</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </section>
+                    </div>
+
+                    <div class="week-grid">
+                      <section class="week-card">
+                        <div class="week-head">
+                          <h3>Týden 2.</h3>
+                          <small>13.4. – 19.4.</small>
+                        </div>
+                        <table>
+                          <thead>
+                            <tr>
+                              <th class="col-date">Datum</th>
+                              <th class="col-day">Den</th>
+                              <th class="col-type">Typ</th>
+                              <th class="col-training">Trénink</th>
+                              <th class="col-notes">Poznámky trenéra</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr>
+                              <td>13.4.</td>
+                              <td>Pondělí</td>
+                              <td><span class="badge-run">Běh</span></td>
+                              <td><div class="training-title">Easy run 12 km</div><div class="training-meta">Volně, bez tlaku na pace. Jen dorovnat objem.</div></td>
+                              <td><div class="note-copy">Po long runu hlídat lehkost a kadenci.</div></td>
+                            </tr>
+                            <tr>
+                              <td>15.4.</td>
+                              <td>Středa</td>
+                              <td><span class="badge-workout">Trénink</span></td>
+                              <td><div class="training-title">10x 400 m / 200 m float</div><div class="training-meta">Krátké úseky, čistý rytmus, ne sprint.</div><div class="km-dot">Kontrola km: odhad 14 km</div></td>
+                              <td><div class="note-copy">Jestli nohy zůstanou těžké, uber dva úseky.</div></td>
+                            </tr>
+                            <tr>
+                              <td>18.4.</td>
+                              <td>Sobota</td>
+                              <td><span class="badge-run">Běh</span></td>
+                              <td><div class="training-title">Long run 30 km</div><div class="training-meta">První dvě třetiny kontrolovaně, závěr steady.</div></td>
+                              <td><div class="note-copy">Je to hlavní anchor týdne. Nic dalšího už netlačit.</div></td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </section>
+
+                      <section class="week-card week-card--compact">
+                        <div class="week-head">
+                          <h3>Splněno</h3>
+                          <small>import + ručně</small>
+                        </div>
+                        <table>
+                          <thead>
+                            <tr>
+                              <th class="col-km">km</th>
+                              <th class="col-min">min</th>
+                              <th class="col-pace">pace / intervals</th>
+                              <th class="col-hr">avg HR</th>
+                              <th class="col-hr">max HR</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr>
+                              <td>11.7</td>
+                              <td>59</td>
+                              <td><div class="training-title">5:03 / km</div><div class="training-meta">Easy, Garmin linked.</div></td>
+                              <td>142</td>
+                              <td>153</td>
+                            </tr>
+                            <tr>
+                              <td>13.9</td>
+                              <td>67</td>
+                              <td><div class="training-title">10x 400 m</div><div class="training-meta">Rytmus čistý, poslední dva úseky lehce pomalejší.</div></td>
+                              <td>166</td>
+                              <td>181</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </section>
+                    </div>
+                  </div>
+
+                  <div class="coach-month-block is-hidden" data-coach-month="kveten-2026">
+                    <div class="month-header">
+                      <div><h2>Květen 2026</h2></div>
+                      <div class="toolbar-row"><span class="chip">4 týdny</span></div>
+                    </div>
+                    <div class="week-grid">
+                      <section class="week-card">
+                        <div class="week-head">
+                          <h3>Týden 1.</h3>
+                          <small>4.5. – 10.5.</small>
+                        </div>
+                        <table>
+                          <thead>
+                            <tr>
+                              <th class="col-date">Datum</th>
+                              <th class="col-day">Den</th>
+                              <th class="col-type">Typ</th>
+                              <th class="col-training">Trénink</th>
+                              <th class="col-notes">Poznámky trenéra</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr>
+                              <td>4.5.</td>
+                              <td>Pondělí</td>
+                              <td><span class="badge-run">Běh</span></td>
+                              <td><div class="training-title">Easy run 14 km</div><div class="training-meta">Kontrolovaný vstup do dalšího build bloku.</div></td>
+                              <td><div class="note-copy">Nechat nohy čerstvé po dubnovém objemu.</div></td>
+                            </tr>
+                            <tr>
+                              <td>6.5.</td>
+                              <td>Středa</td>
+                              <td><span class="badge-workout">Trénink</span></td>
+                              <td><div class="training-title">3x 3 km steady / marathon effort</div><div class="training-meta">Mezi bloky 4 min klus. Celkem odhad 21 km.</div></td>
+                              <td><div class="note-copy">Kontrolovat techniku, nechat rezervu na závěr týdne.</div></td>
+                            </tr>
+                            <tr>
+                              <td>9.5.</td>
+                              <td>Sobota</td>
+                              <td><span class="badge-run">Běh</span></td>
+                              <td><div class="training-title">Long run 28 km</div><div class="training-meta">Posledních 8 km steady, bez závodního napětí.</div></td>
+                              <td><div class="note-copy">Gely po 45 a 85 minutách, po doběhu zapsat vnímání únavy.</div></td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </section>
+
+                      <section class="week-card">
+                        <div class="week-head">
+                          <h3>Týden 2.</h3>
+                          <small>11.5. – 17.5.</small>
+                        </div>
+                        <table>
+                          <thead>
+                            <tr>
+                              <th class="col-date">Datum</th>
+                              <th class="col-day">Den</th>
+                              <th class="col-type">Typ</th>
+                              <th class="col-training">Trénink</th>
+                              <th class="col-notes">Poznámky trenéra</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr>
+                              <td>11.5.</td>
+                              <td>Pondělí</td>
+                              <td><span class="badge-run">Běh</span></td>
+                              <td><div class="training-title">Easy run 12 km</div><div class="training-meta">Srovnat únavu po sobotě a vrátit lehkost kroku.</div></td>
+                              <td><div class="note-copy">Nechat pondělí čistě aerobně, bez tlaku na čísla.</div></td>
+                            </tr>
+                            <tr>
+                              <td>13.5.</td>
+                              <td>Středa</td>
+                              <td><span class="badge-workout">Trénink</span></td>
+                              <td><div class="training-title">12x 400 m / 200 m float</div><div class="training-meta">Krátká práce na rytmu a kadenci, odhad 15 km.</div></td>
+                              <td><div class="note-copy">Jestli bude únava vyšší, ubrat poslední dva úseky.</div></td>
+                            </tr>
+                            <tr>
+                              <td>16.5.</td>
+                              <td>Sobota</td>
+                              <td><span class="badge-run">Běh</span></td>
+                              <td><div class="training-title">Long run 30 km</div><div class="training-meta">Střední část steady, konec zůstat pod kontrolou.</div></td>
+                              <td><div class="note-copy">Po doběhu zapsat pocit z tempa a doplnění energie.</div></td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </section>
+                    </div>
+                  </div>
+
+                  <div class="coach-month-block is-hidden" data-coach-month="cerven-2026">
+                    <div class="month-header">
+                      <div><h2>Červen 2026</h2></div>
+                      <div class="toolbar-row"><span class="chip chip-warning">5 týdnů</span></div>
+                    </div>
+                    <div class="week-grid">
+                      <section class="week-card">
+                        <div class="week-head">
+                          <h3>Týden 1.</h3>
+                          <small>1.6. – 7.6.</small>
+                        </div>
+                        <table>
+                          <thead>
+                            <tr>
+                              <th class="col-date">Datum</th>
+                              <th class="col-day">Den</th>
+                              <th class="col-type">Typ</th>
+                              <th class="col-training">Trénink</th>
+                              <th class="col-notes">Poznámky trenéra</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr>
+                              <td>1.6.</td>
+                              <td>Pondělí</td>
+                              <td><span class="badge-run">Běh</span></td>
+                              <td><div class="training-title">Recovery 10 km + strides</div><div class="training-meta">6x 100 m uvolněně, jen připravit nohy na středu.</div></td>
+                              <td><div class="note-copy">Červen má 5 týdnů, takže první blok držet kompaktní.</div></td>
+                            </tr>
+                            <tr>
+                              <td>3.6.</td>
+                              <td>Středa</td>
+                              <td><span class="badge-workout">Trénink</span></td>
+                              <td><div class="training-title">5x 2 km @ threshold</div><div class="training-meta">90 s meziklus, odhad 20 km celkem.</div></td>
+                              <td><div class="note-copy">První dva bloky držet na kontrole, poslední dva mohou lehce akcelerovat.</div></td>
+                            </tr>
+                            <tr>
+                              <td>6.6.</td>
+                              <td>Sobota</td>
+                              <td><span class="badge-run">Běh</span></td>
+                              <td><div class="training-title">Long run 32 km</div><div class="training-meta">Silový objemový týden, závěr steady bez závodního finiše.</div></td>
+                              <td><div class="note-copy">Po běhu doplnit výživu a ráno zkontrolovat HRV.</div></td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </section>
+
+                      <section class="week-card">
+                        <div class="week-head">
+                          <h3>Týden 2.</h3>
+                          <small>8.6. – 14.6.</small>
+                        </div>
+                        <table>
+                          <thead>
+                            <tr>
+                              <th class="col-date">Datum</th>
+                              <th class="col-day">Den</th>
+                              <th class="col-type">Typ</th>
+                              <th class="col-training">Trénink</th>
+                              <th class="col-notes">Poznámky trenéra</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr>
+                              <td>8.6.</td>
+                              <td>Pondělí</td>
+                              <td><span class="badge-run">Běh</span></td>
+                              <td><div class="training-title">Recovery 12 km</div><div class="training-meta">Lehký objem po silném víkendu.</div></td>
+                              <td><div class="note-copy">Pohlídat došlap a nenechat tempo utíkat nahoru.</div></td>
+                            </tr>
+                            <tr>
+                              <td>10.6.</td>
+                              <td>Středa</td>
+                              <td><span class="badge-workout">Trénink</span></td>
+                              <td><div class="training-title">3x 4 km steady / marathon effort</div><div class="training-meta">Plynulé bloky, celkem odhad 24 km.</div></td>
+                              <td><div class="note-copy">Technika má zůstat čistá i v závěru třetího bloku.</div></td>
+                            </tr>
+                            <tr>
+                              <td>13.6.</td>
+                              <td>Sobota</td>
+                              <td><span class="badge-run">Běh</span></td>
+                              <td><div class="training-title">Long run 34 km</div><div class="training-meta">Vrchol červnového objemu, steadier finish.</div></td>
+                              <td><div class="note-copy">Po běhu zkontrolovat regeneraci a kvalitu spánku.</div></td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </section>
+                    </div>
+                  </div>
+
+                  <div class="coach-month-block is-hidden" data-coach-month="cervenec-2026">
+                    <div class="month-header">
+                      <div><h2>Červenec 2026</h2></div>
+                      <div class="toolbar-row"><span class="chip">4 týdny</span></div>
+                    </div>
+                    <div class="week-grid">
+                      <section class="week-card">
+                        <div class="week-head">
+                          <h3>Týden 1.</h3>
+                          <small>6.7. – 12.7.</small>
+                        </div>
+                        <table>
+                          <thead>
+                            <tr>
+                              <th class="col-date">Datum</th>
+                              <th class="col-day">Den</th>
+                              <th class="col-type">Typ</th>
+                              <th class="col-training">Trénink</th>
+                              <th class="col-notes">Poznámky trenéra</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr>
+                              <td>6.7.</td>
+                              <td>Pondělí</td>
+                              <td><span class="badge-run">Běh</span></td>
+                              <td><div class="training-title">Easy run 12 km</div><div class="training-meta">Začátek stabilizačního bloku po silném červnu.</div></td>
+                              <td><div class="note-copy">Držet nízký stres a připravit se na další maratonské bloky.</div></td>
+                            </tr>
+                            <tr>
+                              <td>8.7.</td>
+                              <td>Středa</td>
+                              <td><span class="badge-workout">Trénink</span></td>
+                              <td><div class="training-title">2x 5 km marathon effort</div><div class="training-meta">Mezi bloky 6 min klus, celkem 22 km.</div></td>
+                              <td><div class="note-copy">Tady už sledovat závodní ekonomiku a pití za běhu.</div></td>
+                            </tr>
+                            <tr>
+                              <td>11.7.</td>
+                              <td>Sobota</td>
+                              <td><span class="badge-run">Běh</span></td>
+                              <td><div class="training-title">Long run 26 km</div><div class="training-meta">Objem dolů, kvalita zůstává v rytmu.</div></td>
+                              <td><div class="note-copy">Je to přechodový měsíc, nechci tady přetlak intenzity.</div></td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </section>
+
+                      <section class="week-card">
+                        <div class="week-head">
+                          <h3>Týden 2.</h3>
+                          <small>13.7. – 19.7.</small>
+                        </div>
+                        <table>
+                          <thead>
+                            <tr>
+                              <th class="col-date">Datum</th>
+                              <th class="col-day">Den</th>
+                              <th class="col-type">Typ</th>
+                              <th class="col-training">Trénink</th>
+                              <th class="col-notes">Poznámky trenéra</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr>
+                              <td>13.7.</td>
+                              <td>Pondělí</td>
+                              <td><span class="badge-run">Běh</span></td>
+                              <td><div class="training-title">Easy run 14 km</div><div class="training-meta">Stabilizační objem bez dalšího tlaku.</div></td>
+                              <td><div class="note-copy">Jen lehce rozhýbat nohy a navázat na středu.</div></td>
+                            </tr>
+                            <tr>
+                              <td>15.7.</td>
+                              <td>Středa</td>
+                              <td><span class="badge-workout">Trénink</span></td>
+                              <td><div class="training-title">4x 3 km marathon effort</div><div class="training-meta">Mezi bloky 1 km klus, odhad 23 km.</div></td>
+                              <td><div class="note-copy">Držet ekonomiku a pitný režim jako v závodním období.</div></td>
+                            </tr>
+                            <tr>
+                              <td>18.7.</td>
+                              <td>Sobota</td>
+                              <td><span class="badge-run">Běh</span></td>
+                              <td><div class="training-title">Long run 24 km</div><div class="training-meta">Objem dolů, rytmus zůstává plynulý.</div></td>
+                              <td><div class="note-copy">Tady už nechci vysoký stres, jen udržet konzistenci.</div></td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </section>
+                    </div>
+                  </div>
+
+                  <div class="coach-month-block is-hidden" data-coach-month="srpen-2026">
+                    <div class="month-header">
+                      <div><h2>Srpen 2026</h2></div>
+                      <div class="toolbar-row"><span class="chip chip-warning">5 týdnů</span></div>
+                    </div>
+                    <div class="week-grid">
+                      <section class="week-card">
+                        <div class="week-head">
+                          <h3>Týden 1.</h3>
+                          <small>3.8. – 9.8.</small>
+                        </div>
+                        <table>
+                          <thead>
+                            <tr>
+                              <th class="col-date">Datum</th>
+                              <th class="col-day">Den</th>
+                              <th class="col-type">Typ</th>
+                              <th class="col-training">Trénink</th>
+                              <th class="col-notes">Poznámky trenéra</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr>
+                              <td>3.8.</td>
+                              <td>Pondělí</td>
+                              <td><span class="badge-run">Běh</span></td>
+                              <td><div class="training-title">Easy run 16 km</div><div class="training-meta">Začátek dalšího silného bloku, klidný vstup do objemu.</div></td>
+                              <td><div class="note-copy">Srpen startuje už 3. 8., takže se rozvine pět plných týdnů.</div></td>
+                            </tr>
+                            <tr>
+                              <td>5.8.</td>
+                              <td>Středa</td>
+                              <td><span class="badge-workout">Trénink</span></td>
+                              <td><div class="training-title">4x 4 km marathon effort</div><div class="training-meta">Pauza 1 km klus, celkem odhad 27 km.</div></td>
+                              <td><div class="note-copy">Pohlídat držení tempa a nepřepálit první blok.</div></td>
+                            </tr>
+                            <tr>
+                              <td>8.8.</td>
+                              <td>Sobota</td>
+                              <td><span class="badge-run">Běh</span></td>
+                              <td><div class="training-title">Long run 34 km</div><div class="training-meta">Vrchol objemové části, steady finish bez sprintu.</div></td>
+                              <td><div class="note-copy">Po doběhu vyhodnotit žaludek, energii a toleranci gelů.</div></td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </section>
+
+                      <section class="week-card">
+                        <div class="week-head">
+                          <h3>Týden 2.</h3>
+                          <small>10.8. – 16.8.</small>
+                        </div>
+                        <table>
+                          <thead>
+                            <tr>
+                              <th class="col-date">Datum</th>
+                              <th class="col-day">Den</th>
+                              <th class="col-type">Typ</th>
+                              <th class="col-training">Trénink</th>
+                              <th class="col-notes">Poznámky trenéra</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr>
+                              <td>10.8.</td>
+                              <td>Pondělí</td>
+                              <td><span class="badge-run">Běh</span></td>
+                              <td><div class="training-title">Recovery 14 km</div><div class="training-meta">Lehce po silném objemovém víkendu.</div></td>
+                              <td><div class="note-copy">Nechat nohy rozpadnout únavu bez zbytečné intenzity.</div></td>
+                            </tr>
+                            <tr>
+                              <td>12.8.</td>
+                              <td>Středa</td>
+                              <td><span class="badge-workout">Trénink</span></td>
+                              <td><div class="training-title">2x 6 km marathon effort</div><div class="training-meta">Pauza 2 km lehce, celkem 24 km.</div></td>
+                              <td><div class="note-copy">Důležité je nepřepálit první blok a držet klid.</div></td>
+                            </tr>
+                            <tr>
+                              <td>15.8.</td>
+                              <td>Sobota</td>
+                              <td><span class="badge-run">Běh</span></td>
+                              <td><div class="training-title">Long run 32 km</div><div class="training-meta">Dlouhý běh s lehce progresivním koncem.</div></td>
+                              <td><div class="note-copy">Po doběhu hlídat toleranci příjmu a ranní únavu.</div></td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </section>
+                    </div>
+                  </div>
+
+                  <div class="coach-month-block is-hidden" data-coach-month="zari-2026">
+                    <div class="month-header">
+                      <div><h2>Září 2026</h2></div>
+                      <div class="toolbar-row"><span class="chip">4 týdny</span></div>
+                    </div>
+                    <div class="week-grid">
+                      <section class="week-card">
+                        <div class="week-head">
+                          <h3>Týden 1.</h3>
+                          <small>7.9. – 13.9.</small>
+                        </div>
+                        <table>
+                          <thead>
+                            <tr>
+                              <th class="col-date">Datum</th>
+                              <th class="col-day">Den</th>
+                              <th class="col-type">Typ</th>
+                              <th class="col-training">Trénink</th>
+                              <th class="col-notes">Poznámky trenéra</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr>
+                              <td>7.9.</td>
+                              <td>Pondělí</td>
+                              <td><span class="badge-run">Běh</span></td>
+                              <td><div class="training-title">Easy run 12 km + mobility</div><div class="training-meta">Po srpnovém objemu srovnat únavu a držet lehkost.</div></td>
+                              <td><div class="note-copy">Září začíná až 7. 9., takže měsíc má čtyři vygenerované týdny.</div></td>
+                            </tr>
+                            <tr>
+                              <td>9.9.</td>
+                              <td>Středa</td>
+                              <td><span class="badge-workout">Trénink</span></td>
+                              <td><div class="training-title">3x 5 km marathon effort</div><div class="training-meta">Mezi bloky 2 km lehce, celkem 24 km.</div></td>
+                              <td><div class="note-copy">Rytmus už má být čistý, ale pořád bez závodního stresu.</div></td>
+                            </tr>
+                            <tr>
+                              <td>12.9.</td>
+                              <td>Sobota</td>
+                              <td><span class="badge-run">Běh</span></td>
+                              <td><div class="training-title">Long run 28 km</div><div class="training-meta">Stabilizace po vrcholu objemu, závěr jen lehce steady.</div></td>
+                              <td><div class="note-copy">Tady už řešit hlavně konzistenci a regeneraci mezi dny.</div></td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </section>
+
+                      <section class="week-card">
+                        <div class="week-head">
+                          <h3>Týden 2.</h3>
+                          <small>14.9. – 20.9.</small>
+                        </div>
+                        <table>
+                          <thead>
+                            <tr>
+                              <th class="col-date">Datum</th>
+                              <th class="col-day">Den</th>
+                              <th class="col-type">Typ</th>
+                              <th class="col-training">Trénink</th>
+                              <th class="col-notes">Poznámky trenéra</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr>
+                              <td>14.9.</td>
+                              <td>Pondělí</td>
+                              <td><span class="badge-run">Běh</span></td>
+                              <td><div class="training-title">Easy run 14 km</div><div class="training-meta">Navázání na stabilizační blok bez výrazné únavy.</div></td>
+                              <td><div class="note-copy">Pondělí držet opravdu volně, ať je prostor na středu.</div></td>
+                            </tr>
+                            <tr>
+                              <td>16.9.</td>
+                              <td>Středa</td>
+                              <td><span class="badge-workout">Trénink</span></td>
+                              <td><div class="training-title">10 km continuous marathon effort</div><div class="training-meta">Souvislá práce v rytmu, celkem odhad 21 km.</div></td>
+                              <td><div class="note-copy">Rovný rytmus bez honění tempa v první polovině.</div></td>
+                            </tr>
+                            <tr>
+                              <td>19.9.</td>
+                              <td>Sobota</td>
+                              <td><span class="badge-run">Běh</span></td>
+                              <td><div class="training-title">Long run 26 km</div><div class="training-meta">Konzistentní objem s lehkým steady závěrem.</div></td>
+                              <td><div class="note-copy">Důležitá je pravidelnost, ne další vrchol intenzity.</div></td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </section>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+        </section>
+      </section>
+    </main>
 
     <div class="modal-layer is-hidden" id="profileModal">
       <div class="modal-preview">
         <aside class="modal-side">
           <div class="tabs">
             <button class="tab-btn is-active" type="button" data-tab-target="tab-profile">Profil</button>
-            <button class="tab-btn" type="button" data-tab-target="tab-account">Nastaveni uctu</button>
-            <button class="tab-btn" type="button" data-tab-target="tab-password">Zmena hesla</button>
+            <button class="tab-btn" type="button" data-tab-target="tab-account">Nastavení účtu</button>
+            <button class="tab-btn" type="button" data-tab-target="tab-password">Změna hesla</button>
             <button class="tab-btn" type="button" data-tab-target="tab-coach">Trener</button>
           </div>
         </aside>
@@ -1109,15 +2001,15 @@
                   <div class="section-title">Profil</div>
                   <div class="form-grid">
                     <div class="field">
-                      <label>Jmeno</label>
+                      <label>Jméno</label>
                       <input class="input" type="text" value="Adam">
                     </div>
                     <div class="field">
-                      <label>Prijmeni</label>
+                      <label>Příjmení</label>
                       <input class="input" type="text" value="Novak">
                     </div>
                     <div class="toolbar-row">
-                      <button class="btn btn-primary">Ulozit profil</button>
+                      <button class="btn btn-primary">Uložit profil</button>
                     </div>
                   </div>
                 </div>
@@ -1128,7 +2020,7 @@
                   <div class="section-title">Souhrn uctu</div>
                   <div class="account-meta">
                     <div class="meta-row">
-                      <span class="meta-label">Uzivatelske jmeno</span>
+                      <span class="meta-label">Uživatelské jméno</span>
                       <span class="meta-value">adamnovak</span>
                     </div>
                     <div class="meta-row">
@@ -1137,7 +2029,7 @@
                     </div>
                     <div class="meta-row">
                       <span class="meta-label">Role</span>
-                      <span class="meta-value">Athlete</span>
+                      <span class="meta-value">Atlet</span>
                     </div>
                   </div>
                 </div>
@@ -1149,11 +2041,11 @@
             <div class="modal-content-grid">
               <div class="stack">
                 <div class="subpanel">
-                  <div class="section-title">Nastaveni uctu</div>
+                  <div class="section-title">Nastavení účtu</div>
                   <div class="helper-copy">Tady je videt jednoduchy account blok podobne jako v realnem modalu, ale v plne sirce a s vyuzitim prostoru.</div>
                   <div class="account-meta">
                     <div class="meta-row">
-                      <span class="meta-label">Uzivatelske jmeno</span>
+                      <span class="meta-label">Uživatelské jméno</span>
                       <span class="meta-value">adamnovak</span>
                     </div>
                     <div class="meta-row">
@@ -1161,13 +2053,13 @@
                       <span class="meta-value">adam.novak@endurobuddy.dev</span>
                     </div>
                     <div class="meta-row">
-                      <span class="meta-label">Pripojeni</span>
+                      <span class="meta-label">Připojení</span>
                       <span class="meta-value">Google + e-mail</span>
                     </div>
                   </div>
                   <div class="toolbar-row">
-                    <button class="btn">Nastaveni</button>
-                    <button class="btn" style="border-color: rgba(255,122,89,0.3); color:#ffd7ce;">Odhlasit</button>
+                    <button class="btn">Nastavení</button>
+                    <button class="btn" style="border-color: rgba(255,122,89,0.3); color:#ffd7ce;">Odhlásit</button>
                   </div>
                 </div>
               </div>
@@ -1178,7 +2070,7 @@
                   <div class="account-meta">
                     <div class="meta-row">
                       <span class="meta-label">Role</span>
-                      <span class="meta-value">Athlete</span>
+                      <span class="meta-value">Atlet</span>
                     </div>
                     <div class="meta-row">
                       <span class="meta-label">Jazyk</span>
@@ -1198,7 +2090,7 @@
             <div class="modal-content-grid">
               <div class="stack">
                 <div class="subpanel">
-                  <div class="section-title">Zmena hesla</div>
+                  <div class="section-title">Změna hesla</div>
                   <div class="form-grid">
                     <div class="field">
                       <label>Stare heslo</label>
@@ -1221,7 +2113,7 @@
 
               <div class="stack">
                 <div class="subpanel">
-                  <div class="section-title">Bezpecnost</div>
+                  <div class="section-title">Bezpečnost</div>
                   <div class="helper-copy">Druhy sloupec muze zobrazovat pomocne informace, doporuceni k heslu nebo audit bez toho, aby zustal prazdny.</div>
                   <div class="account-meta">
                     <div class="meta-row">
@@ -1286,6 +2178,10 @@
       const profileModal = document.getElementById('profileModal');
       const tabButtons = Array.from(document.querySelectorAll('[data-tab-target]'));
       const tabPanels = Array.from(document.querySelectorAll('.tab-panel'));
+      const appViewButtons = Array.from(document.querySelectorAll('[data-app-view-target]'));
+      const appViews = Array.from(document.querySelectorAll('[data-app-view]'));
+      const coachMonthButtons = Array.from(document.querySelectorAll('[data-coach-month-target]'));
+      const coachMonthPanels = Array.from(document.querySelectorAll('[data-coach-month]'));
       const openModalButtons = Array.from(document.querySelectorAll('[data-open-modal="profileModal"]'));
       const closeModalButtons = Array.from(document.querySelectorAll('[data-close-modal="profileModal"]'));
 
@@ -1301,6 +2197,24 @@
 
       function closeModal() {
         profileModal.classList.add('is-hidden');
+      }
+
+      function activateAppView(targetView) {
+        appViewButtons.forEach(function (button) {
+          button.classList.toggle('is-active', button.getAttribute('data-app-view-target') === targetView);
+        });
+        appViews.forEach(function (view) {
+          view.classList.toggle('is-active', view.getAttribute('data-app-view') === targetView);
+        });
+      }
+
+      function activateCoachMonth(targetMonth) {
+        coachMonthButtons.forEach(function (button) {
+          button.classList.toggle('is-active', button.getAttribute('data-coach-month-target') === targetMonth);
+        });
+        coachMonthPanels.forEach(function (panel) {
+          panel.classList.toggle('is-hidden', panel.getAttribute('data-coach-month') !== targetMonth);
+        });
       }
 
       notificationsButton.addEventListener('click', function (event) {
@@ -1346,6 +2260,18 @@
           button.classList.add('is-active');
           const target = document.getElementById(targetId);
           if (target) target.classList.add('is-active');
+        });
+      });
+
+      appViewButtons.forEach(function (button) {
+        button.addEventListener('click', function () {
+          activateAppView(button.getAttribute('data-app-view-target'));
+        });
+      });
+
+      coachMonthButtons.forEach(function (button) {
+        button.addEventListener('click', function () {
+          activateCoachMonth(button.getAttribute('data-coach-month-target'));
         });
       });
 

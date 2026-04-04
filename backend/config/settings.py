@@ -165,6 +165,7 @@ LANGUAGE_CODE = "cs"
 
 LANGUAGES = [
     ("cs", "Čeština"),
+    ("en", "English"),
 ]
 
 LOCALE_PATHS = [
