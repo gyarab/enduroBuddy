@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 64" fill="none">
+  <!-- EnduroBuddy Compact Logo — Stride Mark + "EB" monogram -->
+
+  <!-- Stride Mark -->
+  <g transform="translate(0 0)">
+    <g transform="rotate(-6 32 32)">
+      <rect x="18" y="14" width="14" height="5" rx="2.5" fill="#c8ff00"/>
+      <rect x="18" y="29" width="22" height="5" rx="2.5" fill="#c8ff00"/>
+      <rect x="18" y="44" width="30" height="5" rx="2.5" fill="#c8ff00"/>
+    </g>
+  </g>
+
+  <!-- "EB" monogram -->
+  <text x="72" y="44" font-family="Syne, system-ui, sans-serif" font-weight="800" font-size="32" fill="#fafafa" letter-spacing="-1">EB</text>
+</svg>
