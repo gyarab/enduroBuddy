@@ -3,9 +3,6 @@
    Scoped to home.html only
    ============================================================ */
 
-    /* ═══════════════════════════════════════════════════════════
-       ENDUROBUDDY LANDING PAGE — Neon Lab × Swiss Precision
-       ═══════════════════════════════════════════════════════════ */
     :root {
       --lp-bg:#09090b; --lp-bg-elevated:#111113; --lp-surface:#18181b; --lp-surface-hover:#27272a;
       --lp-border:rgba(255,255,255,.07); --lp-border-soft:rgba(255,255,255,.04);
@@ -14,10 +11,6 @@
       --lp-danger:#f43f5e; --lp-warning:#f59e0b;
       --lp-text:#fafafa; --lp-text-secondary:#a1a1aa; --lp-text-muted:#71717a;
       --lp-font-display:"Syne",system-ui,sans-serif; --lp-font-body:"Inter","Segoe UI Variable Text",system-ui,sans-serif; --lp-font-mono:"JetBrains Mono","Cascadia Code",monospace;
-    }
-
-    body {
-      font-family: var(--lp-font-body);
     }
 
     body { background:var(--lp-bg); color:var(--lp-text); font-family:var(--lp-font-body); -webkit-font-smoothing:antialiased; }
