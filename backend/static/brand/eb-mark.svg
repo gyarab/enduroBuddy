@@ -1,8 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
-  <!-- EnduroBuddy Stride Mark — 3 bars of increasing length, tilted 6° forward -->
-  <g transform="rotate(-6 32 32)">
-    <rect x="18" y="14" width="14" height="5" rx="2.5" fill="#c8ff00"/>
-    <rect x="18" y="29" width="22" height="5" rx="2.5" fill="#c8ff00"/>
-    <rect x="18" y="44" width="30" height="5" rx="2.5" fill="#c8ff00"/>
-  </g>
+  <!-- EnduroBuddy Signal Stack Mark -->
+  <rect x="12" y="10" width="16" height="8" rx="4" fill="#c8ff00"/>
+  <rect x="12" y="24" width="28" height="8" rx="4" fill="#c8ff00" opacity="0.35"/>
+  <rect x="12" y="38" width="40" height="8" rx="4" fill="#c8ff00"/>
 </svg>

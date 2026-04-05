@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" fill="none">
+  <!-- EnduroBuddy Social Banner — OG / Twitter card / LinkedIn cover -->
+  <rect width="1200" height="630" fill="#09090b"/>
+
+  <!-- Subtle gradient glow -->
+  <ellipse cx="600" cy="280" rx="400" ry="200" fill="#c8ff00" opacity="0.04"/>
+
+  <!-- Signal Stack mark -->
+  <rect x="430" y="200" width="56" height="26" rx="13" fill="#c8ff00"/>
+  <rect x="430" y="238" width="98" height="26" rx="13" fill="#c8ff00" opacity="0.35"/>
+  <rect x="430" y="276" width="140" height="26" rx="13" fill="#c8ff00"/>
+
+  <!-- Wordmark -->
+  <text x="590" y="268" font-family="system-ui, -apple-system, sans-serif" font-weight="700" font-size="52" fill="#fafafa" letter-spacing="-1">EnduroBuddy</text>
+
+  <!-- Tagline -->
+  <text x="432" y="346" font-family="system-ui, -apple-system, sans-serif" font-weight="400" font-size="20" fill="#a1a1aa" letter-spacing="0.5">Modern training platform for coach and athlete</text>
+
+  <!-- Subtle border -->
+  <rect x="0.5" y="0.5" width="1199" height="629" rx="0" stroke="#27272a" stroke-width="1" fill="none"/>
+</svg>
