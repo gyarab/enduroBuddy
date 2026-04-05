@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" fill="none">
+  <!-- EnduroBuddy GitHub Avatar — Dark, circle crop safe -->
+  <rect width="400" height="400" fill="#09090b"/>
+  <!-- Mark centered with extra padding for circle crop -->
+  <rect x="130" y="140" width="50" height="24" rx="12" fill="#c8ff00"/>
+  <rect x="130" y="176" width="88" height="24" rx="12" fill="#c8ff00" opacity="0.35"/>
+  <rect x="130" y="212" width="126" height="24" rx="12" fill="#c8ff00"/>
+</svg>

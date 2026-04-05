@@ -4,6 +4,7 @@
 {% block title %}{% get_current_language as CURRENT_LANGUAGE %}{% if CURRENT_LANGUAGE == "en" %}EnduroBuddy | Modern training platform{% else %}EnduroBuddy | Moderní platforma pro vytrvalostní trénink{% endif %}{% endblock %}
 
 {% block topbar_links %}
+  {% get_current_language as CURRENT_LANGUAGE %}
   <a class="eb-nav-link" href="#features">{% if CURRENT_LANGUAGE == "en" %}Features{% else %}Funkce{% endif %}</a>
   <a class="eb-nav-link" href="#how">{% if CURRENT_LANGUAGE == "en" %}How it works{% else %}Jak funguje{% endif %}</a>
   <a class="eb-nav-link" href="#audience">{% if CURRENT_LANGUAGE == "en" %}For who{% else %}Pro koho{% endif %}</a>
@@ -11,146 +12,314 @@
 {% endblock %}
 
 {% block topbar_actions %}
-  <a class="btn eb-btn eb-btn-primary" href="{% url 'account_signup' %}">{% if CURRENT_LANGUAGE == "en" %}Start free{% else %}Začít zdarma{% endif %}</a>
+  <a class="btn lp-btn lp-btn-primary lp-btn-sm" href="{% url 'account_signup' %}">{% get_current_language as CURRENT_LANGUAGE %}{% if CURRENT_LANGUAGE == "en" %}Start free{% else %}Začít zdarma{% endif %}</a>
 {% endblock %}
 
 {% block page_styles %}
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet">
   <style>
-    :root { --lp-bg:#0a0d0f; --lp-surface:#13181b; --lp-surface-2:#181d21; --lp-border:rgba(255,255,255,.07); --lp-accent:#e8f04a; --lp-accent-2:#3dffa0; --lp-text:#f0f2f0; --lp-muted:#6b7a72; --lp-muted-2:#9aab9e; }
-    body { background: radial-gradient(circle at top right, rgba(232,240,74,.08), transparent 26%), radial-gradient(circle at top left, rgba(61,255,160,.06), transparent 22%), var(--lp-bg); color:var(--lp-text); }
-    body::before { content:""; position:fixed; inset:0; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E"); pointer-events:none; opacity:.35; z-index:0; }
-    .eb-topbar { background:rgba(10,13,15,.84); border-bottom:1px solid var(--lp-border); backdrop-filter:blur(18px); }
-    .eb-nav-link { color:var(--lp-muted-2); background:transparent; border-color:transparent; font-size:.84rem; letter-spacing:.08em; }
-    .eb-nav-link:hover, .eb-nav-link:focus-visible { color:var(--lp-text); background:rgba(255,255,255,.04); border-color:var(--lp-border); }
-    .eb-btn { border-radius:10px; font-size:.84rem; letter-spacing:.08em; }
-    .eb-btn-primary { background:var(--lp-accent); color:#0a0d0f; }
-    .eb-btn-primary:hover, .eb-btn-primary:focus-visible { background:#eef56a; color:#0a0d0f; }
-    .lp-main, .eb-footer { position:relative; z-index:1; }
-    .lp-hero, .lp-how { display:grid; grid-template-columns:minmax(0,1fr) minmax(320px,.92fr); gap:2.5rem; align-items:center; }
-    .lp-hero { min-height:calc(100vh - 84px); padding:4rem 0 5rem; }
-    .lp-eyebrow, .lp-label { display:inline-flex; align-items:center; gap:.6rem; font-family:var(--eb-font-accent); font-size:.8rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase; }
-    .lp-eyebrow { margin-bottom:1.5rem; padding:.45rem .95rem; border-radius:999px; color:var(--lp-accent); border:1px solid rgba(232,240,74,.18); background:rgba(232,240,74,.08); }
-    .lp-eyebrow::before { content:""; width:.45rem; height:.45rem; border-radius:50%; background:var(--lp-accent); animation:lpPulse 2s ease-in-out infinite; }
-    .lp-title, .lp-section-title { margin:0 0 1rem; font-family:var(--eb-font-accent); font-size:clamp(2.8rem,8vw,5.6rem); line-height:.94; letter-spacing:-.05em; text-transform:uppercase; color:#f8faf8; }
-    .lp-title em { color:var(--lp-accent); font-style:normal; }
-    .lp-subtitle, .lp-section-lead, .lp-copy { color:var(--lp-muted-2); font-size:1rem; font-weight:300; line-height:1.8; }
-    .lp-subtitle { max-width:36rem; margin:0 0 2rem; }
-    .lp-actions, .lp-row { display:flex; flex-wrap:wrap; gap:.8rem; }
-    .lp-link { color:var(--lp-muted-2); text-decoration:none; font-family:var(--eb-font-accent); font-size:.92rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; }
-    .lp-link:hover, .lp-link:focus-visible { color:var(--lp-text); }
-    .lp-pill { padding:.55rem .9rem; border-radius:999px; border:1px solid var(--lp-border); background:rgba(255,255,255,.03); color:var(--lp-muted-2); font-family:var(--eb-font-accent); font-size:.8rem; font-weight:700; letter-spacing:.05em; text-transform:uppercase; }
-    .lp-panel, .lp-card, .lp-cta, .lp-day, .lp-activity { border:1px solid var(--lp-border); background:var(--lp-surface); border-radius:18px; }
-    .lp-panel { overflow:hidden; box-shadow:0 40px 80px rgba(0,0,0,.45); }
-    .lp-panel-head { display:flex; align-items:center; gap:.55rem; padding:1rem 1.2rem; border-bottom:1px solid var(--lp-border); background:rgba(255,255,255,.02); }
-    .lp-dot { width:.65rem; height:.65rem; border-radius:50%; } .lp-dot:nth-child(1){background:#ff5f57;} .lp-dot:nth-child(2){background:#ffbd2e;} .lp-dot:nth-child(3){background:#28c840;}
-    .lp-panel-label, .lp-week { color:var(--lp-muted); font-size:.74rem; letter-spacing:.08em; text-transform:uppercase; }
-    .lp-panel-body { padding:1.1rem; }
-    .lp-week { margin-bottom:1rem; font-weight:700; }
-    .lp-days { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:.45rem; margin-bottom:1rem; }
-    .lp-day { padding:.7rem .4rem; text-align:center; } .lp-day.done { border-color:rgba(61,255,160,.25); background:rgba(61,255,160,.05); } .lp-day.plan { border-color:rgba(232,240,74,.22); }
-    .lp-day-label { color:var(--lp-muted); font-size:.62rem; letter-spacing:.07em; text-transform:uppercase; margin-bottom:.35rem; } .lp-day-icon { display:block; margin-bottom:.25rem; font-size:1rem; } .lp-day-value { color:var(--lp-accent-2); font-family:var(--eb-font-accent); font-size:.8rem; font-weight:700; } .lp-day.rest .lp-day-value { color:var(--lp-muted); }
-    .lp-activity { display:flex; align-items:center; gap:.8rem; padding:.85rem; margin-top:.6rem; }
-    .lp-activity-icon { width:2.2rem; height:2.2rem; display:grid; place-items:center; border-radius:10px; flex-shrink:0; font-size:1rem; } .lp-activity-icon.run { background:rgba(232,240,74,.12); } .lp-activity-icon.bike { background:rgba(61,255,160,.12); }
-    .lp-activity-main { flex:1; min-width:0; } .lp-activity-name { color:var(--lp-text); font-size:.82rem; font-weight:600; } .lp-activity-meta { display:flex; flex-wrap:wrap; gap:.7rem; margin-top:.15rem; color:var(--lp-muted); font-size:.7rem; }
-    .lp-badge { padding:.3rem .6rem; border-radius:999px; font-family:var(--eb-font-accent); font-size:.72rem; font-weight:700; letter-spacing:.06em; text-transform:uppercase; white-space:nowrap; } .lp-badge.done { color:var(--lp-accent-2); background:rgba(61,255,160,.08); border:1px solid rgba(61,255,160,.2); } .lp-badge.plan { color:var(--lp-accent); background:rgba(232,240,74,.08); border:1px solid rgba(232,240,74,.2); }
-    .lp-floating { position:absolute; left:-1.5rem; bottom:-1rem; padding:.95rem 1rem; border-radius:16px; border:1px solid var(--lp-border); background:rgba(24,29,33,.92); box-shadow:0 20px 42px rgba(0,0,0,.42); animation:lpFloat 4s ease-in-out infinite; }
-    .lp-floating strong { display:block; color:var(--lp-text); font-size:.82rem; } .lp-floating span { color:var(--lp-muted); font-size:.72rem; }
-    .lp-logos { padding:2rem 0; border-top:1px solid var(--lp-border); border-bottom:1px solid var(--lp-border); display:flex; gap:1.5rem; align-items:center; }
-    .lp-logos-label { flex-shrink:0; color:var(--lp-muted); font-size:.78rem; letter-spacing:.08em; text-transform:uppercase; }
-    .lp-section { padding:5rem 0; } .lp-label { color:var(--lp-accent); margin-bottom:1rem; } .lp-label::before { content:""; width:1.5rem; height:1px; background:currentColor; }
-    .lp-grid-2, .lp-grid-3 { display:grid; gap:1rem; margin-top:2rem; } .lp-grid-2 { grid-template-columns:repeat(2,minmax(0,1fr)); } .lp-grid-3, .lp-stats { grid-template-columns:repeat(3,minmax(0,1fr)); display:grid; gap:1rem; margin-top:2rem; }
-    .lp-card { padding:1.4rem; transition:transform 180ms ease, border-color 180ms ease, background 180ms ease; } .lp-card:hover { transform:translateY(-3px); border-color:rgba(255,255,255,.14); background:var(--lp-surface-2); }
-    .lp-card-title { margin:0 0 .5rem; font-family:var(--eb-font-accent); font-size:1.06rem; letter-spacing:-.01em; text-transform:uppercase; color:var(--lp-text); } .lp-card-copy { margin:0; color:var(--lp-muted-2); font-size:.92rem; line-height:1.7; }
-    .lp-feature-icon { width:3rem; height:3rem; display:grid; place-items:center; margin-bottom:1rem; border-radius:12px; background:rgba(232,240,74,.08); border:1px solid rgba(232,240,74,.15); font-size:1.1rem; }
-    .lp-step { display:flex; gap:1rem; padding:1.25rem 0; border-bottom:1px solid var(--lp-border); } .lp-step:first-child { padding-top:0; } .lp-step:last-child { border-bottom:0; padding-bottom:0; }
-    .lp-step-num { width:2.4rem; height:2.4rem; display:grid; place-items:center; border-radius:50%; border:1px solid var(--lp-border); background:var(--lp-surface-2); color:var(--lp-accent); font-family:var(--eb-font-accent); font-size:.88rem; font-weight:700; flex-shrink:0; }
-    .lp-role-badge { display:inline-flex; align-items:center; min-height:2rem; padding:0 .8rem; margin-bottom:1rem; border-radius:999px; font-family:var(--eb-font-accent); font-size:.78rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; } .lp-role-badge.coach { color:var(--lp-accent); border:1px solid rgba(232,240,74,.24); background:rgba(232,240,74,.08); } .lp-role-badge.athlete { color:var(--lp-accent-2); border:1px solid rgba(61,255,160,.22); background:rgba(61,255,160,.08); }
-    .lp-role-list { margin:0; padding:0; list-style:none; display:grid; gap:.5rem; } .lp-role-list li { color:var(--lp-muted-2); font-size:.92rem; line-height:1.6; } .lp-role-list li::before { content:"-> "; color:var(--lp-accent); }
+    /* ═══════════════════════════════════════════════════════════
+       ENDUROBUDDY LANDING PAGE — Neon Lab × Swiss Precision
+       ═══════════════════════════════════════════════════════════ */
+    :root {
+      --lp-bg:#09090b; --lp-bg-elevated:#111113; --lp-surface:#18181b; --lp-surface-hover:#27272a;
+      --lp-border:rgba(255,255,255,.07); --lp-border-soft:rgba(255,255,255,.04);
+      --lp-lime:#c8ff00; --lp-lime-hover:#d4ff33; --lp-lime-muted:rgba(200,255,0,.10); --lp-lime-border:rgba(200,255,0,.20);
+      --lp-blue:#38bdf8; --lp-blue-muted:rgba(56,189,248,.10); --lp-blue-border:rgba(56,189,248,.20);
+      --lp-danger:#f43f5e; --lp-warning:#f59e0b;
+      --lp-text:#fafafa; --lp-text-secondary:#a1a1aa; --lp-text-muted:#71717a;
+      --lp-font-display:"Syne",system-ui,sans-serif; --lp-font-body:"Inter","Segoe UI Variable Text",system-ui,sans-serif; --lp-font-mono:"JetBrains Mono","Cascadia Code",monospace;
+    }
+
+    body { background:var(--lp-bg); color:var(--lp-text); font-family:var(--lp-font-body); -webkit-font-smoothing:antialiased; }
+    ::selection { background:rgba(200,255,0,.18); color:#09090b; }
+
+    /* override base topbar */
+    .eb-topbar { background:rgba(9,9,11,.84); border-bottom:1px solid var(--lp-border); backdrop-filter:blur(16px); }
+    .eb-nav-link { color:var(--lp-text-muted); font-family:var(--lp-font-body); font-size:12px; font-weight:600; letter-spacing:.04em; text-transform:uppercase; background:transparent; border-color:transparent; }
+    .eb-nav-link:hover,.eb-nav-link:focus-visible { color:var(--lp-text); background:rgba(255,255,255,.04); border-color:var(--lp-border); }
+    .eb-navbar-brand img { filter:brightness(0) invert(1); }
+
+    /* buttons */
+    .lp-btn { display:inline-flex; align-items:center; justify-content:center; gap:6px; height:40px; padding:0 18px; font-family:var(--lp-font-body); font-size:13px; font-weight:600; letter-spacing:.02em; border-radius:6px; border:1px solid var(--lp-border); background:transparent; color:var(--lp-text); cursor:pointer; transition:all 140ms ease-out; text-decoration:none; white-space:nowrap; }
+    .lp-btn:hover { transform:translateY(-1px); }
+    .lp-btn-primary { background:var(--lp-lime); border-color:transparent; color:#09090b; font-weight:700; }
+    .lp-btn-primary:hover { background:var(--lp-lime-hover); color:#09090b; box-shadow:0 0 24px rgba(200,255,0,.15); }
+    .lp-btn-ghost { border-color:transparent; color:var(--lp-text-secondary); }
+    .lp-btn-ghost:hover { color:var(--lp-text); background:rgba(255,255,255,.04); }
+    .lp-btn-secondary { border-color:var(--lp-border); }
+    .lp-btn-secondary:hover { background:var(--lp-surface-hover); border-color:#3f3f46; }
+    .lp-btn-sm { height:32px; padding:0 14px; font-size:12px; }
+    .lp-btn-lg { height:48px; padding:0 28px; font-size:14px; }
+    .lp-btn-pill { border-radius:9999px; }
+    .lp-main { position:relative; z-index:1; }
+
+    /* shell */
+    .lp-shell { width:min(1280px,calc(100% - 48px)); margin:0 auto; }
+
+    /* ── HERO ── */
+    .lp-hero { display:grid; grid-template-columns:1.1fr .9fr; gap:48px; align-items:center; min-height:calc(100vh - 64px); padding:64px 0 80px; }
+    .lp-eyebrow { display:inline-flex; align-items:center; gap:8px; height:28px; padding:0 12px; border-radius:9999px; border:1px solid var(--lp-lime-border); background:var(--lp-lime-muted); font-size:11px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:var(--lp-lime); margin-bottom:24px; }
+    .lp-eyebrow-dot { width:6px; height:6px; border-radius:50%; background:var(--lp-lime); animation:lp-pulse 2s ease-in-out infinite; }
+    @keyframes lp-pulse { 0%,100%{opacity:1;transform:scale(1);} 50%{opacity:.35;transform:scale(.7);} }
+    .lp-h1 { font-family:var(--lp-font-display); font-size:clamp(2.5rem,5.5vw,4.5rem); font-weight:800; line-height:.92; letter-spacing:-.04em; margin:0 0 20px; }
+    .lp-h1 em { color:var(--lp-lime); font-style:normal; }
+    .lp-subtitle { color:var(--lp-text-secondary); font-size:15px; font-weight:300; line-height:1.75; max-width:38ch; margin:0 0 28px; }
+    .lp-actions { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:24px; }
+    .lp-pills { display:flex; flex-wrap:wrap; gap:6px; }
+    .lp-pill { font-size:11px; font-weight:600; letter-spacing:.04em; text-transform:uppercase; color:var(--lp-text-muted); padding:5px 12px; border-radius:9999px; border:1px solid var(--lp-border); }
+
+    /* hero panel mockup */
+    .lp-panel { background:var(--lp-bg); border:1px solid var(--lp-border); border-radius:16px; overflow:hidden; box-shadow:0 24px 64px rgba(0,0,0,.6); }
+    .lp-panel-chrome { display:flex; align-items:center; gap:6px; padding:12px 16px; border-bottom:1px solid var(--lp-border-soft); background:var(--lp-bg-elevated); }
+    .lp-dot { width:10px; height:10px; border-radius:50%; }
+    .lp-panel-label { margin-left:8px; font-size:11px; font-weight:600; letter-spacing:.04em; text-transform:uppercase; color:var(--lp-text-muted); }
+    .lp-panel-body { padding:16px; }
+    .lp-week-label { font-size:11px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:var(--lp-text-muted); margin-bottom:10px; }
+    .lp-week-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:5px; margin-bottom:12px; }
+    .lp-day { text-align:center; padding:10px 4px; border-radius:6px; border:1px solid var(--lp-border-soft); background:var(--lp-surface); }
+    .lp-day.done { border-color:var(--lp-lime-border); background:var(--lp-lime-muted); }
+    .lp-day.plan { border-color:var(--lp-blue-border); background:var(--lp-blue-muted); }
+    .lp-day.rest { opacity:.4; }
+    .lp-day-name { font-size:10px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--lp-text-muted); margin-bottom:4px; }
+    .lp-day-icon { font-size:14px; margin-bottom:2px; }
+    .lp-day-val { font-family:var(--lp-font-mono); font-size:12px; font-weight:500; }
+    .lp-day.done .lp-day-val { color:var(--lp-lime); }
+    .lp-day.plan .lp-day-val { color:var(--lp-blue); }
+    .lp-activity { display:flex; align-items:center; gap:10px; padding:10px; border-radius:6px; border:1px solid var(--lp-border-soft); background:var(--lp-surface); margin-top:5px; }
+    .lp-activity-icon { width:32px; height:32px; border-radius:6px; display:grid; place-items:center; font-size:14px; flex-shrink:0; }
+    .lp-activity-icon.run { background:var(--lp-lime-muted); }
+    .lp-activity-icon.bike { background:var(--lp-blue-muted); }
+    .lp-activity-info { flex:1; min-width:0; }
+    .lp-activity-name { font-size:13px; font-weight:600; }
+    .lp-activity-meta { font-family:var(--lp-font-mono); font-size:11px; color:var(--lp-text-muted); margin-top:1px; }
+    .lp-badge { display:inline-flex; align-items:center; height:22px; padding:0 8px; font-size:11px; font-weight:600; letter-spacing:.04em; text-transform:uppercase; border-radius:9999px; border:1px solid transparent; white-space:nowrap; }
+    .lp-badge.done { color:var(--lp-lime); background:var(--lp-lime-muted); border-color:var(--lp-lime-border); }
+    .lp-badge.plan { color:var(--lp-blue); background:var(--lp-blue-muted); border-color:var(--lp-blue-border); }
+    .lp-float { position:absolute; left:-12px; bottom:-12px; background:var(--lp-surface); border:1px solid var(--lp-border); border-radius:10px; padding:12px 16px; box-shadow:0 12px 40px rgba(0,0,0,.5); animation:lp-float 4s ease-in-out infinite; }
+    @keyframes lp-float { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-6px);} }
+    .lp-float-label { font-size:11px; font-weight:600; color:var(--lp-text-muted); letter-spacing:.04em; text-transform:uppercase; }
+    .lp-float-val { font-family:var(--lp-font-mono); font-size:1.4rem; font-weight:500; color:var(--lp-lime); line-height:1; margin-top:4px; }
+    .lp-float-sub { font-size:11px; color:var(--lp-text-muted); margin-top:2px; }
+
+    /* ── SECTIONS ── */
+    .lp-section { padding:80px 0; }
     .lp-divider { height:1px; background:var(--lp-border); }
-    .lp-cta { margin:0 0 5rem; padding:4rem 2rem; text-align:center; background:radial-gradient(circle at top center, rgba(232,240,74,.09), transparent 40%), linear-gradient(135deg, #151a1e 0%, #111518 100%); border-color:rgba(232,240,74,.15); }
-    .fade-up { opacity:0; transform:translateY(24px); transition:opacity .6s ease, transform .6s ease; } .fade-up.visible { opacity:1; transform:translateY(0); }
-    @keyframes lpPulse { 0%,100%{opacity:1;transform:scale(1);} 50%{opacity:.4;transform:scale(.72);} } @keyframes lpFloat { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-8px);} } @keyframes lpFloatIn { from{opacity:0;transform:translateY(28px);} to{opacity:1;transform:translateY(0);} }
-    @media (max-width:1199.98px) { .lp-hero, .lp-how, .lp-grid-3 { grid-template-columns:1fr; } }
-    @media (max-width:991.98px) { .lp-hero { min-height:auto; padding:2.5rem 0 4rem; } .lp-grid-2, .lp-stats { grid-template-columns:1fr; } }
-    @media (max-width:767.98px) { .lp-days { grid-template-columns:repeat(4,minmax(0,1fr)); } .lp-floating { position:static; margin-top:1rem; } .lp-actions .btn, .lp-actions a, .lp-row .btn, .lp-row a { width:100%; } }
-    @media (max-width:575.98px) { .lp-section { padding:4rem 0; } .lp-days { grid-template-columns:repeat(2,minmax(0,1fr)); } .lp-card, .lp-cta, .lp-panel-body { padding:1.1rem; } }
+    .lp-label { display:inline-flex; align-items:center; gap:8px; font-size:11px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--lp-lime); margin-bottom:12px; }
+    .lp-label::before { content:""; width:20px; height:1px; background:currentColor; }
+    .lp-section-title { font-family:var(--lp-font-display); font-size:clamp(1.8rem,4vw,2.8rem); font-weight:700; letter-spacing:-.03em; line-height:.95; margin:0 0 12px; }
+    .lp-section-lead { color:var(--lp-text-secondary); font-size:15px; font-weight:300; line-height:1.75; max-width:52ch; margin:0 0 32px; }
+
+    /* ── FEATURE CARDS ── */
+    .lp-grid-3 { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+    .lp-grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .lp-card { background:var(--lp-surface); border:1px solid var(--lp-border-soft); border-radius:10px; padding:24px; transition:transform 180ms ease,border-color 180ms ease; }
+    .lp-card:hover { transform:translateY(-2px); border-color:var(--lp-border); }
+    .lp-card-icon { width:40px; height:40px; display:grid; place-items:center; border-radius:6px; background:var(--lp-lime-muted); border:1px solid var(--lp-lime-border); font-size:18px; margin-bottom:14px; }
+    .lp-card-title { font-size:14px; font-weight:600; margin:0 0 4px; }
+    .lp-card-copy { font-size:13px; color:var(--lp-text-secondary); line-height:1.55; margin:0; }
+
+    /* ── STEPS ── */
+    .lp-how { display:grid; grid-template-columns:1fr .95fr; gap:40px; align-items:start; }
+    .lp-step { display:flex; gap:16px; padding:18px 0; border-bottom:1px solid var(--lp-border-soft); }
+    .lp-step:first-child { padding-top:0; }
+    .lp-step:last-child { border-bottom:0; padding-bottom:0; }
+    .lp-step-num { width:32px; height:32px; display:grid; place-items:center; border-radius:50%; border:1px solid var(--lp-border); background:var(--lp-bg); font-family:var(--lp-font-mono); font-size:13px; font-weight:500; color:var(--lp-lime); flex-shrink:0; }
+    .lp-step-title { font-size:14px; font-weight:600; margin-bottom:2px; }
+    .lp-step-copy { font-size:13px; color:var(--lp-text-secondary); line-height:1.55; }
+
+    /* ── ROLE CARDS ── */
+    .lp-role-card { padding:24px; border-radius:10px; border:1px solid var(--lp-border-soft); background:var(--lp-surface); }
+    .lp-role-card.coach { border-color:var(--lp-lime-border); }
+    .lp-role-card.athlete { border-color:var(--lp-blue-border); }
+    .lp-role-badge { display:inline-flex; align-items:center; height:22px; padding:0 8px; border-radius:9999px; font-size:11px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; margin-bottom:12px; }
+    .lp-role-badge.coach { color:var(--lp-lime); background:var(--lp-lime-muted); border:1px solid var(--lp-lime-border); }
+    .lp-role-badge.athlete { color:var(--lp-blue); background:var(--lp-blue-muted); border:1px solid var(--lp-blue-border); }
+    .lp-role-heading { font-family:var(--lp-font-display); font-size:1.5rem; font-weight:700; letter-spacing:-.02em; margin:0 0 14px; }
+    .lp-role-list { list-style:none; margin:0; padding:0; display:grid; gap:6px; }
+    .lp-role-list li { font-size:13px; color:var(--lp-text-secondary); line-height:1.5; }
+    .lp-role-list li::before { content:"→ "; font-weight:600; }
+    .lp-role-card.coach .lp-role-list li::before { color:var(--lp-lime); }
+    .lp-role-card.athlete .lp-role-list li::before { color:var(--lp-blue); }
+
+    /* ── AUDIENCE CARDS ── */
+    .lp-audience-card { background:var(--lp-surface); border:1px solid var(--lp-border-soft); border-radius:10px; padding:24px; }
+    .lp-audience-title { font-size:14px; font-weight:600; margin:0 0 6px; }
+    .lp-audience-copy { font-size:13px; color:var(--lp-text-secondary); line-height:1.55; margin:0; }
+
+    /* ── CTA ── */
+    .lp-cta { text-align:center; padding:80px 32px; border-radius:16px; border:1px solid var(--lp-lime-border); background:radial-gradient(circle at top center,rgba(200,255,0,.06),transparent 50%),var(--lp-surface); margin-bottom:80px; }
+    .lp-cta-heading { font-family:var(--lp-font-display); font-size:clamp(2rem,5vw,3.5rem); font-weight:800; letter-spacing:-.03em; line-height:.95; margin:0 0 12px; }
+    .lp-cta-sub { font-size:14px; color:var(--lp-text-secondary); margin:0 0 28px; }
+
+    /* ── ANIMATIONS ── */
+    .fade-up { opacity:0; transform:translateY(16px); transition:opacity .5s ease-out,transform .5s ease-out; }
+    .fade-up.visible { opacity:1; transform:translateY(0); }
+    @keyframes lp-hero-in { from{opacity:0;transform:translateY(20px);} to{opacity:1;transform:translateY(0);} }
+    .lp-hero-left { opacity:0; animation:lp-hero-in .7s cubic-bezier(.2,0,0,1) .08s forwards; }
+    .lp-hero-right { opacity:0; animation:lp-hero-in .7s cubic-bezier(.2,0,0,1) .2s forwards; }
+
+    /* footer override */
+    .eb-footer { border-top:1px solid var(--lp-border); background:var(--lp-bg); }
+
+    /* ── RESPONSIVE ── */
+    @media(max-width:1100px) { .lp-hero,.lp-how { grid-template-columns:1fr; } .lp-hero { min-height:auto; padding:48px 0 56px; } }
+    @media(max-width:900px) { .lp-grid-3 { grid-template-columns:1fr; } .lp-grid-2 { grid-template-columns:1fr; } }
+    @media(max-width:640px) { .lp-week-grid { grid-template-columns:repeat(4,1fr); } .lp-float { position:static; margin-top:12px; } .lp-section { padding:56px 0; } .lp-hero { padding:32px 0 40px; } }
+    @media(max-width:480px) { .lp-week-grid { grid-template-columns:repeat(2,1fr); } }
+
+    @media(prefers-reduced-motion:reduce) {
+      .fade-up { opacity:1; transform:none; transition:none; }
+      .lp-hero-left,.lp-hero-right { opacity:1; animation:none; }
+      .lp-eyebrow-dot { animation:none; }
+      .lp-float { animation:none; }
+    }
   </style>
 {% endblock %}
 
 {% block content %}
   {% get_current_language as CURRENT_LANGUAGE %}
   <main class="lp-main">
-    <section class="eb-shell lp-hero">
-      <div style="opacity:0;transform:translateY(24px);animation:lpFloatIn .8s cubic-bezier(.2,0,0,1) .08s forwards;">
-        <div class="lp-eyebrow">{% if CURRENT_LANGUAGE == "en" %}Endurance training platform{% else %}Vytrvalostní trénink{% endif %}</div>
-        <h1 class="lp-title">{% if CURRENT_LANGUAGE == "en" %}Keep the plan, the reality and every athlete <em>under control.</em>{% else %}Měj plán, realitu i sportovce <em>pod kontrolou.</em>{% endif %}</h1>
-        <p class="lp-subtitle">{% if CURRENT_LANGUAGE == "en" %}EnduroBuddy connects monthly training plans, completed activities, and coach-athlete collaboration in one modern interface.{% else %}EnduroBuddy spojuje měsíční tréninkové plány, splněné aktivity a spolupráci trenéra se sportovcem do jednoho moderního rozhraní.{% endif %}</p>
+
+    <!-- ═══════ HERO ═══════ -->
+    <section class="lp-shell lp-hero">
+      <div class="lp-hero-left">
+        <div class="lp-eyebrow"><span class="lp-eyebrow-dot"></span>{% if CURRENT_LANGUAGE == "en" %}Endurance training platform{% else %}Platforma pro vytrvalostní trénink{% endif %}</div>
+        <h1 class="lp-h1">{% if CURRENT_LANGUAGE == "en" %}Plan, track and manage every athlete <em>in one place.</em>{% else %}Plánuj, sleduj a řiď přípravu každého sportovce <em>na jednom místě.</em>{% endif %}</h1>
+        <p class="lp-subtitle">{% if CURRENT_LANGUAGE == "en" %}EnduroBuddy connects monthly training plans, completed sessions and coach-athlete collaboration in one modern workspace.{% else %}EnduroBuddy propojuje měsíční tréninkové plány, splněné tréninky a spolupráci trenéra se sportovcem v jednom moderním rozhraní.{% endif %}</p>
         <div class="lp-actions">
-          <a class="btn eb-btn eb-btn-primary" href="{% url 'account_signup' %}">{% if CURRENT_LANGUAGE == "en" %}Try for free{% else %}Vyzkoušet zdarma{% endif %}</a>
-          <a class="lp-link" href="#how">{% if CURRENT_LANGUAGE == "en" %}How it works{% else %}Jak to funguje{% endif %}</a>
+          <a class="lp-btn lp-btn-primary lp-btn-lg lp-btn-pill" href="{% url 'account_signup' %}">{% if CURRENT_LANGUAGE == "en" %}Try for free{% else %}Vyzkoušet zdarma{% endif %}</a>
+          <a class="lp-btn lp-btn-ghost lp-btn-lg" href="#how">{% if CURRENT_LANGUAGE == "en" %}How it works →{% else %}Jak to funguje →{% endif %}</a>
         </div>
-        <div class="lp-row">
+        <div class="lp-pills">
           <span class="lp-pill">{% if CURRENT_LANGUAGE == "en" %}Monthly planning{% else %}Měsíční plánování{% endif %}</span>
           <span class="lp-pill">{% if CURRENT_LANGUAGE == "en" %}Plan vs reality{% else %}Plán vs realita{% endif %}</span>
           <span class="lp-pill">{% if CURRENT_LANGUAGE == "en" %}Coach + athlete{% else %}Trenér + sportovec{% endif %}</span>
         </div>
       </div>
-      <div style="position:relative;opacity:0;transform:translateY(30px);animation:lpFloatIn .85s cubic-bezier(.2,0,0,1) .2s forwards;">
+      <div class="lp-hero-right" style="position:relative;">
         <div class="lp-panel">
-          <div class="lp-panel-head"><span class="lp-dot"></span><span class="lp-dot"></span><span class="lp-dot"></span><span class="lp-panel-label">endurobuddy.app - {% if CURRENT_LANGUAGE == "en" %}Training plan{% else %}Tréninkový plán{% endif %}</span></div>
+          <div class="lp-panel-chrome"><span class="lp-dot" style="background:#f43f5e;"></span><span class="lp-dot" style="background:#f59e0b;"></span><span class="lp-dot" style="background:#c8ff00;"></span><span class="lp-panel-label">{% if CURRENT_LANGUAGE == "en" %}Training plan{% else %}Tréninkový plán{% endif %}</span></div>
           <div class="lp-panel-body">
-            <div class="lp-week">{% if CURRENT_LANGUAGE == "en" %}Week 14 · April 1-7, 2026{% else %}Týden 14 · 1.-7. dubna 2026{% endif %}</div>
-            <div class="lp-days">
-              <div class="lp-day done"><div class="lp-day-label">{% if CURRENT_LANGUAGE == "en" %}Mon{% else %}Po{% endif %}</div><span class="lp-day-icon">🏃</span><div class="lp-day-value">12 km</div></div>
-              <div class="lp-day done"><div class="lp-day-label">{% if CURRENT_LANGUAGE == "en" %}Tue{% else %}Út{% endif %}</div><span class="lp-day-icon">🚴</span><div class="lp-day-value">45 km</div></div>
-              <div class="lp-day rest"><div class="lp-day-label">{% if CURRENT_LANGUAGE == "en" %}Wed{% else %}St{% endif %}</div><span class="lp-day-icon">💤</span><div class="lp-day-value">{% if CURRENT_LANGUAGE == "en" %}rest{% else %}volno{% endif %}</div></div>
-              <div class="lp-day done"><div class="lp-day-label">{% if CURRENT_LANGUAGE == "en" %}Thu{% else %}Čt{% endif %}</div><span class="lp-day-icon">🏃</span><div class="lp-day-value">18 km</div></div>
-              <div class="lp-day plan"><div class="lp-day-label">{% if CURRENT_LANGUAGE == "en" %}Fri{% else %}Pá{% endif %}</div><span class="lp-day-icon">🏊</span><div class="lp-day-value">3.2 km</div></div>
-              <div class="lp-day plan"><div class="lp-day-label">{% if CURRENT_LANGUAGE == "en" %}Sat{% else %}So{% endif %}</div><span class="lp-day-icon">🏃</span><div class="lp-day-value">28 km</div></div>
-              <div class="lp-day rest"><div class="lp-day-label">{% if CURRENT_LANGUAGE == "en" %}Sun{% else %}Ne{% endif %}</div><span class="lp-day-icon">💤</span><div class="lp-day-value">{% if CURRENT_LANGUAGE == "en" %}rest{% else %}volno{% endif %}</div></div>
+            <div class="lp-week-label">{% if CURRENT_LANGUAGE == "en" %}Week 14 · Apr 1–7{% else %}Týden 14 · 1.–7. dubna{% endif %}</div>
+            <div class="lp-week-grid">
+              <div class="lp-day done"><div class="lp-day-name">{% if CURRENT_LANGUAGE == "en" %}Mon{% else %}Po{% endif %}</div><span class="lp-day-icon">🏃</span><div class="lp-day-val">12 km</div></div>
+              <div class="lp-day done"><div class="lp-day-name">{% if CURRENT_LANGUAGE == "en" %}Tue{% else %}Út{% endif %}</div><span class="lp-day-icon">🏃</span><div class="lp-day-val">16 km</div></div>
+              <div class="lp-day rest"><div class="lp-day-name">{% if CURRENT_LANGUAGE == "en" %}Wed{% else %}St{% endif %}</div><span class="lp-day-icon">—</span><div class="lp-day-val">{% if CURRENT_LANGUAGE == "en" %}rest{% else %}volno{% endif %}</div></div>
+              <div class="lp-day done"><div class="lp-day-name">{% if CURRENT_LANGUAGE == "en" %}Thu{% else %}Čt{% endif %}</div><span class="lp-day-icon">🚴</span><div class="lp-day-val">45 km</div></div>
+              <div class="lp-day plan"><div class="lp-day-name">{% if CURRENT_LANGUAGE == "en" %}Fri{% else %}Pá{% endif %}</div><span class="lp-day-icon">🏃</span><div class="lp-day-val">10 km</div></div>
+              <div class="lp-day rest"><div class="lp-day-name">{% if CURRENT_LANGUAGE == "en" %}Sat{% else %}So{% endif %}</div><span class="lp-day-icon">—</span><div class="lp-day-val">{% if CURRENT_LANGUAGE == "en" %}rest{% else %}volno{% endif %}</div></div>
+              <div class="lp-day plan"><div class="lp-day-name">{% if CURRENT_LANGUAGE == "en" %}Sun{% else %}Ne{% endif %}</div><span class="lp-day-icon">🏃</span><div class="lp-day-val">28 km</div></div>
             </div>
-            <div class="lp-activity"><div class="lp-activity-icon run">🏃</div><div class="lp-activity-main"><div class="lp-activity-name">{% if CURRENT_LANGUAGE == "en" %}Aerobic run - Z2{% else %}Aerobní klus - TZ2{% endif %}</div><div class="lp-activity-meta"><span>12.4 km</span><span>58 min</span><span>{% if CURRENT_LANGUAGE == "en" %}HR 138 bpm{% else %}TF 138 bpm{% endif %}</span></div></div><span class="lp-badge done">{% if CURRENT_LANGUAGE == "en" %}Done{% else %}Splněno{% endif %}</span></div>
-            <div class="lp-activity"><div class="lp-activity-icon bike">🚴</div><div class="lp-activity-main"><div class="lp-activity-name">{% if CURRENT_LANGUAGE == "en" %}Road bike - tempo{% else %}Silniční kolo - tempo{% endif %}</div><div class="lp-activity-meta"><span>45 km</span><span>1:42 h</span><span>Garmin</span></div></div><span class="lp-badge done">{% if CURRENT_LANGUAGE == "en" %}Done{% else %}Splněno{% endif %}</span></div>
-            <div class="lp-activity"><div class="lp-activity-icon run">🏃</div><div class="lp-activity-main"><div class="lp-activity-name">{% if CURRENT_LANGUAGE == "en" %}Long run - LSD{% else %}Dlouhý běh - LSD{% endif %}</div><div class="lp-activity-meta"><span>28 km</span><span>{% if CURRENT_LANGUAGE == "en" %}Saturday{% else %}Sobota{% endif %}</span></div></div><span class="lp-badge plan">{% if CURRENT_LANGUAGE == "en" %}Planned{% else %}Plánováno{% endif %}</span></div>
+            <div class="lp-activity"><div class="lp-activity-icon run">🏃</div><div class="lp-activity-info"><div class="lp-activity-name">{% if CURRENT_LANGUAGE == "en" %}Threshold 6× 1 km{% else %}Práh 6× 1 km{% endif %}</div><div class="lp-activity-meta">16.2 km · 4:52 /km · 1h 18m</div></div><span class="lp-badge done">{% if CURRENT_LANGUAGE == "en" %}Done{% else %}Splněno{% endif %}</span></div>
+            <div class="lp-activity"><div class="lp-activity-icon bike">🚴</div><div class="lp-activity-info"><div class="lp-activity-name">{% if CURRENT_LANGUAGE == "en" %}Endurance Z2 ride{% else %}Vytrvalostní jízda Z2{% endif %}</div><div class="lp-activity-meta">44.8 km · 26.4 km/h · 1h 42m</div></div><span class="lp-badge done">{% if CURRENT_LANGUAGE == "en" %}Done{% else %}Splněno{% endif %}</span></div>
           </div>
         </div>
-        <div class="lp-floating"><strong>{% if CURRENT_LANGUAGE == "en" %}Week completed at 85%{% else %}Týden splněn na 85 %{% endif %}</strong><span>{% if CURRENT_LANGUAGE == "en" %}3 of 5 sessions done{% else %}3 z 5 tréninků dokončeno{% endif %}</span></div>
+        <div class="lp-float">
+          <div class="lp-float-label">{% if CURRENT_LANGUAGE == "en" %}Weekly volume{% else %}Týdenní objem{% endif %}</div>
+          <div class="lp-float-val">54 km</div>
+          <div class="lp-float-sub">{% if CURRENT_LANGUAGE == "en" %}3 / 5 completed{% else %}3 / 5 splněno{% endif %}</div>
+        </div>
       </div>
     </section>
 
-    <div class="eb-shell"><div class="lp-logos fade-up"><span class="lp-logos-label">{% if CURRENT_LANGUAGE == "en" %}Works with{% else %}Funguje s{% endif %}</span><div class="lp-row"><span class="lp-pill">Garmin Connect</span><span class="lp-pill">FIT import</span><span class="lp-pill">{% if CURRENT_LANGUAGE == "en" %}Group coaching{% else %}Skupinový trénink{% endif %}</span><span class="lp-pill">{% if CURRENT_LANGUAGE == "en" %}Cycling{% else %}Cyklistika{% endif %}</span><span class="lp-pill">Triathlon</span></div></div></div>
+    <!-- ═══════ FEATURES ═══════ -->
+    <section id="features" class="lp-section fade-up">
+      <div class="lp-shell">
+        <div class="lp-label">{% if CURRENT_LANGUAGE == "en" %}Features{% else %}Funkce{% endif %}</div>
+        <h2 class="lp-section-title">{% if CURRENT_LANGUAGE == "en" %}Everything a coach needs.{% else %}Vše co trenér potřebuje.{% endif %}</h2>
+        <p class="lp-section-lead">{% if CURRENT_LANGUAGE == "en" %}Designed for serious training without unnecessary clutter.{% else %}Navrženo pro ty, kdo trénink berou vážně. Bez zbytečného balastu.{% endif %}</p>
+        <div class="lp-grid-3">
+          <article class="lp-card"><div class="lp-card-icon">📅</div><div class="lp-card-title">{% if CURRENT_LANGUAGE == "en" %}Monthly planning{% else %}Měsíční plánování{% endif %}</div><p class="lp-card-copy">{% if CURRENT_LANGUAGE == "en" %}Build the month and distribute load across weeks for each athlete.{% else %}Postav měsíc a rozlož zátěž po týdnech pro každého sportovce.{% endif %}</p></article>
+          <article class="lp-card"><div class="lp-card-icon">✓</div><div class="lp-card-title">{% if CURRENT_LANGUAGE == "en" %}Plan vs reality{% else %}Plán vs realita{% endif %}</div><p class="lp-card-copy">{% if CURRENT_LANGUAGE == "en" %}Compare what was planned with what actually happened. Side by side.{% else %}Porovnej co bylo naplánováno s tím, co se skutečně stalo. Vedle sebe.{% endif %}</p></article>
+          <article class="lp-card"><div class="lp-card-icon">⚡</div><div class="lp-card-title">Garmin Connect</div><p class="lp-card-copy">{% if CURRENT_LANGUAGE == "en" %}Sync activities directly from the athlete's Garmin account.{% else %}Synchronizuj aktivity přímo z Garmin účtu sportovce.{% endif %}</p></article>
+          <article class="lp-card"><div class="lp-card-icon">📁</div><div class="lp-card-title">FIT import</div><p class="lp-card-copy">{% if CURRENT_LANGUAGE == "en" %}Import files from any GPS device. One click.{% else %}Importuj soubory z libovolného GPS zařízení. Jedním klikem.{% endif %}</p></article>
+          <article class="lp-card"><div class="lp-card-icon">👥</div><div class="lp-card-title">{% if CURRENT_LANGUAGE == "en" %}Training groups{% else %}Tréninkové skupiny{% endif %}</div><p class="lp-card-copy">{% if CURRENT_LANGUAGE == "en" %}Organize athletes into groups and share plans at scale.{% else %}Organizuj sportovce do skupin a sdílej plány hromadně.{% endif %}</p></article>
+          <article class="lp-card"><div class="lp-card-icon">👁</div><div class="lp-card-title">{% if CURRENT_LANGUAGE == "en" %}Coach overview{% else %}Coach přehled{% endif %}</div><p class="lp-card-copy">{% if CURRENT_LANGUAGE == "en" %}See every athlete in one view. Filter, compare, decide.{% else %}Všichni svěřenci na jednom místě. Filtruj, porovnávej, rozhoduj.{% endif %}</p></article>
+        </div>
+      </div>
+    </section>
 
-    <section class="lp-section fade-up"><div class="eb-shell"><div class="lp-label">{% if CURRENT_LANGUAGE == "en" %}Why EnduroBuddy{% else %}Proč EnduroBuddy{% endif %}</div><h2 class="lp-section-title">{% if CURRENT_LANGUAGE == "en" %}No more chaos in training prep.{% else %}Konec chaosu v přípravě.{% endif %}</h2><p class="lp-section-lead">{% if CURRENT_LANGUAGE == "en" %}Spreadsheets, chats, sports watches, and manual notes are too many tools for one training system. EnduroBuddy brings them into one place.{% else %}Tabulky, chaty, sporttestery a ruční poznámky jsou na jeden tréninkový systém moc nástrojů. EnduroBuddy to spojuje do jednoho místa.{% endif %}</p><div class="lp-grid-2"><article class="lp-card"><h3 class="lp-card-title">{% if CURRENT_LANGUAGE == "en" %}Chaos between spreadsheets and chats{% else %}Chaos mezi tabulkami a chaty{% endif %}</h3><p class="lp-card-copy">{% if CURRENT_LANGUAGE == "en" %}The plan is in one app, communication in another, and outcomes in Garmin.{% else %}Plán je v jedné aplikaci, komunikace v druhé a výsledek v Garminu.{% endif %}</p></article><article class="lp-card"><h3 class="lp-card-title">{% if CURRENT_LANGUAGE == "en" %}Lost context of the plan{% else %}Ztráta kontextu plánu{% endif %}</h3><p class="lp-card-copy">{% if CURRENT_LANGUAGE == "en" %}It is too easy to lose the difference between what was assigned and what actually happened.{% else %}Rozdíl mezi tím, co bylo zadáno a co se skutečně stalo, se ztrácí příliš snadno.{% endif %}</p></article><article class="lp-card"><h3 class="lp-card-title">{% if CURRENT_LANGUAGE == "en" %}Hard to manage more athletes{% else %}Složitá správa více sportovců{% endif %}</h3><p class="lp-card-copy">{% if CURRENT_LANGUAGE == "en" %}Keeping the whole group under control without a system is exhausting.{% else %}Udržet pod kontrolou celou skupinu bez systému je vyčerpávající.{% endif %}</p></article><article class="lp-card"><h3 class="lp-card-title">{% if CURRENT_LANGUAGE == "en" %}Weak long-term overview{% else %}Slabý dlouhodobý přehled{% endif %}</h3><p class="lp-card-copy">{% if CURRENT_LANGUAGE == "en" %}Both coach and athlete need one clear view of progress over time.{% else %}Trenér i sportovec potřebují jeden jasný pohled na vývoj přípravy v čase.{% endif %}</p></article></div></div></section>
+    <div class="lp-shell"><div class="lp-divider"></div></div>
 
-    <div class="eb-shell"><div class="lp-divider"></div></div>
+    <!-- ═══════ HOW IT WORKS ═══════ -->
+    <section id="how" class="lp-section fade-up">
+      <div class="lp-shell">
+        <div class="lp-label">{% if CURRENT_LANGUAGE == "en" %}How it works{% else %}Jak to funguje{% endif %}</div>
+        <h2 class="lp-section-title">{% if CURRENT_LANGUAGE == "en" %}Two views, one system.{% else %}Dva pohledy, jeden systém.{% endif %}</h2>
+        <p class="lp-section-lead">{% if CURRENT_LANGUAGE == "en" %}Coach plans, athlete executes. Both stay aligned in real time.{% else %}Trenér plánuje, sportovec plní. Oba vidí totéž v reálném čase.{% endif %}</p>
+        <div class="lp-how">
+          <div>
+            <div class="lp-step"><div class="lp-step-num">1</div><div><div class="lp-step-title">{% if CURRENT_LANGUAGE == "en" %}Build the monthly plan{% else %}Připrav měsíční plán{% endif %}</div><p class="lp-step-copy">{% if CURRENT_LANGUAGE == "en" %}Create training plans for athletes or groups. Define type, volume and intensity for each session.{% else %}Vytvoř tréninkový plán pro sportovce nebo skupinu. Definuj typ, objem a intenzitu každého tréninku.{% endif %}</p></div></div>
+            <div class="lp-step"><div class="lp-step-num">2</div><div><div class="lp-step-title">{% if CURRENT_LANGUAGE == "en" %}Share with athletes{% else %}Sdílej se sportovci{% endif %}</div><p class="lp-step-copy">{% if CURRENT_LANGUAGE == "en" %}Athletes see their plan instantly. They join via coach code or group invite.{% else %}Sportovci vidí svůj plán okamžitě. Připojí se přes coach code nebo skupinovou pozvánku.{% endif %}</p></div></div>
+            <div class="lp-step"><div class="lp-step-num">3</div><div><div class="lp-step-title">{% if CURRENT_LANGUAGE == "en" %}Track completion{% else %}Sleduj plnění{% endif %}</div><p class="lp-step-copy">{% if CURRENT_LANGUAGE == "en" %}Athletes log sessions and import activities from Garmin or FIT files. You see everything in real time.{% else %}Sportovci zapisují tréninky a importují aktivity z Garminu nebo FIT souborů. Vidíš vše v reálném čase.{% endif %}</p></div></div>
+          </div>
+          <div style="display:grid;gap:12px;">
+            <div class="lp-role-card coach">
+              <div class="lp-role-badge coach">Coach</div>
+              <div class="lp-role-heading">{% if CURRENT_LANGUAGE == "en" %}For coaches{% else %}Pro trenéry{% endif %}</div>
+              <ul class="lp-role-list">
+                <li>{% if CURRENT_LANGUAGE == "en" %}Build monthly plans with weekly structure{% else %}Připravuje měsíční plány s týdenní strukturou{% endif %}</li>
+                <li>{% if CURRENT_LANGUAGE == "en" %}Manage multiple athletes at once{% else %}Spravuje více sportovců najednou{% endif %}</li>
+                <li>{% if CURRENT_LANGUAGE == "en" %}Organize groups and invites{% else %}Organizuje skupiny a pozvánky{% endif %}</li>
+                <li>{% if CURRENT_LANGUAGE == "en" %}Track completion across all athletes{% else %}Sleduje plnění napříč všemi svěřenci{% endif %}</li>
+              </ul>
+            </div>
+            <div class="lp-role-card athlete">
+              <div class="lp-role-badge athlete">Athlete</div>
+              <div class="lp-role-heading">{% if CURRENT_LANGUAGE == "en" %}For athletes{% else %}Pro sportovce{% endif %}</div>
+              <ul class="lp-role-list">
+                <li>{% if CURRENT_LANGUAGE == "en" %}See the plan day by day{% else %}Vidí plán den po dni{% endif %}</li>
+                <li>{% if CURRENT_LANGUAGE == "en" %}Log completed sessions{% else %}Zapisuje splněné tréninky{% endif %}</li>
+                <li>{% if CURRENT_LANGUAGE == "en" %}Import from Garmin or FIT files{% else %}Importuje aktivity z Garminu{% endif %}</li>
+                <li>{% if CURRENT_LANGUAGE == "en" %}Match plan with reality{% else %}Páruje plán se skutečností{% endif %}</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
 
-    <section id="features" class="lp-section fade-up"><div class="eb-shell"><div class="lp-label">{% if CURRENT_LANGUAGE == "en" %}Features{% else %}Funkce{% endif %}</div><h2 class="lp-section-title">{% if CURRENT_LANGUAGE == "en" %}Everything coaches and athletes need.{% else %}Vše, co trenér a sportovec potřebují.{% endif %}</h2><p class="lp-section-lead">{% if CURRENT_LANGUAGE == "en" %}Designed for serious training without unnecessary clutter, with focus on what really matters.{% else %}Navrženo pro ty, kteří berou trénink vážně. Bez zbytečného balastu, s důrazem na to, co opravdu rozhoduje.{% endif %}</p><div class="lp-grid-3"><article class="lp-card"><div class="lp-feature-icon">📅</div><h3 class="lp-card-title">{% if CURRENT_LANGUAGE == "en" %}Monthly planning{% else %}Měsíční plánování{% endif %}</h3><p class="lp-card-copy">{% if CURRENT_LANGUAGE == "en" %}Coaches build the month and distribute load across weeks.{% else %}Trenér staví měsíc a rozkládá zátěž po týdnech.{% endif %}</p></article><article class="lp-card"><div class="lp-feature-icon">✅</div><h3 class="lp-card-title">{% if CURRENT_LANGUAGE == "en" %}Plan matched with reality{% else %}Plán spojený s realitou{% endif %}</h3><p class="lp-card-copy">{% if CURRENT_LANGUAGE == "en" %}Athletes pair completion with FIT imports or Garmin Connect.{% else %}Sportovec páruje splnění s FIT importem nebo s Garmin Connect.{% endif %}</p></article><article class="lp-card"><div class="lp-feature-icon">🗒️</div><h3 class="lp-card-title">{% if CURRENT_LANGUAGE == "en" %}Notes and two-phase days{% else %}Poznámky a dvoufázové dny{% endif %}</h3><p class="lp-card-copy">{% if CURRENT_LANGUAGE == "en" %}Instructions and multiple sessions per day are part of the normal flow.{% else %}Instrukce a více než jeden trénink za den jsou přirozenou součástí workflow.{% endif %}</p></article><article class="lp-card"><div class="lp-feature-icon">👁️</div><h3 class="lp-card-title">{% if CURRENT_LANGUAGE == "en" %}Instant overview{% else %}Okamžitý přehled{% endif %}</h3><p class="lp-card-copy">{% if CURRENT_LANGUAGE == "en" %}Both sides see what was assigned and what was completed at a glance.{% else %}Na jeden pohled je vidět, co bylo zadáno a co bylo splněno.{% endif %}</p></article><article class="lp-card"><div class="lp-feature-icon">👥</div><h3 class="lp-card-title">{% if CURRENT_LANGUAGE == "en" %}Athletes and groups{% else %}Svěřenci a skupiny{% endif %}</h3><p class="lp-card-copy">{% if CURRENT_LANGUAGE == "en" %}Join codes, requests, groups, invites, and athlete ordering in one place.{% else %}Coach join code, žádosti, skupiny, pozvánky i pořadí svěřenců na jednom místě.{% endif %}</p></article><article class="lp-card"><div class="lp-feature-icon">📈</div><h3 class="lp-card-title">{% if CURRENT_LANGUAGE == "en" %}Progress over time{% else %}Vývoj v čase{% endif %}</h3><p class="lp-card-copy">{% if CURRENT_LANGUAGE == "en" %}The app keeps the context of the season, not just the last session.{% else %}Aplikace drží kontext celé přípravy, ne jen posledního tréninku.{% endif %}</p></article></div><div class="lp-row" style="margin-top:1.5rem;"><span class="lp-pill">Garmin Connect</span><span class="lp-pill">FIT import</span><span class="lp-pill">{% if CURRENT_LANGUAGE == "en" %}Running{% else %}Běh{% endif %}</span><span class="lp-pill">{% if CURRENT_LANGUAGE == "en" %}Cycling{% else %}Cyklistika{% endif %}</span><span class="lp-pill">{% if CURRENT_LANGUAGE == "en" %}Swimming{% else %}Plavání{% endif %}</span><span class="lp-pill">Triathlon</span></div></div></section>
+    <div class="lp-shell"><div class="lp-divider"></div></div>
 
-    <div class="eb-shell"><div class="lp-divider"></div></div>
+    <!-- ═══════ AUDIENCE ═══════ -->
+    <section id="audience" class="lp-section fade-up">
+      <div class="lp-shell">
+        <div class="lp-label">{% if CURRENT_LANGUAGE == "en" %}For who{% else %}Pro koho{% endif %}</div>
+        <h2 class="lp-section-title">{% if CURRENT_LANGUAGE == "en" %}Built for people who take training seriously.{% else %}Pro ty, kdo to myslí s tréninkem vážně.{% endif %}</h2>
+        <p class="lp-section-lead">{% if CURRENT_LANGUAGE == "en" %}Whether you coach dozens of athletes or manage your own preparation — EnduroBuddy adapts.{% else %}Ať vedeš desítky sportovců nebo řídíš vlastní přípravu — EnduroBuddy se přizpůsobí.{% endif %}</p>
+        <div class="lp-grid-3">
+          <article class="lp-audience-card"><div class="lp-audience-title">{% if CURRENT_LANGUAGE == "en" %}Personal coaches{% else %}Osobní trenéři{% endif %}</div><p class="lp-audience-copy">{% if CURRENT_LANGUAGE == "en" %}Running, cycling and triathlon coaches who want a professional system without complexity.{% else %}Běžečtí, cyklističtí i triatlonoví koučové, kteří chtějí profesionální systém bez složitosti.{% endif %}</p></article>
+          <article class="lp-audience-card"><div class="lp-audience-title">{% if CURRENT_LANGUAGE == "en" %}Endurance athletes{% else %}Vytrvalostní sportovci{% endif %}</div><p class="lp-audience-copy">{% if CURRENT_LANGUAGE == "en" %}Athletes who want the plan and the outcome in one place — not across five apps.{% else %}Sportovci, kteří chtějí plán i výsledek na jednom místě — ne v pěti aplikacích.{% endif %}</p></article>
+          <article class="lp-audience-card"><div class="lp-audience-title">{% if CURRENT_LANGUAGE == "en" %}Coaching groups{% else %}Trenérské skupiny{% endif %}</div><p class="lp-audience-copy">{% if CURRENT_LANGUAGE == "en" %}Teams that need to scale planning and athlete management cleanly.{% else %}Týmy, které potřebují škálovat plánování a správu sportovců.{% endif %}</p></article>
+        </div>
+      </div>
+    </section>
 
-    <section id="how" class="lp-section fade-up"><div class="eb-shell"><div class="lp-label">{% if CURRENT_LANGUAGE == "en" %}How it works{% else %}Jak to funguje{% endif %}</div><h2 class="lp-section-title">{% if CURRENT_LANGUAGE == "en" %}Two views, one system.{% else %}Dva pohledy, jeden systém.{% endif %}</h2><p class="lp-section-lead">{% if CURRENT_LANGUAGE == "en" %}Coaches plan, athletes execute, and both stay aligned in real time without switching tools.{% else %}Trenér plánuje, sportovec plní a oba vidí totéž v reálném čase bez přepínání nástrojů.{% endif %}</p><div class="lp-how"><div><div class="lp-step"><div class="lp-step-num">01</div><div><h3 class="lp-card-title">{% if CURRENT_LANGUAGE == "en" %}Coach prepares the month{% else %}Trenér připraví měsíční plán{% endif %}</h3><p class="lp-card-copy">{% if CURRENT_LANGUAGE == "en" %}Sessions, load, and notes stay inside one planning flow.{% else %}Tréninky, zátěž i poznámky zůstávají v jednom plánovacím toku.{% endif %}</p></div></div><div class="lp-step"><div class="lp-step-num">02</div><div><h3 class="lp-card-title">{% if CURRENT_LANGUAGE == "en" %}Athlete sees a clear schedule{% else %}Sportovec vidí jasný rozpis{% endif %}</h3><p class="lp-card-copy">{% if CURRENT_LANGUAGE == "en" %}Every day shows the session type, structure, and coach instructions.{% else %}Každý den ukazuje typ tréninku, strukturu i instrukce od trenéra.{% endif %}</p></div></div><div class="lp-step"><div class="lp-step-num">03</div><div><h3 class="lp-card-title">{% if CURRENT_LANGUAGE == "en" %}Completion is added after training{% else %}Po tréninku doplní splnění{% endif %}</h3><p class="lp-card-copy">{% if CURRENT_LANGUAGE == "en" %}The athlete records completion and pairs it with a real activity.{% else %}Sportovec zapíše splnění a spáruje ho s reálnou aktivitou.{% endif %}</p></div></div><div class="lp-step"><div class="lp-step-num">04</div><div><h3 class="lp-card-title">{% if CURRENT_LANGUAGE == "en" %}Both have instant clarity{% else %}Oba mají okamžitě jasno{% endif %}</h3><p class="lp-card-copy">{% if CURRENT_LANGUAGE == "en" %}The week still shows what was planned and what really happened.{% else %}Týden pořád ukazuje plán i to, co se skutečně stalo.{% endif %}</p></div></div></div><div class="lp-grid-2" style="grid-template-columns:1fr;margin-top:0;"><article class="lp-card"><span class="lp-role-badge coach">{% if CURRENT_LANGUAGE == "en" %}Coach{% else %}Trenér{% endif %}</span><ul class="lp-role-list"><li>{% if CURRENT_LANGUAGE == "en" %}Builds monthly plans with weekly structure{% else %}Připravuje měsíční plán s týdenní strukturou{% endif %}</li><li>{% if CURRENT_LANGUAGE == "en" %}Assigns sessions, notes, and two-phase days{% else %}Zadává tréninky, poznámky i dvoufázové dny{% endif %}</li><li>{% if CURRENT_LANGUAGE == "en" %}Manages athletes, groups, and invites{% else %}Spravuje svěřence, skupiny a pozvánky{% endif %}</li></ul></article><article class="lp-card"><span class="lp-role-badge athlete">{% if CURRENT_LANGUAGE == "en" %}Athlete{% else %}Sportovec{% endif %}</span><ul class="lp-role-list"><li>{% if CURRENT_LANGUAGE == "en" %}Sees a clear schedule for every day{% else %}Vidí jasný rozpis tréninku na každý den{% endif %}</li><li>{% if CURRENT_LANGUAGE == "en" %}Adds completion directly into the system{% else %}Doplňuje splnění přímo do systému{% endif %}</li><li>{% if CURRENT_LANGUAGE == "en" %}Pairs activities via FIT or Garmin Connect{% else %}Páruje aktivity přes FIT nebo Garmin Connect{% endif %}</li></ul></article></div></div></div></section>
+    <!-- ═══════ CTA ═══════ -->
+    <div class="lp-shell">
+      <section class="lp-cta fade-up">
+        <div class="lp-cta-heading">{% if CURRENT_LANGUAGE == "en" %}Start planning better today{% else %}Začni plánovat lépe ještě dnes{% endif %}</div>
+        <p class="lp-cta-sub">{% if CURRENT_LANGUAGE == "en" %}Free to use. No credit card required.{% else %}Registrace zdarma. Žádná kreditní karta.{% endif %}</p>
+        <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+          <a class="lp-btn lp-btn-primary lp-btn-lg lp-btn-pill" href="{% url 'account_signup' %}">{% if CURRENT_LANGUAGE == "en" %}Start free →{% else %}Začít zdarma →{% endif %}</a>
+          <a class="lp-btn lp-btn-secondary lp-btn-lg" href="{% url 'account_login' %}">{% if CURRENT_LANGUAGE == "en" %}Log in{% else %}Přihlásit se{% endif %}</a>
+        </div>
+      </section>
+    </div>
 
-    <div class="eb-shell"><div class="lp-divider"></div></div>
-
-    <section id="audience" class="lp-section fade-up"><div class="eb-shell"><div class="lp-label">{% if CURRENT_LANGUAGE == "en" %}For who{% else %}Pro koho{% endif %}</div><h2 class="lp-section-title">{% if CURRENT_LANGUAGE == "en" %}Built for people who take training seriously.{% else %}Navrženo pro ty, kdo to myslí vážně.{% endif %}</h2><p class="lp-section-lead">{% if CURRENT_LANGUAGE == "en" %}Whether you coach dozens of athletes or want your own preparation under control, EnduroBuddy adapts to your rhythm.{% else %}Ať vedeš desítky sportovců, nebo chceš mít pod kontrolou vlastní přípravu, EnduroBuddy se přizpůsobí tvému rytmu.{% endif %}</p><div class="lp-grid-3"><article class="lp-card"><h3 class="lp-card-title">{% if CURRENT_LANGUAGE == "en" %}Personal coaches{% else %}Osobní trenéři a koučové{% endif %}</h3><p class="lp-card-copy">{% if CURRENT_LANGUAGE == "en" %}Running, cycling, and triathlon coaches who want a professional system without unnecessary complexity.{% else %}Běžečtí, cyklističtí i triatlonoví koučové, kteří chtějí profesionální systém bez zbytečné složitosti.{% endif %}</p></article><article class="lp-card"><h3 class="lp-card-title">{% if CURRENT_LANGUAGE == "en" %}Endurance athletes{% else %}Vytrvalostní sportovci{% endif %}</h3><p class="lp-card-copy">{% if CURRENT_LANGUAGE == "en" %}Athletes who want the plan and the outcome in one place instead of screenshots and scattered apps.{% else %}Sportovci, kteří chtějí mít plán i výsledek na jednom místě místo screenshotů a roztříštěných aplikací.{% endif %}</p></article><article class="lp-card"><h3 class="lp-card-title">{% if CURRENT_LANGUAGE == "en" %}Coaching groups{% else %}Trenérské skupiny{% endif %}</h3><p class="lp-card-copy">{% if CURRENT_LANGUAGE == "en" %}Teams and groups that need to scale planning, communication, and athlete management cleanly.{% else %}Týmy a skupiny, které potřebují jednoduše škálovat plánování, komunikaci i správu více svěřenců.{% endif %}</p></article></div></div></section>
-
-    <div class="eb-shell"><section class="lp-cta fade-up"><div class="lp-label justify-content-center">{% if CURRENT_LANGUAGE == "en" %}Start today{% else %}Začni dnes{% endif %}</div><h2 class="lp-section-title">{% if CURRENT_LANGUAGE == "en" %}One system instead of five tools.{% else %}Jeden systém místo pěti nástrojů.{% endif %}</h2><p class="lp-copy" style="max-width:38rem;margin:0 auto 1.8rem;">{% if CURRENT_LANGUAGE == "en" %}Try EnduroBuddy and keep the plan, completion, and athlete collaboration finally in one place.{% else %}Vyzkoušej EnduroBuddy a měj plán, splnění i spolupráci se sportovcem konečně na jednom místě.{% endif %}</p><div class="lp-row justify-content-center"><a class="btn eb-btn eb-btn-primary" href="{% url 'account_signup' %}">{% if CURRENT_LANGUAGE == "en" %}Start free{% else %}Začít zdarma{% endif %}</a><a class="btn eb-btn eb-btn-secondary" href="{% url 'account_login' %}">{% if CURRENT_LANGUAGE == "en" %}Log in{% else %}Přihlásit se{% endif %}</a></div></section></div>
   </main>
 {% endblock %}
 
 {% block page_scripts %}
   <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const items = document.querySelectorAll(".fade-up");
-      if (!items.length) return;
-      const observer = new IntersectionObserver((entries) => {
-        entries.forEach((entry) => {
-          if (!entry.isIntersecting) return;
-          entry.target.classList.add("visible");
-          observer.unobserve(entry.target);
-        });
-      }, { threshold: 0.12 });
-      items.forEach((item) => observer.observe(item));
+    document.addEventListener("DOMContentLoaded",()=>{
+      const q=document.querySelectorAll(".fade-up");
+      if(!q.length)return;
+      const o=new IntersectionObserver(e=>{e.forEach(x=>{if(!x.isIntersecting)return;x.target.classList.add("visible");o.unobserve(x.target);});},{threshold:.12});
+      q.forEach(x=>o.observe(x));
     });
   </script>
 {% endblock %}

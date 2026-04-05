@@ -762,13 +762,10 @@
     <!-- ═══════════════════════════════════════════════════ HEADER ═══ -->
     <header class="ds-header">
       <div class="ds-header-logo">
-        <!-- Inline Stride Mark -->
-        <svg width="48" height="48" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <g transform="rotate(-6 32 32)">
-            <rect x="18" y="14" width="14" height="5" rx="2.5" fill="#c8ff00"/>
-            <rect x="18" y="29" width="22" height="5" rx="2.5" fill="#c8ff00"/>
-            <rect x="18" y="44" width="30" height="5" rx="2.5" fill="#c8ff00"/>
-          </g>
+        <svg width="48" height="48" viewBox="0 0 64 64" fill="none">
+          <rect x="12" y="14" width="16" height="8" rx="4" fill="#c8ff00"/>
+          <rect x="12" y="28" width="28" height="8" rx="4" fill="#c8ff00" opacity="0.35"/>
+          <rect x="12" y="42" width="40" height="8" rx="4" fill="#c8ff00"/>
         </svg>
       </div>
       <h1>Design<br><span>System</span></h1>
@@ -783,37 +780,153 @@
     <!-- ═══════════════════════════════════════════════════ LOGO ═══ -->
     <section class="ds-section">
       <div class="ds-section-head">
-        <h2 class="ds-section-title">Logo</h2>
-        <div class="ds-section-note">Stride Mark — 3 bars, 6° forward lean</div>
+        <h2 class="ds-section-title">Logo — Signal Stack</h2>
+        <div class="ds-section-note">3 bars, growing length, one faded. Signál, progrese, data.</div>
       </div>
-      <div class="logo-grid">
-        <!-- Mark on dark -->
-        <div class="logo-cell on-dark">
-          <svg width="56" height="56" viewBox="0 0 64 64" fill="none"><g transform="rotate(-6 32 32)"><rect x="18" y="14" width="14" height="5" rx="2.5" fill="#c8ff00"/><rect x="18" y="29" width="22" height="5" rx="2.5" fill="#c8ff00"/><rect x="18" y="44" width="30" height="5" rx="2.5" fill="#c8ff00"/></g></svg>
-          <div class="ds-label">Mark / dark bg</div>
-        </div>
-        <!-- Full logo on dark -->
-        <div class="logo-cell on-dark">
-          <div style="display:flex;align-items:center;gap:10px;">
-            <svg width="36" height="36" viewBox="0 0 64 64" fill="none"><g transform="rotate(-6 32 32)"><rect x="18" y="14" width="14" height="5" rx="2.5" fill="#c8ff00"/><rect x="18" y="29" width="22" height="5" rx="2.5" fill="#c8ff00"/><rect x="18" y="44" width="30" height="5" rx="2.5" fill="#c8ff00"/></g></svg>
-            <span style="font-family:var(--eb-font-display);font-size:22px;font-weight:700;letter-spacing:-0.01em;color:#fafafa;">EnduroBuddy</span>
+
+      <!-- ── Core variants ── -->
+      <div style="margin-bottom:var(--eb-space-6);">
+        <div class="ds-label">Core variants</div>
+        <div class="logo-grid">
+          <div class="logo-cell on-dark">
+            <svg width="56" height="56" viewBox="0 0 64 64" fill="none">
+              <rect x="12" y="14" width="16" height="8" rx="4" fill="#c8ff00"/>
+              <rect x="12" y="28" width="28" height="8" rx="4" fill="#c8ff00" opacity="0.35"/>
+              <rect x="12" y="42" width="40" height="8" rx="4" fill="#c8ff00"/>
+            </svg>
+            <div class="ds-label">Mark / dark</div>
           </div>
-          <div class="ds-label">Full logo / dark bg</div>
-        </div>
-        <!-- Mark on lime -->
-        <div class="logo-cell on-lime">
-          <svg width="56" height="56" viewBox="0 0 64 64" fill="none"><g transform="rotate(-6 32 32)"><rect x="18" y="14" width="14" height="5" rx="2.5" fill="#09090b"/><rect x="18" y="29" width="22" height="5" rx="2.5" fill="#09090b"/><rect x="18" y="44" width="30" height="5" rx="2.5" fill="#09090b"/></g></svg>
-          <div class="ds-label" style="color:#09090b;">Mark / lime bg</div>
-        </div>
-        <!-- Full logo on white -->
-        <div class="logo-cell on-white">
-          <div style="display:flex;align-items:center;gap:10px;">
-            <svg width="36" height="36" viewBox="0 0 64 64" fill="none"><g transform="rotate(-6 32 32)"><rect x="18" y="14" width="14" height="5" rx="2.5" fill="#09090b"/><rect x="18" y="29" width="22" height="5" rx="2.5" fill="#09090b"/><rect x="18" y="44" width="30" height="5" rx="2.5" fill="#09090b"/></g></svg>
-            <span style="font-family:var(--eb-font-display);font-size:22px;font-weight:700;letter-spacing:-0.01em;color:#09090b;">EnduroBuddy</span>
+          <div class="logo-cell on-dark">
+            <div style="display:flex;align-items:center;gap:14px;">
+              <svg width="32" height="32" viewBox="0 0 64 64" fill="none">
+                <rect x="12" y="14" width="16" height="8" rx="4" fill="#c8ff00"/>
+                <rect x="12" y="28" width="28" height="8" rx="4" fill="#c8ff00" opacity="0.35"/>
+                <rect x="12" y="42" width="40" height="8" rx="4" fill="#c8ff00"/>
+              </svg>
+              <span style="font-family:var(--eb-font-display);font-size:22px;font-weight:700;letter-spacing:-0.01em;">EnduroBuddy</span>
+            </div>
+            <div class="ds-label">Full logo / dark</div>
           </div>
-          <div class="ds-label" style="color:#71717a;">Full logo / light bg</div>
+          <div class="logo-cell on-lime">
+            <svg width="56" height="56" viewBox="0 0 64 64" fill="none">
+              <rect x="12" y="14" width="16" height="8" rx="4" fill="#09090b"/>
+              <rect x="12" y="28" width="28" height="8" rx="4" fill="#09090b" opacity="0.25"/>
+              <rect x="12" y="42" width="40" height="8" rx="4" fill="#09090b"/>
+            </svg>
+            <div class="ds-label" style="color:#09090b;">Mark / lime</div>
+          </div>
+          <div class="logo-cell on-white">
+            <div style="display:flex;align-items:center;gap:14px;">
+              <svg width="32" height="32" viewBox="0 0 64 64" fill="none">
+                <rect x="12" y="14" width="16" height="8" rx="4" fill="#09090b"/>
+                <rect x="12" y="28" width="28" height="8" rx="4" fill="#09090b" opacity="0.25"/>
+                <rect x="12" y="42" width="40" height="8" rx="4" fill="#09090b"/>
+              </svg>
+              <span style="font-family:var(--eb-font-display);font-size:22px;font-weight:700;letter-spacing:-0.01em;color:#09090b;">EnduroBuddy</span>
+            </div>
+            <div class="ds-label" style="color:#71717a;">Full logo / light</div>
+          </div>
         </div>
       </div>
+
+      <!-- ── Social media avatars ── -->
+      <div>
+        <div class="ds-label">Social media avatars</div>
+        <div style="font-size:12px;color:var(--eb-text-muted);margin-bottom:var(--eb-space-4);">400×400 square, centered mark with safe padding for circle crop (GitHub, IG, X). Banner 1200×630 for OG/Twitter cards.</div>
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:var(--eb-space-3);">
+          <!-- IG / Dark -->
+          <div style="text-align:center;">
+            <div style="width:100%;aspect-ratio:1;background:#09090b;border-radius:var(--eb-radius-lg);border:1px solid var(--eb-border-soft);display:grid;place-items:center;overflow:hidden;">
+              <svg width="52%" viewBox="0 0 64 64" fill="none">
+                <rect x="8" y="14" width="18" height="8" rx="4" fill="#c8ff00"/>
+                <rect x="8" y="28" width="32" height="8" rx="4" fill="#c8ff00" opacity="0.35"/>
+                <rect x="8" y="42" width="46" height="8" rx="4" fill="#c8ff00"/>
+              </svg>
+            </div>
+            <div class="ds-label" style="margin-top:8px;">IG / Dark</div>
+          </div>
+          <!-- IG / Lime -->
+          <div style="text-align:center;">
+            <div style="width:100%;aspect-ratio:1;background:#c8ff00;border-radius:var(--eb-radius-lg);border:1px solid var(--eb-border-soft);display:grid;place-items:center;overflow:hidden;">
+              <svg width="52%" viewBox="0 0 64 64" fill="none">
+                <rect x="8" y="14" width="18" height="8" rx="4" fill="#09090b"/>
+                <rect x="8" y="28" width="32" height="8" rx="4" fill="#09090b" opacity="0.25"/>
+                <rect x="8" y="42" width="46" height="8" rx="4" fill="#09090b"/>
+              </svg>
+            </div>
+            <div class="ds-label" style="margin-top:8px;">IG / Lime</div>
+          </div>
+          <!-- GitHub (circle safe) -->
+          <div style="text-align:center;">
+            <div style="width:100%;aspect-ratio:1;background:#09090b;border-radius:50%;border:1px solid var(--eb-border-soft);display:grid;place-items:center;overflow:hidden;">
+              <svg width="48%" viewBox="0 0 64 64" fill="none">
+                <rect x="8" y="14" width="18" height="8" rx="4" fill="#c8ff00"/>
+                <rect x="8" y="28" width="32" height="8" rx="4" fill="#c8ff00" opacity="0.35"/>
+                <rect x="8" y="42" width="46" height="8" rx="4" fill="#c8ff00"/>
+              </svg>
+            </div>
+            <div class="ds-label" style="margin-top:8px;">GitHub</div>
+          </div>
+          <!-- IG Rounded -->
+          <div style="text-align:center;">
+            <div style="width:100%;aspect-ratio:1;background:#09090b;border-radius:22%;border:1px solid var(--eb-border-soft);display:grid;place-items:center;overflow:hidden;">
+              <svg width="52%" viewBox="0 0 64 64" fill="none">
+                <rect x="8" y="14" width="18" height="8" rx="4" fill="#c8ff00"/>
+                <rect x="8" y="28" width="32" height="8" rx="4" fill="#c8ff00" opacity="0.35"/>
+                <rect x="8" y="42" width="46" height="8" rx="4" fill="#c8ff00"/>
+              </svg>
+            </div>
+            <div class="ds-label" style="margin-top:8px;">App Icon</div>
+          </div>
+          <!-- Favicon preview -->
+          <div style="text-align:center;">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:10px;justify-content:center;height:100%;">
+              <div style="width:48px;height:48px;background:#09090b;border-radius:6px;border:1px solid var(--eb-border-soft);display:grid;place-items:center;">
+                <svg width="28" viewBox="0 0 64 64" fill="none">
+                  <rect x="8" y="14" width="18" height="8" rx="4" fill="#c8ff00"/>
+                  <rect x="8" y="28" width="32" height="8" rx="4" fill="#c8ff00" opacity="0.35"/>
+                  <rect x="8" y="42" width="46" height="8" rx="4" fill="#c8ff00"/>
+                </svg>
+              </div>
+              <div style="display:flex;gap:6px;align-items:center;">
+                <div style="width:32px;height:32px;background:#09090b;border-radius:4px;border:1px solid var(--eb-border-soft);display:grid;place-items:center;">
+                  <svg width="18" viewBox="0 0 64 64" fill="none">
+                    <rect x="8" y="14" width="18" height="8" rx="4" fill="#c8ff00"/>
+                    <rect x="8" y="28" width="32" height="8" rx="4" fill="#c8ff00" opacity="0.35"/>
+                    <rect x="8" y="42" width="46" height="8" rx="4" fill="#c8ff00"/>
+                  </svg>
+                </div>
+                <div style="width:16px;height:16px;background:#09090b;border-radius:2px;border:1px solid var(--eb-border-soft);display:grid;place-items:center;">
+                  <svg width="10" viewBox="0 0 64 64" fill="none">
+                    <rect x="8" y="14" width="18" height="8" rx="4" fill="#c8ff00"/>
+                    <rect x="8" y="28" width="32" height="8" rx="4" fill="#c8ff00" opacity="0.35"/>
+                    <rect x="8" y="42" width="46" height="8" rx="4" fill="#c8ff00"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+            <div class="ds-label" style="margin-top:8px;">Favicon sizes</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Banner preview ── -->
+      <div style="margin-top:var(--eb-space-6);">
+        <div class="ds-label">Social banner (OG / Twitter Card / LinkedIn)</div>
+        <div style="width:100%;aspect-ratio:1200/630;background:#09090b;border-radius:var(--eb-radius-md);border:1px solid var(--eb-border-soft);display:flex;align-items:center;justify-content:center;gap:24px;position:relative;overflow:hidden;">
+          <div style="position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(200,255,0,.04),transparent 60%);pointer-events:none;"></div>
+          <svg width="80" viewBox="0 0 64 64" fill="none" style="position:relative;">
+            <rect x="8" y="14" width="18" height="8" rx="4" fill="#c8ff00"/>
+            <rect x="8" y="28" width="32" height="8" rx="4" fill="#c8ff00" opacity="0.35"/>
+            <rect x="8" y="42" width="46" height="8" rx="4" fill="#c8ff00"/>
+          </svg>
+          <div style="position:relative;">
+            <div style="font-family:var(--eb-font-display);font-size:clamp(1.5rem,4vw,2.8rem);font-weight:700;letter-spacing:-0.02em;">EnduroBuddy</div>
+            <div style="font-size:clamp(0.7rem,1.2vw,0.9rem);color:var(--eb-text-muted);margin-top:6px;letter-spacing:0.02em;">Modern training platform for coach and athlete</div>
+          </div>
+        </div>
+      </div>
+
     </section>
 
     <!-- ═══════════════════════════════════════════════ PALETTE ═══ -->
@@ -898,7 +1011,7 @@
       </div>
       <div class="topbar">
         <div class="topbar-brand">
-          <svg width="28" height="28" viewBox="0 0 64 64" fill="none"><g transform="rotate(-6 32 32)"><rect x="18" y="14" width="14" height="5" rx="2.5" fill="#c8ff00"/><rect x="18" y="29" width="22" height="5" rx="2.5" fill="#c8ff00"/><rect x="18" y="44" width="30" height="5" rx="2.5" fill="#c8ff00"/></g></svg>
+          <svg width="28" height="28" viewBox="0 0 64 64" fill="none"><rect x="12" y="14" width="16" height="8" rx="4" fill="#c8ff00"/><rect x="12" y="28" width="28" height="8" rx="4" fill="#c8ff00" opacity="0.35"/><rect x="12" y="42" width="40" height="8" rx="4" fill="#c8ff00"/></svg>
           <span class="topbar-wordmark">EnduroBuddy</span>
         </div>
         <nav class="topbar-nav">

@@ -1,315 +1,337 @@
 # EnduroBuddy Visual Style Guide
 
-## Cíl směru
+## Koncept: Neon Lab × Swiss Precision
 
-EnduroBuddy má působit jako přesný pracovní nástroj pro vytrvalostní sport, ne jako lifestyle aplikace. Vizuální styl má být moderní, klidný, úsporný a silně orientovaný na čitelnost dat, plánování a každodenní používání trenérem i sportovcem.
+EnduroBuddy má působit jako designérský precision instrument s momenty elektrické intenzity. Ne fitness app, ne analytics dashboard — moderní training workspace s nezaměnitelnou identitou.
 
-Klíčová slova:
+**Swiss Precision** — matematický spacing, obsesivní čitelnost, grid disciplína, vzduch i v dark mode.
 
-- minimalistický
-- technický, ale ne chladný
-- funkční před efektem
-- soustředěný na výkon, rytmus a disciplínu
-- důvěryhodný při práci s daty
+**Neon Lab** — elektrické akcenty použité chirurgicky, bold typografická škála, kreativní energie v detailech.
 
-## Co jsme chtěli vědomě neudělat
+### Co vědomě neděláme
 
-Při návrhu jsem se opřel o vizuální směr podobných endurance aplikací a vědomě se od něj odchýlil:
+- Fitness-marketing vizuál, agresivní gradienty, sport piktogramy
+- Přeplněný analytický cockpit (intervals.icu style)
+- Sportovní sociální síť (Strava style)
+- Utilitární systémový vzhled (Garmin Connect style)
 
-- `Strava` často staví identitu na silné oranžové, výkonové energii a komunitní dynamice.
-- `Garmin Connect` působí utilitárněji, často přes množství karet, metrik a systémových vzorů.
-- `TrainingPeaks` je více “coaching analytics” platforma, s důrazem na kalendář, grafy a výkonnostní data.
-- `intervals.icu` je velmi datově husté a analytické prostředí.
+EnduroBuddy je **čistý tréninkový workspace** s edge a personalitou.
 
-Z těchto referencí plyne jeden záměr: EnduroBuddy nemá být ani sportovní sociální síť, ani přeplněný analytický cockpit. Má působit jako čistý tréninkový workspace.
+---
 
-Navržené odlišení:
+## Logo — Signal Stack
 
-- místo výrazné oranžové nebo modré použít tlumenou tmavou základnu s chladnou zeleno-šedou akcentní linkou
-- omezit počet “loud” barev a místo toho stavět kontrast přes velikost, hustotu a prázdný prostor
-- nepoužívat agresivní gradienty ani fitness-marketing vizuál
-- zvýrazňovat důležité stavy přes strukturu a rytmus, ne přes neustálé barevné výkřiky
+Tři horizontální obdélníky s rounded konci, rostoucí délky, zarovnané vlevo. Prostřední má sníženou opacity.
 
-Poznámka:
-Výše uvedené odlišení je návrhová syntéza na základě veřejně dostupných popisů a běžně známých vlastností podobných aplikací, ne kopie konkrétních obrazovek.
+Reprezentuje:
+- **Signál** — datový motiv
+- **Progrese** — rostoucí objem
+- **Vizuální rytmus** — tři úrovně informace
 
-## Typografie
+### Varianty
 
-### Primární identitní font
+| Soubor | Použití |
+|--------|---------|
+| `eb-mark.svg` | Favicon, app ikona, malé kontexty |
+| `eb-logo-full.svg` | Mark + "EnduroBuddy" wordmark |
+| `eb-logo-compact.svg` | Mark + "EB" monogram |
+| `eb-wordmark.svg` | Pouze wordmark (Syne 700) |
+| `eb-social-dark.svg` | IG/X avatar, tmavé pozadí |
+| `eb-social-lime.svg` | IG/X avatar, lime pozadí |
+| `eb-social-dark-rounded.svg` | IG rounded corners |
+| `eb-social-github.svg` | GitHub circle-safe |
+| `eb-social-banner.svg` | OG / Twitter card (1200×630) |
 
-Používej `Space Grotesk` jako display font:
+Všechny v `backend/static/brand/`.
 
-- logo
-- hlavní H1
-- výrazné názvy sekcí
-- velké numerické highlighty nebo hero titulky
+### Pravidla
 
-Nepoužívej ho pro:
+- Mark je lime na tmavém, dark na lime/světlém
+- Wordmark vždy v Syne 700
+- Minimální velikost marku: 16px
+- Kolem marku safe zone = 1× šířka nejmenšího baru
 
-- dlouhé odstavce
-- tabulky
-- formuláře
-- malé popisky
-- husté dashboardy
-
-Důvod:
-U vytrvalostní a plánovací aplikace je rozhodující čitelnost. `Space Grotesk` může dodat charakter značce, ale hlavní provozní text potřebuje neutrálnější sans-serif.
-
-### Doporučený pracovní font
-
-Pro vše ostatní používej jednoduchý sans-serif s vysokou čitelností. Pokud nechceš zatím řešit licencování nebo webfonty, můžeš začít takto:
-
-```css
-font-family: "Segoe UI Variable Text", "Segoe UI", "Inter", sans-serif;
-```
-
-### Typografická hierarchie
-
-- `Display / Hero`: Space Grotesk, 44-56 px, tracking lehce utažený
-- `H1`: Space Grotesk, 32-40 px
-- `H2`: sans-serif, 24-28 px, 600-700
-- `H3`: sans-serif, 18-20 px, 600
-- `Body`: sans-serif, 15-16 px, 400-500
-- `Meta / Label`: sans-serif, 12-13 px, 600, kapitálky jen výjimečně
-- `Data / Numeric`: sans-serif, 16-28 px, 600-700
+---
 
 ## Barevný systém
 
-### Základní paleta
+### Pozadí a povrchy
 
-```text
-Ink 950        #101714   hlavní tmavé pozadí
-Ink 900        #16201c   sekundární tmavá plocha
-Panel 800      #1d2924   karty / sticky panely / modal top
-Mist 300       #d7dfdb   hlavní světlý text na tmavém
-Mist 200       #e9efec   světlé plochy a inverzní background
-Slate 500      #7f9088   sekundární text
-Line 600       #2d3a35   border na tmavém
-Line 200       #cfd8d4   border na světlém
-Accent 500     #61c48f   primární akcent
-Accent 600     #4bad79   hover primárních CTA
-Alert 500      #ff7a59   kritické upozornění
-Warn 500       #d9a441   upozornění / pending
-Info 500       #77b7d7   informační stav
+```
+Token               Hex         Použití
+─────────────────────────────────────────────────
+--eb-bg             #09090b     Pozadí stránky (true dark, bez barevného nádechu)
+--eb-bg-elevated    #111113     Nav, sidebar, elevated plochy
+--eb-surface        #18181b     Karty, panely, modaly
+--eb-surface-hover  #27272a     Hover state
 ```
 
-### Charakter barev
+### Bordery
 
-- Tmavá základna evokuje soustředění a ranní trénink.
-- Zelený akcent nepůsobí jako kopie Stravy ani Garminu.
-- Světlé plochy lze používat pro tabulky, exporty nebo printable modu.
-- Kritické stavy mají být vzácné a barevně jasné.
+```
+--eb-border         #27272a     Primární bordery
+--eb-border-soft    #1f1f23     Subtilní bordery, dividery
+```
+
+### Text
+
+```
+--eb-text           #fafafa     Primární text
+--eb-text-secondary #a1a1aa     Sekundární text, popisy
+--eb-text-muted     #71717a     Meta text, placeholder
+```
+
+### Akcenty
+
+```
+--eb-lime           #c8ff00     Primární CTA, done, coach, klíčové highlights
+--eb-lime-hover     #d4ff33     Hover lime
+--eb-lime-muted     rgba(200,255,0,.10)   Lime pozadí
+--eb-blue           #38bdf8     Info, planned, athlete, sekundární akce
+--eb-blue-muted     rgba(56,189,248,.10)  Blue pozadí
+```
+
+### Status
+
+```
+--eb-danger         #f43f5e     Chyba, missed, smazání
+--eb-warning        #f59e0b     Pending, varování
+```
+
+### Role
+
+```
+--eb-coach          #c8ff00     Coach badge a UI akcenty
+--eb-athlete        #38bdf8     Athlete badge a UI akcenty
+```
 
 ### Poměr barev
 
-- 70 % neutrální tmavé a světlé plochy
-- 20 % struktura, border, hover, disabled
-- 10 % akcent a stavové barvy
+- 80 % neutrální tmavé povrchy
+- 12 % bordery, stíny, struktura
+- 8 % akcenty a stavové barvy
 
-## Tvarosloví
+### Kontrast
 
-- Radius: 14 px pro karty a vstupy, 18 px pro větší panely, 999 px pro pills
-- Border: tenký a klidný, ne silný
-- Stíny: mělké, spíš ambientní než “floating”
-- Ikony: jednoduché line nebo duotone, bez agresivních sport piktogramů
-- Grid: 8 px systém
+- Lime `#c8ff00` na `#09090b` = 15.2:1 (AAA)
+- Text `#fafafa` na `#18181b` = 14.8:1 (AAA)
+- Muted `#71717a` na `#09090b` = 4.6:1 (AA)
 
-## Layout principy
+---
 
-### Základní nálada
+## Typografie
 
-- hodně vzduchu kolem primárních dat
-- kompaktní tabulky jen tam, kde dávají smysl
-- jasné rozdělení na plánovací vrstvu, analytickou vrstvu a akční vrstvu
+### Font stack
 
-### Doporučená šířka a spacing
+```css
+--eb-font-display: "Syne", system-ui, sans-serif;
+--eb-font-body:    "Inter", "Segoe UI Variable Text", system-ui, sans-serif;
+--eb-font-mono:    "JetBrains Mono", "Cascadia Code", monospace;
+```
 
-- hlavní kontejner: 1280-1440 px
-- sekce mezi sebou: 24-32 px
-- vnitřní padding karet: 20-24 px
-- hustý datový mód: 12-16 px
+**Syne** — Geometrický display font s charakterem. Headlines, brand, hero, section titles.
 
-### Hierarchie obrazovky
+**Inter** — Precision UI font. Body text, formuláře, tabulky, labely, navigace.
 
-1. nahoře kontext: období, role, jméno sportovce, rychlé akce
-2. pod tím hlavní plán nebo přehled tréninků
-3. sekundárně metriky, poznámky, filtry, importy
-4. naposled pomocné nebo historické bloky
+**JetBrains Mono** — Numerická data: pace, distance, HR, timestamps.
+
+### Typografická hierarchie
+
+```
+Level           Size                        Font            Weight   Tracking
+─────────────────────────────────────────────────────────────────────────────
+Display         clamp(3rem, 8vw, 6rem)      Syne            800      -0.04em
+H1              clamp(2rem, 5vw, 3.5rem)    Syne            700      -0.03em
+H2              clamp(1.5rem, 3vw, 2rem)    Syne            700      -0.02em
+H3              1.125rem                    Inter           600      -0.01em
+Body            0.9375rem (15px)            Inter           400      0
+Small           0.8125rem (13px)            Inter           500      0.01em
+Label           0.75rem (12px)              Inter           600      0.06em
+Mono Data       0.875rem (14px)             JetBrains       500      0
+```
+
+### Pravidla
+
+- Syne NIKDY pod 18px
+- Inter pro veškerý funkční UI text
+- JetBrains Mono pro: pace (4:52), distance (12.3 km), HR (142 bpm), timestamps
+- Labely jsou Inter uppercase s wide tracking — nikdy Syne
+- Line-height: 0.9-1.0 pro display, 1.3 pro headings, 1.6 pro body
+
+---
+
+## Spacing & Grid
+
+### Base unit: 4px
+
+```
+--eb-space-1:   4px     --eb-space-8:   32px
+--eb-space-2:   8px     --eb-space-10:  40px
+--eb-space-3:   12px    --eb-space-12:  48px
+--eb-space-4:   16px    --eb-space-16:  64px
+--eb-space-5:   20px    --eb-space-20:  80px
+--eb-space-6:   24px
+```
+
+### Layout
+
+- Max content width: 1280px
+- Dashboard: fluid 100%
+- Card padding: 24px (desktop), 16px (mobile)
+- Section gap: 48-64px (desktop), 32px (mobile)
+
+### Border radius
+
+```
+--eb-radius-sm:    6px     Inputy, malé elementy
+--eb-radius-md:    10px    Karty, dropdowny
+--eb-radius-lg:    16px    Modaly, panely
+--eb-radius-xl:    24px    Hero bloky
+--eb-radius-full:  9999px  Pills, badges
+```
+
+---
+
+## Stíny
+
+```
+--eb-shadow-sm:   0 1px 2px rgba(0,0,0,.3)
+--eb-shadow-md:   0 4px 16px rgba(0,0,0,.4)
+--eb-shadow-lg:   0 12px 40px rgba(0,0,0,.5)
+--eb-shadow-xl:   0 24px 64px rgba(0,0,0,.6)
+--eb-glow-lime:   0 0 20px rgba(200,255,0,.15)
+--eb-glow-blue:   0 0 20px rgba(56,189,248,.15)
+```
+
+---
 
 ## Komponenty
 
 ### Tlačítka
 
-- `Primary`: tmavé pozadí + Accent, používá se střídmě
-- `Secondary`: outline nebo tlumené vyplnění
-- `Ghost`: na toolbar a filtry
-- `Danger`: jen na destruktivní akce
+| Varianta   | Background          | Border              | Text    | Použití |
+|-----------|--------------------|--------------------|---------|---------|
+| Primary   | --eb-lime          | transparent         | #09090b | Single CTA per surface |
+| Secondary | transparent        | --eb-border         | --eb-text | Sekundární akce |
+| Ghost     | transparent        | transparent         | --eb-text-secondary | Terciární, nav |
+| Danger    | rgba(244,63,94,.12)| rgba(244,63,94,.25) | #fda4af | Destruktivní akce |
 
-Pravidlo:
-Na jedné ploše by ideálně mělo být pouze jedno opravdu dominantní CTA.
+- Výška: 40px default, 32px small, 48px large
+- Font: Inter 600, 13px, letter-spacing 0.02em
+- Radius: --eb-radius-sm (6px)
+- Hover: translateY(-1px) + glow pro primary
+- Pill varianta: radius-full
 
-### Inputy
+### Formuláře
 
-- výška 44-48 px
-- tmavý nebo světlý surface podle kontextu
-- placeholder slabší než label
-- focus ring přes jemný zelený glow, ne default browser blue
-
-### Search bar
-
-- větší než běžný input
-- vlevo ikona
-- vpravo quick action nebo filtr
-- výsledky vizuálně kompaktní a rychle skenovatelné
-
-### Tabulky
-
-- primárně pro týdenní nebo měsíční přehled
-- lehké oddělení řádků
-- sticky header
-- řádek po hoveru jen jemně zvýraznit
-- důležité hodnoty zarovnávat konzistentně
+- Výška: 40px
+- Background: --eb-bg
+- Border: 1px solid --eb-border
+- Radius: --eb-radius-sm
+- Focus: border lime + box-shadow glow-lime
+- Placeholder: --eb-text-muted
 
 ### Karty
 
-- jedna karta = jeden účel
-- nerozmělňovat je do mnoha malých metrických dlaždic bez priority
-- u výkonnostních metrik používat velké číslo + malý kontext pod ním
+- Background: --eb-surface
+- Border: 1px solid --eb-border-soft
+- Radius: --eb-radius-md (10px)
+- Padding: 24px
+- Hover (interaktivní): border brightens, translateY(-2px)
 
-### Badges a chips
+### Badges
 
-- role: `Coach`, `Athlete`
-- typ tréninku: `Easy`, `Tempo`, `Intervals`, `Long Run`
-- stav: `Done`, `Planned`, `Missed`, `Pending Import`
+| Varianta | Text        | Background          | Border |
+|----------|------------|--------------------|----|
+| Done     | --eb-lime  | --eb-lime-muted    | rgba lime 20% |
+| Planned  | --eb-blue  | --eb-blue-muted    | rgba blue 20% |
+| Missed   | #fda4af    | rgba(244,63,94,.1) | rgba red 20% |
+| Pending  | #fcd34d    | rgba(245,158,11,.1)| rgba yellow 20% |
+| Coach    | --eb-lime  | --eb-lime-muted    | rgba lime 20% |
+| Athlete  | --eb-blue  | --eb-blue-muted    | rgba blue 20% |
 
-### Scrollbar
+- Výška: 22px, pill shape
+- Font: Inter 600, 11px, uppercase, tracking 0.04em
 
-- tenká
-- s nízkým kontrastem
-- thumb lehce kulatý
-- při hoveru o něco viditelnější
+### Tabulky
 
-### Modaly a panely
+- Header: Inter 600, 11px, uppercase, tracking 0.08em, --eb-text-muted
+- Cell: 14px, --eb-text
+- Row border: 1px --eb-border-soft
+- Hover: background --eb-surface-hover
+- Numerické buňky: JetBrains Mono
 
-- šířka 560-720 px
-- hlavička velmi čistá
-- destruktivní nebo potvrzovací akce vždy dole vpravo
-- důležitá metadata mít i bez scrollu
+### Navigace
 
-## Tone of UI
+- Topbar: --eb-bg-elevated, 1px border-bottom, backdrop-filter blur(12px)
+- Nav links: Inter 600, 12px, uppercase, tracking 0.06em
+- Active: --eb-lime
+- Hover: --eb-text + subtle bg
 
-Texty v rozhraní by měly být:
+### Modaly
 
-- krátké
-- technicky srozumitelné
-- bez marketingových frází
-- podporující disciplínu a jistotu
+- Overlay: rgba(0,0,0,.6) + backdrop-blur(4px)
+- Surface: --eb-surface, radius-lg, shadow-xl
+- Header/footer s border
 
-Příklady:
-
-- místo `Crush your goals today` použít `Dnešní plán`
-- místo `Amazing progress` použít `Objem roste 3. týden v řadě`
-- místo `Upload your workout now!` použít `Importovat aktivitu`
+---
 
 ## Motion
 
-Animace jen tam, kde zvyšují orientaci:
+### Principy
 
-- jemný reveal při načtení dashboardu
-- rychlý fade/slide u dropdownu a modalu
-- subtlní highlight po uložení změn
-- žádné výrazné bounce nebo sporty “energy flashes”
+- Pohyb slouží orientaci, ne dekoraci
+- Žádný bounce, elastic nebo energy flash
+- ease-out pro vstup, ease-in-out pro změny stavu
 
-Doporučení:
+### Timing
 
-- duration 140-220 ms pro běžné interakce
-- ease-out pro vstup
-- ease-in-out pro stavy
+```
+Micro interakce:  120ms   (hover, focus)
+Standard:         180ms   (dropdown, toggle)
+Entrance:         300ms   (modal, card appear)
+Page transition:  500ms   (scroll reveal, route change)
+```
+
+### Scroll reveal
+
+- opacity 0→1, translateY(16px→0)
+- 500ms ease-out
+- Stagger: +80ms per element
+
+### prefers-reduced-motion
+
+Vždy respektovat. Při reduced-motion vypnout všechny animace.
+
+---
 
 ## Přístupnost
 
-- kontrast textu minimálně WCAG AA
-- neindikovat stav jen barvou
-- focus state musí být vždy viditelný
-- hit area u tlačítek minimálně 40 x 40 px
-- tabulky a filtry musí fungovat i při zvětšení textu
+- Kontrast: WCAG AA minimum (4.5:1 body, 3:1 large text)
+- Focus ring: 2px lime outline + 2px offset, vždy viditelný
+- Hit area: minimum 40×40px
+- Status nikdy jen barvou — vždy s textem nebo ikonou
 
-## Doporučené tokeny
+---
 
-```css
-:root {
-  --eb-bg: #101714;
-  --eb-bg-elevated: #16201c;
-  --eb-surface: #1d2924;
-  --eb-surface-soft: #22312b;
-  --eb-text: #e9efec;
-  --eb-text-muted: #9eb0a8;
-  --eb-text-strong: #ffffff;
-  --eb-line: #2d3a35;
-  --eb-line-soft: #3a4a43;
-  --eb-accent: #61c48f;
-  --eb-accent-hover: #4bad79;
-  --eb-danger: #ff7a59;
-  --eb-warning: #d9a441;
-  --eb-info: #77b7d7;
-  --eb-radius-sm: 10px;
-  --eb-radius-md: 14px;
-  --eb-radius-lg: 18px;
-  --eb-shadow-1: 0 8px 24px rgba(0, 0, 0, 0.18);
-  --eb-shadow-2: 0 18px 48px rgba(0, 0, 0, 0.24);
-}
-```
+## HTML showcase
 
-## Doporučené použití Space Grotesk
+Soubor `docs/visual-style-preview.html` obsahuje živé ukázky:
 
-Silné použití:
-
-- wordmark `EnduroBuddy`
-- login / onboarding hero
-- hlavní page title
-- section break titulky u marketingovějších částí
-
-Střídmé použití:
-
-- číselné highlighty
-- názvy top-level dashboard modulů
-
-Nevhodné použití:
-
-- formuláře
-- sidebar navigace
-- dropdowny
-- dense table headers
-- malé button labely
-
-## Co obsahuje HTML showcase
-
-Soubor `docs/visual-style-preview.html` obsahuje:
-
-- paletu
-- typografii
-- tlačítka
-- inputy a search bar
-- select, segmented control, checkbox, switch
-- badges a stavy
-- metrické karty
-- tabulku
-- scrollovatelný panel
-- notifikaci
-- modal preview
-- skeleton loading
-
-## Doporučení pro další krok
-
-Pokud se ti tenhle směr bude líbit, další rozumný krok je:
-
-1. připojit open-source font `Space Grotesk`
-2. převést tokeny do jedné centrální CSS vrstvy
-3. aplikovat styl nejdřív na login, top nav a dashboard shell
-4. až potom řešit detailní stavy tabulek, kalendáře a modálů
-
-## Použité online reference
-
-- TrainingPeaks App Store: https://apps.apple.com/id/app/trainingpeaks/id408047715
-- Garmin Connect App Store: https://apps.apple.com/ae/app/garmin-connect/id583446403
-- Strava Apps directory: https://www.strava.com/apps/social-motivation
+- Logo (Signal Stack) ve všech variantách + social media avatary
+- Kompletní paleta (12 swatches)
+- Typografická škála (9 úrovní)
+- Topbar simulace
+- Tlačítka (5 variant × 3 velikosti)
+- Badges a labely
+- Formulářové prvky
+- Metrické karty
+- Tabulka s mono daty
+- Hero section simulace s dashboard mockupem
+- Feature cards (3×2 grid)
+- Steps + role cards
+- Modal + toast notifikace
+- Skeleton loading
+- CTA block
+- Spacing/radius reference
+- Motion pravidla
