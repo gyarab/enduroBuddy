@@ -3,1007 +3,1358 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>EnduroBuddy Visual Style Preview</title>
+  <title>EnduroBuddy — Design System Preview</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=League+Gothic&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet">
   <style>
+    /* ═══════════════════════════════════════════════════════════════
+       ENDUROBUDDY DESIGN SYSTEM — Neon Lab × Swiss Precision
+       ═══════════════════════════════════════════════════════════════ */
+
     :root {
-      --font-display: "League Gothic", "Arial Narrow", sans-serif;
-      --font-ui: "IBM Plex Sans", "Segoe UI Variable Text", "Segoe UI", sans-serif;
-      --font-accent: "Barlow Semi Condensed", "Arial Narrow", "Segoe UI", sans-serif;
-      --bg: #101714;
-      --bg-elevated: #16201c;
-      --surface: #1d2924;
-      --surface-soft: #22312b;
-      --surface-strong: #283932;
-      --text: #e9efec;
-      --text-muted: #9eb0a8;
-      --text-dim: #7f9088;
-      --line: #2d3a35;
-      --line-soft: #3a4a43;
-      --accent: #61c48f;
-      --accent-hover: #4bad79;
-      --danger: #ff7a59;
-      --warning: #d9a441;
-      --info: #77b7d7;
-      --white-panel: #edf2ef;
-      --white-line: #cad4cf;
-      --shadow-1: 0 10px 30px rgba(0, 0, 0, 0.2);
-      --shadow-2: 0 22px 50px rgba(0, 0, 0, 0.28);
-      --radius-sm: 10px;
-      --radius-md: 14px;
-      --radius-lg: 18px;
-      --radius-pill: 999px;
+      /* ── Backgrounds ── */
+      --eb-bg:            #09090b;
+      --eb-bg-elevated:   #111113;
+      --eb-surface:       #18181b;
+      --eb-surface-hover: #27272a;
+
+      /* ── Borders ── */
+      --eb-border:        #27272a;
+      --eb-border-soft:   #1f1f23;
+
+      /* ── Text ── */
+      --eb-text:          #fafafa;
+      --eb-text-secondary:#a1a1aa;
+      --eb-text-muted:    #71717a;
+
+      /* ── Accents ── */
+      --eb-lime:          #c8ff00;
+      --eb-lime-hover:    #d4ff33;
+      --eb-lime-muted:    rgba(200, 255, 0, .10);
+      --eb-lime-border:   rgba(200, 255, 0, .20);
+      --eb-blue:          #38bdf8;
+      --eb-blue-hover:    #5cc9f9;
+      --eb-blue-muted:    rgba(56, 189, 248, .10);
+      --eb-blue-border:   rgba(56, 189, 248, .20);
+
+      /* ── Status ── */
+      --eb-danger:        #f43f5e;
+      --eb-danger-muted:  rgba(244, 63, 94, .10);
+      --eb-warning:       #f59e0b;
+      --eb-warning-muted: rgba(245, 158, 11, .10);
+
+      /* ── Typography ── */
+      --eb-font-display:  "Syne", system-ui, sans-serif;
+      --eb-font-body:     "Inter", "Segoe UI Variable Text", system-ui, sans-serif;
+      --eb-font-mono:     "JetBrains Mono", "Cascadia Code", monospace;
+
+      /* ── Spacing ── */
+      --eb-space-1:  4px;
+      --eb-space-2:  8px;
+      --eb-space-3:  12px;
+      --eb-space-4:  16px;
+      --eb-space-5:  20px;
+      --eb-space-6:  24px;
+      --eb-space-8:  32px;
+      --eb-space-10: 40px;
+      --eb-space-12: 48px;
+      --eb-space-16: 64px;
+
+      /* ── Shape ── */
+      --eb-radius-sm:   6px;
+      --eb-radius-md:   10px;
+      --eb-radius-lg:   16px;
+      --eb-radius-xl:   24px;
+      --eb-radius-full: 9999px;
+
+      /* ── Shadows ── */
+      --eb-shadow-sm:  0 1px 2px rgba(0,0,0,.3);
+      --eb-shadow-md:  0 4px 16px rgba(0,0,0,.4);
+      --eb-shadow-lg:  0 12px 40px rgba(0,0,0,.5);
+      --eb-shadow-xl:  0 24px 64px rgba(0,0,0,.6);
+      --eb-glow-lime:  0 0 24px rgba(200,255,0,.12);
+      --eb-glow-blue:  0 0 24px rgba(56,189,248,.12);
     }
 
-    * { box-sizing: border-box; }
-    html { color-scheme: dark; scroll-behavior: smooth; }
+    /* ── Reset ───────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; }
+    html { color-scheme: dark; scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
 
     body {
-      margin: 0;
-      font-family: var(--font-ui);
-      background:
-        radial-gradient(circle at top left, rgba(97, 196, 143, 0.1), transparent 22%),
-        radial-gradient(circle at top right, rgba(119, 183, 215, 0.08), transparent 18%),
-        linear-gradient(180deg, #0e1512 0%, var(--bg) 100%);
-      color: var(--text);
+      font-family: var(--eb-font-body);
+      font-size: 15px;
+      line-height: 1.6;
+      color: var(--eb-text);
+      background: var(--eb-bg);
     }
 
-    ::selection { background: rgba(97, 196, 143, 0.25); }
-    ::-webkit-scrollbar { width: 10px; height: 10px; }
-    ::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.04); }
-    ::-webkit-scrollbar-thumb {
-      background: rgba(158, 176, 168, 0.35);
-      border-radius: 999px;
-      border: 2px solid transparent;
-      background-clip: padding-box;
-    }
-    ::-webkit-scrollbar-thumb:hover {
-      background: rgba(158, 176, 168, 0.55);
-      border: 2px solid transparent;
-      background-clip: padding-box;
+    ::selection { background: rgba(200,255,0,.18); color: #09090b; }
+
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
+
+    /* ── Page Container ──────────────────────────────────────────── */
+    .page { max-width: 1280px; margin: 0 auto; padding: var(--eb-space-12) var(--eb-space-6); }
+
+    /* ── Section ─────────────────────────────────────────────────── */
+    .ds-section { margin-top: var(--eb-space-16); }
+    .ds-section:first-of-type { margin-top: var(--eb-space-12); }
+
+    .ds-section-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: var(--eb-space-4);
+      margin-bottom: var(--eb-space-6);
+      padding-bottom: var(--eb-space-4);
+      border-bottom: 1px solid var(--eb-border-soft);
     }
 
-    .page {
-      width: min(1380px, calc(100% - 40px));
-      margin: 0 auto;
-      padding: 32px 0 80px;
+    .ds-section-title {
+      font-family: var(--eb-font-display);
+      font-size: 1.6rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--eb-text);
     }
 
-    .hero {
+    .ds-section-note {
+      font-size: 13px;
+      color: var(--eb-text-muted);
+      text-align: right;
+    }
+
+    .ds-panel {
+      background: var(--eb-surface);
+      border: 1px solid var(--eb-border-soft);
+      border-radius: var(--eb-radius-lg);
+      padding: var(--eb-space-6);
+    }
+
+    .ds-subsection {
+      padding-top: var(--eb-space-6);
+      margin-top: var(--eb-space-6);
+      border-top: 1px solid var(--eb-border-soft);
+    }
+
+    .ds-subsection:first-child { padding-top: 0; margin-top: 0; border-top: 0; }
+
+    .ds-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--eb-text-muted);
+      margin-bottom: var(--eb-space-3);
+    }
+
+    /* ── Utility ─────────────────────────────────────────────────── */
+    .flex { display: flex; flex-wrap: wrap; }
+    .gap-2 { gap: var(--eb-space-2); }
+    .gap-3 { gap: var(--eb-space-3); }
+    .gap-4 { gap: var(--eb-space-4); }
+    .gap-6 { gap: var(--eb-space-6); }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--eb-space-3); }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--eb-space-3); }
+    .grid-6 { display: grid; grid-template-columns: repeat(6, 1fr); gap: var(--eb-space-3); }
+    .align-center { align-items: center; }
+    .justify-center { justify-content: center; }
+    .text-center { text-align: center; }
+    .w-full { width: 100%; }
+
+    @media (max-width: 900px) {
+      .grid-2, .grid-3, .grid-6 { grid-template-columns: 1fr; }
+      .hero-grid { grid-template-columns: 1fr !important; }
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       PAGE HEADER
+       ═══════════════════════════════════════════════════════════════ */
+    .ds-header {
+      padding: var(--eb-space-12) 0 var(--eb-space-10);
+      border-bottom: 1px solid var(--eb-border-soft);
+    }
+
+    .ds-header-logo { margin-bottom: var(--eb-space-6); }
+
+    .ds-header h1 {
+      font-family: var(--eb-font-display);
+      font-size: clamp(3.5rem, 10vw, 7rem);
+      font-weight: 800;
+      line-height: 0.9;
+      letter-spacing: -0.04em;
+      margin-bottom: var(--eb-space-5);
+    }
+
+    .ds-header h1 span { color: var(--eb-lime); }
+
+    .ds-header p {
+      font-size: 15px;
+      color: var(--eb-text-secondary);
+      max-width: 52ch;
+      line-height: 1.7;
+    }
+
+    .ds-meta {
+      display: flex;
+      gap: var(--eb-space-4);
+      margin-top: var(--eb-space-5);
+    }
+
+    .ds-meta-tag {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--eb-text-muted);
+      padding: 4px 10px;
+      border: 1px solid var(--eb-border);
+      border-radius: var(--eb-radius-full);
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       1. LOGO
+       ═══════════════════════════════════════════════════════════════ */
+    .logo-grid {
       display: grid;
-      grid-template-columns: 1.2fr 0.8fr;
-      gap: 24px;
-      margin-bottom: 24px;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--eb-space-3);
     }
 
-    .panel {
-      background: rgba(29, 41, 36, 0.82);
-      border: 1px solid rgba(58, 74, 67, 0.8);
-      border-radius: var(--radius-lg);
-      box-shadow: var(--shadow-1);
-      backdrop-filter: blur(10px);
+    .logo-cell {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: var(--eb-space-8) var(--eb-space-4);
+      border-radius: var(--eb-radius-md);
+      border: 1px solid var(--eb-border-soft);
+      min-height: 160px;
     }
 
-    .hero-main {
-      padding: 28px;
-      min-height: 250px;
-      position: relative;
+    .logo-cell.on-dark { background: var(--eb-bg); }
+    .logo-cell.on-surface { background: var(--eb-surface); }
+    .logo-cell.on-lime { background: var(--eb-lime); }
+    .logo-cell.on-white { background: #fafafa; }
+
+    .logo-cell svg { max-height: 48px; width: auto; }
+    .logo-cell .ds-label { margin-top: var(--eb-space-3); margin-bottom: 0; text-align: center; }
+
+    /* ═══════════════════════════════════════════════════════════════
+       2. PALETTE
+       ═══════════════════════════════════════════════════════════════ */
+    .swatch {
+      border-radius: var(--eb-radius-md);
       overflow: hidden;
+      border: 1px solid var(--eb-border-soft);
     }
 
-    .brand-lockup {
+    .swatch-color { height: 64px; }
+    .swatch-info { padding: 10px 12px; background: var(--eb-bg-elevated); }
+    .swatch-name { font-weight: 600; font-size: 13px; }
+    .swatch-hex { font-family: var(--eb-font-mono); font-size: 12px; color: var(--eb-text-muted); margin-top: 2px; }
+    .swatch-role { font-size: 11px; color: var(--eb-text-muted); margin-top: 4px; }
+
+    /* ═══════════════════════════════════════════════════════════════
+       3. TYPOGRAPHY
+       ═══════════════════════════════════════════════════════════════ */
+    .type-row {
+      display: flex;
+      align-items: baseline;
+      gap: var(--eb-space-4);
+      padding: var(--eb-space-4) 0;
+      border-bottom: 1px solid var(--eb-border-soft);
+    }
+
+    .type-row:last-child { border-bottom: 0; }
+
+    .type-meta {
+      width: 200px;
+      flex-shrink: 0;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--eb-text-muted);
+    }
+
+    .type-sample { flex: 1; min-width: 0; }
+
+    /* ═══════════════════════════════════════════════════════════════
+       SHARED COMPONENTS
+       ═══════════════════════════════════════════════════════════════ */
+
+    /* ── Buttons ── */
+    .btn {
       display: inline-flex;
       align-items: center;
-      gap: 14px;
-      margin-bottom: 12px;
-    }
-
-    .brand-logo {
-      width: 154px;
-      height: auto;
-      display: block;
-      filter: drop-shadow(0 10px 22px rgba(0, 0, 0, 0.24));
-    }
-
-    .hero-main::after {
-      content: "";
-      position: absolute;
-      right: -40px;
-      top: -10px;
-      width: 240px;
-      height: 240px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(97, 196, 143, 0.18), transparent 60%);
-      pointer-events: none;
-    }
-
-    .brand,
-    .hero h1,
-    .section-heading h2,
-    .display {
-      font-family: var(--font-display);
-    }
-
-    .brand {
-      font-size: 1.2rem;
-      letter-spacing: 0.08em;
-      font-weight: 400;
-      text-transform: uppercase;
-      color: var(--accent);
-      margin-bottom: 12px;
-    }
-
-    .hero h1 {
-      font-size: clamp(2.3rem, 4vw, 3.7rem);
-      line-height: 0.95;
-      max-width: 10ch;
-      margin: 0;
-    }
-
-    .hero p {
-      max-width: 58ch;
-      color: var(--text-muted);
-      line-height: 1.6;
-      margin: 16px 0 24px;
-    }
-
-    .hero-actions,
-    .button-row,
-    .form-grid,
-    .chip-row,
-    .segmented,
-    .switch-row,
-    .palette-grid,
-    .type-grid,
-    .cards-grid,
-    .layout-grid,
-    .toast-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-    }
-
-    .hero-side {
-      padding: 24px;
-      display: grid;
-      gap: 14px;
-      align-content: start;
-    }
-
-    .mini-stat {
-      padding: 16px;
-      border-radius: var(--radius-md);
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid var(--line);
-    }
-
-    .eyebrow {
-      font-family: var(--font-accent);
-      font-size: 0.75rem;
-      letter-spacing: 0.12em;
-      font-weight: 600;
-      text-transform: uppercase;
-      color: var(--text-dim);
-      margin-bottom: 8px;
-    }
-
-    .metric {
-      font-family: var(--font-display);
-      font-size: 1.9rem;
-      font-weight: 400;
-      letter-spacing: 0.02em;
-      margin-bottom: 4px;
-    }
-
-    .section { margin-top: 28px; }
-
-    .section-heading {
-      display: flex;
-      justify-content: space-between;
-      align-items: end;
-      gap: 16px;
-      margin-bottom: 16px;
-    }
-
-    .section-heading h2 {
-      font-size: clamp(1.6rem, 2vw, 2.1rem);
-      margin: 0;
-    }
-
-    .section-heading p {
-      margin: 0;
-      color: var(--text-muted);
-      max-width: 56ch;
-    }
-
-    .surface { padding: 24px; }
-
-    .swatch {
-      min-width: 170px;
-      flex: 1 1 170px;
-      border-radius: var(--radius-md);
-      overflow: hidden;
-      border: 1px solid var(--line);
-      background: rgba(255, 255, 255, 0.03);
-    }
-
-    .swatch-color { height: 88px; }
-
-    .swatch-meta {
-      padding: 12px 14px;
-      display: grid;
-      gap: 4px;
-      font-size: 0.92rem;
-    }
-
-    .type-sample {
-      flex: 1 1 280px;
-      padding: 18px;
-      border-radius: var(--radius-md);
-      border: 1px solid var(--line);
-      background: rgba(255, 255, 255, 0.03);
-    }
-
-    .type-sample .meta {
-      font-family: var(--font-accent);
-      color: var(--text-dim);
-      margin-bottom: 10px;
-      font-size: 0.82rem;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-    }
-
-    .display {
-      font-size: clamp(2.4rem, 4vw, 4rem);
-      line-height: 0.95;
-    }
-
-    h3 {
-      margin: 0 0 12px;
-      font-size: 1.05rem;
-      font-family: var(--font-accent);
-      letter-spacing: 0.02em;
-    }
-
-    .btn {
-      font-family: var(--font-accent);
-      appearance: none;
-      border: 1px solid var(--line-soft);
-      background: rgba(255, 255, 255, 0.04);
-      color: var(--text);
-      border-radius: var(--radius-pill);
-      min-height: 44px;
-      padding: 0 18px;
-      font-size: 0.96rem;
+      justify-content: center;
+      gap: 6px;
+      height: 40px;
+      padding: 0 16px;
+      font-family: var(--eb-font-body);
+      font-size: 13px;
       font-weight: 600;
       letter-spacing: 0.02em;
-      cursor: pointer;
-      transition: 180ms ease;
-    }
-
-    .btn:hover {
-      transform: translateY(-1px);
-      border-color: rgba(97, 196, 143, 0.45);
-    }
-
-    .btn-primary {
-      background: linear-gradient(180deg, var(--accent), var(--accent-hover));
-      color: #0c120f;
-      border-color: transparent;
-    }
-
-    .btn-secondary {
-      background: rgba(97, 196, 143, 0.12);
-      border-color: rgba(97, 196, 143, 0.3);
-    }
-
-    .btn-ghost { background: transparent; }
-
-    .btn-danger {
-      background: rgba(255, 122, 89, 0.14);
-      border-color: rgba(255, 122, 89, 0.3);
-      color: #ffd7ce;
-    }
-
-    .btn-icon {
-      width: 44px;
-      padding: 0;
-      display: inline-grid;
-      place-items: center;
-    }
-
-    .form-grid > * { flex: 1 1 220px; }
-
-    .field { display: grid; gap: 8px; }
-
-    .field label {
-      font-family: var(--font-accent);
-      font-size: 0.84rem;
-      color: var(--text-dim);
-      font-weight: 600;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-    }
-
-    .input,
-    .select {
-      min-height: 46px;
-      border-radius: var(--radius-md);
-      border: 1px solid var(--line);
-      background: rgba(255, 255, 255, 0.04);
-      color: var(--text);
-      padding: 0 14px;
-      outline: none;
-      transition: 160ms ease;
-    }
-
-    .input:focus,
-    .select:focus {
-      border-color: rgba(97, 196, 143, 0.55);
-      box-shadow: 0 0 0 4px rgba(97, 196, 143, 0.12);
-    }
-
-    .search-wrap {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 12px;
-      align-items: center;
-    }
-
-    .search-shell {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      min-height: 52px;
-      border-radius: 16px;
-      border: 1px solid var(--line);
-      padding: 0 14px;
-      background: rgba(255, 255, 255, 0.05);
-    }
-
-    .search-shell input {
-      flex: 1;
-      border: 0;
+      border-radius: var(--eb-radius-sm);
+      border: 1px solid var(--eb-border);
       background: transparent;
-      color: var(--text);
-      min-width: 0;
-      outline: none;
-      font: inherit;
-    }
-
-    .search-kicker {
-      font-family: var(--font-accent);
-      font-size: 0.78rem;
-      color: var(--text-dim);
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      padding: 6px 10px;
-      border-radius: 999px;
-      border: 1px solid var(--line);
-      background: rgba(255, 255, 255, 0.03);
+      color: var(--eb-text);
+      cursor: pointer;
+      transition: all 140ms ease-out;
+      text-decoration: none;
       white-space: nowrap;
     }
 
-    .segmented {
-      padding: 6px;
-      border-radius: 999px;
-      border: 1px solid var(--line);
-      background: rgba(255, 255, 255, 0.03);
-      width: fit-content;
-    }
+    .btn:hover { transform: translateY(-1px); }
 
-    .segment {
-      font-family: var(--font-accent);
-      min-height: 38px;
-      padding: 0 14px;
-      border-radius: 999px;
-      border: 0;
-      background: transparent;
-      color: var(--text-muted);
-      cursor: pointer;
+    .btn-primary {
+      background: var(--eb-lime);
+      border-color: transparent;
+      color: #09090b;
+      font-weight: 700;
+    }
+    .btn-primary:hover { background: var(--eb-lime-hover); box-shadow: var(--eb-glow-lime); }
+
+    .btn-secondary { border-color: var(--eb-border); }
+    .btn-secondary:hover { background: var(--eb-surface-hover); border-color: #3f3f46; }
+
+    .btn-ghost { border-color: transparent; color: var(--eb-text-secondary); }
+    .btn-ghost:hover { color: var(--eb-text); background: rgba(255,255,255,.04); }
+
+    .btn-danger { border-color: rgba(244,63,94,.25); color: #fda4af; background: var(--eb-danger-muted); }
+    .btn-danger:hover { background: rgba(244,63,94,.18); }
+
+    .btn-blue { background: var(--eb-blue); border-color: transparent; color: #09090b; font-weight: 700; }
+    .btn-blue:hover { background: var(--eb-blue-hover); box-shadow: var(--eb-glow-blue); }
+
+    .btn-sm { height: 32px; padding: 0 12px; font-size: 12px; }
+    .btn-lg { height: 48px; padding: 0 24px; font-size: 14px; }
+    .btn-pill { border-radius: var(--eb-radius-full); }
+
+    /* ── Badges ── */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      height: 22px;
+      padding: 0 8px;
+      font-size: 11px;
       font-weight: 600;
-      letter-spacing: 0.02em;
-    }
-
-    .segment.is-active {
-      background: rgba(97, 196, 143, 0.14);
-      color: var(--text);
-    }
-
-    .chip {
-      font-family: var(--font-accent);
-      display: inline-flex;
-      align-items: center;
-      min-height: 32px;
-      padding: 0 12px;
-      border-radius: 999px;
-      font-size: 0.82rem;
-      font-weight: 700;
-      letter-spacing: 0.06em;
+      letter-spacing: 0.04em;
       text-transform: uppercase;
-      border: 1px solid var(--line);
-      background: rgba(255, 255, 255, 0.04);
+      border-radius: var(--eb-radius-full);
+      border: 1px solid transparent;
+      white-space: nowrap;
     }
 
-    .chip-accent {
-      color: #c8f3dc;
-      background: rgba(97, 196, 143, 0.12);
-      border-color: rgba(97, 196, 143, 0.3);
-    }
+    .badge-done    { color: var(--eb-lime);  background: var(--eb-lime-muted);    border-color: var(--eb-lime-border); }
+    .badge-planned { color: var(--eb-blue);  background: var(--eb-blue-muted);    border-color: var(--eb-blue-border); }
+    .badge-missed  { color: #fda4af;         background: var(--eb-danger-muted);  border-color: rgba(244,63,94,.2); }
+    .badge-pending { color: #fcd34d;         background: var(--eb-warning-muted); border-color: rgba(245,158,11,.2); }
+    .badge-coach   { color: var(--eb-lime);  background: var(--eb-lime-muted);    border-color: var(--eb-lime-border); }
+    .badge-athlete { color: var(--eb-blue);  background: var(--eb-blue-muted);    border-color: var(--eb-blue-border); }
 
-    .chip-warning {
-      color: #f6e7ba;
-      background: rgba(217, 164, 65, 0.12);
-      border-color: rgba(217, 164, 65, 0.28);
-    }
-
-    .chip-danger {
-      color: #ffd7ce;
-      background: rgba(255, 122, 89, 0.12);
-      border-color: rgba(255, 122, 89, 0.26);
-    }
-
-    .switch-row { align-items: center; }
-
-    .switch {
-      width: 52px;
-      height: 32px;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid var(--line);
-      position: relative;
-    }
-
-    .switch::after {
-      content: "";
-      position: absolute;
-      top: 3px;
-      left: 3px;
-      width: 24px;
-      height: 24px;
-      border-radius: 50%;
-      background: #f8fbf9;
-    }
-
-    .switch.is-on {
-      background: rgba(97, 196, 143, 0.32);
-      border-color: rgba(97, 196, 143, 0.35);
-    }
-
-    .switch.is-on::after {
-      left: 23px;
-      background: #dff7eb;
-    }
-
-    .checkbox {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      color: var(--text-muted);
-    }
-
-    .checkbox-box {
-      width: 20px;
-      height: 20px;
-      border-radius: 6px;
-      border: 1px solid rgba(97, 196, 143, 0.4);
-      background: rgba(97, 196, 143, 0.14);
-      box-shadow: inset 0 0 0 3px rgba(12, 18, 15, 0.8);
-    }
-
-    .cards-grid > * { flex: 1 1 220px; }
-
-    .stat-card,
-    .table-shell,
-    .modal-shell,
-    .toast,
-    .skeleton-card {
-      border-radius: var(--radius-lg);
-      border: 1px solid var(--line);
-      background: rgba(255, 255, 255, 0.03);
-    }
-
-    .stat-card {
-      padding: 18px;
-      min-height: 160px;
-      display: grid;
-      align-content: space-between;
-    }
-
-    .stat-card .big {
-      font-family: var(--font-display);
-      font-size: 2.2rem;
-      font-weight: 400;
-      letter-spacing: 0.02em;
-      line-height: 1;
-    }
-
-    .stat-card .trend {
-      font-family: var(--font-accent);
-      color: var(--accent);
-      font-size: 0.85rem;
-      font-weight: 700;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-    }
-
-    .layout-grid { align-items: start; }
-    .layout-grid > * { flex: 1 1 420px; }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-
-    th,
-    td {
-      text-align: left;
-      padding: 14px 12px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-      font-size: 0.94rem;
-    }
-
-    th {
-      font-family: var(--font-accent);
-      font-size: 0.78rem;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--text-dim);
-    }
-
-    tr:hover td { background: rgba(255, 255, 255, 0.02); }
-
-    .scroll-shell {
-      max-height: 260px;
-      overflow: auto;
-      border-radius: var(--radius-md);
-      border: 1px solid var(--line);
-      background: rgba(0, 0, 0, 0.08);
-      padding: 10px;
-    }
-
-    .activity-item {
-      padding: 12px 14px;
-      border-radius: 12px;
-      border: 1px solid rgba(255, 255, 255, 0.05);
-      background: rgba(255, 255, 255, 0.03);
-      display: grid;
-      gap: 6px;
-    }
-
-    .activity-item + .activity-item { margin-top: 10px; }
-    .toast-row { align-items: flex-start; }
-
-    .toast {
-      padding: 14px 16px;
-      width: min(360px, 100%);
-      box-shadow: var(--shadow-1);
-    }
-
-    .toast strong {
+    /* ── Inputs ── */
+    .input, .select {
       display: block;
+      width: 100%;
+      height: 40px;
+      padding: 0 12px;
+      font-family: var(--eb-font-body);
+      font-size: 14px;
+      color: var(--eb-text);
+      background: var(--eb-bg);
+      border: 1px solid var(--eb-border);
+      border-radius: var(--eb-radius-sm);
+      outline: none;
+      transition: border-color 140ms, box-shadow 140ms;
+    }
+
+    .input:focus, .select:focus {
+      border-color: var(--eb-lime);
+      box-shadow: 0 0 0 3px rgba(200,255,0,.08);
+    }
+
+    .input::placeholder { color: var(--eb-text-muted); }
+
+    .field { display: grid; gap: 6px; }
+    .field-label { font-size: 12px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--eb-text-muted); }
+
+    /* ── Table ── */
+    .eb-table { width: 100%; border-collapse: collapse; }
+    .eb-table th { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--eb-text-muted); text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--eb-border); }
+    .eb-table td { font-size: 14px; padding: 12px; border-bottom: 1px solid var(--eb-border-soft); }
+    .eb-table tr:hover td { background: rgba(255,255,255,.02); }
+    .eb-table .mono { font-family: var(--eb-font-mono); font-size: 13px; letter-spacing: -0.02em; }
+
+    /* ── Cards ── */
+    .card {
+      background: var(--eb-surface);
+      border: 1px solid var(--eb-border-soft);
+      border-radius: var(--eb-radius-md);
+      padding: var(--eb-space-6);
+      transition: transform 180ms ease, border-color 180ms ease;
+    }
+
+    .card-interactive:hover {
+      transform: translateY(-2px);
+      border-color: var(--eb-border);
+    }
+
+    .card-title {
+      font-family: var(--eb-font-body);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--eb-text);
       margin-bottom: 4px;
     }
 
-    .toast-success {
-      border-color: rgba(97, 196, 143, 0.28);
-      background: rgba(97, 196, 143, 0.08);
+    .card-copy { font-size: 13px; color: var(--eb-text-secondary); line-height: 1.55; }
+
+    .card-icon {
+      width: 40px;
+      height: 40px;
+      display: grid;
+      place-items: center;
+      border-radius: var(--eb-radius-sm);
+      font-size: 18px;
+      margin-bottom: var(--eb-space-3);
     }
 
-    .toast-warning {
-      border-color: rgba(217, 164, 65, 0.26);
-      background: rgba(217, 164, 65, 0.08);
+    .card-icon-lime { background: var(--eb-lime-muted); border: 1px solid var(--eb-lime-border); }
+    .card-icon-blue { background: var(--eb-blue-muted); border: 1px solid var(--eb-blue-border); }
+
+    /* ── Metric Card ── */
+    .metric-card {
+      background: var(--eb-surface);
+      border: 1px solid var(--eb-border-soft);
+      border-radius: var(--eb-radius-md);
+      padding: var(--eb-space-5);
     }
 
-    .modal-shell {
-      padding: 0;
-      overflow: hidden;
-      box-shadow: var(--shadow-2);
-    }
+    .metric-label { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--eb-text-muted); margin-bottom: 6px; }
+    .metric-value { font-family: var(--eb-font-mono); font-size: 2rem; font-weight: 500; letter-spacing: -0.03em; line-height: 1; }
+    .metric-delta { font-size: 12px; font-weight: 600; margin-top: 8px; }
+    .metric-delta.up { color: var(--eb-lime); }
+    .metric-delta.down { color: var(--eb-danger); }
+    .metric-note { font-size: 12px; color: var(--eb-text-muted); margin-top: 4px; }
 
-    .modal-head,
-    .modal-body,
-    .modal-foot {
-      padding: 18px 20px;
-    }
-
-    .modal-head,
-    .modal-foot { background: rgba(255, 255, 255, 0.03); }
-
-    .modal-head {
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    }
-
-    .modal-foot {
-      border-top: 1px solid rgba(255, 255, 255, 0.05);
+    /* ── Topbar ── */
+    .topbar {
       display: flex;
-      justify-content: end;
+      align-items: center;
+      gap: var(--eb-space-6);
+      height: 56px;
+      padding: 0 var(--eb-space-6);
+      background: var(--eb-bg-elevated);
+      border: 1px solid var(--eb-border-soft);
+      border-radius: var(--eb-radius-md);
+    }
+
+    .topbar-brand {
+      display: flex;
+      align-items: center;
       gap: 10px;
     }
 
+    .topbar-brand svg { height: 28px; width: auto; }
+    .topbar-wordmark { font-family: var(--eb-font-display); font-size: 18px; font-weight: 700; letter-spacing: -0.01em; color: var(--eb-text); }
+    .topbar-nav { display: flex; gap: 2px; flex: 1; }
+
+    .nav-link {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--eb-text-muted);
+      padding: 6px 12px;
+      border-radius: var(--eb-radius-sm);
+      text-decoration: none;
+      transition: all 120ms ease;
+    }
+
+    .nav-link:hover { color: var(--eb-text); background: rgba(255,255,255,.04); }
+    .nav-link.active { color: var(--eb-lime); }
+
+    /* ── Dashboard Mockup ── */
+    .dash-mock {
+      background: var(--eb-bg);
+      border: 1px solid var(--eb-border);
+      border-radius: var(--eb-radius-lg);
+      overflow: hidden;
+      box-shadow: var(--eb-shadow-xl);
+    }
+
+    .dash-chrome {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--eb-border-soft);
+      background: var(--eb-bg-elevated);
+    }
+
+    .chrome-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+    .dash-chrome-label {
+      margin-left: 8px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--eb-text-muted);
+    }
+
+    .dash-body { padding: var(--eb-space-4); }
+
+    .week-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-bottom: var(--eb-space-3); }
+
+    .day {
+      text-align: center;
+      padding: 10px 4px;
+      border-radius: var(--eb-radius-sm);
+      border: 1px solid var(--eb-border-soft);
+      background: var(--eb-surface);
+    }
+
+    .day.done  { border-color: var(--eb-lime-border); background: var(--eb-lime-muted); }
+    .day.plan  { border-color: var(--eb-blue-border); background: var(--eb-blue-muted); }
+    .day.rest  { opacity: .45; }
+
+    .day-name { font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--eb-text-muted); margin-bottom: 4px; }
+    .day-icon { font-size: 14px; margin-bottom: 2px; }
+    .day-val { font-family: var(--eb-font-mono); font-size: 12px; font-weight: 500; }
+    .day.done .day-val { color: var(--eb-lime); }
+    .day.plan .day-val { color: var(--eb-blue); }
+
+    .activity-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px;
+      border-radius: var(--eb-radius-sm);
+      border: 1px solid var(--eb-border-soft);
+      background: var(--eb-surface);
+      margin-top: 5px;
+    }
+
+    .activity-icon { width: 32px; height: 32px; border-radius: var(--eb-radius-sm); display: grid; place-items: center; font-size: 14px; flex-shrink: 0; }
+    .activity-icon.run { background: var(--eb-lime-muted); }
+    .activity-icon.bike { background: var(--eb-blue-muted); }
+    .activity-info { flex: 1; min-width: 0; }
+    .activity-name { font-size: 13px; font-weight: 600; }
+    .activity-meta { font-family: var(--eb-font-mono); font-size: 11px; color: var(--eb-text-muted); margin-top: 1px; }
+
+    /* ── Hero Sim ── */
+    .hero-grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: var(--eb-space-8); align-items: center; }
+
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      height: 28px;
+      padding: 0 12px;
+      border-radius: var(--eb-radius-full);
+      border: 1px solid var(--eb-lime-border);
+      background: var(--eb-lime-muted);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--eb-lime);
+      margin-bottom: var(--eb-space-5);
+    }
+
+    .hero-eyebrow-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--eb-lime); animation: pulse 2s ease-in-out infinite; }
+
+    @keyframes pulse { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:.35; transform:scale(.7); } }
+
+    .hero-h1 {
+      font-family: var(--eb-font-display);
+      font-size: clamp(2.5rem, 5.5vw, 4.5rem);
+      font-weight: 800;
+      line-height: 0.92;
+      letter-spacing: -0.04em;
+      margin-bottom: var(--eb-space-5);
+    }
+
+    .hero-h1 em { color: var(--eb-lime); font-style: normal; }
+
+    .hero-sub { font-size: 15px; color: var(--eb-text-secondary); line-height: 1.75; max-width: 38ch; margin-bottom: var(--eb-space-6); }
+
+    .hero-pills { display: flex; flex-wrap: wrap; gap: 6px; margin-top: var(--eb-space-5); }
+
+    .hero-pill {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--eb-text-muted);
+      padding: 5px 12px;
+      border-radius: var(--eb-radius-full);
+      border: 1px solid var(--eb-border);
+      background: transparent;
+    }
+
+    /* ── Float Card ── */
+    .float-card {
+      position: absolute;
+      left: -12px;
+      bottom: -12px;
+      background: var(--eb-surface);
+      border: 1px solid var(--eb-border);
+      border-radius: var(--eb-radius-md);
+      padding: 12px 16px;
+      box-shadow: var(--eb-shadow-lg);
+      animation: float 4s ease-in-out infinite;
+    }
+
+    @keyframes float { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-6px); } }
+
+    .float-label { font-size: 11px; font-weight: 600; color: var(--eb-text-muted); letter-spacing: 0.04em; text-transform: uppercase; }
+    .float-value { font-family: var(--eb-font-mono); font-size: 1.4rem; font-weight: 500; color: var(--eb-lime); line-height: 1; margin-top: 4px; }
+    .float-sub { font-size: 11px; color: var(--eb-text-muted); margin-top: 2px; }
+
+    /* ── Steps ── */
+    .step { display: flex; gap: var(--eb-space-4); padding: var(--eb-space-4) 0; border-bottom: 1px solid var(--eb-border-soft); }
+    .step:first-child { padding-top: 0; }
+    .step:last-child { border-bottom: 0; padding-bottom: 0; }
+
+    .step-num {
+      width: 32px; height: 32px;
+      display: grid; place-items: center;
+      border-radius: 50%;
+      border: 1px solid var(--eb-border);
+      background: var(--eb-bg);
+      font-family: var(--eb-font-mono);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--eb-lime);
+      flex-shrink: 0;
+    }
+
+    .step-title { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+    .step-copy { font-size: 13px; color: var(--eb-text-secondary); line-height: 1.55; }
+
+    /* ── Role Cards ── */
+    .role-card { padding: var(--eb-space-6); border-radius: var(--eb-radius-md); border: 1px solid var(--eb-border-soft); background: var(--eb-surface); }
+    .role-card.coach { border-color: var(--eb-lime-border); }
+    .role-card.athlete { border-color: var(--eb-blue-border); }
+
+    .role-heading { font-family: var(--eb-font-display); font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em; margin-bottom: var(--eb-space-4); }
+    .role-list { list-style: none; padding: 0; display: grid; gap: 6px; }
+    .role-list li { font-size: 13px; color: var(--eb-text-secondary); line-height: 1.5; }
+    .role-list li::before { content: "→ "; font-weight: 600; }
+    .role-card.coach .role-list li::before { color: var(--eb-lime); }
+    .role-card.athlete .role-list li::before { color: var(--eb-blue); }
+
+    /* ── CTA Block ── */
+    .cta-block {
+      text-align: center;
+      padding: var(--eb-space-16) var(--eb-space-8);
+      border-radius: var(--eb-radius-lg);
+      border: 1px solid var(--eb-lime-border);
+      background:
+        radial-gradient(circle at top center, rgba(200,255,0,.06), transparent 50%),
+        var(--eb-surface);
+    }
+
+    .cta-heading { font-family: var(--eb-font-display); font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 800; letter-spacing: -0.03em; line-height: 0.95; margin-bottom: var(--eb-space-3); }
+    .cta-sub { font-size: 14px; color: var(--eb-text-secondary); margin-bottom: var(--eb-space-6); }
+
+    /* ── Section Label (LP) ── */
+    .lp-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--eb-lime);
+      margin-bottom: var(--eb-space-3);
+    }
+
+    .lp-label::before { content: ""; width: 20px; height: 1px; background: currentColor; }
+
+    .lp-heading {
+      font-family: var(--eb-font-display);
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 0.95;
+      margin-bottom: var(--eb-space-4);
+    }
+
+    /* ── Modal Preview ── */
+    .modal-mock {
+      background: var(--eb-surface);
+      border: 1px solid var(--eb-border);
+      border-radius: var(--eb-radius-lg);
+      box-shadow: var(--eb-shadow-xl);
+      overflow: hidden;
+      max-width: 480px;
+    }
+
+    .modal-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--eb-border-soft);
+    }
+
+    .modal-head-title { font-size: 15px; font-weight: 600; }
+
+    .modal-close {
+      width: 28px; height: 28px;
+      display: grid; place-items: center;
+      border-radius: var(--eb-radius-sm);
+      border: 0; background: transparent;
+      color: var(--eb-text-muted);
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .modal-body { padding: 20px; }
+    .modal-foot { padding: 14px 20px; border-top: 1px solid var(--eb-border-soft); display: flex; justify-content: flex-end; gap: 8px; }
+
+    /* ── Toast / Notification ── */
+    .toast {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 12px 14px;
+      border-radius: var(--eb-radius-md);
+      border: 1px solid var(--eb-border-soft);
+      background: var(--eb-surface);
+      box-shadow: var(--eb-shadow-md);
+      max-width: 340px;
+    }
+
+    .toast-dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
+    .toast-title { font-size: 13px; font-weight: 600; }
+    .toast-body { font-size: 12px; color: var(--eb-text-secondary); margin-top: 2px; }
+
+    /* ── Skeleton ── */
     .skeleton {
-      border-radius: 10px;
-      background: linear-gradient(90deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.04));
+      border-radius: var(--eb-radius-sm);
+      background: linear-gradient(90deg, var(--eb-surface) 25%, var(--eb-surface-hover) 50%, var(--eb-surface) 75%);
       background-size: 200% 100%;
       animation: shimmer 1.5s linear infinite;
     }
 
-    .skeleton-card {
-      padding: 18px;
-      display: grid;
-      gap: 12px;
-    }
+    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
-    .skeleton-line { height: 12px; }
-    .skeleton-line.large { height: 28px; width: 48%; }
-    .skeleton-line.short { width: 34%; }
-
-    .light-surface {
-      background: var(--white-panel);
-      color: #122019;
-      border-radius: var(--radius-lg);
-      padding: 24px;
-      border: 1px solid var(--white-line);
-    }
-
-    .light-surface .btn {
-      color: #122019;
-      border-color: #b6c3bd;
-      background: rgba(16, 23, 20, 0.04);
-    }
-
-    .light-surface .btn-primary {
-      background: linear-gradient(180deg, var(--accent), var(--accent-hover));
-      border-color: transparent;
-      color: #0c120f;
-    }
-
-    .footnote {
-      margin-top: 18px;
-      color: var(--text-dim);
-      font-size: 0.88rem;
-      line-height: 1.6;
-    }
-
-    @keyframes shimmer {
-      0% { background-position: 200% 0; }
-      100% { background-position: -200% 0; }
-    }
-
-    @media (max-width: 980px) {
-      .hero { grid-template-columns: 1fr; }
-      .page { width: min(100% - 24px, 1380px); padding-top: 20px; }
-      .section-heading { align-items: start; flex-direction: column; }
-      .search-wrap { grid-template-columns: 1fr; }
-    }
+    .skeleton-card { padding: var(--eb-space-5); border-radius: var(--eb-radius-md); border: 1px solid var(--eb-border-soft); display: grid; gap: 10px; }
+    .skel-line { height: 10px; border-radius: 4px; }
+    .skel-lg { height: 24px; width: 50%; }
+    .skel-md { width: 75%; }
+    .skel-sm { width: 40%; }
   </style>
 </head>
 <body>
   <main class="page">
-    <section class="hero">
-      <div class="panel hero-main">
-        <div class="brand-lockup">
-          <img class="brand-logo" src="../backend/static/brand/biglogo.png" alt="EnduroBuddy">
-          <div class="brand">EnduroBuddy</div>
-        </div>
-        <h1>Precision training workspace.</h1>
-        <p>
-          Návrhový preview pro minimalistickou vytrvalostní aplikaci, která staví na klidu, rytmu a čitelnosti.
-          `League Gothic` teď nese headline vrstvu, `Barlow Semi Condensed` dodává tah tlačítkům a labelům a `IBM Plex Sans` drží husté UI čitelné.
-        </p>
-        <div class="hero-actions">
-          <button class="btn btn-primary">Nový trénink</button>
-          <button class="btn btn-secondary">Importovat aktivitu</button>
-          <button class="btn btn-ghost">Otevřít plán týdne</button>
-        </div>
-      </div>
 
-      <aside class="panel hero-side">
-        <div class="mini-stat">
-          <div class="eyebrow">Týdenní objem</div>
-          <div class="metric">82 km</div>
-          <div class="footnote">Rozloženo do 6 dní, dominantní je sobotní long run.</div>
-        </div>
-        <div class="mini-stat">
-          <div class="eyebrow">Akcentní princip</div>
-          <div class="metric" style="font-size:1.2rem;">Calm, technical, focused</div>
-          <div class="footnote">Méně marketingu, více provozní jistoty a čisté datové hierarchie.</div>
-        </div>
-      </aside>
-    </section>
+    <!-- ═══════════════════════════════════════════════════ HEADER ═══ -->
+    <header class="ds-header">
+      <div class="ds-header-logo">
+        <!-- Inline Stride Mark -->
+        <svg width="48" height="48" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <g transform="rotate(-6 32 32)">
+            <rect x="18" y="14" width="14" height="5" rx="2.5" fill="#c8ff00"/>
+            <rect x="18" y="29" width="22" height="5" rx="2.5" fill="#c8ff00"/>
+            <rect x="18" y="44" width="30" height="5" rx="2.5" fill="#c8ff00"/>
+          </g>
+        </svg>
+      </div>
+      <h1>Design<br><span>System</span></h1>
+      <p>Kompletní designový jazyk EnduroBuddy. Neon Lab meets Swiss Precision — kreativní energie s racionální čistotou. Tento soubor je referenční showcase všech tokenů, komponent a layout vzorů.</p>
+      <div class="ds-meta">
+        <span class="ds-meta-tag">Syne + Inter + JetBrains Mono</span>
+        <span class="ds-meta-tag">Dark mode</span>
+        <span class="ds-meta-tag">2026-04-05</span>
+      </div>
+    </header>
 
-    <section class="section">
-      <div class="section-heading">
-        <h2>Palette</h2>
-        <p>Tmavá základna, nízký vizuální šum a opatrný zelený akcent. Cílem je soustředěné pracovní prostředí, ne fitness reklama.</p>
+    <!-- ═══════════════════════════════════════════════════ LOGO ═══ -->
+    <section class="ds-section">
+      <div class="ds-section-head">
+        <h2 class="ds-section-title">Logo</h2>
+        <div class="ds-section-note">Stride Mark — 3 bars, 6° forward lean</div>
       </div>
-      <div class="panel surface">
-        <div class="palette-grid">
-          <div class="swatch"><div class="swatch-color" style="background:#101714;"></div><div class="swatch-meta"><strong>Ink 950</strong><span>#101714</span></div></div>
-          <div class="swatch"><div class="swatch-color" style="background:#16201c;"></div><div class="swatch-meta"><strong>Ink 900</strong><span>#16201c</span></div></div>
-          <div class="swatch"><div class="swatch-color" style="background:#1d2924;"></div><div class="swatch-meta"><strong>Panel 800</strong><span>#1d2924</span></div></div>
-          <div class="swatch"><div class="swatch-color" style="background:#61c48f;"></div><div class="swatch-meta"><strong>Accent</strong><span>#61c48f</span></div></div>
-          <div class="swatch"><div class="swatch-color" style="background:#ff7a59;"></div><div class="swatch-meta"><strong>Alert</strong><span>#ff7a59</span></div></div>
-          <div class="swatch"><div class="swatch-color" style="background:#edf2ef;"></div><div class="swatch-meta"><strong>Light Panel</strong><span>#edf2ef</span></div></div>
+      <div class="logo-grid">
+        <!-- Mark on dark -->
+        <div class="logo-cell on-dark">
+          <svg width="56" height="56" viewBox="0 0 64 64" fill="none"><g transform="rotate(-6 32 32)"><rect x="18" y="14" width="14" height="5" rx="2.5" fill="#c8ff00"/><rect x="18" y="29" width="22" height="5" rx="2.5" fill="#c8ff00"/><rect x="18" y="44" width="30" height="5" rx="2.5" fill="#c8ff00"/></g></svg>
+          <div class="ds-label">Mark / dark bg</div>
         </div>
-      </div>
-    </section>
-
-    <section class="section">
-      <div class="section-heading">
-        <h2>Typography</h2>
-        <p>`League Gothic` dává značce tah, `Barlow Semi Condensed` drží sportovně-technické akcenty a `IBM Plex Sans` nechává pracovní vrstvu klidnou a rychle skenovatelnou.</p>
-      </div>
-      <div class="panel surface">
-        <div class="type-grid">
-          <div class="type-sample">
-            <div class="meta">Display / League Gothic</div>
-            <div class="display">EnduroBuddy</div>
+        <!-- Full logo on dark -->
+        <div class="logo-cell on-dark">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <svg width="36" height="36" viewBox="0 0 64 64" fill="none"><g transform="rotate(-6 32 32)"><rect x="18" y="14" width="14" height="5" rx="2.5" fill="#c8ff00"/><rect x="18" y="29" width="22" height="5" rx="2.5" fill="#c8ff00"/><rect x="18" y="44" width="30" height="5" rx="2.5" fill="#c8ff00"/></g></svg>
+            <span style="font-family:var(--eb-font-display);font-size:22px;font-weight:700;letter-spacing:-0.01em;color:#fafafa;">EnduroBuddy</span>
           </div>
-          <div class="type-sample">
-            <div class="meta">Accent UI / Barlow Semi Condensed</div>
-            <div style="font-family:var(--font-accent);font-size:2rem;font-weight:600;letter-spacing:0.02em;">Weekly training overview</div>
+          <div class="ds-label">Full logo / dark bg</div>
+        </div>
+        <!-- Mark on lime -->
+        <div class="logo-cell on-lime">
+          <svg width="56" height="56" viewBox="0 0 64 64" fill="none"><g transform="rotate(-6 32 32)"><rect x="18" y="14" width="14" height="5" rx="2.5" fill="#09090b"/><rect x="18" y="29" width="22" height="5" rx="2.5" fill="#09090b"/><rect x="18" y="44" width="30" height="5" rx="2.5" fill="#09090b"/></g></svg>
+          <div class="ds-label" style="color:#09090b;">Mark / lime bg</div>
+        </div>
+        <!-- Full logo on white -->
+        <div class="logo-cell on-white">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <svg width="36" height="36" viewBox="0 0 64 64" fill="none"><g transform="rotate(-6 32 32)"><rect x="18" y="14" width="14" height="5" rx="2.5" fill="#09090b"/><rect x="18" y="29" width="22" height="5" rx="2.5" fill="#09090b"/><rect x="18" y="44" width="30" height="5" rx="2.5" fill="#09090b"/></g></svg>
+            <span style="font-family:var(--eb-font-display);font-size:22px;font-weight:700;letter-spacing:-0.01em;color:#09090b;">EnduroBuddy</span>
           </div>
-          <div class="type-sample">
-            <div class="meta">Body / IBM Plex Sans</div>
-            <div style="line-height:1.7;color:var(--text-muted);">Tréninkový plán má působit klidně, čitelně a rychle skenovatelně i při větší hustotě informací.</div>
-          </div>
+          <div class="ds-label" style="color:#71717a;">Full logo / light bg</div>
         </div>
       </div>
     </section>
 
-    <section class="section">
-      <div class="section-heading">
-        <h2>Controls</h2>
-        <p>Základní ovládací prvky drží konzistentní výšku, jemný border a klidný focus state. Primární CTA je vždy omezené na minimum.</p>
+    <!-- ═══════════════════════════════════════════════ PALETTE ═══ -->
+    <section class="ds-section">
+      <div class="ds-section-head">
+        <h2 class="ds-section-title">Palette</h2>
+        <div class="ds-section-note">Near-black base, zero color cast. Accents like a scalpel.</div>
       </div>
-      <div class="panel surface">
-        <h3>Buttons</h3>
-        <div class="button-row">
-          <button class="btn btn-primary">Uložit změny</button>
-          <button class="btn btn-secondary">Přidat interval</button>
-          <button class="btn btn-ghost">Filtrovat</button>
-          <button class="btn btn-danger">Smazat plán</button>
-          <button class="btn btn-icon" aria-label="Open settings">+</button>
+      <div class="ds-panel">
+        <div class="ds-label">Core</div>
+        <div class="grid-6" style="margin-bottom:var(--eb-space-6);">
+          <div class="swatch"><div class="swatch-color" style="background:#09090b;"></div><div class="swatch-info"><div class="swatch-name">Background</div><div class="swatch-hex">#09090b</div></div></div>
+          <div class="swatch"><div class="swatch-color" style="background:#111113;"></div><div class="swatch-info"><div class="swatch-name">Elevated</div><div class="swatch-hex">#111113</div></div></div>
+          <div class="swatch"><div class="swatch-color" style="background:#18181b;"></div><div class="swatch-info"><div class="swatch-name">Surface</div><div class="swatch-hex">#18181b</div></div></div>
+          <div class="swatch"><div class="swatch-color" style="background:#27272a;"></div><div class="swatch-info"><div class="swatch-name">Hover</div><div class="swatch-hex">#27272a</div></div></div>
+          <div class="swatch"><div class="swatch-color" style="background:#fafafa;"></div><div class="swatch-info"><div class="swatch-name">Text</div><div class="swatch-hex">#fafafa</div></div></div>
+          <div class="swatch"><div class="swatch-color" style="background:#71717a;"></div><div class="swatch-info"><div class="swatch-name">Muted</div><div class="swatch-hex">#71717a</div></div></div>
         </div>
+        <div class="ds-label">Accents + Status</div>
+        <div class="grid-6">
+          <div class="swatch"><div class="swatch-color" style="background:#c8ff00;"></div><div class="swatch-info"><div class="swatch-name">Lime</div><div class="swatch-hex">#c8ff00</div><div class="swatch-role">CTA, done, coach</div></div></div>
+          <div class="swatch"><div class="swatch-color" style="background:#38bdf8;"></div><div class="swatch-info"><div class="swatch-name">Blue</div><div class="swatch-hex">#38bdf8</div><div class="swatch-role">Info, plan, athlete</div></div></div>
+          <div class="swatch"><div class="swatch-color" style="background:#f43f5e;"></div><div class="swatch-info"><div class="swatch-name">Danger</div><div class="swatch-hex">#f43f5e</div><div class="swatch-role">Error, missed</div></div></div>
+          <div class="swatch"><div class="swatch-color" style="background:#f59e0b;"></div><div class="swatch-info"><div class="swatch-name">Warning</div><div class="swatch-hex">#f59e0b</div><div class="swatch-role">Pending</div></div></div>
+          <div class="swatch"><div class="swatch-color" style="background:var(--eb-lime-muted);border:1px solid var(--eb-lime-border);"></div><div class="swatch-info"><div class="swatch-name">Lime muted</div><div class="swatch-hex">10% opacity</div><div class="swatch-role">Lime backgrounds</div></div></div>
+          <div class="swatch"><div class="swatch-color" style="background:var(--eb-blue-muted);border:1px solid var(--eb-blue-border);"></div><div class="swatch-info"><div class="swatch-name">Blue muted</div><div class="swatch-hex">10% opacity</div><div class="swatch-role">Blue backgrounds</div></div></div>
+        </div>
+      </div>
+    </section>
 
-        <h3 style="margin-top:24px;">Search Bar</h3>
-        <div class="search-wrap">
-          <div class="search-shell">
-            <span aria-hidden="true">⌕</span>
-            <input type="text" value="Najít sportovce, trénink nebo aktivitu">
-            <span class="search-kicker">⌘K</span>
+    <!-- ═══════════════════════════════════════════ TYPOGRAPHY ═══ -->
+    <section class="ds-section">
+      <div class="ds-section-head">
+        <h2 class="ds-section-title">Typography</h2>
+        <div class="ds-section-note">Syne display &middot; Inter body &middot; JetBrains Mono data</div>
+      </div>
+      <div class="ds-panel">
+        <div class="type-row">
+          <div class="type-meta">Display / Syne 800</div>
+          <div class="type-sample" style="font-family:var(--eb-font-display);font-size:clamp(2.5rem,6vw,5rem);font-weight:800;line-height:.9;letter-spacing:-.04em;">Training <span style="color:var(--eb-lime);">Control</span></div>
+        </div>
+        <div class="type-row">
+          <div class="type-meta">H1 / Syne 700</div>
+          <div class="type-sample" style="font-family:var(--eb-font-display);font-size:clamp(1.8rem,3.5vw,3rem);font-weight:700;line-height:.95;letter-spacing:-.03em;">Vše co trenér potřebuje</div>
+        </div>
+        <div class="type-row">
+          <div class="type-meta">H2 / Syne 700</div>
+          <div class="type-sample" style="font-family:var(--eb-font-display);font-size:1.5rem;font-weight:700;line-height:1;letter-spacing:-.02em;">Měsíční plánování</div>
+        </div>
+        <div class="type-row">
+          <div class="type-meta">H3 / Inter 600</div>
+          <div class="type-sample" style="font-size:1.125rem;font-weight:600;letter-spacing:-.01em;">Týdenní přehled tréninků</div>
+        </div>
+        <div class="type-row">
+          <div class="type-meta">Body / Inter 400</div>
+          <div class="type-sample" style="font-size:15px;color:var(--eb-text-secondary);line-height:1.7;">EnduroBuddy spojuje měsíční tréninkové plány, splněné aktivity a spolupráci trenéra se sportovcem do jednoho moderního rozhraní. Připrav plán, sleduj realitu.</div>
+        </div>
+        <div class="type-row">
+          <div class="type-meta">Small / Inter 500</div>
+          <div class="type-sample" style="font-size:13px;font-weight:500;color:var(--eb-text-secondary);">Posledních 6 km v maratonském tempu. Rozloženo do 4 intervalů.</div>
+        </div>
+        <div class="type-row">
+          <div class="type-meta">Label / Inter 600 UC</div>
+          <div class="type-sample" style="font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--eb-text-muted);">Týdenní objem &middot; Akutní zátěž &middot; Recovery index</div>
+        </div>
+        <div class="type-row">
+          <div class="type-meta">Mono / JetBrains 500</div>
+          <div class="type-sample" style="font-family:var(--eb-font-mono);font-size:14px;font-weight:500;letter-spacing:-.02em;">4:52 /km &middot; 12.3 km &middot; 142 bpm &middot; 1h 18m</div>
+        </div>
+        <div class="type-row">
+          <div class="type-meta">Mono Large / JetBrains 500</div>
+          <div class="type-sample" style="font-family:var(--eb-font-mono);font-size:2.2rem;font-weight:500;letter-spacing:-.03em;line-height:1;color:var(--eb-lime);">82 km</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════ TOPBAR ═══ -->
+    <section class="ds-section">
+      <div class="ds-section-head">
+        <h2 class="ds-section-title">Navigation</h2>
+        <div class="ds-section-note">Sticky topbar, blur backdrop</div>
+      </div>
+      <div class="topbar">
+        <div class="topbar-brand">
+          <svg width="28" height="28" viewBox="0 0 64 64" fill="none"><g transform="rotate(-6 32 32)"><rect x="18" y="14" width="14" height="5" rx="2.5" fill="#c8ff00"/><rect x="18" y="29" width="22" height="5" rx="2.5" fill="#c8ff00"/><rect x="18" y="44" width="30" height="5" rx="2.5" fill="#c8ff00"/></g></svg>
+          <span class="topbar-wordmark">EnduroBuddy</span>
+        </div>
+        <nav class="topbar-nav">
+          <a class="nav-link active" href="#">Funkce</a>
+          <a class="nav-link" href="#">Jak funguje</a>
+          <a class="nav-link" href="#">Pro koho</a>
+          <a class="nav-link" href="#">O aplikaci</a>
+        </nav>
+        <a class="btn btn-primary btn-sm btn-pill" href="#">Začít zdarma</a>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════ BUTTONS ═══ -->
+    <section class="ds-section">
+      <div class="ds-section-head">
+        <h2 class="ds-section-title">Buttons</h2>
+        <div class="ds-section-note">One dominant CTA per surface</div>
+      </div>
+      <div class="ds-panel">
+        <div class="ds-subsection">
+          <div class="ds-label">Variants</div>
+          <div class="flex gap-3" style="margin-bottom:var(--eb-space-4);">
+            <button class="btn btn-primary">Primary</button>
+            <button class="btn btn-blue">Blue</button>
+            <button class="btn btn-secondary">Secondary</button>
+            <button class="btn btn-ghost">Ghost</button>
+            <button class="btn btn-danger">Danger</button>
           </div>
-          <button class="btn btn-secondary">Rozšířené filtry</button>
+          <div class="ds-label">Sizes</div>
+          <div class="flex gap-3 align-center" style="margin-bottom:var(--eb-space-4);">
+            <button class="btn btn-primary btn-sm">Small</button>
+            <button class="btn btn-primary">Default</button>
+            <button class="btn btn-primary btn-lg">Large</button>
+          </div>
+          <div class="ds-label">Pill + Combined</div>
+          <div class="flex gap-3">
+            <a class="btn btn-primary btn-pill btn-lg" href="#">Vyzkoušet zdarma</a>
+            <a class="btn btn-secondary btn-pill" href="#">Jak to funguje →</a>
+            <a class="btn btn-ghost btn-pill btn-sm" href="#">CZ / EN</a>
+          </div>
         </div>
+      </div>
+    </section>
 
-        <h3 style="margin-top:24px;">Forms</h3>
-        <div class="form-grid">
+    <!-- ══════════════════════════════════════ BADGES ═══ -->
+    <section class="ds-section">
+      <div class="ds-section-head">
+        <h2 class="ds-section-title">Badges &amp; Labels</h2>
+        <div class="ds-section-note">Status, role, eyebrow, pills</div>
+      </div>
+      <div class="ds-panel">
+        <div class="ds-subsection">
+          <div class="ds-label">Status</div>
+          <div class="flex gap-2" style="margin-bottom:var(--eb-space-4);">
+            <span class="badge badge-done">Done</span>
+            <span class="badge badge-planned">Planned</span>
+            <span class="badge badge-missed">Missed</span>
+            <span class="badge badge-pending">Pending</span>
+          </div>
+          <div class="ds-label">Roles</div>
+          <div class="flex gap-2" style="margin-bottom:var(--eb-space-4);">
+            <span class="badge badge-coach">Coach</span>
+            <span class="badge badge-athlete">Athlete</span>
+          </div>
+          <div class="ds-label">Eyebrow pill</div>
+          <div class="flex gap-3" style="margin-bottom:var(--eb-space-4);">
+            <div class="hero-eyebrow"><span class="hero-eyebrow-dot"></span>Endurance training platform</div>
+          </div>
+          <div class="ds-label">Section label</div>
+          <div class="flex gap-4" style="margin-bottom:var(--eb-space-4);">
+            <div class="lp-label">Funkce</div>
+            <div class="lp-label">Jak funguje</div>
+            <div class="lp-label">Pro koho</div>
+          </div>
+          <div class="ds-label">Hero pills</div>
+          <div class="flex gap-2">
+            <span class="hero-pill">Měsíční plánování</span>
+            <span class="hero-pill">Plán vs realita</span>
+            <span class="hero-pill">Trenér + sportovec</span>
+            <span class="hero-pill">Garmin Connect</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════ FORMS ═══ -->
+    <section class="ds-section">
+      <div class="ds-section-head">
+        <h2 class="ds-section-title">Form Controls</h2>
+        <div class="ds-section-note">Lime focus ring, 40px height</div>
+      </div>
+      <div class="ds-panel">
+        <div class="grid-3">
           <div class="field">
-            <label>Název tréninku</label>
+            <label class="field-label">Název tréninku</label>
             <input class="input" type="text" value="Long run s progresí">
           </div>
           <div class="field">
-            <label>Typ</label>
-            <select class="select">
-              <option>Tempo</option>
-            </select>
+            <label class="field-label">Typ</label>
+            <select class="select"><option>Long Run</option><option>Tempo</option><option>Intervals</option></select>
           </div>
           <div class="field">
-            <label>Objem</label>
-            <input class="input" type="text" value="24 km">
-          </div>
-        </div>
-
-        <h3 style="margin-top:24px;">Segments, Toggles, States</h3>
-        <div class="segmented">
-          <button class="segment is-active">Měsíc</button>
-          <button class="segment">Týden</button>
-          <button class="segment">Den</button>
-        </div>
-        <div class="switch-row" style="margin-top:16px;">
-          <div class="checkbox">
-            <span class="checkbox-box"></span>
-            <span>Označit jako splněné</span>
-          </div>
-          <div class="switch is-on" aria-hidden="true"></div>
-          <span style="color:var(--text-muted);">Automatický import Garmin</span>
-        </div>
-
-        <h3 style="margin-top:24px;">Chips & Status</h3>
-        <div class="chip-row">
-          <span class="chip chip-accent">Planned</span>
-          <span class="chip chip-warning">Pending Import</span>
-          <span class="chip chip-danger">Missed</span>
-          <span class="chip">Coach</span>
-          <span class="chip">Intervals</span>
-        </div>
-      </div>
-    </section>
-
-    <section class="section">
-      <div class="section-heading">
-        <h2>Dashboard Blocks</h2>
-        <p>Metriky mají být stručné, prioritizované a dobře čitelné i při rychlém průchodu. Jedna karta, jeden význam.</p>
-      </div>
-      <div class="panel surface">
-        <div class="cards-grid">
-          <article class="stat-card">
-            <div>
-              <div class="eyebrow">Akutní zátěž</div>
-              <div class="big">648</div>
-            </div>
-            <div>
-              <div class="trend">+8.4 % proti minulému týdnu</div>
-              <div class="footnote">Růst je stále v bezpečném rozmezí.</div>
-            </div>
-          </article>
-          <article class="stat-card">
-            <div>
-              <div class="eyebrow">Dlouhý běh</div>
-              <div class="big">30 km</div>
-            </div>
-            <div>
-              <div class="trend" style="color:var(--info);">Neděle 08:00</div>
-              <div class="footnote">Posledních 6 km v maratonském tempu.</div>
-            </div>
-          </article>
-          <article class="stat-card">
-            <div>
-              <div class="eyebrow">Recovery index</div>
-              <div class="big">72 %</div>
-            </div>
-            <div>
-              <div class="trend" style="color:var(--warning);">Potřeba hlídat spánek</div>
-              <div class="footnote">Poslední dva dny nižší readiness.</div>
-            </div>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <section class="section">
-      <div class="section-heading">
-        <h2>Data Views</h2>
-        <p>Tabulky a scrollovatelné panely mají být datově silné, ale ne přeplněné. Hover, sticky rytmus a sekundární text musí zůstat nenápadné.</p>
-      </div>
-      <div class="layout-grid">
-        <div class="panel surface table-shell">
-          <h3>Týdenní plán</h3>
-          <table>
-            <thead>
-              <tr>
-                <th>Den</th>
-                <th>Trénink</th>
-                <th>Objem</th>
-                <th>Stav</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>Pondělí</td>
-                <td>Recovery jog</td>
-                <td>10 km</td>
-                <td><span class="chip chip-accent">Done</span></td>
-              </tr>
-              <tr>
-                <td>Úterý</td>
-                <td>6× 1 km @ threshold</td>
-                <td>16 km</td>
-                <td><span class="chip chip-warning">Pending</span></td>
-              </tr>
-              <tr>
-                <td>Čtvrtek</td>
-                <td>Tempo blocks</td>
-                <td>18 km</td>
-                <td><span class="chip">Planned</span></td>
-              </tr>
-              <tr>
-                <td>Neděle</td>
-                <td>Long run</td>
-                <td>30 km</td>
-                <td><span class="chip">Planned</span></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <div class="panel surface">
-          <h3>Scroll Panel</h3>
-          <div class="scroll-shell">
-            <div class="activity-item">
-              <strong>Garmin import dokončen</strong>
-              <span style="color:var(--text-muted);">Aktivita spárována s úterním intervalovým tréninkem.</span>
-            </div>
-            <div class="activity-item">
-              <strong>Coach note</strong>
-              <span style="color:var(--text-muted);">Příští týden nech první tempový blok konzervativnější.</span>
-            </div>
-            <div class="activity-item">
-              <strong>Detected mismatch</strong>
-              <span style="color:var(--text-muted);">Skutečný objem je o 2.1 km vyšší než plán.</span>
-            </div>
-            <div class="activity-item">
-              <strong>Recovery warning</strong>
-              <span style="color:var(--text-muted);">Noční tep je 3 dny nad osobním baseline.</span>
-            </div>
-            <div class="activity-item">
-              <strong>Upcoming race block</strong>
-              <span style="color:var(--text-muted);">Za 18 dní začíná taper. Zkontroluj čtvrteční intenzitu.</span>
-            </div>
-            <div class="activity-item">
-              <strong>Manual note</strong>
-              <span style="color:var(--text-muted);">Subjektivní únava po práci, ale nohy bez ztuhlosti.</span>
-            </div>
+            <label class="field-label">Plánovaný objem</label>
+            <input class="input" type="text" placeholder="např. 28 km">
           </div>
         </div>
       </div>
     </section>
 
-    <section class="section">
-      <div class="section-heading">
-        <h2>Feedback & Overlay</h2>
-        <p>Notifikace a modaly zůstávají klidné. Pouze obsah je důležitý, ne efektní gesto.</p>
+    <!-- ══════════════════════════════════════ METRIC CARDS ═══ -->
+    <section class="ds-section">
+      <div class="ds-section-head">
+        <h2 class="ds-section-title">Metric Cards</h2>
+        <div class="ds-section-note">Mono values, label above, optional delta</div>
       </div>
-      <div class="panel surface">
-        <div class="toast-row">
-          <div class="toast toast-success">
-            <strong>Plán uložen</strong>
-            <div>Čtvrteční tempo bylo aktualizováno a propsáno do týdenního souhrnu.</div>
+      <div class="grid-3">
+        <div class="metric-card">
+          <div class="metric-label">Týdenní objem</div>
+          <div class="metric-value" style="color:var(--eb-text);">82 km</div>
+          <div class="metric-delta up">+12 % vs minulý týden</div>
+          <div class="metric-note">Rozloženo do 6 dní</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Akutní zátěž</div>
+          <div class="metric-value" style="color:var(--eb-text);">648</div>
+          <div class="metric-delta up">+8.4 %</div>
+          <div class="metric-note">Bezpečné rozmezí</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Dlouhý běh</div>
+          <div class="metric-value" style="color:var(--eb-blue);">30 km</div>
+          <div class="metric-delta" style="color:var(--eb-blue);">Neděle 08:00</div>
+          <div class="metric-note">Posledních 6 km v MT</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════ TABLE ═══ -->
+    <section class="ds-section">
+      <div class="ds-section-head">
+        <h2 class="ds-section-title">Table</h2>
+        <div class="ds-section-note">Mono numerics, subtle row hover</div>
+      </div>
+      <div class="ds-panel" style="padding:0;overflow:hidden;">
+        <table class="eb-table">
+          <thead>
+            <tr>
+              <th>Den</th>
+              <th>Trénink</th>
+              <th>Objem</th>
+              <th>Tempo</th>
+              <th>Stav</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Pondělí</td>
+              <td>Recovery jog</td>
+              <td class="mono">10.2 km</td>
+              <td class="mono">5:38 /km</td>
+              <td><span class="badge badge-done">Done</span></td>
+            </tr>
+            <tr>
+              <td>Úterý</td>
+              <td>6× 1 km @ threshold</td>
+              <td class="mono">16.0 km</td>
+              <td class="mono">4:52 /km</td>
+              <td><span class="badge badge-done">Done</span></td>
+            </tr>
+            <tr>
+              <td>Středa</td>
+              <td>Odpočinek</td>
+              <td class="mono">—</td>
+              <td class="mono">—</td>
+              <td style="color:var(--eb-text-muted);font-size:12px;">Rest</td>
+            </tr>
+            <tr>
+              <td>Čtvrtek</td>
+              <td>Tempo 4× 2 km</td>
+              <td class="mono">18.5 km</td>
+              <td class="mono">4:28 /km</td>
+              <td><span class="badge badge-planned">Planned</span></td>
+            </tr>
+            <tr>
+              <td>Neděle</td>
+              <td>Long run</td>
+              <td class="mono">30.0 km</td>
+              <td class="mono">5:12 /km</td>
+              <td><span class="badge badge-planned">Planned</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════ HERO SIMULATION ═══ -->
+    <section class="ds-section">
+      <div class="ds-section-head">
+        <h2 class="ds-section-title">Hero Section</h2>
+        <div class="ds-section-note">Landing page two-column hero</div>
+      </div>
+      <div class="ds-panel" style="padding:var(--eb-space-10);background:var(--eb-bg);border-radius:var(--eb-radius-xl);position:relative;overflow:hidden;">
+        <div style="position:absolute;inset:0;background:radial-gradient(circle at top right,rgba(200,255,0,.04),transparent 50%),radial-gradient(circle at bottom left,rgba(56,189,248,.03),transparent 50%);pointer-events:none;"></div>
+        <div class="hero-grid" style="position:relative;">
+          <!-- Left -->
+          <div>
+            <div class="hero-eyebrow"><span class="hero-eyebrow-dot"></span>Vytrvalostní trénink</div>
+            <h2 class="hero-h1">Měj plán, realitu i sportovce <em>pod kontrolou.</em></h2>
+            <p class="hero-sub">EnduroBuddy spojuje měsíční tréninkové plány, splněné aktivity a spolupráci trenéra se sportovcem do jednoho moderního rozhraní.</p>
+            <div class="flex gap-3" style="margin-bottom:var(--eb-space-5);">
+              <a class="btn btn-primary btn-lg btn-pill" href="#">Vyzkoušet zdarma</a>
+              <a class="btn btn-ghost btn-lg" href="#">Jak to funguje →</a>
+            </div>
+            <div class="hero-pills">
+              <span class="hero-pill">Měsíční plánování</span>
+              <span class="hero-pill">Plán vs realita</span>
+              <span class="hero-pill">Trenér + sportovec</span>
+            </div>
           </div>
-          <div class="toast toast-warning">
-            <strong>Čeká na potvrzení</strong>
-            <div>Jedna aktivita se nepodařila automaticky spárovat s plánem.</div>
+          <!-- Right: dashboard mockup -->
+          <div style="position:relative;">
+            <div class="dash-mock">
+              <div class="dash-chrome">
+                <span class="chrome-dot" style="background:#f43f5e;"></span>
+                <span class="chrome-dot" style="background:#f59e0b;"></span>
+                <span class="chrome-dot" style="background:#c8ff00;"></span>
+                <span class="dash-chrome-label">Tréninkový plán</span>
+              </div>
+              <div class="dash-body">
+                <div class="ds-label" style="margin-bottom:8px;">Týden 14 &middot; 1.–7. dubna</div>
+                <div class="week-grid">
+                  <div class="day done"><div class="day-name">Po</div><div class="day-icon">🏃</div><div class="day-val">12 km</div></div>
+                  <div class="day done"><div class="day-name">Út</div><div class="day-icon">🏃</div><div class="day-val">16 km</div></div>
+                  <div class="day rest"><div class="day-name">St</div><div class="day-icon">—</div><div class="day-val">rest</div></div>
+                  <div class="day done"><div class="day-name">Čt</div><div class="day-icon">🚴</div><div class="day-val">45 km</div></div>
+                  <div class="day plan"><div class="day-name">Pá</div><div class="day-icon">🏃</div><div class="day-val">10 km</div></div>
+                  <div class="day rest"><div class="day-name">So</div><div class="day-icon">—</div><div class="day-val">rest</div></div>
+                  <div class="day plan"><div class="day-name">Ne</div><div class="day-icon">🏃</div><div class="day-val">28 km</div></div>
+                </div>
+                <div class="activity-row">
+                  <div class="activity-icon run">🏃</div>
+                  <div class="activity-info"><div class="activity-name">Threshold 6× 1 km</div><div class="activity-meta">16.2 km · 4:52 /km · 1h 18m</div></div>
+                  <span class="badge badge-done">Done</span>
+                </div>
+                <div class="activity-row">
+                  <div class="activity-icon bike">🚴</div>
+                  <div class="activity-info"><div class="activity-name">Endurance Z2 ride</div><div class="activity-meta">44.8 km · 26.4 km/h · 1h 42m</div></div>
+                  <span class="badge badge-done">Done</span>
+                </div>
+              </div>
+            </div>
+            <div class="float-card">
+              <div class="float-label">Objem</div>
+              <div class="float-value">54 km</div>
+              <div class="float-sub">3 / 5 splněno</div>
+            </div>
           </div>
         </div>
+      </div>
+    </section>
 
-        <div style="margin-top:22px;" class="modal-shell">
+    <!-- ══════════════════════════════ FEATURE CARDS ═══ -->
+    <section class="ds-section">
+      <div class="ds-section-head">
+        <h2 class="ds-section-title">Feature Cards</h2>
+        <div class="ds-section-note">3×2 grid, icon + title + copy</div>
+      </div>
+      <div class="grid-3">
+        <div class="card card-interactive"><div class="card-icon card-icon-lime">📅</div><div class="card-title">Měsíční plánování</div><p class="card-copy">Připrav plán pro každého sportovce na celý měsíc dopředu.</p></div>
+        <div class="card card-interactive"><div class="card-icon card-icon-lime">✓</div><div class="card-title">Plán vs. realita</div><p class="card-copy">Porovnej co bylo naplánováno s tím, co sportovec absolvoval.</p></div>
+        <div class="card card-interactive"><div class="card-icon card-icon-blue">⚡</div><div class="card-title">Garmin Connect</div><p class="card-copy">Synchronizuj aktivity přímo z Garmin účtu automaticky.</p></div>
+        <div class="card card-interactive"><div class="card-icon card-icon-blue">📁</div><div class="card-title">FIT import</div><p class="card-copy">Importuj soubory z libovolného GPS zařízení.</p></div>
+        <div class="card card-interactive"><div class="card-icon card-icon-lime">👥</div><div class="card-title">Tréninkové skupiny</div><p class="card-copy">Organizuj sportovce do skupin a sdílej plány hromadně.</p></div>
+        <div class="card card-interactive"><div class="card-icon card-icon-lime">👁</div><div class="card-title">Coach přehled</div><p class="card-copy">Sleduj všechny svěřence na jednom místě.</p></div>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════ STEPS + ROLES ═══ -->
+    <section class="ds-section">
+      <div class="ds-section-head">
+        <h2 class="ds-section-title">Steps &amp; Role Cards</h2>
+        <div class="ds-section-note">How it works + Coach / Athlete</div>
+      </div>
+      <div class="grid-2">
+        <!-- Steps -->
+        <div class="ds-panel">
+          <div class="lp-label">Jak to funguje</div>
+          <div class="lp-heading">3 kroky</div>
+          <div class="step"><div class="step-num">1</div><div><div class="step-title">Připrav měsíční plán</div><p class="step-copy">Vytvoř tréninkový plán pro sportovce nebo skupinu.</p></div></div>
+          <div class="step"><div class="step-num">2</div><div><div class="step-title">Sdílej se sportovci</div><p class="step-copy">Sportovci vidí svůj plán okamžitě po připojení přes coach code.</p></div></div>
+          <div class="step"><div class="step-num">3</div><div><div class="step-title">Sleduj plnění</div><p class="step-copy">Sportovci zapisují tréninky a importují aktivity. Vidíš vše v reálném čase.</p></div></div>
+        </div>
+        <!-- Roles -->
+        <div style="display:grid;gap:var(--eb-space-3);">
+          <div class="role-card coach">
+            <span class="badge badge-coach" style="margin-bottom:var(--eb-space-3);">Coach</span>
+            <div class="role-heading">Pro trenéry</div>
+            <ul class="role-list"><li>Připravuje měsíční plány</li><li>Spravuje více sportovců</li><li>Organizuje skupiny</li><li>Sleduje plnění v přehledu</li></ul>
+          </div>
+          <div class="role-card athlete">
+            <span class="badge badge-athlete" style="margin-bottom:var(--eb-space-3);">Athlete</span>
+            <div class="role-heading">Pro sportovce</div>
+            <ul class="role-list"><li>Vidí svůj plán den po dni</li><li>Zapisuje splněné tréninky</li><li>Importuje aktivity z Garminu</li><li>Páruje plán vs. realitu</li></ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════ MODAL ═══ -->
+    <section class="ds-section">
+      <div class="ds-section-head">
+        <h2 class="ds-section-title">Modal &amp; Toast</h2>
+        <div class="ds-section-note">Overlay + card, stacked toasts</div>
+      </div>
+      <div class="grid-2">
+        <div class="modal-mock">
           <div class="modal-head">
-            <div class="eyebrow">Confirm action</div>
-            <strong style="font-size:1.1rem;">Smazat plánovaný trénink?</strong>
+            <span class="modal-head-title">Přidat trénink</span>
+            <button class="modal-close">✕</button>
           </div>
           <div class="modal-body">
-            Trénink bude odebrán z aktuálního týdne. Historie importovaných aktivit zůstane zachována.
+            <div class="field" style="margin-bottom:var(--eb-space-4);">
+              <label class="field-label">Název</label>
+              <input class="input" type="text" value="Tempo 4× 2 km">
+            </div>
+            <div class="field">
+              <label class="field-label">Poznámky</label>
+              <input class="input" type="text" placeholder="Volitelné poznámky pro sportovce...">
+            </div>
           </div>
           <div class="modal-foot">
-            <button class="btn btn-ghost">Zrušit</button>
-            <button class="btn btn-danger">Smazat</button>
+            <button class="btn btn-ghost btn-sm">Zrušit</button>
+            <button class="btn btn-primary btn-sm">Uložit</button>
+          </div>
+        </div>
+        <div style="display:grid;gap:var(--eb-space-3);">
+          <div class="toast">
+            <div class="toast-dot" style="background:var(--eb-lime);"></div>
+            <div><div class="toast-title">Trénink uložen</div><div class="toast-body">Tempo 4× 2 km byl přidán do pátku.</div></div>
+          </div>
+          <div class="toast">
+            <div class="toast-dot" style="background:var(--eb-blue);"></div>
+            <div><div class="toast-title">Garmin sync</div><div class="toast-body">3 aktivity importovány z Garmin Connect.</div></div>
+          </div>
+          <div class="toast">
+            <div class="toast-dot" style="background:var(--eb-danger);"></div>
+            <div><div class="toast-title">Import selhal</div><div class="toast-body">Soubor activity.fit není platný FIT soubor.</div></div>
           </div>
         </div>
       </div>
     </section>
 
-    <section class="section">
-      <div class="section-heading">
-        <h2>Loading & Light Surface</h2>
-        <p>Součástí systému je i kostra pro loading a světlá varianta plochy pro exportní nebo tiskové kontexty.</p>
+    <!-- ═══════════════════════════ SKELETON ═══ -->
+    <section class="ds-section">
+      <div class="ds-section-head">
+        <h2 class="ds-section-title">Loading States</h2>
+        <div class="ds-section-note">Skeleton shimmer</div>
       </div>
-      <div class="layout-grid">
-        <div class="panel surface">
-          <h3>Skeleton</h3>
-          <div class="skeleton-card">
-            <div class="skeleton skeleton-line large"></div>
-            <div class="skeleton skeleton-line"></div>
-            <div class="skeleton skeleton-line"></div>
-            <div class="skeleton skeleton-line short"></div>
+      <div class="grid-3">
+        <div class="skeleton-card">
+          <div class="skeleton skel-line skel-lg"></div>
+          <div class="skeleton skel-line skel-md"></div>
+          <div class="skeleton skel-line"></div>
+          <div class="skeleton skel-line skel-sm"></div>
+        </div>
+        <div class="skeleton-card">
+          <div class="skeleton skel-line skel-lg"></div>
+          <div class="skeleton skel-line skel-md"></div>
+          <div class="skeleton skel-line"></div>
+          <div class="skeleton skel-line skel-sm"></div>
+        </div>
+        <div class="skeleton-card">
+          <div class="skeleton skel-line skel-lg"></div>
+          <div class="skeleton skel-line skel-md"></div>
+          <div class="skeleton skel-line"></div>
+          <div class="skeleton skel-line skel-sm"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════ CTA ═══ -->
+    <section class="ds-section">
+      <div class="ds-section-head">
+        <h2 class="ds-section-title">CTA Block</h2>
+        <div class="ds-section-note">Centered, lime glow, single action</div>
+      </div>
+      <div class="cta-block">
+        <div class="cta-heading">Začni plánovat lépe<br>ještě dnes</div>
+        <p class="cta-sub">Registrace je zdarma. Žádná kreditní karta.</p>
+        <a class="btn btn-primary btn-lg btn-pill" href="#">Začít zdarma →</a>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════ SPACING ═══ -->
+    <section class="ds-section">
+      <div class="ds-section-head">
+        <h2 class="ds-section-title">Spacing &amp; Radius</h2>
+        <div class="ds-section-note">4px base grid</div>
+      </div>
+      <div class="ds-panel">
+        <div class="ds-subsection">
+          <div class="ds-label">Spacing scale (4px grid)</div>
+          <div class="flex gap-3 align-center" style="flex-wrap:wrap;">
+            <div style="display:flex;align-items:center;gap:8px;" title="4px"><div style="width:4px;height:24px;background:var(--eb-lime);border-radius:2px;"></div><span style="font-family:var(--eb-font-mono);font-size:11px;color:var(--eb-text-muted);">4</span></div>
+            <div style="display:flex;align-items:center;gap:8px;" title="8px"><div style="width:8px;height:24px;background:var(--eb-lime);border-radius:2px;"></div><span style="font-family:var(--eb-font-mono);font-size:11px;color:var(--eb-text-muted);">8</span></div>
+            <div style="display:flex;align-items:center;gap:8px;" title="12px"><div style="width:12px;height:24px;background:var(--eb-lime);border-radius:2px;"></div><span style="font-family:var(--eb-font-mono);font-size:11px;color:var(--eb-text-muted);">12</span></div>
+            <div style="display:flex;align-items:center;gap:8px;" title="16px"><div style="width:16px;height:24px;background:var(--eb-lime);border-radius:2px;"></div><span style="font-family:var(--eb-font-mono);font-size:11px;color:var(--eb-text-muted);">16</span></div>
+            <div style="display:flex;align-items:center;gap:8px;" title="24px"><div style="width:24px;height:24px;background:var(--eb-lime);border-radius:2px;"></div><span style="font-family:var(--eb-font-mono);font-size:11px;color:var(--eb-text-muted);">24</span></div>
+            <div style="display:flex;align-items:center;gap:8px;" title="32px"><div style="width:32px;height:24px;background:var(--eb-lime);border-radius:2px;"></div><span style="font-family:var(--eb-font-mono);font-size:11px;color:var(--eb-text-muted);">32</span></div>
+            <div style="display:flex;align-items:center;gap:8px;" title="48px"><div style="width:48px;height:24px;background:var(--eb-lime);border-radius:2px;"></div><span style="font-family:var(--eb-font-mono);font-size:11px;color:var(--eb-text-muted);">48</span></div>
+            <div style="display:flex;align-items:center;gap:8px;" title="64px"><div style="width:64px;height:24px;background:var(--eb-lime);border-radius:2px;"></div><span style="font-family:var(--eb-font-mono);font-size:11px;color:var(--eb-text-muted);">64</span></div>
           </div>
         </div>
-        <div class="light-surface">
-          <div class="eyebrow" style="color:#5f746a;">Light Context</div>
-          <div style="font-size:1.8rem;font-weight:700;margin-bottom:10px;">Printable summary card</div>
-          <p style="margin:0 0 16px;color:#44574f;line-height:1.65;">
-            Světlý mód není primární identita, ale může fungovat pro export, přehled na tisk nebo sdílený report.
-          </p>
-          <button class="btn btn-primary">Export PDF</button>
+        <div class="ds-subsection">
+          <div class="ds-label">Border radius</div>
+          <div class="flex gap-4 align-center">
+            <div style="width:48px;height:48px;border:1px solid var(--eb-lime-border);background:var(--eb-lime-muted);border-radius:6px;display:grid;place-items:center;"><span style="font-family:var(--eb-font-mono);font-size:10px;color:var(--eb-lime);">6</span></div>
+            <div style="width:48px;height:48px;border:1px solid var(--eb-lime-border);background:var(--eb-lime-muted);border-radius:10px;display:grid;place-items:center;"><span style="font-family:var(--eb-font-mono);font-size:10px;color:var(--eb-lime);">10</span></div>
+            <div style="width:48px;height:48px;border:1px solid var(--eb-lime-border);background:var(--eb-lime-muted);border-radius:16px;display:grid;place-items:center;"><span style="font-family:var(--eb-font-mono);font-size:10px;color:var(--eb-lime);">16</span></div>
+            <div style="width:48px;height:48px;border:1px solid var(--eb-lime-border);background:var(--eb-lime-muted);border-radius:24px;display:grid;place-items:center;"><span style="font-family:var(--eb-font-mono);font-size:10px;color:var(--eb-lime);">24</span></div>
+            <div style="width:80px;height:36px;border:1px solid var(--eb-lime-border);background:var(--eb-lime-muted);border-radius:9999px;display:grid;place-items:center;"><span style="font-family:var(--eb-font-mono);font-size:10px;color:var(--eb-lime);">pill</span></div>
+          </div>
         </div>
       </div>
-      <p class="footnote">
-        Pokud není dostupný webfont, preview automaticky spadne na fallback stack pro display i UI vrstvu.
-        Pro skutečné nasazení je můžeme buď self-hostnout přes `@font-face`, nebo ponechat načítání z Google Fonts.
-      </p>
     </section>
+
+    <!-- ═══════════════════════════ MOTION ═══ -->
+    <section class="ds-section" style="margin-bottom:var(--eb-space-16);">
+      <div class="ds-section-head">
+        <h2 class="ds-section-title">Motion</h2>
+        <div class="ds-section-note">Orientation, not decoration</div>
+      </div>
+      <div class="ds-panel">
+        <div class="grid-3">
+          <div style="border:1px solid var(--eb-border-soft);border-radius:var(--eb-radius-md);padding:var(--eb-space-4);">
+            <div class="ds-label">Micro</div>
+            <div style="font-family:var(--eb-font-mono);font-size:13px;color:var(--eb-text-secondary);">120ms ease-out</div>
+            <div style="font-size:12px;color:var(--eb-text-muted);margin-top:4px;">hover, focus, toggle</div>
+          </div>
+          <div style="border:1px solid var(--eb-border-soft);border-radius:var(--eb-radius-md);padding:var(--eb-space-4);">
+            <div class="ds-label">Standard</div>
+            <div style="font-family:var(--eb-font-mono);font-size:13px;color:var(--eb-text-secondary);">180ms ease-out</div>
+            <div style="font-size:12px;color:var(--eb-text-muted);margin-top:4px;">dropdown, card, modal</div>
+          </div>
+          <div style="border:1px solid var(--eb-border-soft);border-radius:var(--eb-radius-md);padding:var(--eb-space-4);">
+            <div class="ds-label">Page</div>
+            <div style="font-family:var(--eb-font-mono);font-size:13px;color:var(--eb-text-secondary);">500ms ease-out</div>
+            <div style="font-size:12px;color:var(--eb-text-muted);margin-top:4px;">scroll reveal, route change</div>
+          </div>
+        </div>
+        <div style="margin-top:var(--eb-space-4);padding:12px 16px;border-radius:var(--eb-radius-md);border:1px solid var(--eb-border-soft);font-size:12px;color:var(--eb-text-muted);">
+          No bounce. No elastic. No energy flash. Motion serves orientation only. Respect prefers-reduced-motion.
+        </div>
+      </div>
+    </section>
+
   </main>
 </body>
 </html>
