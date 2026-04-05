@@ -1,7 +1,21 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" fill="none">
-  <!-- EnduroBuddy Social Avatar — Dark background, lime mark -->
-  <rect width="400" height="400" rx="0" fill="#09090b"/>
-  <rect x="120" y="130" width="56" height="28" rx="14" fill="#c8ff00"/>
-  <rect x="120" y="172" width="98" height="28" rx="14" fill="#c8ff00" opacity="0.35"/>
-  <rect x="120" y="214" width="140" height="28" rx="14" fill="#c8ff00"/>
+  <defs>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="6" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <!-- Background -->
+  <rect width="400" height="400" fill="#09090b"/>
+  <!-- Square container (centered, 240×240) -->
+  <rect x="80" y="80" width="240" height="240" rx="44" stroke="#27272a" stroke-width="6"/>
+  <!-- ECG pulse scaled to 400×400 space, spike breaks top of square -->
+  <polyline
+    points="88,212 128,212 146,188 164,212 180,234 198,60 216,298 232,212 258,168 276,212 312,212"
+    stroke="#c8ff00"
+    stroke-width="11"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    filter="url(#glow)"
+  />
 </svg>
