@@ -1,47 +1,195 @@
-.eb-main {
-  padding: 3rem 0 4rem;
+/* ============================================================
+   EnduroBuddy – About Page Styles
+   ============================================================ */
+
+.eb-about-main {
+  padding: 80px 0 120px;
 }
 
-.eb-card {
-  padding: 40px 32px;
-  border-radius: var(--eb-radius-lg);
-  border: 1px solid var(--eb-line);
-  background: rgba(29, 41, 36, 0.82);
-  box-shadow: var(--eb-shadow-1);
-  display: grid;
-  gap: 1.25rem;
+.eb-about-shell {
+  width: min(860px, calc(100% - 48px));
+  margin-inline: auto;
 }
 
-.eb-kicker {
-  color: var(--eb-accent);
+/* ── Intro hero ─────────────────────────────────────────── */
+.eb-about-intro {
+  margin-bottom: 72px;
+}
+
+.eb-about-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  letter-spacing: 0.12em;
-  font-size: 0.82rem;
+  color: var(--eb-lime);
+  margin-bottom: 16px;
+}
+.eb-about-kicker::before {
+  content: '';
+  display: block;
+  width: 20px;
+  height: 1px;
+  background: var(--eb-lime);
+}
+
+.eb-about-h1 {
+  font-family: var(--eb-font-display);
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 800;
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+  margin: 0 0 20px;
+}
+
+.eb-about-lead {
+  font-size: 1.0625rem;
+  font-weight: 400;
+  color: var(--eb-text-secondary);
+  line-height: 1.7;
+  max-width: 56ch;
+}
+
+/* ── Story section ──────────────────────────────────────── */
+.eb-about-story {
+  margin-bottom: 72px;
+  padding-bottom: 72px;
+  border-bottom: 1px solid var(--eb-border-soft);
+}
+
+.eb-about-h2 {
+  font-family: var(--eb-font-display);
+  font-size: clamp(1.4rem, 3vw, 2rem);
   font-weight: 700;
-  margin-bottom: 0.4rem;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  margin: 0 0 24px;
 }
 
-.eb-title {
-  font-size: clamp(2.6rem, 7vw, 4.4rem);
-  line-height: 0.98;
-  margin: 0;
-}
-
-.eb-copy {
-  max-width: 72ch;
-  margin: 0;
-  color: var(--eb-text-muted);
+.eb-about-story p {
+  font-size: 0.9375rem;
+  color: var(--eb-text-secondary);
   line-height: 1.75;
+  margin-bottom: 16px;
+}
+
+.eb-about-story p:first-of-type {
   font-size: 1rem;
+  color: var(--eb-text);
+  border-left: 2px solid var(--eb-lime);
+  padding-left: 20px;
+  margin-left: -22px;
 }
 
-.eb-list {
+/* ── Mission section ────────────────────────────────────── */
+.eb-about-mission {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+  align-items: start;
+  margin-bottom: 72px;
+  padding-bottom: 72px;
+  border-bottom: 1px solid var(--eb-border-soft);
+}
+
+.eb-about-mission-statement {
+  font-family: var(--eb-font-display);
+  font-size: clamp(1.25rem, 2.5vw, 1.75rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  color: var(--eb-text);
+}
+
+.eb-about-mission-list {
+  list-style: none;
   margin: 0;
-  padding-left: 1.1rem;
-  color: var(--eb-text-muted);
-  line-height: 1.75;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
-.eb-list li + li {
-  margin-top: 0.45rem;
+.eb-about-mission-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 0.9375rem;
+  color: var(--eb-text-secondary);
+  line-height: 1.5;
+}
+
+.eb-about-mission-list li::before {
+  content: '→';
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.eb-about-mission-list li.coach::before { color: var(--eb-lime); }
+.eb-about-mission-list li.athlete::before { color: var(--eb-blue); }
+
+/* ── Founder card ───────────────────────────────────────── */
+.eb-about-founder {
+  background: var(--eb-surface);
+  border: 1px solid var(--eb-border);
+  border-radius: var(--eb-radius-md);
+  padding: 32px;
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.eb-about-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--eb-surface-hover);
+  border: 1px solid var(--eb-border);
+  display: grid;
+  place-items: center;
+  font-family: var(--eb-font-display);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--eb-lime);
+  flex-shrink: 0;
+}
+
+.eb-about-founder-name {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--eb-text);
+  margin-bottom: 2px;
+}
+
+.eb-about-founder-role {
+  font-size: 0.8125rem;
+  color: var(--eb-text-muted);
+  margin-bottom: 12px;
+}
+
+.eb-about-founder-quote {
+  font-size: 0.9375rem;
+  font-style: italic;
+  color: var(--eb-text-secondary);
+  line-height: 1.65;
+  margin: 0;
+}
+
+/* ── Responsive ─────────────────────────────────────────── */
+@media (max-width: 720px) {
+  .eb-about-mission {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+  .eb-about-story p:first-of-type {
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .eb-about-main { padding: 48px 0 80px; }
+  .eb-about-founder { flex-direction: column; }
 }
