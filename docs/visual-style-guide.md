@@ -19,13 +19,13 @@ EnduroBuddy je **čistý tréninkový workspace** s edge a personalitou.
 
 ---
 
-## Logo — Signal Stack
+## Logo — Stride Mark
 
-Tři horizontální obdélníky s rounded konci, rostoucí délky, zarovnané vlevo. Prostřední má sníženou opacity.
+Tři horizontální pruhy rostoucí délky, nakloněné 6° dopředu. Prostřední má sníženou opacity.
 
 Reprezentuje:
-- **Signál** — datový motiv
-- **Progrese** — rostoucí objem
+- **Pohyb vpřed** — náklon symbolizuje stride
+- **Progrese** — rostoucí objem tréninkové zátěže
 - **Vizuální rytmus** — tři úrovně informace
 
 ### Varianty
@@ -86,9 +86,11 @@ Token               Hex         Použití
 ```
 --eb-lime           #c8ff00     Primární CTA, done, coach, klíčové highlights
 --eb-lime-hover     #d4ff33     Hover lime
---eb-lime-muted     rgba(200,255,0,.10)   Lime pozadí
+--eb-lime-muted     rgba(200,255,0,.12)   Lime pozadí
+--eb-lime-border    rgba(200,255,0,.20)   Lime border (active pills, hover btn)
 --eb-blue           #38bdf8     Info, planned, athlete, sekundární akce
---eb-blue-muted     rgba(56,189,248,.10)  Blue pozadí
+--eb-blue-muted     rgba(56,189,248,.12)  Blue pozadí
+--eb-blue-border    rgba(56,189,248,.20)  Blue border
 ```
 
 ### Status
@@ -311,6 +313,37 @@ Vždy respektovat. Při reduced-motion vypnout všechny animace.
 - Focus ring: 2px lime outline + 2px offset, vždy viditelný
 - Hit area: minimum 40×40px
 - Status nikdy jen barvou — vždy s textem nebo ikonou
+
+---
+
+## CSS architektura — public sekce
+
+Tokeny a sdílené styly žijí v `public-base.css`; page-specific styly v samostatných souborech.
+
+| Soubor | Obsah |
+|--------|-------|
+| `backend/static/css/public-base.css` | `:root` tokeny, body reset, `.eb-public-shell`, `.eb-topbar`, `.eb-footer` |
+| `backend/static/css/public-home.css` | Landing page — `--lp-*` aliasy + všechny sekce (`lp-` prefix) |
+| `backend/static/css/public-about.css` | About page — 4 sekce (`eb-about-*` prefix) |
+| `backend/static/css/public-legal.css` | Privacy + Terms (`eb-legal-*` prefix) |
+
+### Shell a topbar
+
+- `.eb-public-shell` — `min(1280px, calc(100% - 48px))`, `margin-inline: auto`
+- `.eb-topbar` — sticky, `rgba(17,17,19,.92)`, `backdrop-filter: blur(12px)`
+- `.eb-topbar-inner` — `position: relative`; nav je `position: absolute; left: 50%; transform: translateX(-50%)`
+- Logo: `eb-logo-full.svg` na desktopu, `eb-logo-compact.svg` pod 768px
+- Nav skryt na mobilech pod 768px (hamburger menu zatím není)
+
+### Bloky k přepsání v page templates
+
+```django
+{% block page_styles %}   {# <link> na page CSS #}
+{% block topbar_links %}  {# vlastní nav linky (home page overriduje na anchory) #}
+{% block topbar_actions %} {# login btn nebo lime CTA #}
+{% block content %}       {# main obsah stránky #}
+{% block footer %}        {# footer (standardní, přepisovat jen výjimečně) #}
+```
 
 ---
 
