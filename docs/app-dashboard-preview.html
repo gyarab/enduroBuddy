@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EnduroBuddy — Dashboard Svěřenec (preview)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --eb-bg: #09090b;
+      --eb-bg-elevated: #111113;
+      --eb-surface: #18181b;
+      --eb-surface-hover: #1f1f23;
+      --eb-border: #27272a;
+      --eb-border-soft: #1f1f23;
+      --eb-text: #fafafa;
+      --eb-text-secondary: #a1a1aa;
+      --eb-text-muted: #71717a;
+      --eb-lime: #c8ff00;
+      --eb-lime-muted: rgba(200,255,0,.08);
+      --eb-lime-border: rgba(200,255,0,.18);
+      --eb-blue: #38bdf8;
+      --eb-blue-muted: rgba(56,189,248,.08);
+      --eb-blue-border: rgba(56,189,248,.18);
+      --eb-danger: #f43f5e;
+      --eb-danger-muted: rgba(244,63,94,.08);
+      --eb-danger-border: rgba(244,63,94,.18);
+      --eb-warning: #f59e0b;
+      --eb-radius-sm: 6px;
+      --eb-radius-md: 10px;
+      --eb-radius-lg: 16px;
+      --eb-radius-full: 9999px;
+      --eb-shadow-lg: 0 12px 40px rgba(0,0,0,.5);
+      --eb-glow-lime: 0 0 20px rgba(200,255,0,.15);
+      --eb-font-display: 'Syne', system-ui, sans-serif;
+      --eb-font-body: 'Inter', 'Segoe UI', system-ui, sans-serif;
+      --eb-font-mono: 'JetBrains Mono', 'Cascadia Code', monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { color-scheme: dark; }
+
+    body {
+      font-family: var(--eb-font-body);
+      background: var(--eb-bg);
+      color: var(--eb-text);
+      min-height: 100vh;
+      font-size: 15px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ─── PREVIEW BANNER ─── */
+    .preview-banner {
+      background: rgba(200,255,0,.07);
+      border-bottom: 1px solid rgba(200,255,0,.12);
+      padding: 7px 24px;
+      font-size: 11px;
+      color: var(--eb-lime);
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      text-align: center;
+    }
+
+    /* ─── TOPNAV ─── */
+    .topnav {
+      position: sticky; top: 0; z-index: 100;
+      height: 56px;
+      background: var(--eb-bg-elevated);
+      border-bottom: 1px solid var(--eb-border);
+      display: flex; align-items: center;
+      padding: 0 24px;
+      backdrop-filter: blur(12px);
+    }
+    .topnav-logo {
+      display: flex; align-items: center; gap: 9px;
+      text-decoration: none; margin-right: auto;
+    }
+    .topnav-logo svg { height: 24px; width: auto; }
+    .topnav-logo-text {
+      font-family: var(--eb-font-display);
+      font-size: 15px; font-weight: 700;
+      color: var(--eb-text); letter-spacing: -0.01em;
+    }
+    .month-nav {
+      display: flex; align-items: center; gap: 4px;
+      position: absolute; left: 50%; transform: translateX(-50%);
+    }
+    .month-nav-btn {
+      width: 28px; height: 28px; background: transparent; border: none;
+      border-radius: var(--eb-radius-sm); color: var(--eb-text-muted);
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: background 150ms, color 150ms;
+    }
+    .month-nav-btn:hover { background: var(--eb-border); color: var(--eb-text); }
+    .month-nav-label {
+      font-weight: 700; font-size: 14px; color: var(--eb-text);
+      min-width: 130px; text-align: center; letter-spacing: -0.01em;
+    }
+    .month-nav-label span { font-weight: 400; font-size: 13px; color: var(--eb-text-muted); margin-left: 4px; }
+    .topnav-right { display: flex; align-items: center; gap: 8px; }
+    .topnav-icon-btn {
+      width: 36px; height: 36px; background: transparent; border: none;
+      border-radius: var(--eb-radius-md); color: var(--eb-text-secondary);
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      position: relative; transition: background 150ms, color 150ms;
+    }
+    .topnav-icon-btn:hover { background: var(--eb-border); color: var(--eb-text); }
+    .notif-badge {
+      position: absolute; top: 4px; right: 4px;
+      width: 16px; height: 16px;
+      background: var(--eb-lime); color: #09090b;
+      border-radius: 50%; font-size: 9px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .avatar {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: var(--eb-border); color: var(--eb-text);
+      font-size: 12px; font-weight: 600;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; border: 1.5px solid transparent;
+      transition: border-color 150ms;
+    }
+    .avatar:hover { border-color: var(--eb-lime); }
+
+    /* ─── MAIN ─── */
+    .main { max-width: 1200px; margin: 0 auto; padding: 24px 24px 48px; }
+
+    /* ─── MONTH SUMMARY ─── */
+    .month-summary {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 10px; margin-bottom: 24px;
+    }
+    .stat-card {
+      background: var(--eb-surface);
+      border: 1px solid var(--eb-border-soft);
+      border-radius: var(--eb-radius-md);
+      padding: 14px 18px;
+    }
+    .stat-label {
+      font-size: 11px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.06em;
+      color: var(--eb-text-muted); margin-bottom: 6px;
+    }
+    .stat-value {
+      font-family: var(--eb-font-mono);
+      font-size: 20px; font-weight: 500;
+      color: var(--eb-text); line-height: 1.1; margin-bottom: 3px;
+    }
+    .stat-value.lime { color: var(--eb-lime); }
+    .stat-value.warning { color: var(--eb-warning); }
+    .stat-sub { font-size: 12px; color: var(--eb-text-muted); }
+
+    /* ─── WEEK BLOCK ─── */
+    .week-block { margin-bottom: 20px; }
+
+    .week-header {
+      display: flex; align-items: center; gap: 12px;
+      padding: 0 0 10px 0;
+    }
+    .week-label {
+      font-family: var(--eb-font-display);
+      font-size: 13px; font-weight: 700;
+      color: var(--eb-text-muted);
+      text-transform: uppercase; letter-spacing: 0.04em;
+    }
+    .week-label.current { color: var(--eb-lime); }
+    .week-dates { font-size: 13px; color: var(--eb-text-muted); }
+    .week-totals { margin-left: auto; display: flex; gap: 14px; }
+    .week-total-item {
+      font-family: var(--eb-font-mono);
+      font-size: 12px; color: var(--eb-text-secondary);
+    }
+    .week-total-item.lime { color: var(--eb-lime); }
+    .week-total-label {
+      font-size: 10px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.06em;
+      color: var(--eb-text-muted); margin-right: 5px;
+    }
+
+    /* ─── SPLIT TABLES ─── */
+    .week-tables {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .table-panel {
+      background: var(--eb-surface);
+      border: 1px solid var(--eb-border);
+      border-radius: var(--eb-radius-md);
+      overflow: hidden;
+    }
+    .table-panel-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 16px;
+      background: var(--eb-bg-elevated);
+      border-bottom: 1px solid var(--eb-border);
+    }
+    .table-panel-title {
+      font-size: 11px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.07em;
+      color: var(--eb-text-muted);
+    }
+    .table-panel-title.lime { color: var(--eb-lime); }
+    .table-panel-title.blue { color: var(--eb-blue); }
+    .table-panel-action {
+      width: 26px; height: 26px; background: transparent; border: none;
+      border-radius: var(--eb-radius-sm); color: var(--eb-text-muted);
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: background 150ms, color 150ms;
+    }
+    .table-panel-action:hover { background: var(--eb-border); color: var(--eb-text); }
+
+    /* ─── TABLE ─── */
+    table { width: 100%; border-collapse: collapse; }
+
+    thead th {
+      padding: 7px 10px;
+      font-size: 10px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.07em;
+      color: var(--eb-text-muted);
+      border-bottom: 1px solid var(--eb-border-soft);
+      white-space: nowrap;
+      text-align: left;
+    }
+    thead th:first-child { padding-left: 16px; }
+    thead th:last-child { padding-right: 16px; }
+
+    tbody tr {
+      border-bottom: 1px solid var(--eb-border-soft);
+      transition: background 120ms ease-out;
+      cursor: pointer;
+    }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: var(--eb-surface-hover); }
+    tbody tr.no-hover { cursor: default; }
+    tbody tr.no-hover:hover { background: transparent; }
+
+    tbody td {
+      padding: 9px 10px;
+      font-size: 13px;
+      vertical-align: middle;
+    }
+    tbody td:first-child { padding-left: 16px; }
+    tbody td:last-child { padding-right: 16px; }
+
+    /* Planned table row states */
+    tbody tr.row-planned { border-left: 2px solid var(--eb-blue); }
+    tbody tr.row-done    { border-left: 2px solid var(--eb-lime); }
+    tbody tr.row-missed  { border-left: 2px solid rgba(244,63,94,.35); }
+    tbody tr.row-rest    { border-left: 2px solid transparent; }
+
+    .cell-day {
+      font-size: 11px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.05em;
+      color: var(--eb-text-muted); white-space: nowrap;
+    }
+    .cell-date {
+      font-size: 12px; color: var(--eb-text-muted); white-space: nowrap;
+    }
+    .cell-training {
+      color: var(--eb-text); font-size: 13px; font-weight: 500;
+      line-height: 1.35;
+    }
+    .cell-training.muted { color: var(--eb-text-muted); font-weight: 400; }
+    .cell-training-note {
+      font-size: 11px; color: var(--eb-text-muted);
+      font-weight: 400; margin-top: 1px; line-height: 1.3;
+    }
+    .cell-type {
+      font-size: 11px; font-weight: 600;
+      color: var(--eb-text-secondary);
+    }
+    .cell-mono {
+      font-family: var(--eb-font-mono);
+      font-size: 12px; color: var(--eb-text-secondary);
+      white-space: nowrap;
+    }
+    .cell-mono.lime { color: var(--eb-lime); }
+    .cell-mono.muted { color: var(--eb-text-muted); }
+
+    /* inline edit contenteditable */
+    .eb-inline-edit {
+      outline: none;
+      border-radius: 4px;
+      padding: 2px 4px;
+      margin: -2px -4px;
+      min-width: 40px;
+      cursor: text;
+      transition: background 120ms, box-shadow 120ms;
+      display: inline-block;
+    }
+    .eb-inline-edit:hover { background: rgba(255,255,255,.05); }
+    .eb-inline-edit:focus {
+      background: rgba(200,255,0,.08);
+      box-shadow: 0 0 0 1px rgba(200,255,0,.35);
+    }
+
+    /* completed inline fields */
+    .completed-field {
+      font-family: var(--eb-font-mono);
+      font-size: 12px; color: var(--eb-lime);
+      outline: none; border-radius: 4px;
+      padding: 2px 4px; margin: -2px -4px;
+      min-width: 36px; display: inline-block;
+      transition: background 120ms, box-shadow 120ms;
+    }
+    .completed-field:hover { background: rgba(200,255,0,.07); }
+    .completed-field:focus {
+      background: rgba(200,255,0,.10);
+      box-shadow: 0 0 0 1px rgba(200,255,0,.4);
+    }
+    .completed-field.empty { color: var(--eb-text-muted); }
+
+    /* tfoot */
+    tfoot td, tfoot th {
+      padding: 8px 10px;
+      font-size: 11px; font-weight: 600;
+      background: var(--eb-bg-elevated);
+      border-top: 1px solid var(--eb-border);
+      color: var(--eb-text-secondary);
+    }
+    tfoot td:first-child, tfoot th:first-child { padding-left: 16px; }
+    tfoot td:last-child, tfoot th:last-child { padding-right: 16px; }
+    tfoot .total-lime {
+      font-family: var(--eb-font-mono);
+      color: var(--eb-lime); font-size: 12px;
+    }
+
+    /* ─── BADGE ─── */
+    .badge {
+      display: inline-flex; align-items: center;
+      height: 18px; padding: 0 7px;
+      border-radius: var(--eb-radius-full);
+      font-size: 10px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.04em;
+      white-space: nowrap; line-height: 1;
+    }
+    .badge-done    { color: var(--eb-lime);   background: var(--eb-lime-muted);   border: 1px solid var(--eb-lime-border); }
+    .badge-planned { color: var(--eb-blue);   background: var(--eb-blue-muted);   border: 1px solid var(--eb-blue-border); }
+    .badge-missed  { color: #fda4af;           background: var(--eb-danger-muted); border: 1px solid var(--eb-danger-border); }
+
+    /* empty state */
+    .table-empty {
+      padding: 22px 16px;
+      font-size: 12px; color: var(--eb-text-muted);
+      text-align: center;
+    }
+
+    /* ─── NOTIFICATION DROPDOWN ─── */
+    .notif-dropdown {
+      position: fixed; top: 60px; right: 24px;
+      width: 300px;
+      background: var(--eb-surface);
+      border: 1px solid var(--eb-border);
+      border-radius: var(--eb-radius-md);
+      box-shadow: var(--eb-shadow-lg);
+      z-index: 200; overflow: hidden;
+    }
+    .notif-dd-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--eb-border);
+    }
+    .notif-dd-title {
+      font-size: 11px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.06em;
+      color: var(--eb-text-muted);
+    }
+    .notif-dd-all { font-size: 12px; color: var(--eb-blue); cursor: pointer; background: none; border: none; }
+    .notif-item {
+      padding: 10px 14px 10px 32px;
+      border-bottom: 1px solid var(--eb-border-soft);
+      position: relative; cursor: pointer;
+      transition: background 120ms;
+    }
+    .notif-item:last-child { border-bottom: none; }
+    .notif-item:hover { background: var(--eb-surface-hover); }
+    .notif-item.unread { background: rgba(200,255,0,.025); }
+    .notif-dot {
+      position: absolute; left: 12px; top: 14px;
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--eb-lime);
+    }
+    .notif-text { font-size: 13px; color: var(--eb-text); line-height: 1.4; }
+    .notif-meta { font-size: 11px; color: var(--eb-text-muted); margin-top: 2px; }
+  </style>
+</head>
+<body>
+
+<div class="preview-banner">Dashboard Preview — Svěřenec · Vue App · Neon Lab × Swiss Precision</div>
+
+<!-- TOPNAV -->
+<nav class="topnav">
+  <a href="#" class="topnav-logo">
+    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <filter id="glow"><feGaussianBlur stdDeviation="2.2" result="blur"/>
+          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      </defs>
+      <g filter="url(#glow)">
+        <rect x="6" y="33" width="9" height="10" rx="2.5" fill="#c8ff00" opacity="0.38" transform="skewX(-9)"/>
+        <rect x="19" y="25" width="9" height="18" rx="2.5" fill="#c8ff00" opacity="0.68" transform="skewX(-9)"/>
+        <rect x="32" y="14" width="9" height="29" rx="2.5" fill="#c8ff00" transform="skewX(-9)"/>
+      </g>
+    </svg>
+    <span class="topnav-logo-text">EnduroBuddy</span>
+  </a>
+
+  <div class="month-nav">
+    <button class="month-nav-btn">
+      <svg width="14" height="14" viewBox="0 0 16 16"><path d="M10 12L6 8l4-4" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <div class="month-nav-label">Duben<span>2026</span></div>
+    <button class="month-nav-btn">
+      <svg width="14" height="14" viewBox="0 0 16 16"><path d="M6 12l4-4-4-4" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+  </div>
+
+  <div class="topnav-right">
+    <button class="topnav-icon-btn" id="notif-btn" onclick="toggleNotif()">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+      </svg>
+      <div class="notif-badge">3</div>
+    </button>
+    <div class="avatar">JN</div>
+  </div>
+</nav>
+
+<!-- NOTIFICATION DROPDOWN -->
+<div id="notif-dd" class="notif-dropdown" style="display:none">
+  <div class="notif-dd-header">
+    <span class="notif-dd-title">Notifikace</span>
+    <button class="notif-dd-all">Označit vše</button>
+  </div>
+  <div class="notif-item unread"><div class="notif-dot"></div>
+    <div class="notif-text">Trenér přidal plán na příští týden</div>
+    <div class="notif-meta">před 5 minutami</div>
+  </div>
+  <div class="notif-item unread"><div class="notif-dot"></div>
+    <div class="notif-text">Garmin sync dokončen — 4 aktivity importovány</div>
+    <div class="notif-meta">před 2 hodinami</div>
+  </div>
+  <div class="notif-item">
+    <div class="notif-text">Trenér upravil středeční trénink</div>
+    <div class="notif-meta">Včera v 18:32</div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- MONTH SUMMARY -->
+  <div class="month-summary">
+    <div class="stat-card">
+      <div class="stat-label">Tréninky</div>
+      <div class="stat-value">9 / 14</div>
+      <div class="stat-sub">v tomto měsíci</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Kilometry</div>
+      <div class="stat-value">112.4 km</div>
+      <div class="stat-sub">naběháno</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Čas</div>
+      <div class="stat-value">9h 44m</div>
+      <div class="stat-sub">celkem</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Splnění</div>
+      <div class="stat-value warning">64 %</div>
+      <div class="stat-sub">plán vs. skutečnost</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- TÝDEN 13 — splněný -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="week-block">
+    <div class="week-header">
+      <span class="week-label">Týden 13</span>
+      <span class="week-dates">24. 3 – 30. 3</span>
+      <div class="week-totals">
+        <span class="week-total-item"><span class="week-total-label">Plán</span>52 km</span>
+        <span class="week-total-item lime"><span class="week-total-label">Splněno</span>38.5 km · 3h 22m</span>
+      </div>
+    </div>
+    <div class="week-tables">
+
+      <!-- PLÁN -->
+      <div class="table-panel">
+        <div class="table-panel-header">
+          <span class="table-panel-title blue">Plán</span>
+        </div>
+        <table>
+          <thead><tr>
+            <th style="width:30px">Den</th>
+            <th style="width:54px">Datum</th>
+            <th style="width:52px">Typ</th>
+            <th>Trénink</th>
+            <th>Poznámky trenéra</th>
+          </tr></thead>
+          <tbody>
+            <tr class="row-done">
+              <td class="cell-day">Po</td>
+              <td class="cell-date">24. 3</td>
+              <td class="cell-type">Běh</td>
+              <td class="cell-training">Easy run</td>
+              <td class="cell-mono muted">10 km</td>
+            </tr>
+            <tr class="row-rest no-hover">
+              <td class="cell-day">Út</td>
+              <td class="cell-date">25. 3</td>
+              <td class="cell-type" style="color:var(--eb-text-muted)">—</td>
+              <td class="cell-training muted">Volno</td>
+              <td></td>
+            </tr>
+            <tr class="row-done">
+              <td class="cell-day">St</td>
+              <td class="cell-date">26. 3</td>
+              <td class="cell-type">Běh</td>
+              <td>
+                <div class="cell-training">Tempo s intervaly</div>
+                <div class="cell-training-note">3×2000m @4:10, r2min</div>
+              </td>
+              <td class="cell-mono muted">16 km</td>
+            </tr>
+            <tr class="row-missed">
+              <td class="cell-day">Čt</td>
+              <td class="cell-date">27. 3</td>
+              <td class="cell-type">Běh</td>
+              <td class="cell-training">Regenerační klus</td>
+              <td class="cell-mono muted">8 km</td>
+            </tr>
+            <tr class="row-done">
+              <td class="cell-day">Pá</td>
+              <td class="cell-date">28. 3</td>
+              <td class="cell-type">Běh</td>
+              <td class="cell-training">Long run</td>
+              <td class="cell-mono muted">18 km</td>
+            </tr>
+          </tbody>
+          <tfoot><tr>
+            <td colspan="3"></td>
+            <td class="total-lime">52 km plán</td>
+            <td></td>
+          </tr></tfoot>
+        </table>
+      </div>
+
+      <!-- SPLNĚNO -->
+      <div class="table-panel">
+        <div class="table-panel-header">
+          <span class="table-panel-title lime">Splněno</span>
+          <button class="table-panel-action" title="Garmin sync">
+            <svg width="13" height="13" viewBox="0 0 16 16"><path d="M13.2 4.8A5.5 5.5 0 0 0 3.9 3.5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M3.9 1.9v1.9h1.9" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M2.8 11.2A5.5 5.5 0 0 0 12.1 12.5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M12.1 14.1v-1.9h-1.9" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+        <table>
+          <thead><tr>
+            <th>km</th>
+            <th>min</th>
+            <th>pace / intervaly</th>
+            <th>avg HR</th>
+            <th>max HR</th>
+          </tr></thead>
+          <tbody>
+            <tr class="row-done">
+              <td><span class="completed-field">10.2</span></td>
+              <td><span class="completed-field">58:14</span></td>
+              <td><span class="completed-field" style="color:var(--eb-text-secondary)">5:42/km</span></td>
+              <td><span class="completed-field">132</span></td>
+              <td><span class="completed-field">151</span></td>
+            </tr>
+            <tr class="row-rest no-hover">
+              <td class="cell-mono muted">—</td>
+              <td class="cell-mono muted">—</td>
+              <td></td><td></td><td></td>
+            </tr>
+            <tr class="row-done">
+              <td><span class="completed-field">14.8</span></td>
+              <td><span class="completed-field">1:12:04</span></td>
+              <td><span class="completed-field" style="color:var(--eb-text-secondary)">3×2000m @4:04</span></td>
+              <td><span class="completed-field">155</span></td>
+              <td><span class="completed-field">172</span></td>
+            </tr>
+            <tr class="row-missed">
+              <td><span class="completed-field empty">—</span></td>
+              <td><span class="completed-field empty">—</span></td>
+              <td></td>
+              <td><span class="completed-field empty">—</span></td>
+              <td><span class="completed-field empty">—</span></td>
+            </tr>
+            <tr class="row-done">
+              <td><span class="completed-field">13.5</span></td>
+              <td><span class="completed-field">1:12:00</span></td>
+              <td><span class="completed-field" style="color:var(--eb-text-secondary)">5:20/km</span></td>
+              <td><span class="completed-field">138</span></td>
+              <td><span class="completed-field">158</span></td>
+            </tr>
+          </tbody>
+          <tfoot><tr>
+            <td class="total-lime">38.5</td>
+            <td class="total-lime">3:22</td>
+            <td style="color:var(--eb-text-muted);font-size:11px">Celkem</td>
+            <td class="total-lime">141</td>
+            <td></td>
+          </tr></tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- TÝDEN 14 — aktuální -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="week-block">
+    <div class="week-header">
+      <span class="week-label current">Týden 14</span>
+      <span class="week-dates">31. 3 – 6. 4</span>
+      <div class="week-totals">
+        <span class="week-total-item"><span class="week-total-label">Plán</span>58 km</span>
+        <span class="week-total-item lime"><span class="week-total-label">Splněno</span>24.3 km</span>
+      </div>
+    </div>
+    <div class="week-tables">
+
+      <!-- PLÁN -->
+      <div class="table-panel">
+        <div class="table-panel-header">
+          <span class="table-panel-title blue">Plán</span>
+        </div>
+        <table>
+          <thead><tr>
+            <th style="width:30px">Den</th>
+            <th style="width:54px">Datum</th>
+            <th style="width:52px">Typ</th>
+            <th>Trénink</th>
+            <th>Poznámky trenéra</th>
+          </tr></thead>
+          <tbody>
+            <tr class="row-done">
+              <td class="cell-day">Po</td>
+              <td class="cell-date">31. 3</td>
+              <td class="cell-type">Běh</td>
+              <td class="cell-training">Easy run</td>
+              <td class="cell-mono muted">10 km</td>
+            </tr>
+            <tr class="row-done">
+              <td class="cell-day">Út</td>
+              <td class="cell-date">1. 4</td>
+              <td class="cell-type">Trénink</td>
+              <td><div class="cell-training">Síla + drily</div>
+                  <div class="cell-training-note">Gym, core, stahování</div></td>
+              <td></td>
+            </tr>
+            <tr class="row-done">
+              <td class="cell-day">St</td>
+              <td class="cell-date">2. 4</td>
+              <td class="cell-type">Běh</td>
+              <td><div class="cell-training eb-inline-edit" contenteditable="true">Intervalový trénink</div>
+                  <div class="cell-training-note">3×2000m @4:05, 2×1000m @3:58</div></td>
+              <td><div class="cell-mono muted eb-inline-edit" contenteditable="true">16 km</div></td>
+            </tr>
+            <tr class="row-planned">
+              <td class="cell-day">Čt</td>
+              <td class="cell-date">3. 4</td>
+              <td class="cell-type">Běh</td>
+              <td class="cell-training">Regenerační klus</td>
+              <td class="cell-mono muted">8 km</td>
+            </tr>
+            <tr class="row-planned">
+              <td class="cell-day">Pá</td>
+              <td class="cell-date">4. 4</td>
+              <td class="cell-type">Běh</td>
+              <td><div class="cell-training">Tempo běh</div>
+                  <div class="cell-training-note">Aerobní práh, 30min @4:25</div></td>
+              <td class="cell-mono muted">12 km</td>
+            </tr>
+            <tr class="row-planned">
+              <td class="cell-day">So</td>
+              <td class="cell-date">5. 4</td>
+              <td class="cell-type">Běh</td>
+              <td><div class="cell-training">Long run</div>
+                  <div class="cell-training-note">Aerobní základna, Z1–Z2</div></td>
+              <td class="cell-mono muted">22 km</td>
+            </tr>
+            <tr class="row-rest no-hover">
+              <td class="cell-day">Ne</td>
+              <td class="cell-date">6. 4</td>
+              <td class="cell-type" style="color:var(--eb-text-muted)">—</td>
+              <td class="cell-training muted">Volno</td>
+              <td></td>
+            </tr>
+          </tbody>
+          <tfoot><tr>
+            <td colspan="3"></td>
+            <td class="total-lime">58 km plán</td>
+            <td></td>
+          </tr></tfoot>
+        </table>
+      </div>
+
+      <!-- SPLNĚNO -->
+      <div class="table-panel">
+        <div class="table-panel-header">
+          <span class="table-panel-title lime">Splněno</span>
+          <button class="table-panel-action" title="Garmin sync">
+            <svg width="13" height="13" viewBox="0 0 16 16"><path d="M13.2 4.8A5.5 5.5 0 0 0 3.9 3.5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M3.9 1.9v1.9h1.9" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M2.8 11.2A5.5 5.5 0 0 0 12.1 12.5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M12.1 14.1v-1.9h-1.9" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+        <table>
+          <thead><tr>
+            <th>km</th>
+            <th>min</th>
+            <th>pace / intervaly</th>
+            <th>avg HR</th>
+            <th>max HR</th>
+          </tr></thead>
+          <tbody>
+            <tr class="row-done">
+              <td><span class="completed-field">10.1</span></td>
+              <td><span class="completed-field">57:42</span></td>
+              <td><span class="completed-field" style="color:var(--eb-text-secondary)">5:43/km</span></td>
+              <td><span class="completed-field">130</span></td>
+              <td><span class="completed-field">148</span></td>
+            </tr>
+            <tr class="row-done">
+              <td><span class="completed-field empty">—</span></td>
+              <td><span class="completed-field">50:00</span></td>
+              <td><span class="completed-field empty">—</span></td>
+              <td><span class="completed-field empty">—</span></td>
+              <td><span class="completed-field empty">—</span></td>
+            </tr>
+            <tr class="row-done">
+              <td><span class="completed-field">14.2</span></td>
+              <td><span class="completed-field">1:16:30</span></td>
+              <td><span class="completed-field" style="color:var(--eb-text-secondary)">3×2k @4:06</span></td>
+              <td><span class="completed-field">152</span></td>
+              <td><span class="completed-field">171</span></td>
+            </tr>
+            <!-- budoucí – prázdné editovatelné -->
+            <tr class="row-planned">
+              <td><span class="completed-field empty" contenteditable="true">—</span></td>
+              <td><span class="completed-field empty" contenteditable="true">—</span></td>
+              <td><span class="completed-field empty" contenteditable="true">—</span></td>
+              <td><span class="completed-field empty" contenteditable="true">—</span></td>
+              <td><span class="completed-field empty" contenteditable="true">—</span></td>
+            </tr>
+            <tr class="row-planned">
+              <td><span class="completed-field empty" contenteditable="true">—</span></td>
+              <td><span class="completed-field empty" contenteditable="true">—</span></td>
+              <td><span class="completed-field empty" contenteditable="true">—</span></td>
+              <td><span class="completed-field empty" contenteditable="true">—</span></td>
+              <td><span class="completed-field empty" contenteditable="true">—</span></td>
+            </tr>
+            <tr class="row-planned">
+              <td><span class="completed-field empty" contenteditable="true">—</span></td>
+              <td><span class="completed-field empty" contenteditable="true">—</span></td>
+              <td><span class="completed-field empty" contenteditable="true">—</span></td>
+              <td><span class="completed-field empty" contenteditable="true">—</span></td>
+              <td><span class="completed-field empty" contenteditable="true">—</span></td>
+            </tr>
+            <tr class="row-rest no-hover">
+              <td class="cell-mono muted">—</td>
+              <td class="cell-mono muted">—</td>
+              <td></td><td></td><td></td>
+            </tr>
+          </tbody>
+          <tfoot><tr>
+            <td class="total-lime">24.3</td>
+            <td class="total-lime">2:04</td>
+            <td style="color:var(--eb-text-muted);font-size:11px">Celkem</td>
+            <td class="total-lime">141</td>
+            <td></td>
+          </tr></tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- TÝDEN 15 — budoucí, prázdný -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="week-block">
+    <div class="week-header">
+      <span class="week-label">Týden 15</span>
+      <span class="week-dates">7. 4 – 13. 4</span>
+    </div>
+    <div class="week-tables">
+      <div class="table-panel">
+        <div class="table-panel-header">
+          <span class="table-panel-title blue">Plán</span>
+        </div>
+        <div class="table-empty">Trenér ještě nepřipravil plán pro tento týden.</div>
+      </div>
+      <div class="table-panel">
+        <div class="table-panel-header">
+          <span class="table-panel-title lime">Splněno</span>
+        </div>
+        <div class="table-empty">—</div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+  function toggleNotif() {
+    const dd = document.getElementById('notif-dd');
+    dd.style.display = dd.style.display === 'block' ? 'none' : 'block';
+  }
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('#notif-btn') && !e.target.closest('#notif-dd')) {
+      document.getElementById('notif-dd').style.display = 'none';
+    }
+  });
+</script>
+</body>
+</html>
