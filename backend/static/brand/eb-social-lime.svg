@@ -1,14 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" fill="none">
-  <!-- Background lime -->
   <rect width="400" height="400" fill="#c8ff00"/>
-  <!-- Square container -->
-  <rect x="80" y="80" width="240" height="240" rx="44" stroke="#09090b" stroke-width="6" stroke-opacity="0.2"/>
-  <!-- ECG pulse (dark on lime) -->
-  <polyline
-    points="88,212 128,212 146,188 164,212 180,234 198,60 216,298 232,212 258,168 276,212 312,212"
-    stroke="#09090b"
-    stroke-width="11"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-  />
+  <g transform="translate(104, 104) scale(4)">
+    <rect x="6"  y="33" width="9" height="10" rx="2.5" fill="#09090b" opacity="0.38" transform="skewX(-9)"/>
+    <rect x="19" y="25" width="9" height="18" rx="2.5" fill="#09090b" opacity="0.68" transform="skewX(-9)"/>
+    <rect x="32" y="14" width="9" height="29" rx="2.5" fill="#09090b"               transform="skewX(-9)"/>
+  </g>
 </svg>
