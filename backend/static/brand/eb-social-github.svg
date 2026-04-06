@@ -1,8 +1,17 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" fill="none">
-  <!-- EnduroBuddy GitHub Avatar — Dark, circle crop safe -->
-  <rect width="400" height="400" fill="#09090b"/>
-  <!-- Mark centered with extra padding for circle crop -->
-  <rect x="130" y="140" width="50" height="24" rx="12" fill="#c8ff00"/>
-  <rect x="130" y="176" width="88" height="24" rx="12" fill="#c8ff00" opacity="0.35"/>
-  <rect x="130" y="212" width="126" height="24" rx="12" fill="#c8ff00"/>
+  <defs>
+    <clipPath id="circle-clip">
+      <circle cx="200" cy="200" r="200"/>
+    </clipPath>
+    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="8" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <rect width="400" height="400" fill="#09090b" clip-path="url(#circle-clip)"/>
+  <g transform="translate(104, 104) scale(4)" filter="url(#glow)" clip-path="url(#circle-clip)">
+    <rect x="6"  y="33" width="9" height="10" rx="2.5" fill="#c8ff00" opacity="0.38" transform="skewX(-9)"/>
+    <rect x="19" y="25" width="9" height="18" rx="2.5" fill="#c8ff00" opacity="0.68" transform="skewX(-9)"/>
+    <rect x="32" y="14" width="9" height="29" rx="2.5" fill="#c8ff00"               transform="skewX(-9)"/>
+  </g>
 </svg>
