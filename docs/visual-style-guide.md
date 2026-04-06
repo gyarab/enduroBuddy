@@ -19,14 +19,24 @@ EnduroBuddy je **čistý tréninkový workspace** s edge a personalitou.
 
 ---
 
-## Logo — Stride Mark
+## Logo — Velocity Bars
 
-Tři horizontální pruhy rostoucí délky, nakloněné 6° dopředu. Prostřední má sníženou opacity.
+Tři vertikální obdélníky rostoucí výšky, zkosené -9° doprava. Gradientní opacity zleva (0.38 → 0.68 → 1.0) vytváří hloubku bez dalších barev.
 
 Reprezentuje:
-- **Pohyb vpřed** — náklon symbolizuje stride
-- **Progrese** — rostoucí objem tréninkové zátěže
-- **Vizuální rytmus** — tři úrovně informace
+- **Stupňující se intenzitu** — tréninkové zóny 1–3
+- **Progres a sílu** — klíčové hodnoty endurance tréninku
+- **Data a precision** — tři diskrétní hodnoty jako vizualizace
+
+### Geometrie (viewBox 48×48)
+
+| Bar | x  | y  | width | height | rx  | opacity | transform |
+|-----|----|----|-------|--------|-----|---------|-----------|
+| 1   | 6  | 33 | 9     | 10     | 2.5 | 0.38    | skewX(-9) |
+| 2   | 19 | 25 | 9     | 18     | 2.5 | 0.68    | skewX(-9) |
+| 3   | 32 | 14 | 9     | 29     | 2.5 | 1.0     | skewX(-9) |
+
+Glow: `feGaussianBlur stdDeviation="2.2"` + feMerge overlay. Vypnout pod 20px a na světlém pozadí.
 
 ### Varianty
 
@@ -46,10 +56,10 @@ Všechny v `backend/static/brand/`.
 
 ### Pravidla
 
-- Mark je lime na tmavém, dark na lime/světlém
+- Mark je lime na tmavém, dark na lime/světlém — bez glow na světlém
 - Wordmark vždy v Syne 700
-- Minimální velikost marku: 16px
-- Kolem marku safe zone = 1× šířka nejmenšího baru
+- Minimální velikost marku: 16px (bez glow efektu)
+- Kolem marku safe zone = šířka jednoho baru (~⅕ celkové šířky)
 
 ---
 
