@@ -11,7 +11,13 @@
 {% block content %}
   {% get_current_language as CURRENT_LANGUAGE %}
   <main class="eb-legal-main">
-    <div class="eb-shell">
+    <div class="eb-legal-shell">
+      <a href="{% url 'public_home' %}" class="eb-legal-back">
+        {% if CURRENT_LANGUAGE == 'en' %}Back{% else %}Zpět{% endif %}
+      </a>
+      <div class="eb-legal-header">
+        <div class="eb-legal-kicker">{% if CURRENT_LANGUAGE == 'en' %}Legal{% else %}Právní dokumenty{% endif %}</div>
+      </div>
       <article class="eb-legal-card">
         {% if CURRENT_LANGUAGE == "en" %}
           <p class="eb-legal-kicker">Legal Information</p>
