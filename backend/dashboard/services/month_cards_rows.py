@@ -29,7 +29,20 @@ def build_planned_rows_for_week(planned_items: list[PlannedTraining], *, languag
 
         def planned_row_from(subitems: list[PlannedTraining], *, show_date: bool) -> dict[str, Any]:
             if not subitems:
-                row = {"planned_id": None, "item_count": 0, "date": items[0].date if show_date else None, "day_label": items[0].day_label if show_date else "", "title": "-", "title_raw": "", "session_type": PlannedTraining.SessionType.RUN, "notes": "", "notes_raw": ""}
+                row = {
+                    "planned_id": None,
+                    "item_count": 0,
+                    "date": items[0].date if show_date else None,
+                    "day_label": items[0].day_label if show_date else "",
+                    "title": "-",
+                    "title_raw": "",
+                    "session_type": PlannedTraining.SessionType.RUN,
+                    "notes": "",
+                    "notes_raw": "",
+                    "order_in_day": 1,
+                    "is_second_phase": False,
+                    "is_two_phase_day": False,
+                }
                 row.update(planned_km_hint_payload(title_text="", language_code=language_code))
                 return row
             first = subitems[0]
@@ -38,7 +51,20 @@ def build_planned_rows_for_week(planned_items: list[PlannedTraining], *, languag
             joined_titles = " | ".join(titles) if titles else ""
             joined_notes = " | ".join(notes) if notes else ""
             effective_session_type = PlannedTraining.SessionType.WORKOUT if any((x.session_type or PlannedTraining.SessionType.RUN) == PlannedTraining.SessionType.WORKOUT for x in subitems) else PlannedTraining.SessionType.RUN
-            row = {"planned_id": first.id, "item_count": len(subitems), "date": first.date if show_date else None, "day_label": first.day_label if show_date else "", "title": joined_titles if joined_titles else "-", "title_raw": joined_titles, "session_type": effective_session_type, "notes": joined_notes, "notes_raw": joined_notes}
+            row = {
+                "planned_id": first.id,
+                "item_count": len(subitems),
+                "date": first.date if show_date else None,
+                "day_label": first.day_label if show_date else "",
+                "title": joined_titles if joined_titles else "-",
+                "title_raw": joined_titles,
+                "session_type": effective_session_type,
+                "notes": joined_notes,
+                "notes_raw": joined_notes,
+                "order_in_day": int(first.order_in_day or 1),
+                "is_second_phase": int(first.order_in_day or 1) > 1,
+                "is_two_phase_day": any(x.is_two_phase_day for x in subitems),
+            }
             row.update(planned_km_hint_payload(title_text=joined_titles, language_code=language_code))
             return row
 

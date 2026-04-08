@@ -1,6 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse
+from django.conf import settings
 
 from accounts.models import CoachAthlete, Role
 
@@ -51,6 +52,8 @@ def auth_me(request):
             "can_view_athlete": True,
             "can_complete_profile": bool(profile and not profile.google_profile_completed),
             "has_garmin_connection": bool(garmin_connection and garmin_connection.is_active),
+            "garmin_connect_enabled": bool(getattr(settings, "GARMIN_CONNECT_ENABLED", False)),
+            "garmin_sync_enabled": bool(getattr(settings, "GARMIN_SYNC_ENABLED", False)),
             "coached_athlete_count": coached_athlete_count,
         },
         "default_app_route": default_app_route,

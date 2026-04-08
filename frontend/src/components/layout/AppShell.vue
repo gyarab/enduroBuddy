@@ -2,6 +2,7 @@
 import { computed } from "vue";
 
 import EbSpinner from "@/components/ui/EbSpinner.vue";
+import ToastViewport from "@/components/ui/ToastViewport.vue";
 import TopNav from "@/components/layout/TopNav.vue";
 import { useAuthStore } from "@/stores/auth";
 
@@ -16,6 +17,7 @@ const shellClass = computed(() => `app-shell--${props.variant}`);
 <template>
   <div class="app-shell" :class="shellClass">
     <TopNav :variant="props.variant" />
+    <ToastViewport />
 
     <main class="app-shell__main">
       <div v-if="authStore.isLoading && !authStore.user" class="app-shell__loading">

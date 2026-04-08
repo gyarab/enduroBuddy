@@ -1,63 +1,68 @@
 <script setup lang="ts">
-import EbBadge from "@/components/ui/EbBadge.vue";
-import EbButton from "@/components/ui/EbButton.vue";
+import { onMounted } from "vue";
+
+import MonthSummaryBar from "@/components/training/MonthSummaryBar.vue";
+import GarminImportModal from "@/components/training/GarminImportModal.vue";
+import MonthSwitcher from "@/components/training/MonthSwitcher.vue";
+import WeekCard from "@/components/training/WeekCard.vue";
+import WeekCardSkeleton from "@/components/training/WeekCardSkeleton.vue";
 import EbCard from "@/components/ui/EbCard.vue";
+import { useTrainingStore } from "@/stores/training";
+
+const trainingStore = useTrainingStore();
+
+onMounted(() => {
+  if (!trainingStore.dashboard && !trainingStore.isLoading) {
+    void trainingStore.loadDashboard();
+  }
+});
 </script>
 
 <template>
   <section class="dashboard-view">
-    <div class="dashboard-view__summary">
-      <EbCard class="summary-card">
-        <div class="summary-card__label">Treninky</div>
-        <div class="summary-card__value">0 / 0</div>
-        <div class="summary-card__meta">Read-only shell ready</div>
-      </EbCard>
-      <EbCard class="summary-card">
-        <div class="summary-card__label">Kilometry</div>
-        <div class="summary-card__value">0 km</div>
-        <div class="summary-card__meta">Data endpoint prijde v dalsim kroku</div>
-      </EbCard>
-      <EbCard class="summary-card">
-        <div class="summary-card__label">Cas</div>
-        <div class="summary-card__value">0h 00m</div>
-        <div class="summary-card__meta">Vue shell bezi nad Django routou</div>
-      </EbCard>
-      <EbCard class="summary-card">
-        <div class="summary-card__label">Splneni</div>
-        <div class="summary-card__value summary-card__value--highlight">0 %</div>
-        <div class="summary-card__meta">Neon Lab x Swiss Precision</div>
-      </EbCard>
+    <MonthSwitcher
+      v-if="trainingStore.selectedMonth"
+      :label="trainingStore.selectedMonth.label"
+      :previous-label="trainingStore.navigation?.previous?.label || null"
+      :next-label="trainingStore.navigation?.next?.label || null"
+      :disabled="trainingStore.isLoading"
+      @previous="trainingStore.goToPreviousMonth"
+      @next="trainingStore.goToNextMonth"
+    />
+
+    <div class="dashboard-view__toolbar">
+      <GarminImportModal />
     </div>
 
-    <EbCard class="week-card">
-      <div class="week-card__header">
-        <div>
-          <div class="week-card__eyebrow">Tyden 14</div>
-          <div class="week-card__range">31. 3. - 6. 4.</div>
-        </div>
-        <div class="week-card__stats">0 km · 0h 00m</div>
+    <div v-if="trainingStore.isLoading" class="dashboard-view__loading">
+      <div class="dashboard-view__summary-skeleton">
+        <div v-for="index in 4" :key="`summary-${index}`" class="dashboard-view__summary-block" />
       </div>
+      <WeekCardSkeleton v-for="index in 3" :key="`skeleton-${index}`" />
+    </div>
 
-      <div class="week-card__body">
-        <article class="training-row training-row--planned">
-          <div class="training-row__main">
-            <div>
-              <div class="training-row__title">Tempo beh</div>
-              <div class="training-row__notes">API dashboard payload sem napojime v dalsim slice.</div>
-            </div>
-            <div class="training-row__metrics">15 km · 70 min</div>
-          </div>
-          <div class="training-row__meta">
-            <EbBadge tone="planned">Plan</EbBadge>
-            <span class="training-row__day">Ct</span>
-          </div>
-        </article>
-
-        <div class="week-card__footer">
-          <EbButton variant="secondary">Pripravit dashboard data</EbButton>
-        </div>
-      </div>
+    <EbCard v-else-if="trainingStore.errorMessage" class="dashboard-view__state-card">
+      <h2>Dashboard se nepodarilo nacist</h2>
+      <p>{{ trainingStore.errorMessage }}</p>
     </EbCard>
+
+    <EbCard v-else-if="!trainingStore.hasData" class="dashboard-view__state-card">
+      <div class="dashboard-view__empty-mark" aria-hidden="true">
+        <span />
+        <span />
+        <span />
+      </div>
+      <h2>Zatim zadny plan pro tento mesic</h2>
+      <p>Jakmile se objevi treninkove tydny, dashboard je okamzite nacte do noveho Vue workspace.</p>
+    </EbCard>
+
+    <template v-else>
+      <MonthSummaryBar v-if="trainingStore.summary" :summary="trainingStore.summary" />
+
+      <div class="dashboard-view__weeks">
+        <WeekCard v-for="week in trainingStore.weeks" :key="week.id" :week="week" />
+      </div>
+    </template>
   </section>
 </template>
 
@@ -67,141 +72,102 @@ import EbCard from "@/components/ui/EbCard.vue";
   gap: 1rem;
 }
 
-.dashboard-view__summary {
+.dashboard-view__weeks {
+  display: grid;
+  gap: 1rem;
+}
+
+.dashboard-view__toolbar {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.dashboard-view__loading {
+  display: grid;
+  gap: 1rem;
+}
+
+.dashboard-view__summary-skeleton {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 1rem;
 }
 
-.summary-card {
-  padding: 1rem 1.25rem;
-}
-
-.summary-card__label {
-  color: var(--eb-text-muted);
-  font-size: 0.6875rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.summary-card__value {
-  margin-top: 0.5rem;
-  font-family: var(--eb-font-mono);
-  font-size: 1.375rem;
-}
-
-.summary-card__value--highlight {
-  color: var(--eb-lime);
-}
-
-.summary-card__meta {
-  margin-top: 0.35rem;
-  color: var(--eb-text-muted);
-  font-size: 0.75rem;
-}
-
-.week-card {
-  overflow: hidden;
-}
-
-.week-card__header {
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 0.875rem 1.25rem;
-  border-bottom: 1px solid var(--eb-border);
-  background: var(--eb-surface-strong);
-}
-
-.week-card__eyebrow {
-  color: var(--eb-text-muted);
-  font-size: 0.6875rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.week-card__range,
-.week-card__stats {
-  margin-top: 0.2rem;
-  color: var(--eb-text-soft);
-  font-family: var(--eb-font-mono);
-  font-size: 0.8125rem;
-}
-
-.week-card__body {
-  padding: 1rem;
-}
-
-.training-row {
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 0.875rem 1rem 0.875rem 0.875rem;
+.dashboard-view__summary-block {
+  height: 6.5rem;
   border: 1px solid var(--eb-border);
-  border-left-width: 3px;
-  border-radius: var(--eb-radius-md);
-  background: var(--eb-surface);
+  border-radius: var(--eb-radius-lg);
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 25%, rgba(255, 255, 255, 0.08) 50%, rgba(255, 255, 255, 0.03) 75%),
+    var(--eb-surface);
+  background-size: 200% 100%;
+  animation: dashboard-shimmer 1.5s linear infinite;
 }
 
-.training-row--planned {
-  border-left-color: var(--eb-blue);
+.dashboard-view__state-card {
+  padding: 2rem;
+  text-align: center;
 }
 
-.training-row__main,
-.training-row__meta {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
+.dashboard-view__state-card h2 {
+  margin: 0;
+  font-family: var(--eb-font-display);
+  font-size: 1.5rem;
 }
 
-.training-row__title {
-  font-size: 0.9375rem;
-  font-weight: 500;
-}
-
-.training-row__notes {
-  margin-top: 0.2rem;
-  color: var(--eb-text-muted);
-  font-size: 0.75rem;
-}
-
-.training-row__metrics {
+.dashboard-view__state-card p {
+  margin: 0.75rem 0 0;
   color: var(--eb-text-soft);
-  font-family: var(--eb-font-mono);
-  font-size: 0.8125rem;
+  line-height: 1.6;
 }
 
-.training-row__day {
-  color: var(--eb-text-muted);
-  font-size: 0.6875rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+.dashboard-view__empty-mark {
+  display: inline-flex;
+  justify-content: center;
+  gap: 0.4rem;
+  margin-bottom: 1rem;
 }
 
-.week-card__footer {
-  margin-top: 1rem;
+.dashboard-view__empty-mark span {
+  display: block;
+  width: 0.55rem;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(200, 255, 0, 0.75), rgba(56, 189, 248, 0.18));
+}
+
+.dashboard-view__empty-mark span:nth-child(1) {
+  height: 1.5rem;
+  opacity: 0.45;
+}
+
+.dashboard-view__empty-mark span:nth-child(2) {
+  height: 2.3rem;
+}
+
+.dashboard-view__empty-mark span:nth-child(3) {
+  height: 1.1rem;
+  opacity: 0.6;
+}
+
+@keyframes dashboard-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 @media (max-width: 1023px) {
-  .dashboard-view__summary {
+  .dashboard-view__summary-skeleton {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 767px) {
-  .dashboard-view__summary {
+  .dashboard-view__summary-skeleton {
     grid-template-columns: 1fr;
-  }
-
-  .week-card__header,
-  .training-row,
-  .training-row__main,
-  .training-row__meta {
-    flex-direction: column;
-    align-items: flex-start;
   }
 }
 </style>

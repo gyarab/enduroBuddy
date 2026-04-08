@@ -5,14 +5,19 @@ import { useRoute } from "vue-router";
 import NotificationBell from "@/components/layout/NotificationBell.vue";
 import ProfileDropdown from "@/components/layout/ProfileDropdown.vue";
 import { useAuthStore } from "@/stores/auth";
+import { useCoachStore } from "@/stores/coach";
+import { useTrainingStore } from "@/stores/training";
 
 const props = defineProps<{
   variant: "athlete" | "coach";
 }>();
 
 const authStore = useAuthStore();
+const coachStore = useCoachStore();
+const trainingStore = useTrainingStore();
 const route = useRoute();
 const isProfileOpen = ref(false);
+const brandLogoUrl = "/static/brand/eb-logo-compact.svg";
 
 const title = computed(() => {
   if (route.path.startsWith("/coach")) {
@@ -26,11 +31,17 @@ const title = computed(() => {
 
 const subtitle = computed(() => {
   if (props.variant === "coach") {
+    if (coachStore.selectedAthlete?.name) {
+      if (coachStore.selectedMonth?.label) {
+        return `${coachStore.selectedAthlete.name} / ${coachStore.selectedMonth.label}`;
+      }
+      return coachStore.selectedAthlete.name;
+    }
     return authStore.user?.capabilities.coached_athlete_count
       ? `${authStore.user.capabilities.coached_athlete_count} athletes ready`
       : "Plans and athlete focus";
   }
-  return "April 2026";
+  return trainingStore.selectedMonth?.label || "Dashboard overview";
 });
 </script>
 
@@ -38,7 +49,7 @@ const subtitle = computed(() => {
   <header class="top-nav">
     <div class="top-nav__inner">
       <a class="top-nav__brand" :href="props.variant === 'coach' ? '/coach/plans' : '/app/dashboard'">
-        <img alt="EnduroBuddy" src="/static/brand/eb-logo-compact.svg" />
+        <img :src="brandLogoUrl" alt="EnduroBuddy" />
       </a>
 
       <div class="top-nav__headline">
@@ -47,7 +58,7 @@ const subtitle = computed(() => {
       </div>
 
       <div class="top-nav__actions">
-        <NotificationBell :unread-count="0" />
+        <NotificationBell />
 
         <div class="top-nav__profile">
           <button class="top-nav__avatar" type="button" @click="isProfileOpen = !isProfileOpen">
