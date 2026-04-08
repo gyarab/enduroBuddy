@@ -1,33 +1,88 @@
 <script setup lang="ts">
-import EbBadge from "@/components/ui/EbBadge.vue";
+import { onMounted, ref, watch } from "vue";
+
+import CoachSidebar from "@/components/coach/CoachSidebar.vue";
+import MonthSummaryBar from "@/components/training/MonthSummaryBar.vue";
+import WeekCard from "@/components/training/WeekCard.vue";
+import WeekCardSkeleton from "@/components/training/WeekCardSkeleton.vue";
+import EbButton from "@/components/ui/EbButton.vue";
 import EbCard from "@/components/ui/EbCard.vue";
+import { useCoachStore } from "@/stores/coach";
+
+const coachStore = useCoachStore();
+const focusDraft = ref("");
+const isSavingFocus = ref(false);
+
+onMounted(() => {
+  if (!coachStore.dashboard && !coachStore.isLoading) {
+    void coachStore.loadDashboard();
+  }
+});
+
+watch(
+  () => coachStore.selectedAthlete?.focus,
+  (value) => {
+    focusDraft.value = value || "";
+  },
+  { immediate: true },
+);
+
+async function saveFocus() {
+  isSavingFocus.value = true;
+  try {
+    await coachStore.saveFocus(focusDraft.value);
+  } finally {
+    isSavingFocus.value = false;
+  }
+}
 </script>
 
 <template>
   <section class="coach-view">
     <aside class="coach-view__sidebar">
-      <EbCard class="sidebar-card">
-        <div class="sidebar-card__header">Atleti</div>
-        <button class="sidebar-card__row sidebar-card__row--active" type="button">
-          <span class="sidebar-card__dot" />
-          <span>Vybrany atlet</span>
-          <EbBadge tone="done">Focus</EbBadge>
-        </button>
-        <button class="sidebar-card__row" type="button">
-          <span class="sidebar-card__dot sidebar-card__dot--muted" />
-          <span>Dalsi atlet</span>
-        </button>
-      </EbCard>
+      <CoachSidebar :athletes="coachStore.athletes" @select="coachStore.selectAthlete" />
     </aside>
 
     <div class="coach-view__content">
-      <EbCard class="coach-card">
+      <div v-if="coachStore.isLoading" class="coach-view__loading">
+        <WeekCardSkeleton v-for="index in 3" :key="`coach-skeleton-${index}`" />
+      </div>
+
+      <EbCard v-else-if="coachStore.errorMessage" class="coach-card">
         <div class="coach-card__eyebrow">Coach workspace</div>
-        <h1 class="coach-card__title">Shell pro `/coach/plans` je pripraveny.</h1>
-        <p class="coach-card__text">
-          Dalsi iterace napoji athlete focus, dashboard payload a sdilene week cards.
-        </p>
+        <h1 class="coach-card__title">Coach dashboard se nepodarilo nacist.</h1>
+        <p class="coach-card__text">{{ coachStore.errorMessage }}</p>
       </EbCard>
+
+      <template v-else-if="coachStore.selectedAthlete">
+        <EbCard class="coach-toolbar">
+          <div>
+            <div class="coach-card__eyebrow">Selected athlete</div>
+            <div class="coach-toolbar__name">{{ coachStore.selectedAthlete.name }}</div>
+          </div>
+
+          <div class="coach-toolbar__focus">
+            <label class="coach-toolbar__label" for="coach-focus-input">Focus</label>
+            <input
+              id="coach-focus-input"
+              v-model="focusDraft"
+              class="coach-toolbar__input"
+              type="text"
+              maxlength="10"
+              :disabled="isSavingFocus"
+            />
+            <EbButton variant="secondary" :disabled="isSavingFocus" @click="saveFocus">
+              {{ isSavingFocus ? "Saving..." : "Save focus" }}
+            </EbButton>
+          </div>
+        </EbCard>
+
+        <MonthSummaryBar v-if="coachStore.summary" :summary="coachStore.summary" />
+
+        <div class="coach-view__weeks">
+          <WeekCard v-for="week in coachStore.weeks" :key="week.id" :week="week" />
+        </div>
+      </template>
     </div>
   </section>
 </template>
@@ -45,52 +100,11 @@ import EbCard from "@/components/ui/EbCard.vue";
   align-self: start;
 }
 
-.sidebar-card {
-  padding: 1rem 0;
-}
-
-.sidebar-card__header {
-  padding: 0 1rem 0.75rem;
-  color: var(--eb-text-muted);
-  font-size: 0.6875rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.sidebar-card__row {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  width: 100%;
-  padding: 0.875rem 1rem;
-  border: 0;
-  border-left: 2px solid transparent;
-  background: transparent;
-  color: var(--eb-text-soft);
-  text-align: left;
-}
-
-.sidebar-card__row:hover {
-  background: var(--eb-surface-hover);
-  color: var(--eb-text);
-}
-
-.sidebar-card__row--active {
-  border-left-color: var(--eb-lime);
-  background: rgba(200, 255, 0, 0.06);
-  color: var(--eb-text);
-}
-
-.sidebar-card__dot {
-  width: 0.5rem;
-  height: 0.5rem;
-  border-radius: 999px;
-  background: var(--eb-lime);
-}
-
-.sidebar-card__dot--muted {
-  background: var(--eb-border);
+.coach-view__content,
+.coach-view__loading,
+.coach-view__weeks {
+  display: grid;
+  gap: 1rem;
 }
 
 .coach-card {
@@ -119,6 +133,43 @@ import EbCard from "@/components/ui/EbCard.vue";
   line-height: 1.6;
 }
 
+.coach-toolbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: end;
+  padding: 1.25rem;
+}
+
+.coach-toolbar__name {
+  margin-top: 0.45rem;
+  font-family: var(--eb-font-display);
+  font-size: 1.4rem;
+}
+
+.coach-toolbar__focus {
+  display: flex;
+  gap: 0.75rem;
+  align-items: end;
+}
+
+.coach-toolbar__label {
+  color: var(--eb-text-muted);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.coach-toolbar__input {
+  min-width: 12rem;
+  border: 1px solid var(--eb-border);
+  border-radius: var(--eb-radius-sm);
+  background: var(--eb-bg);
+  color: var(--eb-text);
+  padding: 0.75rem 0.85rem;
+}
+
 @media (max-width: 1023px) {
   .coach-view {
     grid-template-columns: 1fr;
@@ -126,6 +177,15 @@ import EbCard from "@/components/ui/EbCard.vue";
 
   .coach-view__sidebar {
     position: static;
+  }
+
+  .coach-toolbar {
+    display: grid;
+    align-items: start;
+  }
+
+  .coach-toolbar__focus {
+    display: grid;
   }
 }
 </style>

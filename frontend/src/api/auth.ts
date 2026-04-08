@@ -11,6 +11,8 @@ export type AuthMeResponse = {
     can_view_athlete: boolean;
     can_complete_profile: boolean;
     has_garmin_connection: boolean;
+    garmin_connect_enabled: boolean;
+    garmin_sync_enabled: boolean;
     coached_athlete_count: number;
   };
   default_app_route: string;
