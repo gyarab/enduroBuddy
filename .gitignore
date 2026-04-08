@@ -1,11 +1,23 @@
 .venv/
 __pycache__/
 *.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
 *.tsbuildinfo
 db.sqlite3
 .env
 .env.*
 !.env.example
+*.log
+*.err.log
+*.out.log
+*.pid
+.idea/
+.vscode/
 media/
 backend/media/
 frontend/node_modules/
@@ -13,6 +25,7 @@ frontend/dist/
 frontend/.vite/
 frontend/coverage/
 .garminconnect/
+.superpowers/**/state/
 endurobuddy*
 Vojtěch Holcman.xlsx
 22150739590_ACTIVITY.fit

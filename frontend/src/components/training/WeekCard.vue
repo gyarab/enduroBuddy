@@ -6,6 +6,7 @@ import EbCard from "@/components/ui/EbCard.vue";
 
 defineProps<{
   week: DashboardWeek;
+  editorContext?: "athlete" | "coach";
 }>();
 
 function formatRange(start: string, end: string) {
@@ -33,7 +34,12 @@ function formatRange(start: string, end: string) {
       <section class="week-card__column">
         <div class="week-card__column-label">Planned</div>
         <div class="week-card__rows">
-          <PlannedRow v-for="(row, index) in week.planned_rows" :key="`planned-${row.id}-${row.date}-${index}`" :row="row" />
+          <PlannedRow
+            v-for="(row, index) in week.planned_rows"
+            :key="`planned-${row.id}-${row.date}-${index}`"
+            :row="row"
+            :editor-context="editorContext || 'athlete'"
+          />
           <div v-if="week.planned_rows.length === 0" class="week-card__empty">No planned sessions in this week.</div>
         </div>
       </section>
