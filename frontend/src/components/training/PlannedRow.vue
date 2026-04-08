@@ -4,6 +4,7 @@ import { computed } from "vue";
 import type { TrainingRow } from "@/api/training";
 import { useInlineEditor } from "@/composables/useInlineEditor";
 import { useTrainingParser } from "@/composables/useTrainingParser";
+import { useCoachStore } from "@/stores/coach";
 import { useTrainingStore } from "@/stores/training";
 import { useToastStore } from "@/stores/toasts";
 import EbBadge from "@/components/ui/EbBadge.vue";
@@ -11,9 +12,11 @@ import EbButton from "@/components/ui/EbButton.vue";
 
 const props = defineProps<{
   row: TrainingRow;
+  editorContext?: "athlete" | "coach";
 }>();
 
 const trainingStore = useTrainingStore();
+const coachStore = useCoachStore();
 const toastStore = useToastStore();
 const editor = useInlineEditor(() => ({
   title: props.row.title === "-" ? "" : props.row.title,
@@ -80,7 +83,11 @@ async function save() {
     }
 
     if (updates.length > 0) {
-      await trainingStore.savePlannedDraft(props.row.id, updates);
+      if (props.editorContext === "coach") {
+        await coachStore.savePlannedDraft(props.row.id, updates);
+      } else {
+        await trainingStore.savePlannedDraft(props.row.id, updates);
+      }
     }
 
     editor.close();
@@ -100,7 +107,11 @@ async function addSecondPhase() {
   editor.isSaving.value = true;
   editor.errorMessage.value = "";
   try {
-    await trainingStore.addSecondPhase(props.row.id);
+    if (props.editorContext === "coach") {
+      await coachStore.addSecondPhase(props.row.id);
+    } else {
+      await trainingStore.addSecondPhase(props.row.id);
+    }
     editor.close();
   } catch (error) {
     editor.errorMessage.value = error instanceof Error ? error.message : "Nepodarilo se pridat druhou fazi.";
@@ -118,7 +129,11 @@ async function removeSecondPhase() {
   editor.isSaving.value = true;
   editor.errorMessage.value = "";
   try {
-    await trainingStore.removeSecondPhase(props.row.id);
+    if (props.editorContext === "coach") {
+      await coachStore.removeSecondPhase(props.row.id);
+    } else {
+      await trainingStore.removeSecondPhase(props.row.id);
+    }
     editor.close();
   } catch (error) {
     editor.errorMessage.value = error instanceof Error ? error.message : "Nepodarilo se odebrat druhou fazi.";

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from "vue";
 
+import AthleteManageModal from "@/components/coach/AthleteManageModal.vue";
 import CoachSidebar from "@/components/coach/CoachSidebar.vue";
 import MonthSummaryBar from "@/components/training/MonthSummaryBar.vue";
 import WeekCard from "@/components/training/WeekCard.vue";
@@ -12,6 +13,8 @@ import { useCoachStore } from "@/stores/coach";
 const coachStore = useCoachStore();
 const focusDraft = ref("");
 const isSavingFocus = ref(false);
+const isManageOpen = ref(false);
+const isSidebarOpen = ref(false);
 
 onMounted(() => {
   if (!coachStore.dashboard && !coachStore.isLoading) {
@@ -35,12 +38,34 @@ async function saveFocus() {
     isSavingFocus.value = false;
   }
 }
+
+async function openManageModal() {
+  await coachStore.loadAthletes();
+  isManageOpen.value = true;
+}
+
+async function saveAthleteOrder(athleteIds: number[]) {
+  await coachStore.saveAthleteOrder(athleteIds);
+  isManageOpen.value = false;
+}
+
+async function toggleAthleteHidden(athleteId: number, hidden: boolean) {
+  await coachStore.setAthleteHidden(athleteId, hidden);
+}
 </script>
 
 <template>
   <section class="coach-view">
-    <aside class="coach-view__sidebar">
-      <CoachSidebar :athletes="coachStore.athletes" @select="coachStore.selectAthlete" />
+    <aside class="coach-view__sidebar" :class="{ 'coach-view__sidebar--open': isSidebarOpen }">
+      <CoachSidebar
+        :athletes="coachStore.athletes"
+        @select="
+          async (athleteId) => {
+            isSidebarOpen = false;
+            await coachStore.selectAthlete(athleteId);
+          }
+        "
+      />
     </aside>
 
     <div class="coach-view__content">
@@ -56,9 +81,15 @@ async function saveFocus() {
 
       <template v-else-if="coachStore.selectedAthlete">
         <EbCard class="coach-toolbar">
-          <div>
+          <div class="coach-toolbar__identity">
             <div class="coach-card__eyebrow">Selected athlete</div>
             <div class="coach-toolbar__name">{{ coachStore.selectedAthlete.name }}</div>
+            <div class="coach-toolbar__actions">
+              <EbButton variant="ghost" class="coach-toolbar__mobile-button" @click="isSidebarOpen = !isSidebarOpen">
+                {{ isSidebarOpen ? "Hide athletes" : "Show athletes" }}
+              </EbButton>
+              <EbButton variant="ghost" @click="openManageModal">Manage athletes</EbButton>
+            </div>
           </div>
 
           <div class="coach-toolbar__focus">
@@ -80,11 +111,20 @@ async function saveFocus() {
         <MonthSummaryBar v-if="coachStore.summary" :summary="coachStore.summary" />
 
         <div class="coach-view__weeks">
-          <WeekCard v-for="week in coachStore.weeks" :key="week.id" :week="week" />
+          <WeekCard v-for="week in coachStore.weeks" :key="week.id" :week="week" editor-context="coach" />
         </div>
       </template>
     </div>
   </section>
+
+  <AthleteManageModal
+    :athletes="coachStore.managedAthletes"
+    :open="isManageOpen"
+    :saving="coachStore.isManagingAthletes"
+    @close="isManageOpen = false"
+    @save="saveAthleteOrder"
+    @toggle-hidden="toggleAthleteHidden"
+  />
 </template>
 
 <style scoped>
@@ -141,10 +181,24 @@ async function saveFocus() {
   padding: 1.25rem;
 }
 
+.coach-toolbar__identity {
+  display: grid;
+  gap: 0.5rem;
+}
+
 .coach-toolbar__name {
   margin-top: 0.45rem;
   font-family: var(--eb-font-display);
   font-size: 1.4rem;
+}
+
+.coach-toolbar__actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.coach-toolbar__mobile-button {
+  display: none;
 }
 
 .coach-toolbar__focus {
@@ -177,6 +231,11 @@ async function saveFocus() {
 
   .coach-view__sidebar {
     position: static;
+    display: none;
+  }
+
+  .coach-view__sidebar--open {
+    display: block;
   }
 
   .coach-toolbar {
@@ -186,6 +245,10 @@ async function saveFocus() {
 
   .coach-toolbar__focus {
     display: grid;
+  }
+
+  .coach-toolbar__mobile-button {
+    display: inline-flex;
   }
 }
 </style>
