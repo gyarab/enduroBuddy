@@ -1,0 +1,19 @@
+{% load static %}
+<!doctype html>
+<html lang="{{ LANGUAGE_CODE|default:'cs' }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>EnduroBuddy App</title>
+  {% if debug %}
+    <script type="module" src="{{ spa_vite_dev_server_url }}/@vite/client"></script>
+    <script type="module" src="{{ spa_vite_dev_server_url }}/src/main.ts"></script>
+  {% else %}
+    <link rel="stylesheet" href="{% static spa_entry_css %}">
+    <script type="module" src="{% static spa_entry_js %}"></script>
+  {% endif %}
+</head>
+<body>
+  <div id="app"></div>
+</body>
+</html>
