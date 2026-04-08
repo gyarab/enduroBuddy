@@ -15,16 +15,18 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import include, path, re_path
 from django.conf import settings
 from django.conf.urls.static import static
 from accounts.views import EnduroLoginView, complete_profile
 from config import error_views
 from config.views_public import public_about, public_home, public_privacy, public_terms
+from config.views_spa import spa_entry
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("i18n/", include("django.conf.urls.i18n")),
+    path("api/v1/", include("api.urls")),
     path("accounts/login/", EnduroLoginView.as_view(), name="account_login"),
     path("accounts/complete-profile/", complete_profile, name="account_complete_profile"),
     path("accounts/", include("allauth.urls")),
@@ -34,6 +36,10 @@ urlpatterns = [
     path("about/", public_about, name="public_about"),
     path("terms/", public_terms, name="public_terms"),
     path("privacy/", public_privacy, name="public_privacy"),
+    path("app/", spa_entry, name="spa_app_root"),
+    re_path(r"^app/(?P<path>.*)$", spa_entry, name="spa_app"),
+    path("coach/", spa_entry, name="spa_coach_root"),
+    re_path(r"^coach/(?P<path>.*)$", spa_entry, name="spa_coach"),
     path("", include("dashboard.urls")),
 ]
 
