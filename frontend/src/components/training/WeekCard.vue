@@ -1,20 +1,65 @@
 <script setup lang="ts">
-import type { DashboardWeek } from "@/api/training";
+import { ref } from "vue";
+
+import type { DashboardWeek, PlannedTrainingDraft } from "@/api/training";
 import { useI18n } from "@/composables/useI18n";
+import { useCoachStore } from "@/stores/coach";
+import { useTrainingStore } from "@/stores/training";
+import { useToastStore } from "@/stores/toasts";
 import CompletedRow from "@/components/training/CompletedRow.vue";
 import PlannedRow from "@/components/training/PlannedRow.vue";
 import EbCard from "@/components/ui/EbCard.vue";
+import EbButton from "@/components/ui/EbButton.vue";
 
-defineProps<{
+const props = defineProps<{
   week: DashboardWeek;
   editorContext?: "athlete" | "coach";
 }>();
 const { t } = useI18n();
+const trainingStore = useTrainingStore();
+const coachStore = useCoachStore();
+const toastStore = useToastStore();
+const isCreateOpen = ref(false);
+const isCreating = ref(false);
+const createError = ref("");
+const createDraft = ref<PlannedTrainingDraft>({
+  date: props.week.week_start,
+  title: "",
+  session_type: "RUN",
+});
 
 function formatRange(start: string, end: string) {
   const startDate = new Date(start);
   const endDate = new Date(end);
   return `${startDate.getDate()}.${startDate.getMonth() + 1}. - ${endDate.getDate()}.${endDate.getMonth() + 1}.`;
+}
+
+function openCreate() {
+  createDraft.value = {
+    date: props.week.week_start,
+    title: "",
+    session_type: "RUN",
+  };
+  createError.value = "";
+  isCreateOpen.value = true;
+}
+
+async function createPlanned() {
+  isCreating.value = true;
+  createError.value = "";
+  try {
+    if (props.editorContext === "coach") {
+      await coachStore.addPlannedTraining(createDraft.value);
+    } else {
+      await trainingStore.addPlannedTraining(createDraft.value);
+    }
+    isCreateOpen.value = false;
+  } catch (error) {
+    createError.value = error instanceof Error ? error.message : t("weekCard.createError");
+    toastStore.push(createError.value, "danger");
+  } finally {
+    isCreating.value = false;
+  }
 }
 </script>
 
@@ -43,6 +88,30 @@ function formatRange(start: string, end: string) {
             :editor-context="editorContext || 'athlete'"
           />
           <div v-if="week.planned_rows.length === 0" class="week-card__empty">{{ t("weekCard.emptyPlanned") }}</div>
+          <EbButton variant="secondary" @click="openCreate">{{ t("weekCard.addPlanned") }}</EbButton>
+
+          <form v-if="isCreateOpen" class="week-card__create" @submit.prevent="createPlanned">
+            <label class="week-card__create-field">
+              <span>{{ t("weekCard.date") }}</span>
+              <input v-model="createDraft.date" type="date" :disabled="isCreating" />
+            </label>
+            <label class="week-card__create-field">
+              <span>{{ t("weekCard.newTitle") }}</span>
+              <input v-model="createDraft.title" :disabled="isCreating" />
+            </label>
+            <label class="week-card__create-field">
+              <span>{{ t("weekCard.session") }}</span>
+              <select v-model="createDraft.session_type" :disabled="isCreating">
+                <option value="RUN">{{ t("weekCard.run") }}</option>
+                <option value="WORKOUT">{{ t("weekCard.workout") }}</option>
+              </select>
+            </label>
+            <p v-if="createError" class="week-card__create-error">{{ createError }}</p>
+            <div class="week-card__create-actions">
+              <EbButton type="button" variant="ghost" :disabled="isCreating" @click="isCreateOpen = false">{{ t("plannedRow.cancel") }}</EbButton>
+              <EbButton type="submit" :disabled="isCreating">{{ isCreating ? t("weekCard.creating") : t("weekCard.create") }}</EbButton>
+            </div>
+          </form>
         </div>
       </section>
 
@@ -120,6 +189,50 @@ function formatRange(start: string, end: string) {
   border: 1px dashed var(--eb-border);
   border-radius: var(--eb-radius-md);
   color: var(--eb-text-muted);
+  font-size: 0.8125rem;
+}
+
+.week-card__create {
+  display: grid;
+  gap: 0.85rem;
+  padding: 1rem;
+  border: 1px solid rgba(56, 189, 248, 0.18);
+  border-radius: var(--eb-radius-md);
+  background: rgba(56, 189, 248, 0.05);
+}
+
+.week-card__create-field {
+  display: grid;
+  gap: 0.4rem;
+  color: var(--eb-text-muted);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.week-card__create-field input,
+.week-card__create-field select {
+  width: 100%;
+  border: 1px solid var(--eb-border);
+  border-radius: var(--eb-radius-sm);
+  background: var(--eb-bg);
+  color: var(--eb-text);
+  padding: 0.7rem 0.8rem;
+  font: inherit;
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+.week-card__create-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.week-card__create-error {
+  margin: 0;
+  color: var(--eb-danger);
   font-size: 0.8125rem;
 }
 

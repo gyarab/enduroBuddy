@@ -3,6 +3,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   addSecondPhaseTraining,
+  createPlannedTraining,
+  deletePlannedTraining,
   type DashboardPayload,
   fetchDashboard,
   removeSecondPhaseTraining,
@@ -13,6 +15,8 @@ import { useTrainingStore } from "@/stores/training";
 
 vi.mock("@/api/training", () => ({
   addSecondPhaseTraining: vi.fn(),
+  createPlannedTraining: vi.fn(),
+  deletePlannedTraining: vi.fn(),
   fetchDashboard: vi.fn(),
   removeSecondPhaseTraining: vi.fn(),
   updateCompletedTraining: vi.fn(),
@@ -108,6 +112,8 @@ describe("useTrainingStore", () => {
     vi.mocked(fetchDashboard).mockResolvedValue(structuredClone(dashboardPayload));
     vi.mocked(updatePlannedTraining).mockResolvedValue({ ok: true });
     vi.mocked(updateCompletedTraining).mockResolvedValue({ ok: true });
+    vi.mocked(createPlannedTraining).mockResolvedValue({ ok: true });
+    vi.mocked(deletePlannedTraining).mockResolvedValue({ ok: true });
     vi.mocked(addSecondPhaseTraining).mockResolvedValue({ ok: true });
     vi.mocked(removeSecondPhaseTraining).mockResolvedValue({ ok: true });
   });
@@ -336,6 +342,30 @@ describe("useTrainingStore", () => {
 
       expect(capturedIsLoading).toBe(false);
       expect(capturedIsRefreshing).toBe(true);
+    });
+  });
+
+  describe("planned create/delete", () => {
+    it("creates planned training and silently reloads current month", async () => {
+      const store = useTrainingStore();
+      await store.loadDashboard();
+
+      vi.mocked(fetchDashboard).mockClear();
+      await store.addPlannedTraining({ date: "2026-04-10", title: "New run", session_type: "RUN" });
+
+      expect(createPlannedTraining).toHaveBeenCalledWith({ date: "2026-04-10", title: "New run", session_type: "RUN" });
+      expect(fetchDashboard).toHaveBeenCalledWith("2026-04");
+    });
+
+    it("deletes planned training and silently reloads current month", async () => {
+      const store = useTrainingStore();
+      await store.loadDashboard();
+
+      vi.mocked(fetchDashboard).mockClear();
+      await store.deletePlannedTrainingRow(501);
+
+      expect(deletePlannedTraining).toHaveBeenCalledWith(501);
+      expect(fetchDashboard).toHaveBeenCalledWith("2026-04");
     });
   });
 

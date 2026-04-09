@@ -3,10 +3,13 @@ import { defineStore } from "pinia";
 
 import {
   addSecondPhaseTraining,
+  createPlannedTraining,
+  deletePlannedTraining,
   fetchDashboard,
   removeSecondPhaseTraining,
   type DashboardPayload,
   type DashboardWeek,
+  type PlannedTrainingDraft,
   type TrainingRow,
   updateCompletedTraining,
   updatePlannedTraining,
@@ -328,6 +331,18 @@ export const useTrainingStore = defineStore("training", () => {
     }
   }
 
+  async function addPlannedTraining(payload: PlannedTrainingDraft) {
+    await createPlannedTraining(payload);
+    await loadDashboard(selectedMonthValue.value, { silent: true });
+    toastStore.push(t("trainingStore.plannedCreated"), "success");
+  }
+
+  async function deletePlannedTrainingRow(plannedId: number) {
+    await deletePlannedTraining(plannedId);
+    await loadDashboard(selectedMonthValue.value, { silent: true });
+    toastStore.push(t("trainingStore.plannedDeleted"), "success");
+  }
+
   async function addSecondPhase(plannedId: number) {
     await addSecondPhaseTraining(plannedId);
     await loadDashboard(selectedMonthValue.value, { silent: true });
@@ -342,7 +357,9 @@ export const useTrainingStore = defineStore("training", () => {
 
   return {
     addSecondPhase,
+    addPlannedTraining,
     dashboard,
+    deletePlannedTrainingRow,
     errorMessage,
     goToNextMonth,
     goToPreviousMonth,

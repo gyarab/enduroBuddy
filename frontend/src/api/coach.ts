@@ -1,5 +1,5 @@
 import { apiClient } from "@/api/client";
-import type { DashboardPayload } from "@/api/training";
+import type { DashboardPayload, PlannedTrainingDraft } from "@/api/training";
 
 export type CoachAthlete = {
   id: number;
@@ -74,6 +74,19 @@ export async function updateCoachPlannedTraining(
   },
 ) {
   const response = await apiClient.patch(`/coach/training/planned/${plannedId}/`, payload);
+  return response.data;
+}
+
+export async function createCoachPlannedTraining(athleteId: number, payload: PlannedTrainingDraft) {
+  const response = await apiClient.post("/coach/training/planned/", {
+    ...payload,
+    athlete_id: athleteId,
+  });
+  return response.data;
+}
+
+export async function deleteCoachPlannedTraining(plannedId: number) {
+  const response = await apiClient.delete(`/coach/training/planned/${plannedId}/`);
   return response.data;
 }
 

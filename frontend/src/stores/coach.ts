@@ -3,6 +3,8 @@ import { defineStore } from "pinia";
 
 import {
   addCoachSecondPhaseTraining,
+  createCoachPlannedTraining,
+  deleteCoachPlannedTraining,
   fetchCoachAthletes,
   fetchCoachDashboard,
   removeCoachSecondPhaseTraining,
@@ -14,7 +16,7 @@ import {
   type CoachAthlete,
 } from "@/api/coach";
 import { useI18n } from "@/composables/useI18n";
-import type { TrainingRow } from "@/api/training";
+import type { PlannedTrainingDraft, TrainingRow } from "@/api/training";
 import { useToastStore } from "@/stores/toasts";
 import { parseTrainingPreview } from "@/utils/trainingPreview";
 
@@ -260,6 +262,21 @@ export const useCoachStore = defineStore("coach", () => {
     toastStore.push(t("coachStore.planUpdated"), "success");
   }
 
+  async function addPlannedTraining(payload: PlannedTrainingDraft) {
+    if (!selectedAthlete.value) {
+      return;
+    }
+    await createCoachPlannedTraining(selectedAthlete.value.id, payload);
+    await loadDashboard(selectedAthlete.value.id, selectedMonth.value?.value);
+    toastStore.push(t("coachStore.planCreated"), "success");
+  }
+
+  async function deletePlannedTrainingRow(plannedId: number) {
+    await deleteCoachPlannedTraining(plannedId);
+    await loadDashboard(selectedAthlete.value?.id, selectedMonth.value?.value);
+    toastStore.push(t("coachStore.planDeleted"), "success");
+  }
+
   async function addSecondPhase(plannedId: number) {
     await addCoachSecondPhaseTraining(plannedId);
     await loadDashboard(selectedAthlete.value?.id, selectedMonth.value?.value);
@@ -274,6 +291,7 @@ export const useCoachStore = defineStore("coach", () => {
 
   return {
     addSecondPhase,
+    addPlannedTraining,
     athletes,
     dashboard,
     errorMessage,
@@ -281,6 +299,7 @@ export const useCoachStore = defineStore("coach", () => {
     goToPreviousMonth,
     isLoading,
     isManagingAthletes,
+    deletePlannedTrainingRow,
     loadAthletes,
     loadDashboard,
     managedAthletes,

@@ -45,6 +45,42 @@ const subtitle = computed(() => {
   }
   return trainingStore.selectedMonth?.label || t("topNav.dashboardOverview");
 });
+
+const activeMonth = computed(() => {
+  return props.variant === "coach" ? coachStore.selectedMonth : trainingStore.selectedMonth;
+});
+
+const activeNavigation = computed(() => {
+  return props.variant === "coach" ? coachStore.navigation : trainingStore.navigation;
+});
+
+const activeAthleteName = computed(() => {
+  return props.variant === "coach" ? coachStore.selectedAthlete?.name || "" : "";
+});
+
+const showMonthNavigator = computed(() => Boolean(activeMonth.value?.label));
+
+async function goToPreviousMonth() {
+  if (!activeNavigation.value?.previous || authStore.isLoading) {
+    return;
+  }
+  if (props.variant === "coach") {
+    await coachStore.goToPreviousMonth();
+    return;
+  }
+  await trainingStore.goToPreviousMonth();
+}
+
+async function goToNextMonth() {
+  if (!activeNavigation.value?.next || authStore.isLoading) {
+    return;
+  }
+  if (props.variant === "coach") {
+    await coachStore.goToNextMonth();
+    return;
+  }
+  await trainingStore.goToNextMonth();
+}
 </script>
 
 <template>
@@ -54,7 +90,30 @@ const subtitle = computed(() => {
         <img :src="brandLogoUrl" alt="EnduroBuddy" />
       </a>
 
-      <div class="top-nav__headline">
+      <div v-if="showMonthNavigator" class="top-nav__month-nav" aria-label="Month navigation">
+        <span v-if="activeAthleteName" class="top-nav__athlete-pill">{{ activeAthleteName }}</span>
+        <button
+          class="top-nav__month-button"
+          type="button"
+          :disabled="!activeNavigation?.previous"
+          :aria-label="activeNavigation?.previous?.label || 'Previous month'"
+          @click="goToPreviousMonth"
+        >
+          &lt;
+        </button>
+        <div class="top-nav__month-label">{{ activeMonth?.label }}</div>
+        <button
+          class="top-nav__month-button"
+          type="button"
+          :disabled="!activeNavigation?.next"
+          :aria-label="activeNavigation?.next?.label || 'Next month'"
+          @click="goToNextMonth"
+        >
+          &gt;
+        </button>
+      </div>
+
+      <div v-else class="top-nav__headline">
         <div class="top-nav__title">{{ title }}</div>
         <div class="top-nav__subtitle">{{ subtitle }}</div>
       </div>
@@ -106,6 +165,69 @@ const subtitle = computed(() => {
   min-width: 0;
 }
 
+.top-nav__month-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  min-width: 0;
+}
+
+.top-nav__athlete-pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.75rem;
+  max-width: 14rem;
+  padding: 0 0.75rem;
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  border-radius: 999px;
+  background: rgba(56, 189, 248, 0.12);
+  color: var(--eb-blue);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.top-nav__month-button {
+  display: inline-grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border: 0;
+  border-radius: var(--eb-radius-sm);
+  background: transparent;
+  color: var(--eb-text-soft);
+  font-family: var(--eb-font-mono);
+  font-size: 0.95rem;
+  transition:
+    background-color 150ms ease-out,
+    color 150ms ease-out;
+}
+
+.top-nav__month-button:not(:disabled):hover {
+  background: var(--eb-surface-hover);
+  color: var(--eb-text);
+}
+
+.top-nav__month-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.35;
+}
+
+.top-nav__month-label {
+  min-width: 8.75rem;
+  color: var(--eb-text);
+  font-family: var(--eb-font-display);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-align: center;
+}
+
 .top-nav__title {
   font-family: var(--eb-font-display);
   font-size: 0.95rem;
@@ -150,12 +272,34 @@ const subtitle = computed(() => {
 
 @media (max-width: 767px) {
   .top-nav__inner {
+    grid-template-columns: auto minmax(0, 1fr) auto;
     padding: 0 1rem;
-    gap: 0.75rem;
+    gap: 0.6rem;
   }
 
   .top-nav__subtitle {
     display: none;
+  }
+
+  .top-nav__brand img {
+    height: 1.5rem;
+  }
+
+  .top-nav__month-nav {
+    gap: 0.4rem;
+    justify-content: flex-start;
+  }
+
+  .top-nav__athlete-pill {
+    display: none;
+  }
+
+  .top-nav__month-label {
+    min-width: 0;
+    max-width: 7.5rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 }
 </style>

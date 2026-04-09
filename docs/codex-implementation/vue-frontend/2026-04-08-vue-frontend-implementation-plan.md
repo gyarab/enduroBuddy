@@ -136,9 +136,9 @@ Minimalni token set musi zahrnout:
 
 ## Implementation Phases
 
-## Current Status Audit (2026-04-09)
+## Current Status Audit (2026-04-09, aktualizovano)
 
-Tato sekce zachycuje realny stav implementace po prvni vetsi vlne migrace a slouzi jako prubezne srovnani:
+Tato sekce zachycuje realny stav implementace po dvou vlnach prace a slouzi jako prubezne srovnani:
 
 - proti tomuto Codex planu
 - proti puvodnimu Claudeovu migration designu
@@ -148,9 +148,10 @@ Tato sekce zachycuje realny stav implementace po prvni vetsi vlne migrace a slou
 
 - Phase 1 je funkcne hotova a overena lokalnim buildem i typecheckem.
 - Phase 2 je hotova v read-only i prakticky pouzitelne athlete podobe.
-- Phase 3 je z velke casti hotova: editace, notifications, imports, parser preview a second-phase flow existuji.
+- Phase 3 je z velke casti hotova: editace, notifications, imports, parser preview a second-phase flow existuji. Optimistic patching byl opraven — UI se nyni aktualizuje pred network callem a reverts pri chybe.
 - Phase 4 je funkcne rozjeta dal, nez puvodne pocital tento plan: coach dashboard, manage athletes, reorder, visibility a planned editace jsou ve Vue.
 - Phase 5 je otevrena a realne rozjeta: profile completion bezi pres SPA a i18n scaffold uz zasahuje shell, dashboard, modaly i cast store/composable vrstvy.
+- Frontend testovaci mezery z prvniho auditu jsou uzavreny: 71 testu prochazi, pokryti zahrnuje vsechny planovane oblasti.
 
 ### Phase-By-Phase Status
 
@@ -198,13 +199,14 @@ Hotove:
 - notification dropdown + unread count + mark-as-read
 - Garmin import modal
 - FIT upload flow
-- optimistic patching a toasty
+- optimistic patching a toasty — opraveno 2026-04-09: UI patch probiha pred network callem, revert na chybu pres silent reload; `savePlannedDraft` a `saveCompletedDraft` posilaji fieldy paralelne pres `Promise.all`
 
 Zbyva nebo je jen castecne:
 
-- create/delete planned a completed flow jeste neni dodelany v plne SPA surface podle puvodniho endpoint seznamu
+- `POST /api/v1/training/planned/` a `DELETE /api/v1/training/planned/{id}/` nejsou aktualne vystavene v `backend/api/urls.py`; kontrakt a SPA surface pro vytvoreni/smazani planned trainingu zustavaji nedokoncene
+- `POST /api/v1/training/completed/` a `DELETE /api/v1/training/completed/{id}/` nejsou aktualne vystavene v `backend/api/urls.py`; completed create/delete flow zustava nedokonceny a musi respektovat import/linked-activity pravidla
 - parser jeste neni plny 1:1 port vsech legacy pravidel
-- chybi sirsi integration coverage pro import polling edge cases
+- chybi sirsi integration coverage pro import polling edge cases (uspesne Garmin/FIT scenare)
 
 #### Phase 4: Coach Workspace
 
@@ -252,11 +254,26 @@ Zbyva nebo je jen castecne:
 
 ### Test And Verification Status
 
-Aktualne overeno:
+Aktualne overeno (71 frontend testu, vse zelene):
 
 - `npm run typecheck`
 - `npm run build`
-- frontend unit/component/view testy pro parser, stores, shared rows, shell interakce a dashboard views
+- `npm run test` — 71 testu, 12 test souboru, vse passing
+- frontend unit testy:
+  - `trainingPreview.test.ts` — 6 testu: parser heuristiky, notace, rest detection
+  - `useInlineEditor.test.ts` — 10 testu: open/close stav, draft init, factory reuse, canInteract, errorMessage
+  - `training.test.ts` — 19 testu: loading/error/silent refresh, navigace, optimistic planned/completed patch, summary recompute, second phase add/remove
+  - `coach.test.ts` — 4 testy: load, reorder, visibility toggle, optimistic patch
+- frontend komponentove testy:
+  - `WeekCardSkeleton.test.ts` — 5 testu: render, header, columns, labels, rows
+  - `CompletedRow.test.ts` — 3 testy
+  - `PlannedRow.test.ts` — 4 testy
+  - `NotificationBell.test.ts` — 3 testy: render, toggle, outside-click
+  - `TopNav.test.ts` — 9 testu: brand, variant links, initials, fallback, dropdown toggle, title podle route
+  - `CoachSidebar.test.ts` — 2 testy
+- frontend view testy:
+  - `AthleteView.test.ts` — 3 testy
+  - `CoachView.test.ts` — 3 testy
 - backend `python -m compileall backend/api backend/config backend/accounts backend/dashboard`
 - backend API smoke coverage v `backend/api/tests.py` pro:
   - `auth/me`
@@ -274,7 +291,8 @@ Aktualne overeno:
 Zbyva z test strategie:
 
 - backend API testy pro uspesne Garmin/FIT import scenare jsou stale slabsi, nez plan predpokladal
-- chybi sirsi end-to-end nebo integration scenare napric login -> bootstrap -> dashboard -> editace
+- chybi end-to-end nebo integration scenare napric login -> bootstrap -> dashboard -> editace
+- `useI18n` composable nema testy; modul-level `currentLocale` ref muze zpusobit kontaminaci mezi test runy pokud testy zavolaji `setLocale` bez resetu
 
 ### Accepted Deviations From Plan Checklist
 
@@ -308,27 +326,27 @@ Vuci `2026-04-06-vue-app-visual-design.md` je aktualni stav:
 - nektere casti jsou ale stale bliz "solid MVP polish" nez finalni pixel-perfect parity
 - mobilni chovani existuje, ale zaslouzi dalsi audit proti detailni spec pro sidebar/nav/editor overlay
 
-### Plan Adjustment After Audit
+### Plan Adjustment After Audit (aktualizovano 2026-04-09)
 
-Struktura fazi zustava funkcni a neni potreba ji prepisovat. Upravuje se ale priorita dalsich kroku:
+Struktura fazi zustava funkcni a neni potreba ji prepisovat. Priority dalsich kroku:
 
-1. Neotevirat dalsi velke feature bloky, dokud neprobehne closing cleanup.
+1. Frontend testovaci mezery jsou uzavreny — 71 testu prochazi. Dalsi frontend testy nejsou akutni prioritou.
 2. Coach completed policy je uzavrena podle legacy pravidel:
    - managed athlete completed je read-only
-   - coach self-plan completed ma API endpoint, ale neni hlavni coach workspace priorita
-3. Dopsat backend API testy pro hlavni SPA endpointy.
-4. Udelat legacy cleanup audit:
-   - stare dashboard JS
-   - partialy pouzivane jen puvodni SPA-nahrazenou casti
-   - zbytky bootstrap-specific chovani v prihlasene casti
-5. Rozhodnout, zda custom i18n vrstva zustane finalni implementace, nebo jestli jeste dava smysl migrace na `vue-i18n`.
+   - coach self-plan completed ma API endpoint, ale UI surface neni priorita
+3. **Otevreno: backend API testy pro uspesne import scenare.** Garmin/FIT happy-path testy jsou stale slabsi, nez plan predpokladal. Toto je nejvetsi zbyvajici testovaci mezera.
+4. **Otevreno: legacy cleanup.** Stare dashboard JS a partialy pouzivane jen nahrazenou casti nejsou systematicky odstranene. Cleanup je bezpecny az po funkcni nahrade ve Vue — ta uz z velke casti existuje.
+5. **Otevreno: SPA create/delete flow pro planned a completed.** Endpointy nejsou aktualne vystavene v `backend/api/urls.py` a frontend surface neni dokoncena.
+6. **Odlozeno: i18n integrace s Django.** Custom `useI18n` zustava; napojeni na Django language switch je dalsi krok az po legacy cleanup.
 
-### Current Recommended Next Slice
+### Current Recommended Next Slice (aktualizovano 2026-04-09)
 
-Nejlepsi dalsi krok po tomto auditu je:
+Doporucene poradi dalsich kroku od nejnaléhavejsiho:
 
-- rozsirit import test coverage o uspesnejsi Garmin/FIT scenare tam, kde to pujde bez krehkeho mockovani externich sluzeb
-- potom udelat legacy cleanup audit nad starymi dashboard JS/partialy
+1. **Backend import testy** — rozsirit `backend/api/tests.py` o uspesne Garmin/FIT scenare (happy path, ne jen guard testy). Priorita: vysoká, je to jedina zbyvajici vetsi testovaci mezera.
+2. **Legacy cleanup audit** — projit stare dashboard JS soubory a Django partialy, ktere uz jsou nahrazeny Vue SPA. Zmapovat co lze bezpecne smazat.
+3. **SPA create/delete planned** — nejdriv dodefinovat a vystavit backend kontrakt, potom dokoncit frontend surface pro vytvoreni a smazani planned trainingu.
+4. **Mobile audit** — projit sidebar/nav/editor overlay na mobilnich breakpointech proti visual design spec.
 
 ### Phase 1: SPA Bootstrap and Shell
 

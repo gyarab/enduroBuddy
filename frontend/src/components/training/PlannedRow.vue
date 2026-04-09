@@ -144,6 +144,32 @@ async function removeSecondPhase() {
     editor.isSaving.value = false;
   }
 }
+
+async function deletePlanned() {
+  if (!props.row.id) {
+    return;
+  }
+  const confirmed = window.confirm(t("plannedRow.confirmDelete"));
+  if (!confirmed) {
+    return;
+  }
+
+  editor.isSaving.value = true;
+  editor.errorMessage.value = "";
+  try {
+    if (props.editorContext === "coach") {
+      await coachStore.deletePlannedTrainingRow(props.row.id);
+    } else {
+      await trainingStore.deletePlannedTrainingRow(props.row.id);
+    }
+    editor.close();
+  } catch (error) {
+    editor.errorMessage.value = error instanceof Error ? error.message : t("plannedRow.deleteError");
+    toastStore.push(editor.errorMessage.value, "danger");
+  } finally {
+    editor.isSaving.value = false;
+  }
+}
 </script>
 
 <template>
@@ -236,6 +262,14 @@ async function removeSecondPhase() {
           @click="removeSecondPhase"
         >
           {{ t("plannedRow.removeSecondPhase") }}
+        </EbButton>
+        <EbButton
+          v-if="row.editable && !row.is_second_phase"
+          variant="danger"
+          :disabled="editor.isSaving.value"
+          @click="deletePlanned"
+        >
+          {{ t("plannedRow.delete") }}
         </EbButton>
         <EbButton variant="ghost" :disabled="editor.isSaving.value" @click="editor.close">{{ t("plannedRow.cancel") }}</EbButton>
         <EbButton :disabled="editor.isSaving.value" @click="save">
