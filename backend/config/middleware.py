@@ -43,7 +43,7 @@ class GoogleOAuthRateLimitMiddleware:
 class GoogleProfileCompletionMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
-        self.complete_profile_path = reverse("account_complete_profile")
+        self.complete_profile_path = "/app/profile/complete"
         self.logout_path = reverse("account_logout")
 
     def __call__(self, request):

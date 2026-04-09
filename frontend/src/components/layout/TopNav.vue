@@ -4,6 +4,7 @@ import { useRoute } from "vue-router";
 
 import NotificationBell from "@/components/layout/NotificationBell.vue";
 import ProfileDropdown from "@/components/layout/ProfileDropdown.vue";
+import { useI18n } from "@/composables/useI18n";
 import { useAuthStore } from "@/stores/auth";
 import { useCoachStore } from "@/stores/coach";
 import { useTrainingStore } from "@/stores/training";
@@ -18,15 +19,16 @@ const trainingStore = useTrainingStore();
 const route = useRoute();
 const isProfileOpen = ref(false);
 const brandLogoUrl = "/static/brand/eb-logo-compact.svg";
+const { t } = useI18n();
 
 const title = computed(() => {
   if (route.path.startsWith("/coach")) {
-    return "Coach Workspace";
+    return t("topNav.coachWorkspace");
   }
   if (route.path.includes("/profile")) {
-    return "Complete Profile";
+    return t("topNav.completeProfile");
   }
-  return "Dashboard";
+  return t("topNav.dashboard");
 });
 
 const subtitle = computed(() => {
@@ -38,10 +40,10 @@ const subtitle = computed(() => {
       return coachStore.selectedAthlete.name;
     }
     return authStore.user?.capabilities.coached_athlete_count
-      ? `${authStore.user.capabilities.coached_athlete_count} athletes ready`
-      : "Plans and athlete focus";
+      ? t("topNav.athletesReady", { count: authStore.user.capabilities.coached_athlete_count })
+      : t("topNav.plansAndFocus");
   }
-  return trainingStore.selectedMonth?.label || "Dashboard overview";
+  return trainingStore.selectedMonth?.label || t("topNav.dashboardOverview");
 });
 </script>
 

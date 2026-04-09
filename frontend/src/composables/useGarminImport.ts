@@ -1,5 +1,6 @@
 import { computed, onBeforeUnmount, ref } from "vue";
 
+import { useI18n } from "@/composables/useI18n";
 import {
   connectGarmin,
   fetchImportJobStatus,
@@ -16,6 +17,7 @@ type AuthCapabilities = {
 };
 
 export function useGarminImport(source: { value: AuthCapabilities | undefined }) {
+  const { t } = useI18n();
   const isOpen = ref(false);
   const isBusy = ref(false);
   const errorMessage = ref("");
@@ -77,7 +79,7 @@ export function useGarminImport(source: { value: AuthCapabilities | undefined })
       garminPassword.value = "";
       return payload.connection;
     } catch (error) {
-      errorMessage.value = error instanceof Error ? error.message : "Garmin connect failed.";
+      errorMessage.value = error instanceof Error ? error.message : t("garminImport.connectFailed");
       throw error;
     } finally {
       isBusy.value = false;
@@ -94,7 +96,7 @@ export function useGarminImport(source: { value: AuthCapabilities | undefined })
       statusMessage.value = payload.message;
       return payload.connection;
     } catch (error) {
-      errorMessage.value = error instanceof Error ? error.message : "Garmin disconnect failed.";
+      errorMessage.value = error instanceof Error ? error.message : t("garminImport.disconnectFailed");
       throw error;
     } finally {
       isBusy.value = false;
@@ -112,7 +114,7 @@ export function useGarminImport(source: { value: AuthCapabilities | undefined })
       await pollJob(payload.job.id);
       return payload.job;
     } catch (error) {
-      errorMessage.value = error instanceof Error ? error.message : "Garmin sync failed.";
+      errorMessage.value = error instanceof Error ? error.message : t("garminImport.syncFailed");
       throw error;
     } finally {
       isBusy.value = false;
@@ -127,7 +129,7 @@ export function useGarminImport(source: { value: AuthCapabilities | undefined })
       statusMessage.value = payload.message;
       return payload;
     } catch (error) {
-      errorMessage.value = error instanceof Error ? error.message : "FIT import failed.";
+      errorMessage.value = error instanceof Error ? error.message : t("garminImport.fitFailed");
       throw error;
     } finally {
       isBusy.value = false;

@@ -13,6 +13,7 @@ import {
   type CoachDashboardPayload,
   type CoachAthlete,
 } from "@/api/coach";
+import { useI18n } from "@/composables/useI18n";
 import type { TrainingRow } from "@/api/training";
 import { useToastStore } from "@/stores/toasts";
 import { parseTrainingPreview } from "@/utils/trainingPreview";
@@ -24,6 +25,7 @@ export const useCoachStore = defineStore("coach", () => {
   const isManagingAthletes = ref(false);
   const errorMessage = ref("");
   const toastStore = useToastStore();
+  const { t } = useI18n();
 
   const athletes = computed(() => dashboard.value?.athletes ?? []);
   const selectedAthlete = computed(() => dashboard.value?.selected_athlete ?? null);
@@ -39,7 +41,7 @@ export const useCoachStore = defineStore("coach", () => {
       dashboard.value = await fetchCoachDashboard(athleteId, month);
       applyManagedAthletes(await fetchCoachAthletes(dashboard.value.selected_athlete?.id).then((payload) => payload.athletes));
     } catch (error) {
-      errorMessage.value = error instanceof Error ? error.message : "Nepodarilo se nacist coach dashboard.";
+      errorMessage.value = error instanceof Error ? error.message : t("coachStore.loadError");
     } finally {
       isLoading.value = false;
     }
@@ -77,7 +79,7 @@ export const useCoachStore = defineStore("coach", () => {
     if (athlete) {
       athlete.focus = payload.focus;
     }
-    toastStore.push("Coach focus updated.", "success");
+    toastStore.push(t("coachStore.focusUpdated"), "success");
   }
 
   function isSubstantivePlannedRow(row: TrainingRow) {
@@ -206,7 +208,7 @@ export const useCoachStore = defineStore("coach", () => {
     try {
       const payload = await reorderCoachAthletes(athleteIds);
       applyManagedAthletes(payload.athletes);
-      toastStore.push("Athlete order updated.", "success");
+      toastStore.push(t("coachStore.athleteOrderUpdated"), "success");
     } finally {
       isManagingAthletes.value = false;
     }
@@ -231,7 +233,7 @@ export const useCoachStore = defineStore("coach", () => {
     try {
       const payload = await updateCoachAthleteVisibility(athleteId, hidden);
       applyManagedAthletes(payload.athletes);
-      toastStore.push(hidden ? "Athlete hidden from plans." : "Athlete shown in plans.", "success");
+      toastStore.push(hidden ? t("coachStore.athleteHidden") : t("coachStore.athleteShown"), "success");
 
       if (hidden && selectedAthlete.value?.id === athleteId) {
         const nextVisible = payload.athletes.find((athlete) => !athlete.hidden);
@@ -255,19 +257,19 @@ export const useCoachStore = defineStore("coach", () => {
       await updateCoachPlannedTraining(plannedId, update);
       patchPlannedRow(plannedId, update);
     }
-    toastStore.push("Coach plan updated.", "success");
+    toastStore.push(t("coachStore.planUpdated"), "success");
   }
 
   async function addSecondPhase(plannedId: number) {
     await addCoachSecondPhaseTraining(plannedId);
     await loadDashboard(selectedAthlete.value?.id, selectedMonth.value?.value);
-    toastStore.push("Second phase added.", "success");
+    toastStore.push(t("coachStore.secondPhaseAdded"), "success");
   }
 
   async function removeSecondPhase(plannedId: number) {
     await removeCoachSecondPhaseTraining(plannedId);
     await loadDashboard(selectedAthlete.value?.id, selectedMonth.value?.value);
-    toastStore.push("Second phase removed.", "success");
+    toastStore.push(t("coachStore.secondPhaseRemoved"), "success");
   }
 
   return {

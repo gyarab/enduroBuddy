@@ -4,6 +4,7 @@ import { computed, ref, watch } from "vue";
 import EbButton from "@/components/ui/EbButton.vue";
 import EbModal from "@/components/ui/EbModal.vue";
 import { useGarminImport } from "@/composables/useGarminImport";
+import { useI18n } from "@/composables/useI18n";
 import { useAuthStore } from "@/stores/auth";
 import { useToastStore } from "@/stores/toasts";
 import { useTrainingStore } from "@/stores/training";
@@ -12,15 +13,16 @@ const authStore = useAuthStore();
 const toastStore = useToastStore();
 const trainingStore = useTrainingStore();
 const fitInput = ref<HTMLInputElement | null>(null);
+const { t } = useI18n();
 
 const importFlow = useGarminImport(
   computed(() => authStore.user?.capabilities),
 );
 
 const ranges = [
-  { value: "yesterday", label: "Yesterday" },
-  { value: "last_7_days", label: "Last 7 days" },
-  { value: "last_30_days", label: "Last 30 days" },
+  { value: "yesterday", label: computed(() => t("imports.ranges.yesterday")) },
+  { value: "last_7_days", label: computed(() => t("imports.ranges.last7Days")) },
+  { value: "last_30_days", label: computed(() => t("imports.ranges.last30Days")) },
 ];
 
 async function refreshAfterImport() {
@@ -36,9 +38,9 @@ async function handleConnect() {
   try {
     await importFlow.connect();
     await refreshAfterImport();
-    toastStore.push(importFlow.statusMessage.value || "Garmin connected.", "success");
+    toastStore.push(importFlow.statusMessage.value || t("imports.fallbacks.connected"), "success");
   } catch (error) {
-    toastStore.push(importFlow.errorMessage.value || (error instanceof Error ? error.message : "Garmin connect failed."), "danger");
+    toastStore.push(importFlow.errorMessage.value || (error instanceof Error ? error.message : t("imports.fallbacks.connectFailed")), "danger");
   }
 }
 
@@ -46,18 +48,18 @@ async function handleDisconnect() {
   try {
     await importFlow.disconnect();
     await refreshAfterImport();
-    toastStore.push(importFlow.statusMessage.value || "Garmin disconnected.", "success");
+    toastStore.push(importFlow.statusMessage.value || t("imports.fallbacks.disconnected"), "success");
   } catch (error) {
-    toastStore.push(importFlow.errorMessage.value || (error instanceof Error ? error.message : "Garmin disconnect failed."), "danger");
+    toastStore.push(importFlow.errorMessage.value || (error instanceof Error ? error.message : t("imports.fallbacks.disconnectFailed")), "danger");
   }
 }
 
 async function handleSync() {
   try {
     await importFlow.sync();
-    toastStore.push(importFlow.statusMessage.value || "Garmin sync started.", "success");
+    toastStore.push(importFlow.statusMessage.value || t("imports.fallbacks.syncStarted"), "success");
   } catch (error) {
-    toastStore.push(importFlow.errorMessage.value || (error instanceof Error ? error.message : "Garmin sync failed."), "danger");
+    toastStore.push(importFlow.errorMessage.value || (error instanceof Error ? error.message : t("imports.fallbacks.syncFailed")), "danger");
   }
 }
 
@@ -70,10 +72,10 @@ async function handleFitChange(event: Event) {
   try {
     await importFlow.upload(target.files[0]);
     await refreshAfterImport();
-    toastStore.push(importFlow.statusMessage.value || "FIT import finished.", "success");
+    toastStore.push(importFlow.statusMessage.value || t("imports.fallbacks.fitFinished"), "success");
     target.value = "";
   } catch (error) {
-    toastStore.push(importFlow.errorMessage.value || (error instanceof Error ? error.message : "FIT import failed."), "danger");
+    toastStore.push(importFlow.errorMessage.value || (error instanceof Error ? error.message : t("imports.fallbacks.fitFailed")), "danger");
   }
 }
 
@@ -82,7 +84,7 @@ watch(
   async (done, previous) => {
     if (done && !previous) {
       await refreshAfterImport();
-      toastStore.push(importFlow.statusMessage.value || "Garmin sync finished.", "success");
+      toastStore.push(importFlow.statusMessage.value || t("imports.fallbacks.syncFinished"), "success");
     }
   },
 );
@@ -90,41 +92,45 @@ watch(
 
 <template>
   <div class="import-launcher">
-    <EbButton variant="secondary" @click="importFlow.open">Import</EbButton>
+    <EbButton variant="secondary" @click="importFlow.open">{{ t("imports.open") }}</EbButton>
 
     <EbModal :open="importFlow.isOpen.value">
       <div class="import-modal">
         <div class="import-modal__header">
           <div>
-            <div class="import-modal__eyebrow">Imports</div>
-            <h2>Garmin and FIT</h2>
+            <div class="import-modal__eyebrow">{{ t("imports.eyebrow") }}</div>
+            <h2>{{ t("imports.title") }}</h2>
           </div>
-          <EbButton variant="ghost" @click="importFlow.close">Close</EbButton>
+          <EbButton variant="ghost" @click="importFlow.close">{{ t("imports.close") }}</EbButton>
         </div>
 
         <div class="import-modal__body">
           <section class="import-section">
-            <div class="import-section__title">Garmin connection</div>
+            <div class="import-section__title">{{ t("imports.connectionTitle") }}</div>
             <p class="import-section__copy">
               <template v-if="importFlow.connected.value">
-                Connected{{ importFlow.connectionLabel.value ? ` as ${importFlow.connectionLabel.value}` : "" }}.
+                {{
+                  importFlow.connectionLabel.value
+                    ? t("imports.connectedAs", { name: importFlow.connectionLabel.value })
+                    : t("imports.connected")
+                }}
               </template>
               <template v-else>
-                Connect your Garmin account to sync recent activities.
+                {{ t("imports.connectCopy") }}
               </template>
             </p>
 
             <div v-if="!importFlow.connected.value && importFlow.canConnect.value" class="import-section__grid">
               <label class="import-field">
-                <span>Email</span>
+                <span>{{ t("imports.email") }}</span>
                 <input v-model="importFlow.garminEmail.value" class="import-input" type="email" :disabled="importFlow.isBusy.value" />
               </label>
               <label class="import-field">
-                <span>Password</span>
+                <span>{{ t("imports.password") }}</span>
                 <input v-model="importFlow.garminPassword.value" class="import-input" type="password" :disabled="importFlow.isBusy.value" />
               </label>
               <EbButton :disabled="importFlow.isBusy.value" @click="handleConnect">
-                {{ importFlow.isBusy.value ? "Connecting..." : "Connect Garmin" }}
+                {{ importFlow.isBusy.value ? t("imports.connecting") : t("imports.connect") }}
               </EbButton>
             </div>
 
@@ -134,18 +140,18 @@ watch(
                 :disabled="importFlow.isBusy.value"
                 @click="handleDisconnect"
               >
-                Disconnect
+                {{ t("imports.disconnect") }}
               </EbButton>
             </div>
           </section>
 
           <section class="import-section">
-            <div class="import-section__title">Garmin sync</div>
+            <div class="import-section__title">{{ t("imports.syncTitle") }}</div>
             <div class="import-section__grid import-section__grid--sync">
               <label class="import-field">
-                <span>Range</span>
+                <span>{{ t("imports.range") }}</span>
                 <select v-model="importFlow.selectedRange.value" class="import-input" :disabled="importFlow.isBusy.value || !importFlow.connected.value">
-                  <option v-for="option in ranges" :key="option.value" :value="option.value">{{ option.label }}</option>
+                  <option v-for="option in ranges" :key="option.value" :value="option.value">{{ option.label.value }}</option>
                 </select>
               </label>
 
@@ -153,7 +159,7 @@ watch(
                 :disabled="importFlow.isBusy.value || !importFlow.connected.value || !importFlow.canSync.value"
                 @click="handleSync"
               >
-                {{ importFlow.isBusy.value ? "Starting..." : "Sync Garmin" }}
+                {{ importFlow.isBusy.value ? t("imports.starting") : t("imports.sync") }}
               </EbButton>
             </div>
 
@@ -170,8 +176,8 @@ watch(
           </section>
 
           <section class="import-section">
-            <div class="import-section__title">FIT upload</div>
-            <p class="import-section__copy">Upload a FIT file from any supported device.</p>
+            <div class="import-section__title">{{ t("imports.fitTitle") }}</div>
+            <p class="import-section__copy">{{ t("imports.fitCopy") }}</p>
             <div class="import-section__actions">
               <input
                 ref="fitInput"

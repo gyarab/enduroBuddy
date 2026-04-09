@@ -12,8 +12,8 @@ describe("parseTrainingPreview", () => {
     expect(preview.intervals[0]).toMatchObject({
       reps: 6,
       distanceLabel: "400 m",
-      estimatedKm: 2.4,
     });
+    expect(preview.intervals[0]?.estimatedKm).toBeCloseTo(2.4, 5);
   });
 
   it("parses parenthesized block notation", () => {

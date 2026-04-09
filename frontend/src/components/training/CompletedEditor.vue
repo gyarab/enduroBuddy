@@ -3,6 +3,7 @@ import { computed } from "vue";
 
 import type { TrainingRow } from "@/api/training";
 import { useInlineEditor } from "@/composables/useInlineEditor";
+import { useI18n } from "@/composables/useI18n";
 import { useTrainingStore } from "@/stores/training";
 import { useToastStore } from "@/stores/toasts";
 import EbButton from "@/components/ui/EbButton.vue";
@@ -13,6 +14,7 @@ const props = defineProps<{
 
 const trainingStore = useTrainingStore();
 const toastStore = useToastStore();
+const { t } = useI18n();
 const editor = useInlineEditor(() => ({
   km: props.row.completed_metrics?.km || "",
   minutes: props.row.completed_metrics?.minutes || "",
@@ -22,7 +24,7 @@ const editor = useInlineEditor(() => ({
 }));
 
 const plannedSummary = computed(() => {
-  return props.row.planned_metrics?.planned_km_text || "Completed entry";
+  return props.row.planned_metrics?.planned_km_text || t("completedEditor.entryFallback");
 });
 
 function openEditor() {
@@ -70,7 +72,7 @@ async function save() {
     }
     editor.close();
   } catch (error) {
-    editor.errorMessage.value = error instanceof Error ? error.message : "Nepodarilo se ulozit completed row.";
+    editor.errorMessage.value = error instanceof Error ? error.message : t("completedEditor.saveError");
     toastStore.push(editor.errorMessage.value, "danger");
   } finally {
     editor.isSaving.value = false;
@@ -80,30 +82,30 @@ async function save() {
 
 <template>
   <div class="completed-editor-wrap">
-    <EbButton v-if="row.editable" variant="ghost" @click="openEditor">Edit</EbButton>
+    <EbButton v-if="row.editable" variant="ghost" @click="openEditor">{{ t("completedEditor.edit") }}</EbButton>
 
     <div v-if="editor.isOpen.value" class="completed-editor">
-      <div class="completed-editor__plan">Plan: {{ plannedSummary }}</div>
+      <div class="completed-editor__plan">{{ t("completedEditor.plan", { value: plannedSummary }) }}</div>
 
       <div class="completed-editor__grid">
         <label class="completed-editor__field">
-          <span class="completed-editor__label">km</span>
+          <span class="completed-editor__label">{{ t("completedEditor.km") }}</span>
           <input v-model="editor.draft.value.km" class="completed-editor__input" :disabled="!editor.canInteract.value" />
         </label>
         <label class="completed-editor__field">
-          <span class="completed-editor__label">min</span>
+          <span class="completed-editor__label">{{ t("completedEditor.min") }}</span>
           <input v-model="editor.draft.value.minutes" class="completed-editor__input" :disabled="!editor.canInteract.value" />
         </label>
         <label class="completed-editor__field">
-          <span class="completed-editor__label">avg HR</span>
+          <span class="completed-editor__label">{{ t("completedEditor.avgHr") }}</span>
           <input v-model="editor.draft.value.avgHr" class="completed-editor__input" :disabled="!editor.canInteract.value" />
         </label>
         <label class="completed-editor__field">
-          <span class="completed-editor__label">max HR</span>
+          <span class="completed-editor__label">{{ t("completedEditor.maxHr") }}</span>
           <input v-model="editor.draft.value.maxHr" class="completed-editor__input" :disabled="!editor.canInteract.value" />
         </label>
         <label class="completed-editor__field completed-editor__field--wide">
-          <span class="completed-editor__label">Details</span>
+          <span class="completed-editor__label">{{ t("completedEditor.details") }}</span>
           <textarea v-model="editor.draft.value.details" class="completed-editor__textarea" :disabled="!editor.canInteract.value" />
         </label>
       </div>
@@ -111,9 +113,9 @@ async function save() {
       <p v-if="editor.errorMessage.value" class="completed-editor__error">{{ editor.errorMessage.value }}</p>
 
       <div class="completed-editor__actions">
-        <EbButton variant="ghost" :disabled="editor.isSaving.value" @click="editor.close">Cancel</EbButton>
+        <EbButton variant="ghost" :disabled="editor.isSaving.value" @click="editor.close">{{ t("completedEditor.cancel") }}</EbButton>
         <EbButton :disabled="editor.isSaving.value" @click="save">
-          {{ editor.isSaving.value ? "Saving..." : "Save completed" }}
+          {{ editor.isSaving.value ? t("completedEditor.saving") : t("completedEditor.save") }}
         </EbButton>
       </div>
     </div>
