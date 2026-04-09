@@ -4,6 +4,7 @@ import { computed } from "vue";
 import EbSpinner from "@/components/ui/EbSpinner.vue";
 import ToastViewport from "@/components/ui/ToastViewport.vue";
 import TopNav from "@/components/layout/TopNav.vue";
+import { useI18n } from "@/composables/useI18n";
 import { useAuthStore } from "@/stores/auth";
 
 const props = defineProps<{
@@ -11,6 +12,7 @@ const props = defineProps<{
 }>();
 
 const authStore = useAuthStore();
+const { t } = useI18n();
 const shellClass = computed(() => `app-shell--${props.variant}`);
 </script>
 
@@ -22,7 +24,7 @@ const shellClass = computed(() => `app-shell--${props.variant}`);
     <main class="app-shell__main">
       <div v-if="authStore.isLoading && !authStore.user" class="app-shell__loading">
         <EbSpinner />
-        <span>Nacitani workspace...</span>
+        <span>{{ t("shell.loadingWorkspace") }}</span>
       </div>
 
       <div v-else class="app-shell__content">

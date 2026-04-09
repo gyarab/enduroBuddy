@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import type { TrainingRow } from "@/api/training";
+import { useI18n } from "@/composables/useI18n";
 import CompletedEditor from "@/components/training/CompletedEditor.vue";
 import EbBadge from "@/components/ui/EbBadge.vue";
 
 defineProps<{
   row: TrainingRow;
 }>();
+const { t } = useI18n();
 </script>
 
 <template>
@@ -21,10 +23,10 @@ defineProps<{
 
     <div class="completed-row__meta">
       <div class="completed-row__hr">
-        HR {{ row.completed_metrics?.avg_hr ?? "-" }} / {{ row.completed_metrics?.max_hr ?? "-" }}
+        {{ t("completedRow.hr", { avg: row.completed_metrics?.avg_hr ?? "-", max: row.completed_metrics?.max_hr ?? "-" }) }}
       </div>
       <EbBadge :tone="row.status === 'done' ? 'done' : 'missed'">
-        {{ row.status === "done" ? "Done" : "Missed" }}
+        {{ row.status === "done" ? t("completedRow.done") : t("completedRow.missed") }}
       </EbBadge>
     </div>
 

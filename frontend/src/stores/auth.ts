@@ -26,6 +26,12 @@ export const useAuthStore = defineStore("auth", () => {
     }
   }
 
+  async function refresh() {
+    errorMessage.value = "";
+    user.value = await fetchCurrentUser();
+    hasBootstrapped.value = true;
+  }
+
   return {
     errorMessage,
     hasBootstrapped,
@@ -33,6 +39,7 @@ export const useAuthStore = defineStore("auth", () => {
     isAuthenticated,
     isCoach,
     isLoading,
+    refresh,
     user,
   };
 });

@@ -7,9 +7,11 @@ import MonthSwitcher from "@/components/training/MonthSwitcher.vue";
 import WeekCard from "@/components/training/WeekCard.vue";
 import WeekCardSkeleton from "@/components/training/WeekCardSkeleton.vue";
 import EbCard from "@/components/ui/EbCard.vue";
+import { useI18n } from "@/composables/useI18n";
 import { useTrainingStore } from "@/stores/training";
 
 const trainingStore = useTrainingStore();
+const { t } = useI18n();
 
 onMounted(() => {
   if (!trainingStore.dashboard && !trainingStore.isLoading) {
@@ -42,7 +44,7 @@ onMounted(() => {
     </div>
 
     <EbCard v-else-if="trainingStore.errorMessage" class="dashboard-view__state-card">
-      <h2>Dashboard se nepodarilo nacist</h2>
+      <h2>{{ t("athleteView.loadErrorTitle") }}</h2>
       <p>{{ trainingStore.errorMessage }}</p>
     </EbCard>
 
@@ -52,8 +54,8 @@ onMounted(() => {
         <span />
         <span />
       </div>
-      <h2>Zatim zadny plan pro tento mesic</h2>
-      <p>Jakmile se objevi treninkove tydny, dashboard je okamzite nacte do noveho Vue workspace.</p>
+      <h2>{{ t("athleteView.emptyTitle") }}</h2>
+      <p>{{ t("athleteView.emptyText") }}</p>
     </EbCard>
 
     <template v-else>

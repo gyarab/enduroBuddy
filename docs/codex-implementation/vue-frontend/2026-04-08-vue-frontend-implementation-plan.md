@@ -136,6 +136,200 @@ Minimalni token set musi zahrnout:
 
 ## Implementation Phases
 
+## Current Status Audit (2026-04-09)
+
+Tato sekce zachycuje realny stav implementace po prvni vetsi vlne migrace a slouzi jako prubezne srovnani:
+
+- proti tomuto Codex planu
+- proti puvodnimu Claudeovu migration designu
+- proti visual design specu
+
+### Summary
+
+- Phase 1 je funkcne hotova a overena lokalnim buildem i typecheckem.
+- Phase 2 je hotova v read-only i prakticky pouzitelne athlete podobe.
+- Phase 3 je z velke casti hotova: editace, notifications, imports, parser preview a second-phase flow existuji.
+- Phase 4 je funkcne rozjeta dal, nez puvodne pocital tento plan: coach dashboard, manage athletes, reorder, visibility a planned editace jsou ve Vue.
+- Phase 5 je otevrena a realne rozjeta: profile completion bezi pres SPA a i18n scaffold uz zasahuje shell, dashboard, modaly i cast store/composable vrstvy.
+
+### Phase-By-Phase Status
+
+#### Phase 1: SPA Bootstrap and Shell
+
+Status: hotovo
+
+Hotove:
+
+- Django SPA bootstrap pro `/app/*` a `/coach/*`
+- `api/v1/` namespace a `auth/me`
+- frontend workspace `Vue 3 + TypeScript + Vite + Pinia + vue-router + vitest`
+- dark shell, topnav, zakladni UI komponenty a design tokeny
+- lokalni `npm run build` a `npm run typecheck`
+
+Poznamka:
+
+- Vuci puvodnimu planu jsme tuto fazi splnili bez potreby architektonicke zmeny.
+
+#### Phase 2: Athlete Dashboard Read-Only
+
+Status: hotovo
+
+Hotove:
+
+- `GET /api/v1/dashboard/`
+- athlete dashboard view a month/week komponenty
+- skeleton loading a empty states
+- role-aware payload bootstrap
+
+Rozsireni nad puvodni plan:
+
+- uz v teto fazi jsme sli dal do quality passu a visual polish, aby dashboard nebyl jen "functional parity", ale rozumne odpovidal workspace designu.
+
+#### Phase 3: Athlete Editing, Notifications, Imports
+
+Status: vetsinove hotovo
+
+Hotove:
+
+- inline editace planned row
+- inline editace completed row
+- parser preview a prvni parser heuristiky
+- second-phase create/remove
+- notification dropdown + unread count + mark-as-read
+- Garmin import modal
+- FIT upload flow
+- optimistic patching a toasty
+
+Zbyva nebo je jen castecne:
+
+- create/delete planned a completed flow jeste neni dodelany v plne SPA surface podle puvodniho endpoint seznamu
+- parser jeste neni plny 1:1 port vsech legacy pravidel
+- chybi sirsi integration coverage pro import polling edge cases
+
+#### Phase 4: Coach Workspace
+
+Status: silne rozjeto, funkcne pouzitelne MVP+
+
+Hotove:
+
+- `GET /api/v1/coach/athletes/`
+- `GET /api/v1/coach/dashboard/`
+- `PATCH /api/v1/coach/training/planned/{id}/`
+- `PATCH /api/v1/coach/training/completed/{id}/` se stejnou policy jako legacy:
+  - managed athlete completed zustava read-only
+  - coach muze upravit pouze vlastni completed plan
+- `POST/DELETE /api/v1/coach/training/planned/{id}/second-phase/`
+- `PATCH /api/v1/coach/athlete-focus/`
+- `PATCH /api/v1/coach/reorder-athletes/`
+- `PATCH /api/v1/coach/athlete-visibility/`
+- coach sidebar
+- athlete manage modal
+- planned training editace ve sdilenych row komponentach
+
+Zbyva nebo je jen castecne:
+
+- Vue UI pro managed athlete completed zustava zamerne read-only podle legacy policy
+- pokud bude pozdeji potreba coach self-plan editace ve Vue, backend endpoint uz existuje, ale UI surface neni priorita pro coach workspace
+- coach polish a sirsi integration scenare jsou porad mensi dluh
+
+#### Phase 5: Profile, i18n, Legacy Cleanup
+
+Status: rozjeto
+
+Hotove:
+
+- `GET/PATCH /api/v1/profile/complete/`
+- Vue `CompleteProfileView`
+- middleware redirect na SPA route
+- lehky i18n scaffold s `cs.json` a `en.json`
+- preklady v shellu, dashboardech, profile flow, coach manage/import modalu a casti store/composable fallbacku
+
+Zbyva nebo je jen castecne:
+
+- jazykove prepinani jeste neni napojene na Django i18n
+- nepouzivame `vue-i18n`; misto toho mame lehci custom translator, coz je vedome zjednoduseni oproti Claudeovu planu
+- legacy cleanup je zatim minimalni; stare dashboard JS/templaty jeste nejsou systematicky odstranene
+
+### Test And Verification Status
+
+Aktualne overeno:
+
+- `npm run typecheck`
+- `npm run build`
+- frontend unit/component/view testy pro parser, stores, shared rows, shell interakce a dashboard views
+- backend `python -m compileall backend/api backend/config backend/accounts backend/dashboard`
+- backend API smoke coverage v `backend/api/tests.py` pro:
+  - `auth/me`
+  - athlete dashboard
+  - coach dashboard
+  - profile completion
+  - athlete planned/completed update
+  - coach planned update
+  - athlete second-phase create/remove
+  - coach manage reorder/visibility
+  - coach completed update policy
+  - notifications list/mark-read
+  - import job status ownership and FIT missing-file guard
+
+Zbyva z test strategie:
+
+- backend API testy pro uspesne Garmin/FIT import scenare jsou stale slabsi, nez plan predpokladal
+- chybi sirsi end-to-end nebo integration scenare napric login -> bootstrap -> dashboard -> editace
+
+### Accepted Deviations From Plan Checklist
+
+- **`backend/api/serializers/`**: Listed in the file-level checklist but intentionally not created. Views serialize inline — response shapes are small and tightly coupled to view logic, making a dedicated serializers directory unnecessary overhead for this project size. Accepted deviation, no action needed.
+- **Duplicate `.js` files**: Codex generation artifacts (`.js` + `.ts` for every module). Removed 2026-04-09 — only `.ts` files remain.
+- **`vue-i18n` not used**: Custom `useI18n` composable chosen over the library. Cleaner for the bilingual CS/EN requirement, no heavy dependency.
+
+### Comparison With Claude Plan
+
+Vuci Claudeovu dokumentu `2026-04-06-vue-frontend-migration-design.md` je stav dnes nasledujici:
+
+- Phase 1 z Claudeova planu je splnena.
+- Claudeova athlete faze je funkcne temer dorovnana a v nekterych castich uz i otestovana.
+- Nejvetsi rozdil proti Claudeovu planu uz neni athlete cast, ale:
+  - plnejsi coach self-plan completed UI surface, pokud ho budeme chtit zachovat i ve SPA
+  - plnejsi i18n integrace
+  - systematicky legacy cleanup
+  - backend test coverage
+
+Klicovy rozdil v pristupu:
+
+- Claudeuv plan pocital s vetsim "feature blokem" po fazich.
+- Tento Codex plan se v praxi osvedcil vic po malych slicech: feature -> stabilizace -> testy -> dalsi feature.
+
+### Comparison With Visual Design Spec
+
+Vuci `2026-04-06-vue-app-visual-design.md` je aktualni stav:
+
+- shell, topnav, month summary, week cards, notification dropdown, import modal a coach sidebar uz drzi smer "workspace" varianty design language
+- data-first layout, dark shell a akcentni lime/blue logika jsou pritomne
+- nektere casti jsou ale stale bliz "solid MVP polish" nez finalni pixel-perfect parity
+- mobilni chovani existuje, ale zaslouzi dalsi audit proti detailni spec pro sidebar/nav/editor overlay
+
+### Plan Adjustment After Audit
+
+Struktura fazi zustava funkcni a neni potreba ji prepisovat. Upravuje se ale priorita dalsich kroku:
+
+1. Neotevirat dalsi velke feature bloky, dokud neprobehne closing cleanup.
+2. Coach completed policy je uzavrena podle legacy pravidel:
+   - managed athlete completed je read-only
+   - coach self-plan completed ma API endpoint, ale neni hlavni coach workspace priorita
+3. Dopsat backend API testy pro hlavni SPA endpointy.
+4. Udelat legacy cleanup audit:
+   - stare dashboard JS
+   - partialy pouzivane jen puvodni SPA-nahrazenou casti
+   - zbytky bootstrap-specific chovani v prihlasene casti
+5. Rozhodnout, zda custom i18n vrstva zustane finalni implementace, nebo jestli jeste dava smysl migrace na `vue-i18n`.
+
+### Current Recommended Next Slice
+
+Nejlepsi dalsi krok po tomto auditu je:
+
+- rozsirit import test coverage o uspesnejsi Garmin/FIT scenare tam, kde to pujde bez krehkeho mockovani externich sluzeb
+- potom udelat legacy cleanup audit nad starymi dashboard JS/partialy
+
 ### Phase 1: SPA Bootstrap and Shell
 
 #### Backend

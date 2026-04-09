@@ -11,6 +11,7 @@ import {
   updateCompletedTraining,
   updatePlannedTraining,
 } from "@/api/training";
+import { useI18n } from "@/composables/useI18n";
 import { useToastStore } from "@/stores/toasts";
 import { parseTrainingPreview } from "@/utils/trainingPreview";
 
@@ -20,6 +21,7 @@ export const useTrainingStore = defineStore("training", () => {
   const errorMessage = ref("");
   const isRefreshing = ref(false);
   const toastStore = useToastStore();
+  const { t } = useI18n();
 
   const selectedMonth = computed(() => dashboard.value?.selected_month ?? null);
   const weeks = computed(() => dashboard.value?.weeks ?? []);
@@ -245,7 +247,7 @@ export const useTrainingStore = defineStore("training", () => {
     try {
       dashboard.value = await fetchDashboard(month);
     } catch (error) {
-      errorMessage.value = error instanceof Error ? error.message : "Nepodarilo se nacist dashboard.";
+      errorMessage.value = error instanceof Error ? error.message : t("trainingStore.loadError");
     } finally {
       if (silent) {
         isRefreshing.value = false;
@@ -278,9 +280,14 @@ export const useTrainingStore = defineStore("training", () => {
       value: string;
     },
   ) {
-    await updatePlannedTraining(plannedId, payload);
     patchPlannedRow(plannedId, payload);
-    toastStore.push("Plan saved.", "success");
+    try {
+      await updatePlannedTraining(plannedId, payload);
+      toastStore.push(t("trainingStore.planSaved"), "success");
+    } catch (error) {
+      await loadDashboard(selectedMonthValue.value, { silent: true });
+      throw error;
+    }
   }
 
   async function savePlannedDraft(
@@ -291,10 +298,15 @@ export const useTrainingStore = defineStore("training", () => {
     }>,
   ) {
     for (const update of updates) {
-      await updatePlannedTraining(plannedId, update);
       patchPlannedRow(plannedId, update);
     }
-    toastStore.push("Planned training updated.", "success");
+    try {
+      await Promise.all(updates.map((update) => updatePlannedTraining(plannedId, update)));
+      toastStore.push(t("trainingStore.plannedUpdated"), "success");
+    } catch (error) {
+      await loadDashboard(selectedMonthValue.value, { silent: true });
+      throw error;
+    }
   }
 
   async function saveCompletedDraft(
@@ -305,22 +317,27 @@ export const useTrainingStore = defineStore("training", () => {
     }>,
   ) {
     for (const update of updates) {
-      await updateCompletedTraining(plannedId, update);
       patchCompletedRow(plannedId, update);
     }
-    toastStore.push("Completed training updated.", "success");
+    try {
+      await Promise.all(updates.map((update) => updateCompletedTraining(plannedId, update)));
+      toastStore.push(t("trainingStore.completedUpdated"), "success");
+    } catch (error) {
+      await loadDashboard(selectedMonthValue.value, { silent: true });
+      throw error;
+    }
   }
 
   async function addSecondPhase(plannedId: number) {
     await addSecondPhaseTraining(plannedId);
     await loadDashboard(selectedMonthValue.value, { silent: true });
-    toastStore.push("Second phase added.", "success");
+    toastStore.push(t("trainingStore.secondPhaseAdded"), "success");
   }
 
   async function removeSecondPhase(plannedId: number) {
     await removeSecondPhaseTraining(plannedId);
     await loadDashboard(selectedMonthValue.value, { silent: true });
-    toastStore.push("Second phase removed.", "success");
+    toastStore.push(t("trainingStore.secondPhaseRemoved"), "success");
   }
 
   return {

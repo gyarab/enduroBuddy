@@ -1,6 +1,7 @@
 import { computed, ref } from "vue";
 import { defineStore } from "pinia";
 
+import { useI18n } from "@/composables/useI18n";
 import {
   fetchNotifications,
   markNotificationsRead,
@@ -13,6 +14,7 @@ export const useNotificationsStore = defineStore("notifications", () => {
   const isOpen = ref(false);
   const hasBootstrapped = ref(false);
   const errorMessage = ref("");
+  const { t } = useI18n();
   const unreadCount = computed(() => items.value.filter((item) => item.unread).length);
 
   let pollTimer: number | null = null;
@@ -31,7 +33,7 @@ export const useNotificationsStore = defineStore("notifications", () => {
       applyItems(payload.notifications);
       hasBootstrapped.value = true;
     } catch (error) {
-      errorMessage.value = error instanceof Error ? error.message : "Nepodarilo se nacist notifikace.";
+      errorMessage.value = error instanceof Error ? error.message : t("notifications.loadError");
     } finally {
       isLoading.value = false;
     }

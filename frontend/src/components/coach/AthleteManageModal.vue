@@ -4,6 +4,7 @@ import { computed, ref, watch } from "vue";
 import type { CoachAthlete } from "@/api/coach";
 import EbButton from "@/components/ui/EbButton.vue";
 import EbModal from "@/components/ui/EbModal.vue";
+import { useI18n } from "@/composables/useI18n";
 
 const props = defineProps<{
   athletes: CoachAthlete[];
@@ -18,6 +19,7 @@ const emit = defineEmits<{
 }>();
 
 const draft = ref<CoachAthlete[]>([]);
+const { t } = useI18n();
 
 watch(
   () => [props.open, props.athletes] as const,
@@ -53,14 +55,14 @@ function save() {
     <div class="athlete-manage">
       <div class="athlete-manage__header">
         <div>
-          <div class="athlete-manage__eyebrow">Coach workspace</div>
-          <h2 class="athlete-manage__title">Manage athlete order</h2>
+          <div class="athlete-manage__eyebrow">{{ t("coachManage.workspace") }}</div>
+          <h2 class="athlete-manage__title">{{ t("coachManage.title") }}</h2>
           <p class="athlete-manage__text">
-            {{ visibleCount }} visible athletes in sidebar. Hidden athletes stay in the list so their order is preserved.
+            {{ t("coachManage.summary", { count: visibleCount }) }}
           </p>
         </div>
 
-        <EbButton variant="ghost" @click="emit('close')">Close</EbButton>
+        <EbButton variant="ghost" @click="emit('close')">{{ t("coachManage.close") }}</EbButton>
       </div>
 
       <div class="athlete-manage__list">
@@ -69,8 +71,8 @@ function save() {
             <div class="athlete-manage__name">{{ athlete.name }}</div>
             <div class="athlete-manage__detail">
               <span v-if="athlete.focus">{{ athlete.focus }}</span>
-              <span v-else>No focus</span>
-              <span v-if="athlete.hidden" class="athlete-manage__hidden">Hidden</span>
+              <span v-else>{{ t("coachManage.noFocus") }}</span>
+              <span v-if="athlete.hidden" class="athlete-manage__hidden">{{ t("coachManage.hidden") }}</span>
             </div>
           </div>
 
@@ -80,23 +82,23 @@ function save() {
               :disabled="saving"
               @click="emit('toggleHidden', athlete.id, !athlete.hidden)"
             >
-              {{ athlete.hidden ? "Show" : "Hide" }}
+              {{ athlete.hidden ? t("coachManage.show") : t("coachManage.hide") }}
             </EbButton>
-            <EbButton variant="ghost" :disabled="index === 0 || saving" @click="moveItem(index, -1)">Up</EbButton>
+            <EbButton variant="ghost" :disabled="index === 0 || saving" @click="moveItem(index, -1)">{{ t("coachManage.up") }}</EbButton>
             <EbButton
               variant="ghost"
               :disabled="index === draft.length - 1 || saving"
               @click="moveItem(index, 1)"
             >
-              Down
+              {{ t("coachManage.down") }}
             </EbButton>
           </div>
         </div>
       </div>
 
       <div class="athlete-manage__footer">
-        <EbButton variant="ghost" :disabled="saving" @click="emit('close')">Cancel</EbButton>
-        <EbButton :disabled="saving" @click="save">{{ saving ? "Saving..." : "Save order" }}</EbButton>
+        <EbButton variant="ghost" :disabled="saving" @click="emit('close')">{{ t("coachManage.cancel") }}</EbButton>
+        <EbButton :disabled="saving" @click="save">{{ saving ? t("coachManage.saving") : t("coachManage.saveOrder") }}</EbButton>
       </div>
     </div>
   </EbModal>

@@ -3,6 +3,7 @@ import { computed } from "vue";
 
 import type { TrainingRow } from "@/api/training";
 import { useInlineEditor } from "@/composables/useInlineEditor";
+import { useI18n } from "@/composables/useI18n";
 import { useTrainingParser } from "@/composables/useTrainingParser";
 import { useCoachStore } from "@/stores/coach";
 import { useTrainingStore } from "@/stores/training";
@@ -18,6 +19,7 @@ const props = defineProps<{
 const trainingStore = useTrainingStore();
 const coachStore = useCoachStore();
 const toastStore = useToastStore();
+const { t } = useI18n();
 const editor = useInlineEditor(() => ({
   title: props.row.title === "-" ? "" : props.row.title,
   notes: props.row.notes,
@@ -33,7 +35,7 @@ const dayLabel = computed(() => {
   return props.row.is_second_phase ? "P2" : "?";
 });
 
-const metricsLabel = computed(() => props.row.planned_metrics?.planned_km_text || "No km hint");
+const metricsLabel = computed(() => props.row.planned_metrics?.planned_km_text || t("plannedRow.noKmHint"));
 const confidenceClass = computed(() => {
   const confidence = props.row.planned_metrics?.planned_km_confidence || "low";
   return `training-row__metrics--${confidence}`;
@@ -92,7 +94,7 @@ async function save() {
 
     editor.close();
   } catch (error) {
-    editor.errorMessage.value = error instanceof Error ? error.message : "Nepodarilo se ulozit plan.";
+    editor.errorMessage.value = error instanceof Error ? error.message : t("plannedRow.saveError");
     toastStore.push(editor.errorMessage.value, "danger");
   } finally {
     editor.isSaving.value = false;
@@ -114,7 +116,7 @@ async function addSecondPhase() {
     }
     editor.close();
   } catch (error) {
-    editor.errorMessage.value = error instanceof Error ? error.message : "Nepodarilo se pridat druhou fazi.";
+    editor.errorMessage.value = error instanceof Error ? error.message : t("plannedRow.addSecondPhaseError");
     toastStore.push(editor.errorMessage.value, "danger");
   } finally {
     editor.isSaving.value = false;
@@ -136,7 +138,7 @@ async function removeSecondPhase() {
     }
     editor.close();
   } catch (error) {
-    editor.errorMessage.value = error instanceof Error ? error.message : "Nepodarilo se odebrat druhou fazi.";
+    editor.errorMessage.value = error instanceof Error ? error.message : t("plannedRow.removeSecondPhaseError");
     toastStore.push(editor.errorMessage.value, "danger");
   } finally {
     editor.isSaving.value = false;
@@ -156,7 +158,7 @@ async function removeSecondPhase() {
         <div class="training-row__content">
           <div class="training-row__title-wrap">
             <span class="training-row__type-dot" :class="`training-row__type-dot--${row.session_type.toLowerCase()}`" />
-            <span v-if="row.is_second_phase" class="training-row__phase-label">Phase 2</span>
+            <span v-if="row.is_second_phase" class="training-row__phase-label">{{ t("plannedRow.phase2") }}</span>
             <div class="training-row__title">{{ row.title }}</div>
           </div>
           <div v-if="row.notes" class="training-row__notes">{{ row.notes }}</div>
@@ -166,38 +168,38 @@ async function removeSecondPhase() {
       <div class="training-row__meta">
         <div class="training-row__metrics" :class="confidenceClass">{{ metricsLabel }}</div>
         <EbBadge :tone="row.status === 'rest' ? 'neutral' : 'planned'">
-          {{ row.status === "rest" ? "Rest" : "Plan" }}
+          {{ row.status === "rest" ? t("plannedRow.rest") : t("plannedRow.plan") }}
         </EbBadge>
-        <EbButton v-if="row.editable" variant="ghost" @click="openEditor">Edit</EbButton>
+        <EbButton v-if="row.editable" variant="ghost" @click="openEditor">{{ t("plannedRow.edit") }}</EbButton>
       </div>
     </div>
 
     <div v-if="editor.isOpen.value" class="training-row__editor">
       <div class="training-row__editor-grid">
         <label class="training-row__field">
-          <span class="training-row__field-label">Session</span>
+          <span class="training-row__field-label">{{ t("plannedRow.session") }}</span>
           <select v-model="editor.draft.value.sessionType" class="training-row__select" :disabled="!editor.canInteract.value">
-            <option value="RUN">Run</option>
-            <option value="WORKOUT">Workout</option>
+            <option value="RUN">{{ t("plannedRow.run") }}</option>
+            <option value="WORKOUT">{{ t("plannedRow.workout") }}</option>
           </select>
         </label>
 
         <label class="training-row__field training-row__field--wide">
-          <span class="training-row__field-label">Title</span>
+          <span class="training-row__field-label">{{ t("plannedRow.title") }}</span>
           <textarea v-model="editor.draft.value.title" class="training-row__textarea" :disabled="!editor.canInteract.value" />
         </label>
 
         <label class="training-row__field training-row__field--wide">
-          <span class="training-row__field-label">Coach notes</span>
+          <span class="training-row__field-label">{{ t("plannedRow.coachNotes") }}</span>
           <textarea v-model="editor.draft.value.notes" class="training-row__textarea" :disabled="!editor.canInteract.value" />
         </label>
       </div>
 
       <p v-if="editor.errorMessage.value" class="training-row__error">{{ editor.errorMessage.value }}</p>
 
-      <div v-if="parserPreview.hasStructuredPreview" class="training-row__preview">
+        <div v-if="parserPreview.hasStructuredPreview" class="training-row__preview">
         <div class="training-row__preview-head">
-          <span>Parsed preview</span>
+          <span>{{ t("plannedRow.parsedPreview") }}</span>
           <span>{{ parserPreview.kmText }}</span>
         </div>
 
@@ -225,7 +227,7 @@ async function removeSecondPhase() {
           :disabled="editor.isSaving.value"
           @click="addSecondPhase"
         >
-          Add 2nd phase
+          {{ t("plannedRow.addSecondPhase") }}
         </EbButton>
         <EbButton
           v-if="row.can_remove_second_phase"
@@ -233,11 +235,11 @@ async function removeSecondPhase() {
           :disabled="editor.isSaving.value"
           @click="removeSecondPhase"
         >
-          Remove 2nd phase
+          {{ t("plannedRow.removeSecondPhase") }}
         </EbButton>
-        <EbButton variant="ghost" :disabled="editor.isSaving.value" @click="editor.close">Cancel</EbButton>
+        <EbButton variant="ghost" :disabled="editor.isSaving.value" @click="editor.close">{{ t("plannedRow.cancel") }}</EbButton>
         <EbButton :disabled="editor.isSaving.value" @click="save">
-          {{ editor.isSaving.value ? "Saving..." : "Save" }}
+          {{ editor.isSaving.value ? t("plannedRow.saving") : t("plannedRow.save") }}
         </EbButton>
       </div>
     </div>

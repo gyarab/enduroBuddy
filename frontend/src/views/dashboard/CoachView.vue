@@ -8,6 +8,7 @@ import WeekCard from "@/components/training/WeekCard.vue";
 import WeekCardSkeleton from "@/components/training/WeekCardSkeleton.vue";
 import EbButton from "@/components/ui/EbButton.vue";
 import EbCard from "@/components/ui/EbCard.vue";
+import { useI18n } from "@/composables/useI18n";
 import { useCoachStore } from "@/stores/coach";
 
 const coachStore = useCoachStore();
@@ -15,6 +16,7 @@ const focusDraft = ref("");
 const isSavingFocus = ref(false);
 const isManageOpen = ref(false);
 const isSidebarOpen = ref(false);
+const { t } = useI18n();
 
 onMounted(() => {
   if (!coachStore.dashboard && !coachStore.isLoading) {
@@ -74,26 +76,26 @@ async function toggleAthleteHidden(athleteId: number, hidden: boolean) {
       </div>
 
       <EbCard v-else-if="coachStore.errorMessage" class="coach-card">
-        <div class="coach-card__eyebrow">Coach workspace</div>
-        <h1 class="coach-card__title">Coach dashboard se nepodarilo nacist.</h1>
+        <div class="coach-card__eyebrow">{{ t("coachView.workspace") }}</div>
+        <h1 class="coach-card__title">{{ t("coachView.loadErrorTitle") }}</h1>
         <p class="coach-card__text">{{ coachStore.errorMessage }}</p>
       </EbCard>
 
       <template v-else-if="coachStore.selectedAthlete">
         <EbCard class="coach-toolbar">
           <div class="coach-toolbar__identity">
-            <div class="coach-card__eyebrow">Selected athlete</div>
+            <div class="coach-card__eyebrow">{{ t("coachView.selectedAthlete") }}</div>
             <div class="coach-toolbar__name">{{ coachStore.selectedAthlete.name }}</div>
             <div class="coach-toolbar__actions">
               <EbButton variant="ghost" class="coach-toolbar__mobile-button" @click="isSidebarOpen = !isSidebarOpen">
-                {{ isSidebarOpen ? "Hide athletes" : "Show athletes" }}
+                {{ isSidebarOpen ? t("coachView.hideAthletes") : t("coachView.showAthletes") }}
               </EbButton>
-              <EbButton variant="ghost" @click="openManageModal">Manage athletes</EbButton>
+              <EbButton variant="ghost" @click="openManageModal">{{ t("coachView.manageAthletes") }}</EbButton>
             </div>
           </div>
 
           <div class="coach-toolbar__focus">
-            <label class="coach-toolbar__label" for="coach-focus-input">Focus</label>
+            <label class="coach-toolbar__label" for="coach-focus-input">{{ t("coachView.focus") }}</label>
             <input
               id="coach-focus-input"
               v-model="focusDraft"
@@ -103,7 +105,7 @@ async function toggleAthleteHidden(athleteId: number, hidden: boolean) {
               :disabled="isSavingFocus"
             />
             <EbButton variant="secondary" :disabled="isSavingFocus" @click="saveFocus">
-              {{ isSavingFocus ? "Saving..." : "Save focus" }}
+              {{ isSavingFocus ? t("coachView.saving") : t("coachView.saveFocus") }}
             </EbButton>
           </div>
         </EbCard>

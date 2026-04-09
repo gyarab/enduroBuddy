@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref } from "vue";
 
+import { useI18n } from "@/composables/useI18n";
 import { useNotificationsStore } from "@/stores/notifications";
 
 const notificationsStore = useNotificationsStore();
 const rootRef = ref<HTMLElement | null>(null);
+const { t } = useI18n();
 
 function handleDocumentClick(event: MouseEvent) {
   const target = event.target;
@@ -27,18 +29,18 @@ onBeforeUnmount(() => {
 
 <template>
   <div ref="rootRef" class="notification-bell-wrap">
-    <button class="notification-bell" type="button" aria-label="Notifikace" @click.stop="notificationsStore.toggleDropdown">
+    <button class="notification-bell" type="button" :aria-label="t('notifications.label')" @click.stop="notificationsStore.toggleDropdown">
       <span class="notification-bell__icon">!</span>
       <span v-if="notificationsStore.unreadCount" class="notification-bell__badge">
         {{ notificationsStore.unreadCount > 9 ? "9+" : notificationsStore.unreadCount }}
       </span>
     </button>
 
-    <div v-if="notificationsStore.isOpen" class="notification-dropdown">
+      <div v-if="notificationsStore.isOpen" class="notification-dropdown">
       <div class="notification-dropdown__header">
-        <span>Notifikace</span>
+        <span>{{ t("notifications.label") }}</span>
         <button class="notification-dropdown__action" type="button" @click="notificationsStore.refresh({ silent: true })">
-          Refresh
+          {{ t("notifications.refresh") }}
         </button>
       </div>
 
@@ -47,11 +49,11 @@ onBeforeUnmount(() => {
       </div>
 
       <div v-else-if="notificationsStore.isLoading && !notificationsStore.items.length" class="notification-dropdown__state">
-        Nacitani...
+        {{ t("notifications.loading") }}
       </div>
 
       <div v-else-if="!notificationsStore.items.length" class="notification-dropdown__state">
-        Zatim zadne notifikace.
+        {{ t("notifications.empty") }}
       </div>
 
       <div v-else class="notification-dropdown__list">

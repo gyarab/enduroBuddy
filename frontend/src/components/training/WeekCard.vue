@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { DashboardWeek } from "@/api/training";
+import { useI18n } from "@/composables/useI18n";
 import CompletedRow from "@/components/training/CompletedRow.vue";
 import PlannedRow from "@/components/training/PlannedRow.vue";
 import EbCard from "@/components/ui/EbCard.vue";
@@ -8,6 +9,7 @@ defineProps<{
   week: DashboardWeek;
   editorContext?: "athlete" | "coach";
 }>();
+const { t } = useI18n();
 
 function formatRange(start: string, end: string) {
   const startDate = new Date(start);
@@ -20,19 +22,19 @@ function formatRange(start: string, end: string) {
   <EbCard class="week-card">
     <div class="week-card__header">
       <div>
-        <div class="week-card__eyebrow">Tyden {{ week.week_index }}</div>
+        <div class="week-card__eyebrow">{{ t("weekCard.week", { index: week.week_index }) }}</div>
         <div class="week-card__range">{{ formatRange(week.week_start, week.week_end) }}</div>
       </div>
       <div class="week-card__stats">
         <span>{{ week.planned_total_km_text }}</span>
-        <span>{{ week.completed_total.km }} km</span>
-        <span>{{ week.completed_total.time }} min</span>
+        <span>{{ t("weekCard.completedKm", { value: week.completed_total.km }) }}</span>
+        <span>{{ t("weekCard.completedMinutes", { value: week.completed_total.time }) }}</span>
       </div>
     </div>
 
     <div class="week-card__columns">
       <section class="week-card__column">
-        <div class="week-card__column-label">Planned</div>
+        <div class="week-card__column-label">{{ t("weekCard.planned") }}</div>
         <div class="week-card__rows">
           <PlannedRow
             v-for="(row, index) in week.planned_rows"
@@ -40,15 +42,15 @@ function formatRange(start: string, end: string) {
             :row="row"
             :editor-context="editorContext || 'athlete'"
           />
-          <div v-if="week.planned_rows.length === 0" class="week-card__empty">No planned sessions in this week.</div>
+          <div v-if="week.planned_rows.length === 0" class="week-card__empty">{{ t("weekCard.emptyPlanned") }}</div>
         </div>
       </section>
 
       <section class="week-card__column">
-        <div class="week-card__column-label">Completed</div>
+        <div class="week-card__column-label">{{ t("weekCard.completed") }}</div>
         <div class="week-card__rows">
           <CompletedRow v-for="(row, index) in week.completed_rows" :key="`completed-${row.id}-${row.notes}-${index}`" :row="row" />
-          <div v-if="week.completed_rows.length === 0" class="week-card__empty">No completed sessions yet.</div>
+          <div v-if="week.completed_rows.length === 0" class="week-card__empty">{{ t("weekCard.emptyCompleted") }}</div>
         </div>
       </section>
     </div>
