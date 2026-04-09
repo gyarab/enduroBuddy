@@ -95,6 +95,8 @@
     "loadError": "Dashboard could not be loaded.",
     "planSaved": "Plan saved.",
     "plannedUpdated": "Planned training updated.",
+    "plannedCreated": "Planned training created.",
+    "plannedDeleted": "Planned training deleted.",
     "completedUpdated": "Completed training updated.",
     "secondPhaseAdded": "Second phase added.",
     "secondPhaseRemoved": "Second phase removed."
@@ -106,6 +108,8 @@
     "athleteHidden": "Athlete hidden from plans.",
     "athleteShown": "Athlete shown in plans.",
     "planUpdated": "Coach plan updated.",
+    "planCreated": "Coach plan created.",
+    "planDeleted": "Coach plan deleted.",
     "secondPhaseAdded": "Second phase added.",
     "secondPhaseRemoved": "Second phase removed."
   },
@@ -116,7 +120,16 @@
     "completedKm": "{value} km",
     "completedMinutes": "{value} min",
     "emptyPlanned": "No planned sessions in this week.",
-    "emptyCompleted": "No completed sessions yet."
+    "emptyCompleted": "No completed sessions yet.",
+    "addPlanned": "Add planned training",
+    "date": "Date",
+    "newTitle": "Title",
+    "session": "Session",
+    "run": "Run",
+    "workout": "Workout",
+    "create": "Create",
+    "creating": "Creating...",
+    "createError": "Could not create plan."
   },
   "plannedRow": {
     "noKmHint": "No km hint",
@@ -135,7 +148,10 @@
     "workout": "Workout",
     "phase2": "Phase 2",
     "edit": "Edit",
+    "delete": "Delete",
+    "confirmDelete": "Delete this planned training?",
     "saveError": "Could not save plan.",
+    "deleteError": "Could not delete plan.",
     "addSecondPhaseError": "Could not add second phase.",
     "removeSecondPhaseError": "Could not remove second phase."
   },

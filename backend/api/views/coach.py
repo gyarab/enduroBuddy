@@ -29,6 +29,11 @@ from dashboard.views_shared import (
 )
 
 from .dashboard import build_dashboard_payload_for_athlete
+from .training import (
+    _create_planned_training_for_athlete,
+    _delete_planned_training_for_actor,
+    _serialize_planned_mutation,
+)
 
 
 def _parse_athlete_id(raw_value):
@@ -141,10 +146,25 @@ def coach_athletes(request):
 
 
 @login_required
-@require_http_methods(["PATCH"])
+@require_http_methods(["PATCH", "DELETE"])
 def coach_update_planned_training(request, planned_id: int):
     if not is_coach(request.user):
         return json_error(ApiText.COACH_ACCESS_ONLY, status=403)
+
+    if request.method == "DELETE":
+        planned, error = load_planned_training(planned_id)
+        if error:
+            return error
+
+        athlete_id = planned_athlete_id(planned)
+        accessible_ids = _get_cached_coach_accessible_ids(request)
+        if not _coach_can_access_athlete(coach_user=request.user, athlete_id=athlete_id, accessible_ids=accessible_ids):
+            return json_error(ApiText.FORBIDDEN_FOR_ATHLETE, status=403)
+
+        removed_planned_id, error = _delete_planned_training_for_actor(planned=planned)
+        if error:
+            return error
+        return JsonResponse({"ok": True, "removed_planned_id": removed_planned_id})
 
     payload, error = parse_json_body(request)
     if error:
@@ -185,6 +205,38 @@ def coach_update_planned_training(request, planned_id: int):
             "value": normalized,
         }
     )
+
+
+@login_required
+@require_http_methods(["POST"])
+def coach_create_planned_training(request):
+    if not is_coach(request.user):
+        return json_error(ApiText.COACH_ACCESS_ONLY, status=403)
+
+    payload, error = parse_json_body(request)
+    if error:
+        return error
+    if not isinstance(payload, dict):
+        return json_error(ApiText.INVALID_JSON_BODY, status=400)
+
+    athlete_id = payload.get("athlete_id")
+    if not isinstance(athlete_id, int):
+        return json_error(ApiText.INVALID_ATHLETE_ID, status=400)
+    accessible_ids = _get_cached_coach_accessible_ids(request)
+    if not _coach_can_access_athlete(coach_user=request.user, athlete_id=athlete_id, accessible_ids=accessible_ids):
+        return json_error(ApiText.FORBIDDEN_FOR_ATHLETE, status=403)
+
+    from django.contrib.auth import get_user_model
+
+    athlete = get_user_model().objects.filter(id=athlete_id).first()
+    if athlete is None:
+        return json_error(ApiText.INVALID_ATHLETE_ID, status=404)
+
+    planned, error = _create_planned_training_for_athlete(athlete=athlete, payload=payload)
+    if error:
+        return error
+
+    return JsonResponse({"ok": True, "planned": _serialize_planned_mutation(planned)}, status=201)
 
 
 @login_required

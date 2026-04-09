@@ -5,6 +5,8 @@ import {
   addCoachSecondPhaseTraining,
   type CoachAthletesPayload,
   type CoachDashboardPayload,
+  createCoachPlannedTraining,
+  deleteCoachPlannedTraining,
   fetchCoachAthletes,
   fetchCoachDashboard,
   removeCoachSecondPhaseTraining,
@@ -16,6 +18,8 @@ import { useCoachStore } from "@/stores/coach";
 
 vi.mock("@/api/coach", () => ({
   addCoachSecondPhaseTraining: vi.fn(),
+  createCoachPlannedTraining: vi.fn(),
+  deleteCoachPlannedTraining: vi.fn(),
   fetchCoachAthletes: vi.fn(),
   fetchCoachDashboard: vi.fn(),
   removeCoachSecondPhaseTraining: vi.fn(),
@@ -128,6 +132,8 @@ describe("useCoachStore", () => {
       ],
     });
     vi.mocked(updateCoachPlannedTraining).mockResolvedValue({ ok: true });
+    vi.mocked(createCoachPlannedTraining).mockResolvedValue({ ok: true });
+    vi.mocked(deleteCoachPlannedTraining).mockResolvedValue({ ok: true });
     vi.mocked(addCoachSecondPhaseTraining).mockResolvedValue({ ok: true });
     vi.mocked(removeCoachSecondPhaseTraining).mockResolvedValue({ ok: true });
   });
@@ -176,5 +182,27 @@ describe("useCoachStore", () => {
     expect(updateCoachPlannedTraining).toHaveBeenCalledWith(501, { field: "title", value: "6x400m" });
     expect(store.weeks[0]?.planned_rows[0]?.title).toBe("6x400m");
     expect(store.weeks[0]?.planned_rows[0]?.planned_metrics?.planned_km_value).toBe(2.4);
+  });
+
+  it("creates planned training for selected athlete and reloads dashboard", async () => {
+    const store = useCoachStore();
+    await store.loadDashboard();
+
+    vi.mocked(fetchCoachDashboard).mockClear();
+    await store.addPlannedTraining({ date: "2026-04-10", title: "Coach add", session_type: "RUN" });
+
+    expect(createCoachPlannedTraining).toHaveBeenCalledWith(101, { date: "2026-04-10", title: "Coach add", session_type: "RUN" });
+    expect(fetchCoachDashboard).toHaveBeenCalledWith(101, "2026-04");
+  });
+
+  it("deletes planned training and reloads selected athlete dashboard", async () => {
+    const store = useCoachStore();
+    await store.loadDashboard();
+
+    vi.mocked(fetchCoachDashboard).mockClear();
+    await store.deletePlannedTrainingRow(501);
+
+    expect(deleteCoachPlannedTraining).toHaveBeenCalledWith(501);
+    expect(fetchCoachDashboard).toHaveBeenCalledWith(101, "2026-04");
   });
 });

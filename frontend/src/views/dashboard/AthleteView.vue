@@ -3,7 +3,6 @@ import { onMounted } from "vue";
 
 import MonthSummaryBar from "@/components/training/MonthSummaryBar.vue";
 import GarminImportModal from "@/components/training/GarminImportModal.vue";
-import MonthSwitcher from "@/components/training/MonthSwitcher.vue";
 import WeekCard from "@/components/training/WeekCard.vue";
 import WeekCardSkeleton from "@/components/training/WeekCardSkeleton.vue";
 import EbCard from "@/components/ui/EbCard.vue";
@@ -22,16 +21,6 @@ onMounted(() => {
 
 <template>
   <section class="dashboard-view">
-    <MonthSwitcher
-      v-if="trainingStore.selectedMonth"
-      :label="trainingStore.selectedMonth.label"
-      :previous-label="trainingStore.navigation?.previous?.label || null"
-      :next-label="trainingStore.navigation?.next?.label || null"
-      :disabled="trainingStore.isLoading"
-      @previous="trainingStore.goToPreviousMonth"
-      @next="trainingStore.goToNextMonth"
-    />
-
     <div class="dashboard-view__toolbar">
       <GarminImportModal />
     </div>

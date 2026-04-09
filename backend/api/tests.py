@@ -2,12 +2,13 @@ from __future__ import annotations
 
 import json
 from datetime import date
+from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 
-from accounts.models import AppNotification, CoachAthlete, ImportJob, Role
+from accounts.models import AppNotification, CoachAthlete, GarminConnection, GarminSyncAudit, ImportJob, Role
 from training.models import CompletedTraining, PlannedTraining, TrainingMonth, TrainingWeek
 
 
@@ -139,6 +140,41 @@ class SpaApiEndpointTests(TestCase):
         completed = CompletedTraining.objects.get(planned=self.planned)
         self.assertEqual(completed.distance_m, 6400)
 
+    def test_athlete_can_create_and_delete_empty_planned_training(self):
+        self.client.force_login(self.athlete)
+
+        create_response = self.post_json(
+            reverse("api_training_planned_create"),
+            {
+                "date": "2026-04-08",
+                "title": "New easy run",
+                "notes": "Keep it relaxed",
+                "session_type": PlannedTraining.SessionType.RUN,
+            },
+        )
+
+        self.assertEqual(create_response.status_code, 201)
+        planned_id = create_response.json()["planned"]["id"]
+        planned = PlannedTraining.objects.get(id=planned_id)
+        self.assertEqual(planned.week.training_month.athlete, self.athlete)
+        self.assertEqual(planned.title, "New easy run")
+        self.assertEqual(planned.day_label, "St")
+
+        delete_response = self.client.delete(reverse("api_training_planned_update", kwargs={"planned_id": planned_id}))
+
+        self.assertEqual(delete_response.status_code, 200)
+        self.assertFalse(PlannedTraining.objects.filter(id=planned_id).exists())
+
+    def test_athlete_cannot_delete_planned_training_with_completed_data(self):
+        CompletedTraining.objects.create(planned=self.planned, note="done")
+        self.client.force_login(self.athlete)
+
+        response = self.client.delete(reverse("api_training_planned_update", kwargs={"planned_id": self.planned.id}))
+
+        self.assertEqual(response.status_code, 400)
+        self.assertTrue(PlannedTraining.objects.filter(id=self.planned.id).exists())
+        self.assertTrue(CompletedTraining.objects.filter(planned=self.planned).exists())
+
     def test_coach_can_patch_accessible_athlete_planned_training(self):
         self.client.force_login(self.coach)
 
@@ -153,6 +189,30 @@ class SpaApiEndpointTests(TestCase):
         self.assertEqual(payload["field"], "notes")
         self.planned.refresh_from_db()
         self.assertEqual(self.planned.notes, "Coach adjusted note")
+
+    def test_coach_can_create_and_delete_accessible_athlete_planned_training(self):
+        self.client.force_login(self.coach)
+
+        create_response = self.post_json(
+            reverse("api_coach_training_planned_create"),
+            {
+                "athlete_id": self.athlete.id,
+                "date": "2026-04-09",
+                "title": "Coach created tempo",
+                "session_type": PlannedTraining.SessionType.WORKOUT,
+            },
+        )
+
+        self.assertEqual(create_response.status_code, 201)
+        planned_id = create_response.json()["planned"]["id"]
+        planned = PlannedTraining.objects.get(id=planned_id)
+        self.assertEqual(planned.week.training_month.athlete, self.athlete)
+        self.assertEqual(planned.session_type, PlannedTraining.SessionType.WORKOUT)
+
+        delete_response = self.client.delete(reverse("api_coach_training_planned_update", kwargs={"planned_id": planned_id}))
+
+        self.assertEqual(delete_response.status_code, 200)
+        self.assertFalse(PlannedTraining.objects.filter(id=planned_id).exists())
 
     def test_coach_cannot_patch_managed_athlete_completed_training(self):
         self.client.force_login(self.coach)
@@ -300,6 +360,65 @@ class SpaApiEndpointTests(TestCase):
         self.assertEqual(own_response.json()["job"]["id"], own_job.id)
         self.assertEqual(other_response.status_code, 404)
         self.assertEqual(missing_file_response.status_code, 400)
+
+    @override_settings(GARMIN_SYNC_ENABLED=True)
+    @patch("api.views.imports.enqueue_garmin_sync_job")
+    def test_garmin_sync_start_creates_job_and_reuses_active_job(self, enqueue_mock):
+        GarminConnection.objects.create(
+            user=self.athlete,
+            garmin_email="runner@example.com",
+            garmin_display_name="Runner",
+            encrypted_tokenstore="encrypted-tokenstore",
+            is_active=True,
+        )
+        self.client.force_login(self.athlete)
+
+        first_response = self.post_json(reverse("api_imports_garmin_start"), {"range": "this_week"})
+        second_response = self.post_json(reverse("api_imports_garmin_start"), {"range": "yesterday"})
+
+        self.assertEqual(first_response.status_code, 200)
+        first_payload = first_response.json()
+        self.assertTrue(first_payload["ok"])
+        self.assertFalse(first_payload["already_running"])
+        job = ImportJob.objects.get(id=first_payload["job"]["id"])
+        self.assertEqual(job.user, self.athlete)
+        self.assertEqual(job.window, "this_week")
+        self.assertEqual(job.status, ImportJob.Status.QUEUED)
+        enqueue_mock.assert_called_once_with(job.id)
+
+        self.assertEqual(second_response.status_code, 200)
+        second_payload = second_response.json()
+        self.assertTrue(second_payload["already_running"])
+        self.assertEqual(second_payload["job"]["id"], job.id)
+        self.assertEqual(ImportJob.objects.filter(user=self.athlete, kind=ImportJob.Kind.GARMIN_SYNC).count(), 1)
+
+    def test_garmin_revoke_deactivates_connection_and_writes_audit(self):
+        connection = GarminConnection.objects.create(
+            user=self.athlete,
+            garmin_email="runner@example.com",
+            garmin_display_name="Runner",
+            encrypted_tokenstore="encrypted-tokenstore",
+            is_active=True,
+        )
+        self.client.force_login(self.athlete)
+
+        response = self.client.post(reverse("api_imports_garmin_revoke"))
+
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()
+        self.assertTrue(payload["ok"])
+        self.assertFalse(payload["connection"]["connected"])
+        connection.refresh_from_db()
+        self.assertFalse(connection.is_active)
+        self.assertEqual(connection.encrypted_tokenstore, "")
+        self.assertIsNotNone(connection.revoked_at)
+        self.assertTrue(
+            GarminSyncAudit.objects.filter(
+                user=self.athlete,
+                action=GarminSyncAudit.Action.REVOKE,
+                status=GarminSyncAudit.Status.SUCCESS,
+            ).exists()
+        )
 
     def patch_json(self, url: str, payload: dict):
         return self.client.patch(

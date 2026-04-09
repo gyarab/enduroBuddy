@@ -74,10 +74,22 @@ export type DashboardPayload = {
   };
 };
 
+export type PlannedTrainingDraft = {
+  date: string;
+  title?: string;
+  notes?: string;
+  session_type?: "RUN" | "WORKOUT";
+};
+
 export async function fetchDashboard(month?: string) {
   const response = await apiClient.get<DashboardPayload>("/dashboard/", {
     params: month ? { month } : undefined,
   });
+  return response.data;
+}
+
+export async function createPlannedTraining(payload: PlannedTrainingDraft) {
+  const response = await apiClient.post("/training/planned/", payload);
   return response.data;
 }
 
@@ -89,6 +101,11 @@ export async function updatePlannedTraining(
   },
 ) {
   const response = await apiClient.patch(`/training/planned/${plannedId}/`, payload);
+  return response.data;
+}
+
+export async function deletePlannedTraining(plannedId: number) {
+  const response = await apiClient.delete(`/training/planned/${plannedId}/`);
   return response.data;
 }
 
