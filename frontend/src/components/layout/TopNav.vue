@@ -2,6 +2,7 @@
 import { computed, ref } from "vue";
 import { useRoute } from "vue-router";
 
+import LegendModal from "@/components/layout/LegendModal.vue";
 import NotificationBell from "@/components/layout/NotificationBell.vue";
 import ProfileDropdown from "@/components/layout/ProfileDropdown.vue";
 import { useI18n } from "@/composables/useI18n";
@@ -18,6 +19,7 @@ const coachStore = useCoachStore();
 const trainingStore = useTrainingStore();
 const route = useRoute();
 const isProfileOpen = ref(false);
+const isLegendOpen = ref(false);
 const brandLogoUrl = "/static/brand/eb-logo-compact.svg";
 const { t } = useI18n();
 
@@ -119,6 +121,9 @@ async function goToNextMonth() {
       </div>
 
       <div class="top-nav__actions">
+        <button class="top-nav__legend-btn" type="button" @click="isLegendOpen = true">
+          {{ t("legend.button") }}
+        </button>
         <NotificationBell />
 
         <div class="top-nav__profile">
@@ -130,6 +135,8 @@ async function goToNextMonth() {
       </div>
     </div>
   </header>
+
+  <LegendModal :open="isLegendOpen" @close="isLegendOpen = false" />
 </template>
 
 <style scoped>
@@ -246,6 +253,27 @@ async function goToNextMonth() {
   display: flex;
   align-items: center;
   gap: var(--eb-spacing-3);
+}
+
+.top-nav__legend-btn {
+  padding: 0.35rem 0.85rem;
+  border: 1px solid var(--eb-border);
+  border-radius: var(--eb-radius-sm);
+  background: transparent;
+  color: var(--eb-text-soft);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    border-color 150ms ease-out,
+    color 150ms ease-out;
+}
+
+.top-nav__legend-btn:hover {
+  border-color: rgba(200, 255, 0, 0.3);
+  color: var(--eb-lime);
 }
 
 .top-nav__profile {
