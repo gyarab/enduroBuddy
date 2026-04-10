@@ -6,8 +6,11 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.views.decorators.http import require_GET, require_http_methods
 
+from django.db import models as db_models
+from django.utils import timezone
+
 from accounts.services.notifications import notify_athlete_plan_updated
-from accounts.models import CoachAthlete
+from accounts.models import CoachAthlete, CoachJoinRequest, TrainingGroupAthlete
 from dashboard.api import json_error
 from dashboard.handlers.planned_training_api import (
     load_planned_training,
@@ -436,3 +439,157 @@ def coach_toggle_athlete_visibility(request):
             "athletes": [_serialize_coach_athlete_link(item) for item in refreshed_links],
         }
     )
+
+
+@login_required
+@require_GET
+def coach_code(request):
+    if not is_coach(request.user):
+        return json_error(ApiText.COACH_ACCESS_ONLY, status=403)
+    code = request.user.profile.ensure_coach_join_code()
+    return JsonResponse({"ok": True, "coach_join_code": code})
+
+
+@login_required
+@require_GET
+def coach_join_requests_list(request):
+    if not is_coach(request.user):
+        return json_error(ApiText.COACH_ACCESS_ONLY, status=403)
+    requests_qs = (
+        CoachJoinRequest.objects
+        .select_related("athlete")
+        .filter(coach=request.user, status=CoachJoinRequest.Status.PENDING)
+    )
+    return JsonResponse({
+        "ok": True,
+        "requests": [
+            {
+                "id": r.id,
+                "athlete_name": display_name(r.athlete),
+                "athlete_username": r.athlete.username,
+                "created_at": r.created_at.isoformat(),
+            }
+            for r in requests_qs
+        ],
+    })
+
+
+@login_required
+@require_http_methods(["POST"])
+def coach_join_request_approve(request, request_id: int):
+    if not is_coach(request.user):
+        return json_error(ApiText.COACH_ACCESS_ONLY, status=403)
+
+    join_request = (
+        CoachJoinRequest.objects
+        .select_related("athlete")
+        .filter(id=request_id, coach=request.user, status=CoachJoinRequest.Status.PENDING)
+        .first()
+    )
+    if join_request is None:
+        return json_error(CoachText.REQUEST_NOT_FOUND, status=404)
+
+    default_group = (
+        request.user.training_groups.order_by("id").first()
+    )
+    if default_group:
+        TrainingGroupAthlete.objects.get_or_create(group=default_group, athlete=join_request.athlete)
+
+    max_order = CoachAthlete.objects.filter(coach=request.user).aggregate(
+        max_order=db_models.Max("sort_order")
+    ).get("max_order") or 0
+    CoachAthlete.objects.get_or_create(
+        coach=request.user,
+        athlete=join_request.athlete,
+        defaults={"sort_order": int(max_order) + 1},
+    )
+    join_request.status = CoachJoinRequest.Status.APPROVED
+    join_request.decided_at = timezone.now()
+    join_request.save(update_fields=["status", "decided_at"])
+
+    return JsonResponse({"ok": True, "request_id": request_id})
+
+
+@login_required
+@require_http_methods(["POST"])
+def coach_join_request_reject(request, request_id: int):
+    if not is_coach(request.user):
+        return json_error(ApiText.COACH_ACCESS_ONLY, status=403)
+
+    join_request = (
+        CoachJoinRequest.objects
+        .filter(id=request_id, coach=request.user, status=CoachJoinRequest.Status.PENDING)
+        .first()
+    )
+    if join_request is None:
+        return json_error(CoachText.REQUEST_NOT_FOUND, status=404)
+
+    join_request.status = CoachJoinRequest.Status.REJECTED
+    join_request.decided_at = timezone.now()
+    join_request.save(update_fields=["status", "decided_at"])
+
+    return JsonResponse({"ok": True, "request_id": request_id})
+
+
+@login_required
+@require_http_methods(["POST"])
+def athlete_request_coach(request):
+    if is_coach(request.user):
+        return json_error(ApiText.FORBIDDEN_FOR_ATHLETE, status=403)
+
+    try:
+        payload = json.loads(request.body.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        return json_error(ApiText.INVALID_JSON_BODY, status=400)
+
+    coach_code_value = str((payload or {}).get("coach_code") or "").strip()
+    if not coach_code_value:
+        return json_error("Coach code is required.", status=400)
+
+    coach_profile = (
+        __import__("accounts.models", fromlist=["Profile"])
+        .Profile.objects.select_related("user")
+        .filter(coach_join_code=coach_code_value)
+        .first()
+    )
+    if coach_profile is None:
+        return json_error("Invalid coach code.", status=404)
+
+    coach_user = coach_profile.user
+    if coach_user == request.user:
+        return json_error("You cannot request yourself as a coach.", status=400)
+
+    if CoachJoinRequest.objects.filter(
+        coach=coach_user, athlete=request.user, status=CoachJoinRequest.Status.PENDING
+    ).exists():
+        return json_error("You already have a pending request to this coach.", status=400)
+
+    CoachJoinRequest.objects.create(coach=coach_user, athlete=request.user)
+    return JsonResponse({"ok": True, "coach_name": display_name(coach_user)})
+
+
+@login_required
+@require_http_methods(["DELETE"])
+def coach_remove_athlete(request, athlete_id: int):
+    if not is_coach(request.user):
+        return json_error(ApiText.COACH_ACCESS_ONLY, status=403)
+
+    try:
+        payload = json.loads(request.body.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        return json_error(ApiText.INVALID_JSON_BODY, status=400)
+
+    confirm_name = str((payload or {}).get("confirm_name") or "").strip()
+
+    link = CoachAthlete.objects.select_related("athlete").filter(coach=request.user, athlete_id=athlete_id).first()
+    if link is None:
+        return json_error(CoachText.ATHLETE_NOT_FOUND, status=404)
+
+    expected_name = display_name(link.athlete).strip()
+    if confirm_name != expected_name:
+        return json_error(CoachText.CONFIRM_NAME_MISMATCH, status=400)
+
+    TrainingGroupAthlete.objects.filter(group__coach=request.user, athlete_id=athlete_id).delete()
+    link.delete()
+
+    return JsonResponse({"ok": True, "removed_athlete_id": athlete_id})
