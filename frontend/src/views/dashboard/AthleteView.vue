@@ -11,11 +11,28 @@ import { useI18n } from "@/composables/useI18n";
 import { useToastStore } from "@/stores/toasts";
 import { useTrainingStore } from "@/stores/training";
 import { addNextMonth } from "@/api/training";
+import { requestCoachByCode } from "@/api/coach";
 
 const trainingStore = useTrainingStore();
 const toastStore = useToastStore();
 const { t } = useI18n();
 const isAddingMonth = ref(false);
+const coachCodeInput = ref("");
+const isRequestingCoach = ref(false);
+
+async function handleRequestCoach() {
+  if (!coachCodeInput.value.trim()) return;
+  isRequestingCoach.value = true;
+  try {
+    const data = await requestCoachByCode(coachCodeInput.value.trim());
+    toastStore.push(t("requestCoach.success", { name: data.coach_name }), "success");
+    coachCodeInput.value = "";
+  } catch {
+    toastStore.push(t("requestCoach.error"), "danger");
+  } finally {
+    isRequestingCoach.value = false;
+  }
+}
 
 async function handleAddMonth() {
   isAddingMonth.value = true;
@@ -41,6 +58,18 @@ onMounted(() => {
   <section class="dashboard-view">
     <div class="dashboard-view__toolbar">
       <GarminImportModal />
+      <form class="dashboard-view__request-coach" @submit.prevent="handleRequestCoach">
+        <span class="dashboard-view__request-label">{{ t("requestCoach.title") }}</span>
+        <input
+          v-model="coachCodeInput"
+          class="dashboard-view__request-input"
+          :placeholder="t('requestCoach.codePlaceholder')"
+          :disabled="isRequestingCoach"
+        />
+        <EbButton type="submit" variant="secondary" :disabled="isRequestingCoach || !coachCodeInput.trim()">
+          {{ isRequestingCoach ? t("requestCoach.submitting") : t("requestCoach.submit") }}
+        </EbButton>
+      </form>
     </div>
 
     <div v-if="trainingStore.isLoading" class="dashboard-view__loading">
