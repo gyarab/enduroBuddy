@@ -7,6 +7,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 
+from accounts.models import CoachAthlete
 from dashboard.handlers.planned_training_api import (
     load_planned_training,
     parse_json_body,
@@ -15,10 +16,9 @@ from dashboard.handlers.planned_training_api import (
     validate_completed_update_payload,
     validate_planned_update_payload,
 )
-from dashboard.services.month_cards import is_coach
+from dashboard.services.month_cards import add_next_month_for_athlete, is_coach, resolve_week_for_day
 from dashboard.api import json_error
 from dashboard.texts import ApiText
-from dashboard.services.month_cards import resolve_week_for_day
 from dashboard.views_shared import (
     _create_second_phase_for_planned,
     _remove_second_phase_for_planned,
@@ -253,3 +253,31 @@ def second_phase_training(request, planned_id: int):
             "removed_planned_id": removed_planned_id,
         }
     )
+
+
+@login_required
+@require_http_methods(["POST"])
+def add_next_month(request):
+    payload, error = parse_json_body(request)
+    if error:
+        return error
+
+    athlete_id = (payload or {}).get("athlete_id")
+
+    if is_coach(request.user):
+        if not athlete_id:
+            return json_error(ApiText.INVALID_ATHLETE_ID, status=400)
+        link = CoachAthlete.objects.filter(coach=request.user, athlete_id=athlete_id).first()
+        if link is None:
+            return json_error(ApiText.FORBIDDEN_FOR_ATHLETE, status=403)
+        target_athlete = link.athlete
+    else:
+        target_athlete = request.user
+
+    month_created, weeks_created, days_created = add_next_month_for_athlete(athlete=target_athlete)
+    return JsonResponse({
+        "ok": True,
+        "month_created": month_created,
+        "weeks_created": weeks_created,
+        "days_created": days_created,
+    })
