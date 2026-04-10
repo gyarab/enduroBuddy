@@ -1,1 +1,0 @@
-import{_ as s,f as c,g as o,P as t}from"../app.js";const n={},r={class:"eb-card"};function a(e,d){return c(),o("section",r,[t(e.$slots,"default",{},void 0)])}const f=s(n,[["render",a],["__scopeId","data-v-d1127f8b"]]);export{f as E};

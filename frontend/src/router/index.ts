@@ -31,6 +31,12 @@ const router = createRouter({
       component: () => import("@/views/dashboard/CoachView.vue"),
       meta: { appVariant: "coach" },
     },
+    {
+      path: "/coach/invite/:token",
+      name: "invite-accept",
+      component: () => import("@/views/invite/InviteView.vue"),
+      meta: { appVariant: "athlete" },
+    },
   ],
 });
 

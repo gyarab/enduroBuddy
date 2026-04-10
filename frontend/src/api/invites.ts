@@ -7,9 +7,10 @@ export type InviteDetail = {
   is_used: boolean;
 };
 
-export async function fetchInvite(token: string) {
+export async function fetchInvite(token: string): Promise<InviteDetail> {
   const response = await apiClient.get<{ ok: boolean } & InviteDetail>(`/invites/${token}/`);
-  return response.data;
+  const { ok: _ok, ...invite } = response.data;
+  return invite as InviteDetail;
 }
 
 export async function acceptInvite(token: string) {
