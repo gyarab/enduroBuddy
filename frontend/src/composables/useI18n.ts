@@ -53,10 +53,27 @@ export function useI18n() {
     return interpolate(localized, params);
   }
 
-  function setLocale(nextLocale: Locale) {
+  async function setLocale(nextLocale: Locale) {
     currentLocale.value = nextLocale;
     if (typeof document !== "undefined") {
       document.documentElement.lang = nextLocale;
+    }
+    // Persist language choice to Django session so server-rendered pages use the same language
+    try {
+      const csrfToken = document.cookie
+        .split("; ")
+        .find((row) => row.startsWith("endurobuddy_csrftoken="))
+        ?.split("=")[1];
+      await fetch("/i18n/set_language/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          ...(csrfToken ? { "X-CSRFToken": csrfToken } : {}),
+        },
+        body: `language=${nextLocale}`,
+      });
+    } catch {
+      // Non-critical — locale is already switched in the SPA
     }
   }
 
