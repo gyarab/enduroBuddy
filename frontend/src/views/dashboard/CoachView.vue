@@ -9,13 +9,17 @@ import WeekCardSkeleton from "@/components/training/WeekCardSkeleton.vue";
 import EbButton from "@/components/ui/EbButton.vue";
 import EbCard from "@/components/ui/EbCard.vue";
 import { useI18n } from "@/composables/useI18n";
+import { useToastStore } from "@/stores/toasts";
 import { useCoachStore } from "@/stores/coach";
+import { addNextMonth } from "@/api/training";
 
 const coachStore = useCoachStore();
+const toastStore = useToastStore();
 const focusDraft = ref("");
 const isSavingFocus = ref(false);
 const isManageOpen = ref(false);
 const isSidebarOpen = ref(false);
+const isAddingMonth = ref(false);
 const { t } = useI18n();
 
 onMounted(() => {
@@ -53,6 +57,20 @@ async function saveAthleteOrder(athleteIds: number[]) {
 
 async function toggleAthleteHidden(athleteId: number, hidden: boolean) {
   await coachStore.setAthleteHidden(athleteId, hidden);
+}
+
+async function handleAddMonth() {
+  if (!coachStore.selectedAthlete) return;
+  isAddingMonth.value = true;
+  try {
+    await addNextMonth(coachStore.selectedAthlete.id);
+    await coachStore.loadDashboard();
+    toastStore.push(t("addMonth.added"), "success");
+  } catch {
+    toastStore.push(t("addMonth.error"), "danger");
+  } finally {
+    isAddingMonth.value = false;
+  }
 }
 </script>
 
@@ -115,6 +133,11 @@ async function toggleAthleteHidden(athleteId: number, hidden: boolean) {
         <div class="coach-view__weeks">
           <WeekCard v-for="week in coachStore.weeks" :key="week.id" :week="week" editor-context="coach" />
         </div>
+        <div v-if="coachStore.selectedAthlete" class="coach-view__add-month">
+          <EbButton variant="secondary" :disabled="isAddingMonth" @click="handleAddMonth">
+            {{ isAddingMonth ? t("addMonth.adding") : t("addMonth.button") }}
+          </EbButton>
+        </div>
       </template>
     </div>
   </section>
@@ -147,6 +170,12 @@ async function toggleAthleteHidden(athleteId: number, hidden: boolean) {
 .coach-view__weeks {
   display: grid;
   gap: 1rem;
+}
+
+.coach-view__add-month {
+  display: flex;
+  justify-content: center;
+  padding: 0.5rem 0 1rem;
 }
 
 .coach-card {
