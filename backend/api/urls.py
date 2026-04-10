@@ -1,6 +1,7 @@
 from django.urls import path
 
 from .views.auth import auth_me
+from .views.invites import invite_accept, invite_detail
 from .views.legend import legend
 from .views.coach import (
     athlete_request_coach,
@@ -62,4 +63,6 @@ urlpatterns = [
     path("training/completed/<int:planned_id>/", update_completed_training, name="api_training_completed_update"),
     path("training/months/", add_next_month, name="api_training_months"),
     path("legend/", legend, name="api_legend"),
+    path("invites/<str:token>/", invite_detail, name="api_invite_detail"),
+    path("invites/<str:token>/accept/", invite_accept, name="api_invite_accept"),
 ]
