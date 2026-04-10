@@ -25,12 +25,15 @@ const { t } = useI18n();
       <div class="completed-row__hr">
         {{ t("completedRow.hr", { avg: row.completed_metrics?.avg_hr ?? "-", max: row.completed_metrics?.max_hr ?? "-" }) }}
       </div>
+      <EbBadge v-if="row.has_linked_activity" tone="neutral" class="completed-row__garmin-badge">
+        {{ t("completedRow.garminLinked") }}
+      </EbBadge>
       <EbBadge :tone="row.status === 'done' ? 'done' : 'missed'">
         {{ row.status === "done" ? t("completedRow.done") : t("completedRow.missed") }}
       </EbBadge>
     </div>
 
-    <CompletedEditor v-if="row.editable" :row="row" />
+    <CompletedEditor v-if="row.editable && !row.has_linked_activity" :row="row" />
   </article>
 </template>
 
