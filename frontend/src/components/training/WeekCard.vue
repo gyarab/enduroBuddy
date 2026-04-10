@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, ref } from "vue";
 
 import type { DashboardWeek, PlannedTrainingDraft } from "@/api/training";
+import { garminWeekSync } from "@/api/imports";
 import { useI18n } from "@/composables/useI18n";
+import { useAuthStore } from "@/stores/auth";
 import { useCoachStore } from "@/stores/coach";
 import { useTrainingStore } from "@/stores/training";
 import { useToastStore } from "@/stores/toasts";
@@ -16,12 +18,35 @@ const props = defineProps<{
   editorContext?: "athlete" | "coach";
 }>();
 const { t } = useI18n();
+const authStore = useAuthStore();
 const trainingStore = useTrainingStore();
 const coachStore = useCoachStore();
 const toastStore = useToastStore();
 const isCreateOpen = ref(false);
 const isCreating = ref(false);
 const createError = ref("");
+const isSyncingGarmin = ref(false);
+
+const showGarminSync = computed(
+  () =>
+    props.editorContext !== "coach" &&
+    props.week.has_started &&
+    authStore.user?.capabilities.has_garmin_connection &&
+    authStore.user?.capabilities.garmin_sync_enabled,
+);
+
+async function syncGarmin() {
+  isSyncingGarmin.value = true;
+  try {
+    const result = await garminWeekSync(props.week.week_start);
+    toastStore.push(result.message, "success");
+    await trainingStore.loadDashboard();
+  } catch {
+    toastStore.push(t("weekCard.garminSyncError"), "danger");
+  } finally {
+    isSyncingGarmin.value = false;
+  }
+}
 const createDraft = ref<PlannedTrainingDraft>({
   date: props.week.week_start,
   title: "",
@@ -116,7 +141,12 @@ async function createPlanned() {
       </section>
 
       <section class="week-card__column">
-        <div class="week-card__column-label">{{ t("weekCard.completed") }}</div>
+        <div class="week-card__column-header">
+          <div class="week-card__column-label">{{ t("weekCard.completed") }}</div>
+          <EbButton v-if="showGarminSync" variant="ghost" :disabled="isSyncingGarmin" @click="syncGarmin">
+            {{ isSyncingGarmin ? t("weekCard.garminSyncing") : t("weekCard.garminSync") }}
+          </EbButton>
+        </div>
         <div class="week-card__rows">
           <CompletedRow v-for="(row, index) in week.completed_rows" :key="`completed-${row.id}-${row.notes}-${index}`" :row="row" />
           <div v-if="week.completed_rows.length === 0" class="week-card__empty">{{ t("weekCard.emptyCompleted") }}</div>
@@ -168,6 +198,18 @@ async function createPlanned() {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1rem;
   padding: 1rem;
+}
+
+.week-card__column-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.week-card__column-header .week-card__column-label {
+  margin-bottom: 0;
 }
 
 .week-card__column-label {
