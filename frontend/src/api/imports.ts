@@ -67,3 +67,13 @@ export async function uploadFitFile(file: File) {
   });
   return response.data;
 }
+
+export async function garminWeekSync(weekStart: string) {
+  const response = await apiClient.post<{
+    ok: boolean;
+    replaced: number;
+    untouched: number;
+    message: string;
+  }>("/imports/garmin/week-sync/", { week_start: weekStart });
+  return response.data;
+}

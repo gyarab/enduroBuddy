@@ -99,3 +99,45 @@ export async function removeCoachSecondPhaseTraining(plannedId: number) {
   const response = await apiClient.delete(`/coach/training/planned/${plannedId}/second-phase/`);
   return response.data;
 }
+
+export type CoachJoinRequest = {
+  id: number;
+  athlete_name: string;
+  athlete_username: string;
+  created_at: string;
+};
+
+export async function fetchCoachCode() {
+  const response = await apiClient.get<{ ok: boolean; coach_join_code: string }>("/coach/code/");
+  return response.data;
+}
+
+export async function fetchJoinRequests() {
+  const response = await apiClient.get<{ ok: boolean; requests: CoachJoinRequest[] }>("/coach/join-requests/");
+  return response.data;
+}
+
+export async function approveJoinRequest(requestId: number) {
+  const response = await apiClient.post<{ ok: boolean; request_id: number }>(`/coach/join-requests/${requestId}/approve/`);
+  return response.data;
+}
+
+export async function rejectJoinRequest(requestId: number) {
+  const response = await apiClient.post<{ ok: boolean; request_id: number }>(`/coach/join-requests/${requestId}/reject/`);
+  return response.data;
+}
+
+export async function requestCoachByCode(coachCode: string) {
+  const response = await apiClient.post<{ ok: boolean; coach_name: string }>("/coach/join-request/", {
+    coach_code: coachCode,
+  });
+  return response.data;
+}
+
+export async function removeAthlete(athleteId: number, confirmName: string) {
+  const response = await apiClient.delete<{ ok: boolean; removed_athlete_id: number }>(
+    `/coach/athletes/${athleteId}/`,
+    { data: { confirm_name: confirmName } },
+  );
+  return response.data;
+}
