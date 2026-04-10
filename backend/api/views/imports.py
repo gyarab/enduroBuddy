@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import json
+from datetime import date, timedelta
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
+from django.utils import timezone
 from django.views.decorators.http import require_GET, require_POST
 
 from accounts.models import GarminConnection, GarminSyncAudit, ImportJob
@@ -16,9 +18,10 @@ from dashboard.services.imports import (
     audit_garmin,
     connect_garmin_for_user,
     revoke_garmin_for_user,
+    sync_garmin_week_for_user,
 )
 from dashboard.services.tasks import enqueue_garmin_sync_job, run_fit_import
-from dashboard.texts import ApiText, HomeText
+from dashboard.texts import ApiText, DashboardText, HomeText
 from dashboard.views_home import _job_progress_percent, _job_status_label, _serialize_import_job
 
 
@@ -169,6 +172,42 @@ def garmin_sync_start(request):
       "message": HomeText.GARMIN_SYNC_ALREADY_RUNNING if not is_new_job else HomeText.GARMIN_SYNC_QUEUED,
     }
   )
+
+
+@login_required
+@require_POST
+def garmin_week_sync(request):
+  if not settings.GARMIN_SYNC_ENABLED:
+    return json_error(ApiText.GARMIN_SYNC_DISABLED, status=503)
+
+  payload, error = _parse_json_body(request)
+  if error:
+    return error
+
+  raw_week_start = str((payload or {}).get("week_start") or "").strip()
+  try:
+    week_start = date.fromisoformat(raw_week_start)
+  except ValueError:
+    return json_error("Invalid week_start date.", status=400)
+
+  if not GarminConnection.objects.filter(user=request.user, is_active=True).exists():
+    return json_error(ApiText.GARMIN_NOT_CONNECTED, status=400)
+
+  normalized = week_start - timedelta(days=week_start.weekday())
+  if normalized > timezone.localdate():
+    return json_error("Week has not started yet.", status=400)
+
+  try:
+    replaced, untouched, _conn = sync_garmin_week_for_user(request.user, week_start=normalized)
+  except Exception:
+    return json_error("Garmin week sync failed.", status=500)
+
+  return JsonResponse({
+    "ok": True,
+    "replaced": replaced,
+    "untouched": untouched,
+    "message": DashboardText.garmin_week_synced(replaced=replaced, untouched=untouched),
+  })
 
 
 @login_required
