@@ -161,7 +161,8 @@
   "completedRow": {
     "done": "Done",
     "missed": "Missed",
-    "hr": "HR {avg} / {max}"
+    "hr": "HR {avg} / {max}",
+    "garminLinked": "Garmin"
   },
   "completedEditor": {
     "plan": "Plan: {value}",
