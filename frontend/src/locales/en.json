@@ -129,7 +129,10 @@
     "workout": "Workout",
     "create": "Create",
     "creating": "Creating...",
-    "createError": "Could not create plan."
+    "createError": "Could not create plan.",
+    "garminSync": "Sync Garmin",
+    "garminSyncing": "Syncing...",
+    "garminSyncError": "Garmin sync failed."
   },
   "plannedRow": {
     "noKmHint": "No km hint",
@@ -173,6 +176,94 @@
     "saving": "Saving...",
     "entryFallback": "Completed entry",
     "saveError": "Could not save completed row."
+  },
+  "summaryBar": {
+    "trainings": "Trainings",
+    "trainingsSubtext": "completed / planned",
+    "kilometers": "Kilometers",
+    "kmSubtext": "planned {planned} km",
+    "time": "Time",
+    "timeSubtext": "completed workload",
+    "completion": "Completion",
+    "completionSubtext": "month completion"
+  },
+  "profileDropdown": {
+    "profile": "Profile",
+    "logout": "Sign out",
+    "language": "Language"
+  },
+  "legend": {
+    "button": "Legend",
+    "title": "Training Legend",
+    "close": "Close",
+    "hrZones": "HR Zones",
+    "zone": "Zone",
+    "from": "From (bpm)",
+    "to": "To (bpm)",
+    "thresholds": "Thresholds",
+    "aerobicThreshold": "Aerobic threshold",
+    "anaerobicThreshold": "Anaerobic threshold",
+    "prs": "Personal Records",
+    "distance": "Distance",
+    "time": "Time",
+    "addPr": "Add PR",
+    "removePr": "Remove",
+    "save": "Save",
+    "saving": "Saving...",
+    "saveError": "Could not save legend.",
+    "loadError": "Could not load legend."
+  },
+  "invite": {
+    "loading": "Loading invite...",
+    "title": "Group Invite",
+    "group": "Group",
+    "coach": "Coach",
+    "accept": "Accept invite",
+    "accepting": "Accepting...",
+    "accepted": "Invite accepted! You have been added to the group.",
+    "expired": "This invite has expired.",
+    "used": "This invite has already been used.",
+    "error": "Invite not found or invalid.",
+    "goHome": "Go to dashboard"
+  },
+  "addMonth": {
+    "button": "Add month",
+    "adding": "Adding...",
+    "added": "New month added.",
+    "error": "Could not add month."
+  },
+  "requestCoach": {
+    "title": "Request a Coach",
+    "codeLabel": "Coach code",
+    "codePlaceholder": "Enter coach code",
+    "submit": "Request",
+    "submitting": "Sending...",
+    "success": "Request sent to coach {name}.",
+    "error": "Could not send request."
+  },
+  "coachCode": {
+    "tabLabel": "Coach Code",
+    "copy": "Copy",
+    "copied": "Copied!"
+  },
+  "joinRequests": {
+    "tabLabel": "Requests",
+    "empty": "No pending requests.",
+    "approve": "Approve",
+    "reject": "Reject",
+    "approving": "Approving...",
+    "rejecting": "Rejecting...",
+    "approveError": "Could not approve request.",
+    "rejectError": "Could not reject request."
+  },
+  "removeAthlete": {
+    "button": "Remove athlete",
+    "confirmTitle": "Confirm removal",
+    "confirmText": "Enter the athlete's name to confirm:",
+    "confirmPlaceholder": "Full name",
+    "confirm": "Remove",
+    "confirming": "Removing...",
+    "error": "Could not remove athlete."
   },
   "profileCompletion": {
     "eyebrow": "Profile completion",
