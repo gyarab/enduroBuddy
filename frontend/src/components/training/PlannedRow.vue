@@ -192,7 +192,16 @@ async function deletePlanned() {
       </div>
 
       <div class="training-row__meta">
-        <div class="training-row__metrics" :class="confidenceClass">{{ metricsLabel }}</div>
+        <div class="training-row__metrics-wrap">
+          <div class="training-row__metrics" :class="confidenceClass">{{ metricsLabel }}</div>
+          <div v-if="row.planned_metrics?.planned_km_show" class="training-row__km-popover">
+            <div class="training-row__km-popover-content">
+              <span v-if="row.planned_metrics.planned_km_line_km" class="training-row__km-line">{{ row.planned_metrics.planned_km_line_km }}</span>
+              <span v-if="row.planned_metrics.planned_km_line_reason" class="training-row__km-reason">{{ row.planned_metrics.planned_km_line_reason }}</span>
+              <span v-if="row.planned_metrics.planned_km_line_where" class="training-row__km-where">{{ row.planned_metrics.planned_km_line_where }}</span>
+            </div>
+          </div>
+        </div>
         <EbBadge :tone="row.status === 'rest' ? 'neutral' : 'planned'">
           {{ row.status === "rest" ? t("plannedRow.rest") : t("plannedRow.plan") }}
         </EbBadge>
@@ -407,6 +416,53 @@ async function deletePlanned() {
 
 .training-row__metrics--low {
   color: var(--eb-text-muted);
+}
+
+.training-row__metrics-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.training-row__km-popover {
+  display: none;
+  position: absolute;
+  bottom: calc(100% + 0.4rem);
+  right: 0;
+  z-index: 10;
+  min-width: 12rem;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--eb-border);
+  border-radius: var(--eb-radius-md);
+  background: var(--eb-surface);
+  box-shadow: var(--eb-shadow-soft);
+}
+
+.training-row__metrics-wrap:hover .training-row__km-popover {
+  display: block;
+}
+
+.training-row__km-popover-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.training-row__km-line {
+  color: var(--eb-text);
+  font-family: var(--eb-font-mono);
+  font-size: 0.8125rem;
+}
+
+.training-row__km-reason {
+  color: var(--eb-text-soft);
+  font-size: 0.75rem;
+}
+
+.training-row__km-where {
+  color: var(--eb-text-muted);
+  font-size: 0.6875rem;
 }
 
 .training-row__editor {
