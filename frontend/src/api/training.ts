@@ -13,6 +13,10 @@ export type TrainingRow = {
     planned_km_value: number;
     planned_km_text: string;
     planned_km_confidence: "high" | "medium" | "low";
+    planned_km_show: boolean;
+    planned_km_line_km: string;
+    planned_km_line_reason: string;
+    planned_km_line_where: string;
   } | null;
   completed_metrics: {
     km: string;
@@ -127,5 +131,15 @@ export async function addSecondPhaseTraining(plannedId: number) {
 
 export async function removeSecondPhaseTraining(plannedId: number) {
   const response = await apiClient.delete(`/training/planned/${plannedId}/second-phase/`);
+  return response.data;
+}
+
+export async function addNextMonth(athleteId?: number) {
+  const response = await apiClient.post<{
+    ok: boolean;
+    month_created: boolean;
+    weeks_created: number;
+    days_created: number;
+  }>("/training/months/", athleteId ? { athlete_id: athleteId } : {});
   return response.data;
 }
