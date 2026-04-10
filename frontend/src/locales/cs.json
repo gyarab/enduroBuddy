@@ -129,7 +129,10 @@
     "workout": "Workout",
     "create": "Create",
     "creating": "Creating...",
-    "createError": "Nepodarilo se vytvorit plan."
+    "createError": "Nepodarilo se vytvorit plan.",
+    "garminSync": "Sync Garmin",
+    "garminSyncing": "Synchronizuji...",
+    "garminSyncError": "Garmin sync selhal."
   },
   "plannedRow": {
     "noKmHint": "No km hint",
@@ -173,6 +176,94 @@
     "saving": "Saving...",
     "entryFallback": "Completed entry",
     "saveError": "Nepodarilo se ulozit completed row."
+  },
+  "summaryBar": {
+    "trainings": "Tréninky",
+    "trainingsSubtext": "splněno / plánováno",
+    "kilometers": "Kilometry",
+    "kmSubtext": "plánováno {planned} km",
+    "time": "Čas",
+    "timeSubtext": "splněné zatížení",
+    "completion": "Splnění",
+    "completionSubtext": "splnění měsíce"
+  },
+  "profileDropdown": {
+    "profile": "Profil",
+    "logout": "Odhlásit se",
+    "language": "Jazyk"
+  },
+  "legend": {
+    "button": "Legenda",
+    "title": "Legenda tréninku",
+    "close": "Zavřít",
+    "hrZones": "HR Zóny",
+    "zone": "Zóna",
+    "from": "Od (bpm)",
+    "to": "Do (bpm)",
+    "thresholds": "Prahy",
+    "aerobicThreshold": "Aerobní práh",
+    "anaerobicThreshold": "Anaerobní práh",
+    "prs": "Osobní rekordy",
+    "distance": "Vzdálenost",
+    "time": "Čas",
+    "addPr": "Přidat PR",
+    "removePr": "Odebrat",
+    "save": "Uložit",
+    "saving": "Ukládám...",
+    "saveError": "Nepodařilo se uložit legendu.",
+    "loadError": "Nepodařilo se načíst legendu."
+  },
+  "invite": {
+    "loading": "Načítám pozvánku...",
+    "title": "Pozvánka do skupiny",
+    "group": "Skupina",
+    "coach": "Trenér",
+    "accept": "Přijmout pozvánku",
+    "accepting": "Přijímám...",
+    "accepted": "Pozvánka přijata! Byl/a jsi přidán/a do skupiny.",
+    "expired": "Tato pozvánka vypršela.",
+    "used": "Tato pozvánka už byla použita.",
+    "error": "Pozvánka nebyla nalezena nebo je neplatná.",
+    "goHome": "Přejít na dashboard"
+  },
+  "addMonth": {
+    "button": "Přidat měsíc",
+    "adding": "Přidávám...",
+    "added": "Nový měsíc byl přidán.",
+    "error": "Nepodařilo se přidat měsíc."
+  },
+  "requestCoach": {
+    "title": "Požádat o trenéra",
+    "codeLabel": "Kód trenéra",
+    "codePlaceholder": "Zadejte kód trenéra",
+    "submit": "Požádat",
+    "submitting": "Odesílám...",
+    "success": "Žádost o trenéra {name} byla odeslána.",
+    "error": "Nepodařilo se odeslat žádost."
+  },
+  "coachCode": {
+    "tabLabel": "Kód trenéra",
+    "copy": "Kopírovat",
+    "copied": "Zkopírováno!"
+  },
+  "joinRequests": {
+    "tabLabel": "Žádosti",
+    "empty": "Žádné čekající žádosti.",
+    "approve": "Schválit",
+    "reject": "Zamítnout",
+    "approving": "Schvaluji...",
+    "rejecting": "Zamítám...",
+    "approveError": "Nepodařilo se schválit žádost.",
+    "rejectError": "Nepodařilo se zamítnout žádost."
+  },
+  "removeAthlete": {
+    "button": "Odebrat atleta",
+    "confirmTitle": "Potvrdit odebrání",
+    "confirmText": "Pro potvrzení zadejte jméno atleta:",
+    "confirmPlaceholder": "Celé jméno",
+    "confirm": "Odebrat",
+    "confirming": "Odebírám...",
+    "error": "Nepodařilo se odebrat atleta."
   },
   "profileCompletion": {
     "eyebrow": "Profile completion",
