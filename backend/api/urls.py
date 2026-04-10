@@ -17,7 +17,7 @@ from .views.dashboard import athlete_dashboard
 from .views.imports import fit_upload, garmin_connect, garmin_revoke, garmin_sync_start, garmin_week_sync, import_job_status
 from .views.notifications import list_notifications, mark_notifications_read_view
 from .views.profile import profile_completion
-from .views.training import create_planned_training, second_phase_training, update_completed_training, update_planned_training
+from .views.training import add_next_month, create_planned_training, second_phase_training, update_completed_training, update_planned_training
 
 urlpatterns = [
     path("auth/me/", auth_me, name="api_auth_me"),
@@ -48,5 +48,6 @@ urlpatterns = [
     path("training/planned/<int:planned_id>/", update_planned_training, name="api_training_planned_update"),
     path("training/planned/<int:planned_id>/second-phase/", second_phase_training, name="api_training_planned_second_phase"),
     path("training/completed/<int:planned_id>/", update_completed_training, name="api_training_completed_update"),
+    path("training/months/", add_next_month, name="api_training_months"),
     path("legend/", legend, name="api_legend"),
 ]
