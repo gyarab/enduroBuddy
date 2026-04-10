@@ -1,16 +1,34 @@
 <script setup lang="ts">
-import { onMounted } from "vue";
+import { onMounted, ref } from "vue";
 
 import MonthSummaryBar from "@/components/training/MonthSummaryBar.vue";
 import GarminImportModal from "@/components/training/GarminImportModal.vue";
 import WeekCard from "@/components/training/WeekCard.vue";
 import WeekCardSkeleton from "@/components/training/WeekCardSkeleton.vue";
+import EbButton from "@/components/ui/EbButton.vue";
 import EbCard from "@/components/ui/EbCard.vue";
 import { useI18n } from "@/composables/useI18n";
+import { useToastStore } from "@/stores/toasts";
 import { useTrainingStore } from "@/stores/training";
+import { addNextMonth } from "@/api/training";
 
 const trainingStore = useTrainingStore();
+const toastStore = useToastStore();
 const { t } = useI18n();
+const isAddingMonth = ref(false);
+
+async function handleAddMonth() {
+  isAddingMonth.value = true;
+  try {
+    await addNextMonth();
+    await trainingStore.loadDashboard();
+    toastStore.push(t("addMonth.added"), "success");
+  } catch {
+    toastStore.push(t("addMonth.error"), "danger");
+  } finally {
+    isAddingMonth.value = false;
+  }
+}
 
 onMounted(() => {
   if (!trainingStore.dashboard && !trainingStore.isLoading) {
@@ -53,6 +71,11 @@ onMounted(() => {
       <div class="dashboard-view__weeks">
         <WeekCard v-for="week in trainingStore.weeks" :key="week.id" :week="week" />
       </div>
+      <div class="dashboard-view__add-month">
+        <EbButton variant="secondary" :disabled="isAddingMonth" @click="handleAddMonth">
+          {{ isAddingMonth ? t("addMonth.adding") : t("addMonth.button") }}
+        </EbButton>
+      </div>
     </template>
   </section>
 </template>
@@ -66,6 +89,12 @@ onMounted(() => {
 .dashboard-view__weeks {
   display: grid;
   gap: 1rem;
+}
+
+.dashboard-view__add-month {
+  display: flex;
+  justify-content: center;
+  padding: 0.5rem 0 1rem;
 }
 
 .dashboard-view__toolbar {
