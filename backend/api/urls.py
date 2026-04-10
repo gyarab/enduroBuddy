@@ -1,6 +1,7 @@
 from django.urls import path
 
 from .views.auth import auth_me
+from .views.legend import legend
 from .views.coach import (
     coach_athletes,
     coach_create_planned_training,
@@ -46,4 +47,5 @@ urlpatterns = [
     path("training/planned/<int:planned_id>/", update_planned_training, name="api_training_planned_update"),
     path("training/planned/<int:planned_id>/second-phase/", second_phase_training, name="api_training_planned_second_phase"),
     path("training/completed/<int:planned_id>/", update_completed_training, name="api_training_completed_update"),
+    path("legend/", legend, name="api_legend"),
 ]
