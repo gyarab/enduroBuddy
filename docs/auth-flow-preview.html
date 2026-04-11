@@ -1,0 +1,1142 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EnduroBuddy Auth Flow Preview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --eb-bg: #09090b;
+      --eb-bg-elevated: #111113;
+      --eb-surface: #18181b;
+      --eb-surface-hover: #202024;
+      --eb-border: #27272a;
+      --eb-border-soft: #1f1f23;
+      --eb-text: #fafafa;
+      --eb-text-secondary: #a1a1aa;
+      --eb-text-muted: #71717a;
+      --eb-lime: #c8ff00;
+      --eb-lime-border: rgba(200, 255, 0, .20);
+      --eb-lime-muted: rgba(200, 255, 0, .10);
+      --eb-blue: #38bdf8;
+      --eb-blue-border: rgba(56, 189, 248, .20);
+      --eb-blue-muted: rgba(56, 189, 248, .12);
+      --eb-danger: #f43f5e;
+      --eb-danger-border: rgba(244, 63, 94, .20);
+      --eb-danger-muted: rgba(244, 63, 94, .10);
+      --eb-warning-border: rgba(245, 158, 11, .20);
+      --eb-warning-muted: rgba(245, 158, 11, .12);
+      --eb-font-display: "Space Grotesk", system-ui, sans-serif;
+      --eb-font-body: "Inter", "Segoe UI Variable Text", system-ui, sans-serif;
+      --eb-font-mono: "JetBrains Mono", monospace;
+      --eb-shadow-lg: 0 24px 64px rgba(0, 0, 0, .55);
+      --eb-radius-sm: 10px;
+      --eb-radius-md: 18px;
+      --eb-radius-lg: 24px;
+      --eb-radius-pill: 999px;
+    }
+
+    * { box-sizing: border-box; }
+    html { color-scheme: dark; -webkit-font-smoothing: antialiased; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: var(--eb-font-body);
+      color: var(--eb-text);
+      background:
+        radial-gradient(circle at top right, rgba(200, 255, 0, .10), transparent 26%),
+        radial-gradient(circle at bottom left, rgba(56, 189, 248, .08), transparent 28%),
+        linear-gradient(180deg, #0b0b0d 0%, #09090b 100%);
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
+      background-size: 48px 48px;
+      mask-image: radial-gradient(circle at center, rgba(0,0,0,.9), transparent 85%);
+      pointer-events: none;
+    }
+
+    .page {
+      width: min(1440px, calc(100% - 48px));
+      margin: 0 auto;
+      padding: 48px 0 80px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero {
+      margin-bottom: 40px;
+      padding: 32px 36px;
+      border: 1px solid var(--eb-border-soft);
+      border-radius: 32px;
+      background: rgba(17, 17, 19, .78);
+      backdrop-filter: blur(18px);
+      box-shadow: var(--eb-shadow-lg);
+    }
+
+    .eyebrow,
+    .label,
+    .screen-note,
+    .tiny {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--eb-text-muted);
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--eb-lime);
+      box-shadow: 0 0 18px rgba(200,255,0,.35);
+    }
+
+    h1 {
+      margin: 16px 0 12px;
+      font-family: var(--eb-font-display);
+      font-size: clamp(2.8rem, 7vw, 5.8rem);
+      line-height: .92;
+      letter-spacing: -.05em;
+      max-width: 10ch;
+    }
+
+    .hero p {
+      max-width: 72ch;
+      margin: 0;
+      color: var(--eb-text-secondary);
+      font-size: 15px;
+      line-height: 1.75;
+    }
+
+    .hero-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .meta-chip,
+    .status-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: var(--eb-radius-pill);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .meta-chip {
+      border: 1px solid var(--eb-border);
+      color: var(--eb-text-muted);
+    }
+
+    .screen-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 24px;
+    }
+
+    .screen-block {
+      border: 1px solid var(--eb-border-soft);
+      border-radius: 28px;
+      padding: 18px;
+      background: rgba(17, 17, 19, .7);
+      backdrop-filter: blur(12px);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, .25);
+    }
+
+    .screen-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 14px;
+      padding: 0 4px;
+    }
+
+    .screen-title {
+      font-family: var(--eb-font-display);
+      font-size: 1.2rem;
+      letter-spacing: -.03em;
+    }
+
+    .auth-shell {
+      display: grid;
+      grid-template-columns: 1.05fr 1fr;
+      min-height: 640px;
+      overflow: hidden;
+      border: 1px solid var(--eb-border);
+      border-radius: 24px;
+      background: linear-gradient(180deg, rgba(24, 24, 27, .96) 0%, rgba(14, 14, 16, .98) 100%);
+    }
+
+    .brand-pane {
+      position: relative;
+      padding: 28px;
+      background:
+        radial-gradient(circle at top right, rgba(200,255,0,.13), transparent 28%),
+        radial-gradient(circle at bottom left, rgba(56,189,248,.12), transparent 30%),
+        linear-gradient(180deg, rgba(12,12,14,.9) 0%, rgba(9,9,11,1) 100%);
+      border-right: 1px solid var(--eb-border-soft);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 24px;
+    }
+
+    .logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      font-family: var(--eb-font-display);
+      font-size: 1.05rem;
+      font-weight: 700;
+      letter-spacing: -.03em;
+    }
+
+    .mark {
+      display: inline-flex;
+      align-items: flex-end;
+      gap: 4px;
+      height: 20px;
+    }
+
+    .mark span {
+      width: 8px;
+      border-radius: 3px;
+      background: var(--eb-lime);
+      transform: skewX(-9deg);
+      box-shadow: 0 0 12px rgba(200,255,0,.18);
+    }
+
+    .mark span:nth-child(1) { height: 8px; opacity: .38; }
+    .mark span:nth-child(2) { height: 14px; opacity: .68; }
+    .mark span:nth-child(3) { height: 20px; opacity: 1; }
+
+    .brand-copy {
+      display: grid;
+      gap: 16px;
+      max-width: 32ch;
+    }
+
+    .brand-copy h2,
+    .auth-card h3 {
+      margin: 0;
+      font-family: var(--eb-font-display);
+      line-height: .96;
+      letter-spacing: -.05em;
+    }
+
+    .brand-copy h2 {
+      font-size: clamp(2rem, 3vw, 3rem);
+    }
+
+    .brand-copy p,
+    .auth-card p,
+    .hint,
+    .inline-note,
+    .mini-list,
+    .utility-card p {
+      margin: 0;
+      color: var(--eb-text-secondary);
+      line-height: 1.7;
+      font-size: 14px;
+    }
+
+    .brand-card,
+    .status-card,
+    .utility-card {
+      padding: 18px;
+      border: 1px solid var(--eb-border-soft);
+      border-radius: 18px;
+      background: rgba(9, 9, 11, .55);
+    }
+
+    .brand-card {
+      border-color: var(--eb-lime-border);
+      background: linear-gradient(180deg, rgba(200,255,0,.10) 0%, rgba(200,255,0,.04) 100%);
+    }
+
+    .brand-card strong {
+      display: block;
+      margin-top: 8px;
+      font-size: 2rem;
+      font-family: var(--eb-font-display);
+      line-height: 1;
+      letter-spacing: -.05em;
+    }
+
+    .auth-panel {
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .auth-card {
+      padding: 28px;
+      border: 1px solid var(--eb-border-soft);
+      border-radius: 20px;
+      background: linear-gradient(180deg, rgba(24,24,27,.98) 0%, rgba(16,16,18,.98) 100%);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.03);
+    }
+
+    .auth-card h3 {
+      margin: 10px 0 8px;
+      font-size: 2rem;
+    }
+
+    .auth-card p {
+      margin-bottom: 22px;
+    }
+
+    .stack { display: grid; gap: 14px; }
+    .field { display: grid; gap: 8px; }
+    .field.two { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+
+    .field label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--eb-text-muted);
+    }
+
+    .input,
+    .select,
+    .btn,
+    .provider-row {
+      min-height: 48px;
+      border-radius: var(--eb-radius-sm);
+    }
+
+    .input,
+    .select {
+      display: flex;
+      align-items: center;
+      padding: 0 14px;
+      border: 1px solid var(--eb-border);
+      background: #09090b;
+      color: var(--eb-text);
+      font-size: 14px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.02);
+    }
+
+    .imported {
+      border-color: var(--eb-blue-border);
+      background: linear-gradient(180deg, rgba(56,189,248,.08) 0%, rgba(9,9,11,1) 100%);
+    }
+
+    .field-error { color: #fda4af; font-size: 12px; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      padding: 0 16px;
+      border: 1px solid transparent;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .02em;
+    }
+
+    .btn-primary {
+      background: var(--eb-lime);
+      color: #09090b;
+      box-shadow: 0 0 24px rgba(200,255,0,.12);
+    }
+
+    .btn-secondary {
+      border-color: var(--eb-border);
+      background: transparent;
+      color: var(--eb-text);
+    }
+
+    .btn-ghost {
+      background: rgba(255,255,255,.03);
+      color: var(--eb-text-secondary);
+      border-color: transparent;
+    }
+
+    .btn-google {
+      justify-content: flex-start;
+      border-color: rgba(255,255,255,.08);
+      background: linear-gradient(180deg, #fbfbfc 0%, #e8e9ed 100%);
+      color: #18181b;
+      font-weight: 600;
+    }
+
+    .google-badge,
+    .provider-logo,
+    .status-graphic {
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+    }
+
+    .google-badge {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #fff;
+      font-weight: 700;
+      color: #4285f4;
+      border: 1px solid rgba(0,0,0,.08);
+    }
+
+    .divider {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 12px;
+      color: var(--eb-text-muted);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .divider::before,
+    .divider::after {
+      content: "";
+      height: 1px;
+      background: var(--eb-border-soft);
+    }
+
+    .row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .row.start { align-items: flex-start; }
+    .link { color: var(--eb-lime); font-size: 13px; font-weight: 600; }
+
+    .checkbox {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--eb-text-secondary);
+      font-size: 13px;
+    }
+
+    .checkbox-box {
+      width: 18px;
+      height: 18px;
+      border-radius: 6px;
+      border: 1px solid var(--eb-lime-border);
+      background: var(--eb-lime-muted);
+      display: grid;
+      place-items: center;
+      color: var(--eb-lime);
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .footer-copy {
+      margin-top: 18px;
+      color: var(--eb-text-secondary);
+      text-align: center;
+      font-size: 13px;
+    }
+
+    .footer-copy a { color: var(--eb-text); font-weight: 600; }
+
+    .status-chip {
+      width: fit-content;
+      border: 1px solid var(--eb-lime-border);
+      background: var(--eb-lime-muted);
+      color: var(--eb-lime);
+    }
+
+    .status-chip.blue {
+      border-color: var(--eb-blue-border);
+      background: var(--eb-blue-muted);
+      color: var(--eb-blue);
+    }
+
+    .status-chip.danger {
+      border-color: var(--eb-danger-border);
+      background: var(--eb-danger-muted);
+      color: #fda4af;
+    }
+
+    .status-chip.warning {
+      border-color: var(--eb-warning-border);
+      background: var(--eb-warning-muted);
+      color: #fcd34d;
+    }
+
+    .status-graphic {
+      width: 64px;
+      height: 64px;
+      border-radius: 20px;
+      font-family: var(--eb-font-display);
+      font-size: 1.4rem;
+      border: 1px solid var(--eb-lime-border);
+      background: linear-gradient(180deg, rgba(200,255,0,.12) 0%, rgba(200,255,0,.04) 100%);
+      color: var(--eb-lime);
+    }
+
+    .status-graphic.blue {
+      color: var(--eb-blue);
+      border-color: var(--eb-blue-border);
+      background: linear-gradient(180deg, rgba(56,189,248,.12) 0%, rgba(56,189,248,.04) 100%);
+    }
+
+    .status-graphic.danger {
+      color: #fda4af;
+      border-color: var(--eb-danger-border);
+      background: linear-gradient(180deg, rgba(244,63,94,.14) 0%, rgba(244,63,94,.05) 100%);
+    }
+
+    .option-grid,
+    .utility-grid {
+      display: grid;
+      gap: 12px;
+    }
+
+    .option-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .utility-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+    .option-card,
+    .provider-row {
+      padding: 14px;
+      border: 1px solid var(--eb-border);
+      background: rgba(9,9,11,.58);
+    }
+
+    .option-card.active {
+      border-color: var(--eb-lime-border);
+      background: linear-gradient(180deg, rgba(200,255,0,.10) 0%, rgba(200,255,0,.04) 100%);
+    }
+
+    .option-card.blue.active {
+      border-color: var(--eb-blue-border);
+      background: linear-gradient(180deg, rgba(56,189,248,.12) 0%, rgba(56,189,248,.04) 100%);
+    }
+
+    .option-card strong,
+    .provider-row strong,
+    .utility-card h4 {
+      display: block;
+      margin: 0 0 6px;
+      font-size: 14px;
+    }
+
+    .mini-list {
+      display: grid;
+      gap: 8px;
+      padding: 0;
+      list-style: none;
+    }
+
+    .mini-list li::before {
+      content: "•";
+      color: var(--eb-lime);
+      margin-right: 8px;
+    }
+
+    .provider-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+    }
+
+    .provider-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .provider-logo {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: #fff;
+      color: #4285f4;
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .provider-actions {
+      display: flex;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .provider-actions .btn {
+      width: auto;
+      min-height: 38px;
+      padding: 0 12px;
+      font-size: 12px;
+    }
+
+    @media (max-width: 1200px) {
+      .screen-grid,
+      .field.two,
+      .option-grid,
+      .utility-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .page {
+        width: min(100%, calc(100% - 24px));
+        padding-top: 24px;
+      }
+
+      .auth-shell {
+        grid-template-columns: 1fr;
+      }
+
+      .brand-pane {
+        min-height: 260px;
+        border-right: 0;
+        border-bottom: 1px solid var(--eb-border-soft);
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <div class="eyebrow">Auth Flow Preview</div>
+      <h1>Login, signup a Google flow v design language EnduroBuddy.</h1>
+      <p>Preview sjednocuje credential auth, social login, recovery a status stránky do jednoho konzistentního shellu. Vizuálně navazuje na existující `Neon Lab × Swiss Precision` styl a eliminuje současný bootstrapový mismatch.</p>
+      <div class="hero-meta">
+        <span class="meta-chip">Dark Precision Shell</span>
+        <span class="meta-chip">Google First Path</span>
+        <span class="meta-chip">Status Pages Included</span>
+      </div>
+    </section>
+
+    <section class="screen-grid">
+      <article class="screen-block">
+        <div class="screen-head">
+          <div class="screen-title">Login</div>
+          <div class="screen-note">account/login.html</div>
+        </div>
+        <div class="auth-shell">
+          <aside class="brand-pane">
+            <div class="logo"><span class="mark"><span></span><span></span><span></span></span>EnduroBuddy</div>
+            <div class="brand-copy">
+              <div class="tiny">Training Workspace</div>
+              <h2>Vrať se do plánu, ne do chaosu.</h2>
+              <p>Všechny měsíční plány, splněné aktivity i spolupráce se sportovci zůstávají v jednom čistém workspace.</p>
+            </div>
+            <div class="brand-card">
+              <div class="tiny">Tento týden</div>
+              <strong>18 / 22</strong>
+              <p>Splněných jednotek napříč svěřenci. Auth panel působí jako vstup do stejného produktu, ne do cizího modulu.</p>
+            </div>
+          </aside>
+          <div class="auth-panel">
+            <div class="auth-card">
+              <div class="label">Authentication</div>
+              <h3>Vítej zpět</h3>
+              <p>Přihlas se a pokračuj do svého tréninkového přehledu, plánů a posledních importů.</p>
+              <div class="stack">
+                <div class="btn btn-google"><span class="google-badge">G</span>Pokračovat přes Google</div>
+                <div class="divider">nebo</div>
+                <div class="field">
+                  <label>Uživatelské jméno nebo e-mail</label>
+                  <div class="input">vojta@endurobuddy.app</div>
+                </div>
+                <div class="field">
+                  <div class="row">
+                    <label>Heslo</label>
+                    <div class="link">Zapomenuté heslo?</div>
+                  </div>
+                  <div class="input">••••••••••••</div>
+                </div>
+                <div class="checkbox"><span class="checkbox-box">✓</span>Zapamatovat si mě</div>
+                <div class="btn btn-primary">Přihlásit se</div>
+              </div>
+              <div class="footer-copy">Nemáš účet? <a href="#">Registrovat se</a></div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article class="screen-block">
+        <div class="screen-head">
+          <div class="screen-title">Sign Up</div>
+          <div class="screen-note">account/signup.html</div>
+        </div>
+        <div class="auth-shell">
+          <aside class="brand-pane">
+            <div class="logo"><span class="mark"><span></span><span></span><span></span></span>EnduroBuddy</div>
+            <div class="brand-copy">
+              <div class="tiny">Start Clean</div>
+              <h2>Začni plánovat s přesností od prvního dne.</h2>
+              <p>Registrace je rychlá a už během prvního kroku je jasné, jestli vstupuješ jako coach nebo athlete.</p>
+            </div>
+            <ul class="mini-list">
+              <li>Google signup jako nejrychlejší vstup</li>
+              <li>Role selection hned při onboardingu</li>
+              <li>Jasné přepnutí na login</li>
+            </ul>
+          </aside>
+          <div class="auth-panel">
+            <div class="auth-card">
+              <div class="label">Authentication</div>
+              <h3>Vytvoř si účet</h3>
+              <p>Založ si EnduroBuddy účet a připrav prostor pro své tréninky nebo sportovce.</p>
+              <div class="stack">
+                <div class="btn btn-google"><span class="google-badge">G</span>Pokračovat přes Google</div>
+                <div class="divider">nebo</div>
+                <div class="field two">
+                  <div class="field">
+                    <label>Jméno</label>
+                    <div class="input">Vojta</div>
+                  </div>
+                  <div class="field">
+                    <label>Příjmení</label>
+                    <div class="input">Novák</div>
+                  </div>
+                </div>
+                <div class="field">
+                  <label>E-mail</label>
+                  <div class="input">vojta@endurobuddy.app</div>
+                </div>
+                <div class="field">
+                  <label>Role</label>
+                  <div class="select">Coach</div>
+                </div>
+                <div class="field two">
+                  <div class="field">
+                    <label>Heslo</label>
+                    <div class="input">••••••••••••</div>
+                  </div>
+                  <div class="field">
+                    <label>Heslo znovu</label>
+                    <div class="input">••••••••••••</div>
+                  </div>
+                </div>
+                <div class="btn btn-primary">Registrovat se</div>
+              </div>
+              <div class="footer-copy">Už účet máš? <a href="#">Přihlásit se</a></div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article class="screen-block">
+        <div class="screen-head">
+          <div class="screen-title">Google Continue</div>
+          <div class="screen-note">socialaccount/login.html</div>
+        </div>
+        <div class="auth-shell">
+          <aside class="brand-pane">
+            <div class="logo"><span class="mark"><span></span><span></span><span></span></span>EnduroBuddy</div>
+            <div class="brand-copy">
+              <div class="tiny">Google Flow</div>
+              <h2>Rychlý vstup bez ztráty kontextu.</h2>
+              <p>Potvrzovací krok je klidný, stručný a říká přesně, co bude následovat po přesměrování na Google.</p>
+            </div>
+            <div class="status-card">
+              <div class="status-chip blue">Google account</div>
+              <p>Po potvrzení se otevře zabezpečené přihlášení Google a po návratu tě vrátíme zpět do EnduroBuddy.</p>
+            </div>
+          </aside>
+          <div class="auth-panel">
+            <div class="auth-card">
+              <div class="label">Google Flow</div>
+              <h3>Pokračovat přes Google</h3>
+              <p>Chystáš se přihlásit pomocí Google účtu. Pokud účet ještě neexistuje, navážeme na registraci.</p>
+              <div class="stack">
+                <div class="status-card">
+                  <div class="row start">
+                    <div class="status-graphic blue">G</div>
+                    <div>
+                      <div class="label">Provider</div>
+                      <strong>Google</strong>
+                      <div class="inline-note">Jeden potvrzovací krok před redirectem zvyšuje jistotu a snižuje drop-off.</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="btn btn-primary">Pokračovat přes Google</div>
+                <div class="btn btn-secondary">Zpět na přihlášení</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article class="screen-block">
+        <div class="screen-head">
+          <div class="screen-title">Google Signup Completion</div>
+          <div class="screen-note">socialaccount/signup.html</div>
+        </div>
+        <div class="auth-shell">
+          <aside class="brand-pane">
+            <div class="logo"><span class="mark"><span></span><span></span><span></span></span>EnduroBuddy</div>
+            <div class="brand-copy">
+              <div class="tiny">Imported Identity</div>
+              <h2>Google dodá základ, my jen doplníme zbytek.</h2>
+              <p>Předvyplněné údaje se vizuálně odliší jako importované a uživatel přesně ví, co ještě potřebuje potvrdit.</p>
+            </div>
+            <ul class="mini-list">
+              <li>Předvyplněné name a e-mail</li>
+              <li>Chybějící role jako jediný povinný krok</li>
+              <li>Jasná návaznost na onboarding</li>
+            </ul>
+          </aside>
+          <div class="auth-panel">
+            <div class="auth-card">
+              <div class="label">Google Flow</div>
+              <h3>Dokonči svůj účet</h3>
+              <p>Údaje z Google jsme načetli. Zkontroluj je a doplň, co chybí, abychom tě mohli pustit dál.</p>
+              <div class="stack">
+                <div class="field two">
+                  <div class="field">
+                    <label>Jméno</label>
+                    <div class="input imported">Vojta</div>
+                    <div class="hint">Načteno z Google profilu</div>
+                  </div>
+                  <div class="field">
+                    <label>Příjmení</label>
+                    <div class="input imported">Novák</div>
+                    <div class="hint">Načteno z Google profilu</div>
+                  </div>
+                </div>
+                <div class="field">
+                  <label>E-mail</label>
+                  <div class="input imported">vojta@gmail.com</div>
+                </div>
+                <div class="field">
+                  <label>Role</label>
+                  <div class="select">Vyber roli</div>
+                  <div class="field-error">Vyber prosím, jestli vstupuješ jako coach nebo athlete.</div>
+                </div>
+                <div class="btn btn-primary">Dokončit registraci</div>
+                <div class="btn btn-ghost">Zpět na přihlášení</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article class="screen-block">
+        <div class="screen-head">
+          <div class="screen-title">Complete Profile</div>
+          <div class="screen-note">account/complete_profile.html</div>
+        </div>
+        <div class="auth-shell">
+          <aside class="brand-pane">
+            <div class="logo"><span class="mark"><span></span><span></span><span></span></span>EnduroBuddy</div>
+            <div class="brand-copy">
+              <div class="tiny">Onboarding Step</div>
+              <h2>Doplň roli a můžeš pokračovat.</h2>
+              <p>Pro incomplete profil používáme stejný shell, jen se obsah mění na decision screen s vysvětlením obou rolí.</p>
+            </div>
+            <div class="option-grid">
+              <div class="option-card active">
+                <strong>Coach</strong>
+                <p>Plánuje pro více sportovců, organizuje skupiny a sleduje plnění.</p>
+              </div>
+              <div class="option-card blue active">
+                <strong>Athlete</strong>
+                <p>Vidí svůj plán, zapisuje realitu a importuje aktivity.</p>
+              </div>
+            </div>
+          </aside>
+          <div class="auth-panel">
+            <div class="auth-card">
+              <div class="label">Profile Completion</div>
+              <h3>Doplň svůj profil</h3>
+              <p>Než tě pustíme do aplikace, potřebujeme potvrdit základní identitu a roli.</p>
+              <div class="stack">
+                <div class="field two">
+                  <div class="field">
+                    <label>Jméno</label>
+                    <div class="input">Vojta</div>
+                  </div>
+                  <div class="field">
+                    <label>Příjmení</label>
+                    <div class="input">Novák</div>
+                  </div>
+                </div>
+                <div class="field">
+                  <label>Role</label>
+                  <div class="select">Coach</div>
+                </div>
+                <div class="btn btn-primary">Pokračovat</div>
+                <div class="btn btn-secondary">Odhlásit se</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article class="screen-block">
+        <div class="screen-head">
+          <div class="screen-title">Password Reset Request</div>
+          <div class="screen-note">account/password_reset.html</div>
+        </div>
+        <div class="auth-shell">
+          <aside class="brand-pane">
+            <div class="logo"><span class="mark"><span></span><span></span><span></span></span>EnduroBuddy</div>
+            <div class="brand-copy">
+              <div class="tiny">Recovery</div>
+              <h2>Vrátíme tě zpět bez tření.</h2>
+              <p>Recovery stránky jsou méně marketingové a víc utilitární. Jedna úloha, jedna akce, jeden klidný výsledek.</p>
+            </div>
+            <div class="status-card">
+              <div class="status-chip">Secure Reset</div>
+              <p>Support copy vysvětluje, že pošleme odkaz jen pokud účet pro daný e-mail existuje.</p>
+            </div>
+          </aside>
+          <div class="auth-panel">
+            <div class="auth-card">
+              <div class="label">Password Reset</div>
+              <h3>Obnovit heslo</h3>
+              <p>Zadej e-mail k účtu a pošleme ti odkaz pro nastavení nového hesla.</p>
+              <div class="stack">
+                <div class="field">
+                  <label>E-mail</label>
+                  <div class="input">vojta@endurobuddy.app</div>
+                </div>
+                <div class="btn btn-primary">Poslat obnovovací odkaz</div>
+                <div class="btn btn-ghost">Zpět na přihlášení</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article class="screen-block">
+        <div class="screen-head">
+          <div class="screen-title">Status Pages</div>
+          <div class="screen-note">reset + verification + errors</div>
+        </div>
+        <div class="auth-shell">
+          <aside class="brand-pane">
+            <div class="logo"><span class="mark"><span></span><span></span><span></span></span>EnduroBuddy</div>
+            <div class="brand-copy">
+              <div class="tiny">System States</div>
+              <h2>Všechny mezistavy mají stejný hlas i strukturu.</h2>
+              <p>Úspěch, čekání i chyba používají stejnou status-page variantu shellu. Mění se jen chip, headline a sada CTA.</p>
+            </div>
+            <div class="utility-grid">
+              <div class="utility-card">
+                <div class="status-chip">Sent</div>
+                <h4>Verification Sent</h4>
+                <p>E-mail na cestě, možnost resend.</p>
+              </div>
+              <div class="utility-card">
+                <div class="status-chip blue">Confirmed</div>
+                <h4>Email Confirm</h4>
+                <p>Potvrzeno a jasná cesta do appky.</p>
+              </div>
+              <div class="utility-card">
+                <div class="status-chip warning">Pending</div>
+                <h4>Verified Required</h4>
+                <p>Neutrální upozornění bez zbytečné paniky.</p>
+              </div>
+              <div class="utility-card">
+                <div class="status-chip danger">Error</div>
+                <h4>Auth Error</h4>
+                <p>Social login selhal nebo byl zrušen.</p>
+              </div>
+            </div>
+          </aside>
+          <div class="auth-panel">
+            <div class="auth-card">
+              <div class="stack">
+                <div class="status-chip">Password updated</div>
+                <div class="status-card">
+                  <div class="row start">
+                    <div class="status-graphic">✓</div>
+                    <div>
+                      <div class="label">Success state</div>
+                      <h3 style="margin-top:6px;">Heslo je změněné</h3>
+                      <p style="margin:8px 0 0;">Můžeš se znovu přihlásit a pokračovat tam, kde jsi skončil.</p>
+                    </div>
+                  </div>
+                  <div class="btn btn-primary">Pokračovat na přihlášení</div>
+                </div>
+
+                <div class="status-card">
+                  <div class="row start">
+                    <div class="status-graphic blue">@</div>
+                    <div>
+                      <div class="label">Verification</div>
+                      <strong>Zkontroluj svou schránku</strong>
+                      <div class="inline-note">Ověřovací e-mail jsme právě poslali na `vojta@endurobuddy.app`.</div>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="btn btn-secondary">Poslat znovu</div>
+                    <div class="btn btn-ghost">Zpět</div>
+                  </div>
+                </div>
+
+                <div class="status-card">
+                  <div class="row start">
+                    <div class="status-graphic danger">!</div>
+                    <div>
+                      <div class="label">Error state</div>
+                      <strong>Google přihlášení se nepodařilo dokončit</strong>
+                      <div class="inline-note">Zkus to znovu nebo pokračuj klasicky přes e-mail a heslo.</div>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="btn btn-primary">Zkusit znovu</div>
+                    <div class="btn btn-secondary">Použít e-mail</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article class="screen-block">
+        <div class="screen-head">
+          <div class="screen-title">Social Connections</div>
+          <div class="screen-note">socialaccount/connections.html</div>
+        </div>
+        <div class="auth-shell">
+          <aside class="brand-pane">
+            <div class="logo"><span class="mark"><span></span><span></span><span></span></span>EnduroBuddy</div>
+            <div class="brand-copy">
+              <div class="tiny">Connected Accounts</div>
+              <h2>Správa providerů bez vizuálního chaosu.</h2>
+              <p>Connections používají stejný shell, ale obsah je přehledový. Řádky providerů fungují jako čisté management karty.</p>
+            </div>
+            <ul class="mini-list">
+              <li>Aktivní provider má jasný status</li>
+              <li>Připojení i odpojení jsou oddělené akce</li>
+              <li>Destruktivní CTA není primární</li>
+            </ul>
+          </aside>
+          <div class="auth-panel">
+            <div class="auth-card">
+              <div class="label">Connections</div>
+              <h3>Propojené účty</h3>
+              <p>Spravuj, které externí účty můžeš použít pro přihlášení do EnduroBuddy.</p>
+              <div class="stack">
+                <div class="provider-row">
+                  <div class="provider-meta">
+                    <div class="provider-logo">G</div>
+                    <div>
+                      <strong>Google</strong>
+                      <div class="inline-note">vojta@gmail.com · naposledy použito dnes</div>
+                    </div>
+                  </div>
+                  <div class="provider-actions">
+                    <div class="status-chip blue">Connected</div>
+                    <div class="btn btn-secondary">Odpojit</div>
+                  </div>
+                </div>
+                <div class="provider-row">
+                  <div class="provider-meta">
+                    <div class="provider-logo" style="background:#111113;color:#fafafa;border:1px solid var(--eb-border);">+</div>
+                    <div>
+                      <strong>Připojit další účet</strong>
+                      <div class="inline-note">Rozšiřit přístupové možnosti bez změny primární identity.</div>
+                    </div>
+                  </div>
+                  <div class="provider-actions">
+                    <div class="btn btn-primary">Připojit Google</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article class="screen-block">
+        <div class="screen-head">
+          <div class="screen-title">Utility States</div>
+          <div class="screen-note">logout / inactive / ratelimit</div>
+        </div>
+        <div class="auth-shell">
+          <aside class="brand-pane">
+            <div class="logo"><span class="mark"><span></span><span></span><span></span></span>EnduroBuddy</div>
+            <div class="brand-copy">
+              <div class="tiny">Fallback System</div>
+              <h2>Logout, inactive account i rate limit držíme v jedné rodině.</h2>
+              <p>Tyto stránky nepotřebují vlastní layout. Stačí status varianty, které sdílí shell, typografii i CTA rytmus.</p>
+            </div>
+            <div class="status-card">
+              <div class="status-chip warning">Utility States</div>
+              <p>Výsledkem je menší implementační plocha a mnohem konzistentnější auth experience.</p>
+            </div>
+          </aside>
+          <div class="auth-panel">
+            <div class="auth-card">
+              <div class="stack">
+                <div class="status-card">
+                  <div class="row start">
+                    <div class="status-graphic">→</div>
+                    <div>
+                      <div class="label">Logout</div>
+                      <strong>Opravdu se chceš odhlásit?</strong>
+                      <div class="inline-note">Jasné potvrzení bez rušivých prvků navíc.</div>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="btn btn-primary">Odhlásit se</div>
+                    <div class="btn btn-secondary">Zpět</div>
+                  </div>
+                </div>
+                <div class="status-card">
+                  <div class="row start">
+                    <div class="status-graphic danger">×</div>
+                    <div>
+                      <div class="label">Inactive account</div>
+                      <strong>Tento účet zatím není aktivní</strong>
+                      <div class="inline-note">K dispozici je cesta na support nebo resend verification.</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="status-card">
+                  <div class="row start">
+                    <div class="status-graphic blue">⏱</div>
+                    <div>
+                      <div class="label">Rate limit</div>
+                      <strong>Zkus to prosím za chvíli znovu</strong>
+                      <div class="inline-note">Klidný wording a neutrální tón místo tvrdé error stránky.</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+    </section>
+  </main>
+</body>
+</html>
