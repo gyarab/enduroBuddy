@@ -264,9 +264,7 @@ def add_next_month(request):
 
     athlete_id = (payload or {}).get("athlete_id")
 
-    if is_coach(request.user):
-        if not athlete_id:
-            return json_error(ApiText.INVALID_ATHLETE_ID, status=400)
+    if is_coach(request.user) and athlete_id:
         link = CoachAthlete.objects.filter(coach=request.user, athlete_id=athlete_id).first()
         if link is None:
             return json_error(ApiText.FORBIDDEN_FOR_ATHLETE, status=403)
@@ -274,10 +272,11 @@ def add_next_month(request):
     else:
         target_athlete = request.user
 
-    month_created, weeks_created, days_created = add_next_month_for_athlete(athlete=target_athlete)
+    month_created, weeks_created, days_created, target_year, target_month = add_next_month_for_athlete(athlete=target_athlete)
     return JsonResponse({
         "ok": True,
         "month_created": month_created,
         "weeks_created": weeks_created,
         "days_created": days_created,
+        "month_value": f"{target_year}-{target_month:02d}",
     })

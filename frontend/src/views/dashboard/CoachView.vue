@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from "vue";
 
+import { RouterLink } from "vue-router";
+
 import AthleteManageModal from "@/components/coach/AthleteManageModal.vue";
 import CoachSidebar from "@/components/coach/CoachSidebar.vue";
+import MonthBar from "@/components/training/MonthBar.vue";
 import MonthSummaryBar from "@/components/training/MonthSummaryBar.vue";
 import WeekCard from "@/components/training/WeekCard.vue";
 import WeekCardSkeleton from "@/components/training/WeekCardSkeleton.vue";
@@ -63,8 +66,8 @@ async function handleAddMonth() {
   if (!coachStore.selectedAthlete) return;
   isAddingMonth.value = true;
   try {
-    await addNextMonth(coachStore.selectedAthlete.id);
-    await coachStore.loadDashboard();
+    const data = await addNextMonth(coachStore.selectedAthlete.id);
+    await coachStore.loadDashboard(coachStore.selectedAthlete.id, data.month_value);
     toastStore.push(t("addMonth.added"), "success");
   } catch {
     toastStore.push(t("addMonth.error"), "danger");
@@ -105,6 +108,12 @@ async function handleAddMonth() {
             <div class="coach-card__eyebrow">{{ t("coachView.selectedAthlete") }}</div>
             <div class="coach-toolbar__name">{{ coachStore.selectedAthlete.name }}</div>
             <div class="coach-toolbar__actions">
+              <RouterLink to="/app/dashboard" class="coach-toolbar__back-link">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M19 12H5M12 5l-7 7 7 7" />
+                </svg>
+                {{ t("coachView.backToDashboard") }}
+              </RouterLink>
               <EbButton variant="ghost" class="coach-toolbar__mobile-button" @click="isSidebarOpen = !isSidebarOpen">
                 {{ isSidebarOpen ? t("coachView.hideAthletes") : t("coachView.showAthletes") }}
               </EbButton>
@@ -133,14 +142,18 @@ async function handleAddMonth() {
         <div class="coach-view__weeks">
           <WeekCard v-for="week in coachStore.weeks" :key="week.id" :week="week" editor-context="coach" />
         </div>
-        <div v-if="coachStore.selectedAthlete" class="coach-view__add-month">
-          <EbButton variant="secondary" :disabled="isAddingMonth" @click="handleAddMonth">
-            {{ isAddingMonth ? t("addMonth.adding") : t("addMonth.button") }}
-          </EbButton>
-        </div>
       </template>
     </div>
   </section>
+
+  <MonthBar
+    v-if="coachStore.selectedAthlete"
+    :months="coachStore.navigation?.available ?? []"
+    :active-month="coachStore.selectedMonth?.value"
+    :adding="isAddingMonth"
+    @select="(value) => coachStore.loadDashboard(coachStore.selectedAthlete!.id, value)"
+    @add-month="handleAddMonth"
+  />
 
   <AthleteManageModal
     :athletes="coachStore.managedAthletes"
@@ -170,12 +183,6 @@ async function handleAddMonth() {
 .coach-view__weeks {
   display: grid;
   gap: 1rem;
-}
-
-.coach-view__add-month {
-  display: flex;
-  justify-content: center;
-  padding: 0.5rem 0 1rem;
 }
 
 .coach-card {
@@ -226,6 +233,29 @@ async function handleAddMonth() {
 .coach-toolbar__actions {
   display: flex;
   gap: 0.75rem;
+}
+
+.coach-toolbar__back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.75rem;
+  border: 1px solid var(--eb-border);
+  border-radius: var(--eb-radius-sm);
+  background: transparent;
+  color: var(--eb-text-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  transition:
+    border-color 150ms ease-out,
+    color 150ms ease-out;
+}
+
+.coach-toolbar__back-link:hover {
+  border-color: var(--eb-border);
+  color: var(--eb-text-soft);
 }
 
 .coach-toolbar__mobile-button {

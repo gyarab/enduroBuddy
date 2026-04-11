@@ -37,6 +37,8 @@ function openEditor() {
   });
 }
 
+defineExpose({ openEditor, isOpen: editor.isOpen });
+
 async function save() {
   if (!props.row.id) {
     editor.close();
@@ -82,9 +84,7 @@ async function save() {
 
 <template>
   <div class="completed-editor-wrap">
-    <EbButton v-if="row.editable" variant="ghost" @click="openEditor">{{ t("completedEditor.edit") }}</EbButton>
-
-    <div v-if="editor.isOpen.value" class="completed-editor">
+    <div v-if="editor.isOpen.value" class="completed-editor" @click.stop>
       <div class="completed-editor__plan">{{ t("completedEditor.plan", { value: plannedSummary }) }}</div>
 
       <div class="completed-editor__grid">

@@ -59,6 +59,7 @@ function mountCoachView() {
   return mount(CoachView, {
     global: {
       stubs: {
+        RouterLink: { template: "<a><slot /></a>" },
         CoachSidebar: {
           template: "<div class='coach-sidebar-stub' />",
         },
