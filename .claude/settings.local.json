@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git add:*)",
+      "Bash(git commit -m 'style\\(email\\): EB-branded email templates — lime CTA, white card:*)"
+    ]
+  }
+}

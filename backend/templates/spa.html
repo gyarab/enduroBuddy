@@ -11,6 +11,17 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 
+  <!-- Base font/color applied immediately so body is never serif while bundle loads -->
+  <style>
+    body {
+      margin: 0;
+      background: #09090b;
+      color: #fafafa;
+      font-family: "Inter", "Segoe UI Variable Text", system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+  </style>
+
   {% if debug %}
     <script type="module" src="{{ spa_vite_dev_server_url }}/@vite/client"></script>
     <script type="module" src="{{ spa_vite_dev_server_url }}/src/main.ts"></script>
