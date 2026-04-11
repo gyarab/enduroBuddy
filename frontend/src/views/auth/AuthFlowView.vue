@@ -173,153 +173,170 @@ const shellConfig = computed(() => {
         eyebrow: "Start Clean",
         title: "Začni plánovat s přesností od prvního dne.",
         description: "Registrace je rychlá a už během prvního kroku je jasné, jestli vstupuješ jako coach nebo athlete.",
-        statLabel: "Fast path",
-        statValue: "Google First",
-        statDescription: "Social signup je preferovaný vstup, role a heslo mají jasné místo bez vizuálního šumu.",
+        stats: [
+          { icon: "🏃", label: "Pro sportovce", value: "Plán · Trénink · Analýza" },
+          { icon: "🎯", label: "Pro trenéry", value: "Skupiny · Plány · Přehled", blue: true },
+        ],
       };
     case "password-reset":
       return {
         eyebrow: "Recovery",
         title: "Vrátíme tě zpět bez tření.",
         description: "Recovery stránky jsou méně marketingové a víc utilitární. Jedna úloha, jedna akce, jeden klidný výsledek.",
-        statLabel: "Secure Reset",
-        statValue: "Email Link",
-        statDescription: "Support copy vysvětluje, že obnovovací odkaz pošleme jen pokud účet pro daný e-mail existuje.",
+        stats: [
+          { icon: "🔒", label: "Bezpečný reset", value: "E-mail odkaz" },
+          { icon: "✓", label: "Po obnově", value: "Přímý vstup do app", blue: true },
+        ],
       };
     case "password-reset-done":
       return {
         eyebrow: "Recovery",
         title: "Reset link je na cestě.",
         description: "Pokud účet existuje, poslali jsme odkaz pro obnovu hesla. Zbytek flow může proběhnout klidně mimo aplikaci.",
-        statLabel: "Next step",
-        statValue: "Check Email",
-        statDescription: "Držíme stejný shell i pro mezistavy, aby auth nepůsobil rozpadle.",
+        stats: [
+          { icon: "🔒", label: "Bezpečný reset", value: "E-mail odkaz" },
+          { icon: "✓", label: "Po obnově", value: "Přímý vstup do app", blue: true },
+        ],
       };
     case "password-reset-key":
       return {
         eyebrow: "Recovery",
         title: "Bezpečné nastavení nového hesla.",
         description: "Link z e-mailu držíme v tom samém auth shellu a po validaci necháme uživatele heslo změnit přímo ve Vue flow.",
-        statLabel: "Key Flow",
-        statValue: "Validated",
-        statDescription: "Když je odkaz neplatný, stejná obrazovka se jen přepne do error stavu.",
+        stats: [
+          { icon: "🔑", label: "Reset klíč", value: "Ověřený token" },
+          { icon: "✓", label: "Po změně", value: "Heslo aktualizováno", blue: true },
+        ],
       };
     case "password-reset-key-done":
       return {
         eyebrow: "Recovery",
         title: "Heslo je změněné a cesta zpět je jasná.",
         description: "Po úspěšné změně hesla zůstáváme ve stejném auth jazyce a vracíme uživatele přirozeně na login.",
-        statLabel: "Done",
-        statValue: "Password Updated",
-        statDescription: "Bez bootstrap fallbacku nebo skoku na jinou vizuální vrstvu.",
+        stats: [
+          { icon: "🔑", label: "Reset klíč", value: "Ověřený token" },
+          { icon: "✓", label: "Po změně", value: "Heslo aktualizováno", blue: true },
+        ],
       };
     case "verification-sent":
       return {
         eyebrow: "Email Verification",
         title: "Potvrzení e-mailu je další čistý krok v auth flow.",
         description: "Po registraci držíme uživatele ve stejném designu a jasně vysvětlíme, co se stane dál.",
-        statLabel: "Next step",
-        statValue: "Check Inbox",
-        statDescription: "Po potvrzení e-mailu se uživatel vrátí zpět do aplikace bez vizuálního skoku.",
+        stats: [
+          { icon: "✉️", label: "Ověřovací e-mail", value: "Odesláno" },
+          { icon: "✓", label: "Po potvrzení", value: "Účet aktivní", blue: true },
+        ],
       };
     case "email-confirm-key":
       return {
         eyebrow: "Email Verification",
         title: "Potvrzení e-mailu jako finální krok bez vizuálního zlomu.",
         description: "Ověřovací link z e-mailu je teď obsloužený stejným Vue auth shellem jako login a signup.",
-        statLabel: "Verification",
-        statValue: "Key Based",
-        statDescription: "Validní i nevalidní odkaz mají jasný a konzistentní stav.",
+        stats: [
+          { icon: "✉️", label: "Ověřovací e-mail", value: "Odesláno" },
+          { icon: "✓", label: "Po potvrzení", value: "Účet aktivní", blue: true },
+        ],
       };
     case "email-management":
       return {
         eyebrow: "Account Email",
         title: "Správa e-mailů ve stejném auth jazyce.",
         description: "Primární, ověřené i čekající e-maily teď běží v tom samém Vue modulu jako login a signup.",
-        statLabel: "Email Management",
-        statValue: "Unified",
-        statDescription: "Přidání, resend verification, primary i remove jsou napojené na backend API.",
+        stats: [
+          { icon: "@", label: "Správa e-mailů", value: "Primární · Záložní" },
+          { icon: "✓", label: "Ověřeno", value: "Zabezpečený účet", blue: true },
+        ],
       };
     case "password-change":
       return {
         eyebrow: "Security",
         title: "Změna hesla bez návratu ke starým template.",
         description: "Když má uživatel heslo, může ho změnit ve stejném auth shellu a pořád zůstává v rámci SPA.",
-        statLabel: "Security",
-        statValue: "Change Password",
-        statDescription: "Používáme stejná validační pravidla jako allauth formuláře.",
+        stats: [
+          { icon: "🔐", label: "Zabezpečení", value: "Session Auth" },
+          { icon: "✓", label: "Po akci", value: "Návrat do app", blue: true },
+        ],
       };
     case "password-set":
       return {
         eyebrow: "Security",
         title: "Nastav heslo i k účtu z Google loginu.",
         description: "Pro social-only účet je nastavení hesla další čistý krok v auth modulu, ne starý fallback formulář.",
-        statLabel: "Security",
-        statValue: "Set Password",
-        statDescription: "Pokud už heslo existuje, backend vrátí redirect na změnu hesla.",
+        stats: [
+          { icon: "🔐", label: "Zabezpečení", value: "Session Auth" },
+          { icon: "✓", label: "Po akci", value: "Návrat do app", blue: true },
+        ],
       };
     case "reauthenticate":
       return {
         eyebrow: "Security",
         title: "Potvrzení přístupu bez odskoku mimo auth modul.",
         description: "Když je potřeba znovu potvrdit citlivou akci, heslo se ověří ve stejném Vue auth flow.",
-        statLabel: "Reauth",
-        statValue: "Password Check",
-        statDescription: "Po úspěchu se uživatel vrátí přesně tam, odkud přišel.",
+        stats: [
+          { icon: "🔐", label: "Zabezpečení", value: "Session Auth" },
+          { icon: "✓", label: "Po akci", value: "Návrat do app", blue: true },
+        ],
       };
     case "logout":
       return {
         eyebrow: "Session",
         title: "Odhlášení bez zbytečného tření.",
         description: "Jedno potvrzení, jeden výsledek. Logout screen používá stejnou strukturu jako zbytek auth flow.",
-        statLabel: "Action",
-        statValue: "Logout",
-        statDescription: "Po potvrzení tě vrátíme na přihlášení.",
+        stats: [
+          { icon: "👋", label: "Odhlášení", value: "Session ukončena" },
+          { icon: "→", label: "Po odhlášení", value: "Přihlašovací stránka", blue: true },
+        ],
       };
     case "inactive":
       return {
         eyebrow: "Account State",
         title: "Tento účet teď není aktivní.",
         description: "I fallback a chybové auth stavy drží stejnou kvalitu a tonality jako hlavní flow.",
-        statLabel: "Fallback",
-        statValue: "Inactive",
-        statDescription: "Nabídneme další jasné kroky místo slepé uličky.",
+        stats: [
+          { icon: "⚠", label: "Stav účtu", value: "Vyžaduje akci" },
+          { icon: "→", label: "Další krok", value: "Kontaktuj podporu", blue: true },
+        ],
       };
     case "social-error":
       return {
         eyebrow: "Social Login",
         title: "Google flow se tentokrát nepodařilo dokončit.",
         description: "Když externí provider selže, uživatel pořád zůstává v našem produktu a dostává srozumitelnou cestu dál.",
-        statLabel: "Fallback",
-        statValue: "Retry",
-        statDescription: "Může zkusit Google znovu nebo přejít na e-mail a heslo.",
+        stats: [
+          { icon: "⚠", label: "Stav účtu", value: "Vyžaduje akci" },
+          { icon: "→", label: "Další krok", value: "Kontaktuj podporu", blue: true },
+        ],
       };
     case "social-cancelled":
       return {
         eyebrow: "Social Login",
         title: "Přihlášení bylo zrušeno ještě před dokončením.",
         description: "Neutral state, žádná panika. Jen čistá možnost zkusit to znovu nebo přejít na registraci.",
-        statLabel: "State",
-        statValue: "Cancelled",
-        statDescription: "Značka zůstává klidná i v nedokončeném flow.",
+        stats: [
+          { icon: "⚠", label: "Stav účtu", value: "Vyžaduje akci" },
+          { icon: "→", label: "Další krok", value: "Kontaktuj podporu", blue: true },
+        ],
       };
     case "connections":
       return {
         eyebrow: "Connected Accounts",
         title: "Správa providerů bez vizuálního chaosu.",
         description: "Connections používají stejný shell, ale obsah je přehledový. Řádky providerů fungují jako čisté management karty.",
-        statLabel: "Providers",
-        statValue: "Google",
-        statDescription: "Připojení i odpojení zůstávají oddělené akce a destruktivní CTA není primární.",
+        stats: [
+          { icon: "🔗", label: "Propojené účty", value: "Google OAuth" },
+          { icon: "✓", label: "Spravovat", value: "Připojit · Odpojit", blue: true },
+        ],
       };
     default:
       return {
         eyebrow: "Training Workspace",
         title: "Vrať se do plánu, ne do chaosu.",
         description: "Všechny měsíční plány, splněné aktivity i spolupráce se sportovci zůstávají v jednom čistém workspace.",
-        statLabel: "This week",
-        statValue: "18 / 22",
-        statDescription: "Splněných jednotek napříč svěřenci. Auth působí jako vstup do stejného produktu, ne do cizího modulu.",
+        stats: [
+          { icon: "📅", label: "Aktivní plán", value: "Duben 2026 · 4. týden" },
+          { icon: "⚡", label: "Poslední trénink", value: "Dlouhý výběh · 28.4 km", blue: true },
+        ],
       };
   }
 });
@@ -670,9 +687,7 @@ watch(
         :brand-eyebrow="shellConfig.eyebrow"
         :brand-title="shellConfig.title"
         :brand-description="shellConfig.description"
-        :stat-label="shellConfig.statLabel"
-        :stat-value="shellConfig.statValue"
-        :stat-description="shellConfig.statDescription"
+        :stats="shellConfig.stats"
       >
         <div v-if="screen === 'login'" class="auth-flow-card">
           <div class="auth-flow-card__eyebrow">Authentication</div>
