@@ -45,7 +45,7 @@ Glow: `feGaussianBlur stdDeviation="2.2"` + feMerge overlay. Vypnout pod 20px a 
 | `eb-mark.svg` | Favicon, app ikona, malé kontexty |
 | `eb-logo-full.svg` | Mark + "EnduroBuddy" wordmark |
 | `eb-logo-compact.svg` | Mark + "EB" monogram |
-| `eb-wordmark.svg` | Pouze wordmark (Syne 700) |
+| `eb-wordmark.svg` | Pouze wordmark (Space Grotesk 700) |
 | `eb-social-dark.svg` | IG/X avatar, tmavé pozadí |
 | `eb-social-lime.svg` | IG/X avatar, lime pozadí |
 | `eb-social-dark-rounded.svg` | IG rounded corners |
@@ -57,7 +57,7 @@ Všechny v `backend/static/brand/`.
 ### Pravidla
 
 - Mark je lime na tmavém, dark na lime/světlém — bez glow na světlém
-- Wordmark vždy v Syne 700
+- Wordmark vždy v Space Grotesk 700
 - Minimální velikost marku: 16px (bez glow efektu)
 - Kolem marku safe zone = šířka jednoho baru (~⅕ celkové šířky)
 
@@ -136,12 +136,12 @@ Token               Hex         Použití
 ### Font stack
 
 ```css
---eb-font-display: "Syne", system-ui, sans-serif;
+--eb-font-display: "Space Grotesk", system-ui, sans-serif;
 --eb-font-body:    "Inter", "Segoe UI Variable Text", system-ui, sans-serif;
 --eb-font-mono:    "JetBrains Mono", "Cascadia Code", monospace;
 ```
 
-**Syne** — Geometrický display font s charakterem. Headlines, brand, hero, section titles.
+**Space Grotesk** — Technický display font s precision-nástroj charakterem. Headlines, brand, hero, section titles. Nahradil Syne pro čistší výsledek v tmavém UI.
 
 **Inter** — Precision UI font. Body text, formuláře, tabulky, labely, navigace.
 
@@ -150,25 +150,25 @@ Token               Hex         Použití
 ### Typografická hierarchie
 
 ```
-Level           Size                        Font            Weight   Tracking
-─────────────────────────────────────────────────────────────────────────────
-Display         clamp(3rem, 8vw, 6rem)      Syne            800      -0.04em
-H1              clamp(2rem, 5vw, 3.5rem)    Syne            700      -0.03em
-H2              clamp(1.5rem, 3vw, 2rem)    Syne            700      -0.02em
-H3              1.125rem                    Inter           600      -0.01em
-Body            0.9375rem (15px)            Inter           400      0
-Small           0.8125rem (13px)            Inter           500      0.01em
-Label           0.75rem (12px)              Inter           600      0.06em
-Mono Data       0.875rem (14px)             JetBrains       500      0
+Level           Size                           Font             Weight   Tracking
+──────────────────────────────────────────────────────────────────────────────────
+Display         clamp(2.5rem, 6vw, 4.5rem)     Space Grotesk    700      -0.05em
+H1              clamp(1.75rem, 4vw, 2.75rem)   Space Grotesk    700      -0.04em
+H2              clamp(1.25rem, 2.5vw, 1.75rem) Space Grotesk    600      -0.025em
+H3              1.0625rem (17px)               Space Grotesk    500      -0.01em
+Body            0.9375rem (15px)               Inter            400      0
+Small           0.8125rem (13px)               Inter            500      0.01em
+Label           0.6875rem (11px)               Inter            600      0.07em
+Mono Data       0.875rem (14px)                JetBrains Mono   500      -0.02em
 ```
 
 ### Pravidla
 
-- Syne NIKDY pod 18px
-- Inter pro veškerý funkční UI text
+- Space Grotesk pro Display, H1, H2, H3 — celá heading hierarchie z jednoho fontu
+- Inter pro veškerý funkční UI text (Body, Small, Label, tlačítka, formuláře)
 - JetBrains Mono pro: pace (4:52), distance (12.3 km), HR (142 bpm), timestamps
-- Labely jsou Inter uppercase s wide tracking — nikdy Syne
-- Line-height: 0.9-1.0 pro display, 1.3 pro headings, 1.6 pro body
+- Labely jsou Inter uppercase s wide tracking — nikdy Space Grotesk
+- Line-height: 0.95 pro display, 1.05–1.3 pro headings, 1.6 pro body
 
 ---
 
