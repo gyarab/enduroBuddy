@@ -1205,9 +1205,14 @@ watch(
 
 .auth-flow-button--google {
   justify-content: flex-start;
-  border-color: rgba(255, 255, 255, 0.08);
-  background: linear-gradient(180deg, #fbfbfc 0%, #e8e9ed 100%);
-  color: #18181b;
+  border-color: var(--eb-border);
+  background: var(--eb-surface);
+  color: var(--eb-text);
+}
+
+.auth-flow-button--google:hover {
+  border-color: rgba(255, 255, 255, 0.18);
+  background: var(--eb-surface-hover);
 }
 
 .auth-flow-google-badge {
