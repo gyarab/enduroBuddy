@@ -1,0 +1,384 @@
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600&family=Fira+Code:wght@400;500&family=Geist:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500&display=swap');
+
+  .font-demo-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-top: 24px;
+  }
+
+  .font-card {
+    background: #18181b;
+    border: 1.5px solid #27272a;
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: border-color 0.15s, transform 0.15s;
+  }
+  .font-card:hover { border-color: #3f3f46; transform: translateY(-2px); }
+  .font-card.selected { border-color: #c8ff00; }
+
+  .font-card-header {
+    padding: 16px 20px 12px;
+    border-bottom: 1px solid #1f1f23;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .font-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #71717a;
+  }
+  .font-badge {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 9999px;
+  }
+  .badge-a { background: rgba(200,255,0,.1); color: #c8ff00; border: 1px solid rgba(200,255,0,.2); font-family: 'JetBrains Mono', monospace; }
+  .badge-b { background: rgba(56,189,248,.1); color: #38bdf8; border: 1px solid rgba(56,189,248,.2); font-family: 'JetBrains Mono', monospace; }
+  .badge-c { background: rgba(161,161,170,.1); color: #a1a1aa; border: 1px solid rgba(161,161,170,.2); font-family: 'JetBrains Mono', monospace; }
+
+  .font-card-body { padding: 20px; }
+
+  /* ── Simulace mini dashboard bloku ── */
+  .mini-ui {
+    background: #09090b;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 16px;
+    border: 1px solid #1f1f23;
+  }
+
+  .mini-nav {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #1f1f23;
+  }
+  .mini-nav-logo {
+    font-size: 13px;
+    font-weight: 700;
+    color: #fafafa;
+  }
+  .mini-nav-link {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #71717a;
+  }
+  .mini-nav-link.active { color: #c8ff00; }
+
+  .mini-headline {
+    font-size: 22px;
+    font-weight: 700;
+    color: #fafafa;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    margin-bottom: 6px;
+  }
+  .mini-sub {
+    font-size: 11.5px;
+    color: #71717a;
+    margin-bottom: 14px;
+  }
+  .mini-metrics {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .mini-metric {
+    flex: 1;
+    background: #18181b;
+    border: 1px solid #27272a;
+    border-radius: 6px;
+    padding: 8px 10px;
+  }
+  .mini-metric-label {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: #71717a;
+    margin-bottom: 3px;
+  }
+  .mini-metric-value {
+    font-size: 15px;
+    font-weight: 500;
+    color: #fafafa;
+  }
+  .mini-week-row {
+    display: flex;
+    align-items: center;
+    padding: 7px 0;
+    border-bottom: 1px solid #1f1f23;
+    gap: 10px;
+  }
+  .mini-week-label {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #71717a;
+    width: 40px;
+  }
+  .mini-training-name {
+    font-size: 11px;
+    font-weight: 500;
+    color: #a1a1aa;
+    flex: 1;
+  }
+  .mini-status {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 2px 6px;
+    border-radius: 9999px;
+  }
+  .status-done { background: rgba(200,255,0,.1); color: #c8ff00; }
+  .status-plan { background: rgba(56,189,248,.1); color: #38bdf8; }
+
+  .font-stack-info {
+    padding: 0 4px;
+  }
+  .font-stack-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 0;
+    border-bottom: 1px solid #1f1f23;
+    font-size: 11px;
+  }
+  .font-stack-role { color: #71717a; }
+  .font-stack-name { color: #fafafa; font-weight: 600; }
+  .font-desc {
+    font-size: 10.5px;
+    color: #52525b;
+    margin-top: 10px;
+    line-height: 1.5;
+  }
+
+  /* ═══ OPTION A — Space Grotesk + Inter + JetBrains ═══ */
+  .opt-a .mini-nav-logo { font-family: 'Space Grotesk', sans-serif; }
+  .opt-a .mini-nav-link { font-family: 'Inter', sans-serif; }
+  .opt-a .mini-headline { font-family: 'Space Grotesk', sans-serif; }
+  .opt-a .mini-sub { font-family: 'Inter', sans-serif; }
+  .opt-a .mini-metric-label { font-family: 'Inter', sans-serif; }
+  .opt-a .mini-metric-value { font-family: 'JetBrains Mono', monospace; }
+  .opt-a .mini-week-label { font-family: 'Inter', sans-serif; }
+  .opt-a .mini-training-name { font-family: 'Inter', sans-serif; }
+  .opt-a .mini-status { font-family: 'Inter', sans-serif; }
+
+  /* ═══ OPTION B — Bricolage Grotesque + DM Sans + Fira Code ═══ */
+  .opt-b .mini-nav-logo { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; }
+  .opt-b .mini-nav-link { font-family: 'DM Sans', sans-serif; }
+  .opt-b .mini-headline { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; letter-spacing: -0.03em; }
+  .opt-b .mini-sub { font-family: 'DM Sans', sans-serif; }
+  .opt-b .mini-metric-label { font-family: 'DM Sans', sans-serif; }
+  .opt-b .mini-metric-value { font-family: 'Fira Code', monospace; }
+  .opt-b .mini-week-label { font-family: 'DM Sans', sans-serif; }
+  .opt-b .mini-training-name { font-family: 'DM Sans', sans-serif; }
+  .opt-b .mini-status { font-family: 'DM Sans', sans-serif; }
+
+  /* ═══ OPTION C — Geist + Geist + Geist Mono ═══ */
+  .opt-c .mini-nav-logo { font-family: 'Geist', sans-serif; font-weight: 700; }
+  .opt-c .mini-nav-link { font-family: 'Geist', sans-serif; }
+  .opt-c .mini-headline { font-family: 'Geist', sans-serif; font-weight: 800; letter-spacing: -0.03em; }
+  .opt-c .mini-sub { font-family: 'Geist', sans-serif; }
+  .opt-c .mini-metric-label { font-family: 'Geist', sans-serif; }
+  .opt-c .mini-metric-value { font-family: 'Geist Mono', monospace; }
+  .opt-c .mini-week-label { font-family: 'Geist', sans-serif; }
+  .opt-c .mini-training-name { font-family: 'Geist', sans-serif; }
+  .opt-c .mini-status { font-family: 'Geist', sans-serif; }
+</style>
+
+<h2>Výběr nové font kombinace</h2>
+<p class="subtitle">Všechny tři používají stejné EnduroBuddy tokeny a barvy — liší se jen fonty. Klikni na tu, která ti nejvíc sedí.</p>
+
+<div class="font-demo-grid">
+
+  <!-- ── OPTION A ── -->
+  <div class="font-card opt-a" data-choice="a" onclick="toggleSelect(this)">
+    <div class="font-card-header">
+      <span class="font-tag">Varianta A</span>
+      <span class="font-badge badge-a">Technical</span>
+    </div>
+    <div class="font-card-body">
+      <div class="mini-ui">
+        <div class="mini-nav">
+          <span class="mini-nav-logo">EnduroBuddy</span>
+          <span class="mini-nav-link active">Dashboard</span>
+          <span class="mini-nav-link">Coach</span>
+        </div>
+        <div class="mini-headline">Dubnový plán</div>
+        <div class="mini-sub">Týden 15 • 4 tréninky naplánováno</div>
+        <div class="mini-metrics">
+          <div class="mini-metric">
+            <div class="mini-metric-label">Týdenní km</div>
+            <div class="mini-metric-value">82.4</div>
+          </div>
+          <div class="mini-metric">
+            <div class="mini-metric-label">Pace</div>
+            <div class="mini-metric-value">4:52</div>
+          </div>
+          <div class="mini-metric">
+            <div class="mini-metric-label">HR avg</div>
+            <div class="mini-metric-value">148</div>
+          </div>
+        </div>
+        <div class="mini-week-row">
+          <span class="mini-week-label">Po</span>
+          <span class="mini-training-name">Aerobní běh 60 min</span>
+          <span class="mini-status status-done">Splněno</span>
+        </div>
+        <div class="mini-week-row">
+          <span class="mini-week-label">St</span>
+          <span class="mini-training-name">Intervalový trénink</span>
+          <span class="mini-status status-plan">Plán</span>
+        </div>
+      </div>
+      <div class="font-stack-info">
+        <div class="font-stack-row">
+          <span class="font-stack-role">Display / Headlines</span>
+          <span class="font-stack-name" style="font-family:'Space Grotesk',sans-serif">Space Grotesk</span>
+        </div>
+        <div class="font-stack-row">
+          <span class="font-stack-role">Body / UI</span>
+          <span class="font-stack-name" style="font-family:'Inter',sans-serif">Inter</span>
+        </div>
+        <div class="font-stack-row">
+          <span class="font-stack-role">Numerická data</span>
+          <span class="font-stack-name" style="font-family:'JetBrains Mono',monospace">JetBrains Mono</span>
+        </div>
+        <p class="font-desc">Technický charakter Space Grotesk pasuje k precision nástrojům — Linear, Vercel, Raycast. Zachovává diferenci display vs body, ale bez retro podtónu Syne.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── OPTION B ── -->
+  <div class="font-card opt-b" data-choice="b" onclick="toggleSelect(this)">
+    <div class="font-card-header">
+      <span class="font-tag">Varianta B</span>
+      <span class="font-badge badge-b">Editorial</span>
+    </div>
+    <div class="font-card-body">
+      <div class="mini-ui">
+        <div class="mini-nav">
+          <span class="mini-nav-logo">EnduroBuddy</span>
+          <span class="mini-nav-link active">Dashboard</span>
+          <span class="mini-nav-link">Coach</span>
+        </div>
+        <div class="mini-headline">Dubnový plán</div>
+        <div class="mini-sub">Týden 15 • 4 tréninky naplánováno</div>
+        <div class="mini-metrics">
+          <div class="mini-metric">
+            <div class="mini-metric-label">Týdenní km</div>
+            <div class="mini-metric-value">82.4</div>
+          </div>
+          <div class="mini-metric">
+            <div class="mini-metric-label">Pace</div>
+            <div class="mini-metric-value">4:52</div>
+          </div>
+          <div class="mini-metric">
+            <div class="mini-metric-label">HR avg</div>
+            <div class="mini-metric-value">148</div>
+          </div>
+        </div>
+        <div class="mini-week-row">
+          <span class="mini-week-label">Po</span>
+          <span class="mini-training-name">Aerobní běh 60 min</span>
+          <span class="mini-status status-done">Splněno</span>
+        </div>
+        <div class="mini-week-row">
+          <span class="mini-week-label">St</span>
+          <span class="mini-training-name">Intervalový trénink</span>
+          <span class="mini-status status-plan">Plán</span>
+        </div>
+      </div>
+      <div class="font-stack-info">
+        <div class="font-stack-row">
+          <span class="font-stack-role">Display / Headlines</span>
+          <span class="font-stack-name" style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700">Bricolage Grotesque</span>
+        </div>
+        <div class="font-stack-row">
+          <span class="font-stack-role">Body / UI</span>
+          <span class="font-stack-name" style="font-family:'DM Sans',sans-serif">DM Sans</span>
+        </div>
+        <div class="font-stack-row">
+          <span class="font-stack-role">Numerická data</span>
+          <span class="font-stack-name" style="font-family:'Fira Code',monospace">Fira Code</span>
+        </div>
+        <p class="font-desc">Bricolage Grotesque je variable font s velmi silným vizuálním hlasem — výrazné headlines. DM Sans je teplejší a méně korporátní než Inter. Fira Code je čistší mono.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── OPTION C ── -->
+  <div class="font-card opt-c" data-choice="c" onclick="toggleSelect(this)">
+    <div class="font-card-header">
+      <span class="font-tag">Varianta C</span>
+      <span class="font-badge badge-c">Unified</span>
+    </div>
+    <div class="font-card-body">
+      <div class="mini-ui">
+        <div class="mini-nav">
+          <span class="mini-nav-logo">EnduroBuddy</span>
+          <span class="mini-nav-link active">Dashboard</span>
+          <span class="mini-nav-link">Coach</span>
+        </div>
+        <div class="mini-headline">Dubnový plán</div>
+        <div class="mini-sub">Týden 15 • 4 tréninky naplánováno</div>
+        <div class="mini-metrics">
+          <div class="mini-metric">
+            <div class="mini-metric-label">Týdenní km</div>
+            <div class="mini-metric-value">82.4</div>
+          </div>
+          <div class="mini-metric">
+            <div class="mini-metric-label">Pace</div>
+            <div class="mini-metric-value">4:52</div>
+          </div>
+          <div class="mini-metric">
+            <div class="mini-metric-label">HR avg</div>
+            <div class="mini-metric-value">148</div>
+          </div>
+        </div>
+        <div class="mini-week-row">
+          <span class="mini-week-label">Po</span>
+          <span class="mini-training-name">Aerobní běh 60 min</span>
+          <span class="mini-status status-done">Splněno</span>
+        </div>
+        <div class="mini-week-row">
+          <span class="mini-week-label">St</span>
+          <span class="mini-training-name">Intervalový trénink</span>
+          <span class="mini-status status-plan">Plán</span>
+        </div>
+      </div>
+      <div class="font-stack-info">
+        <div class="font-stack-row">
+          <span class="font-stack-role">Display + Body</span>
+          <span class="font-stack-name" style="font-family:'Geist',sans-serif">Geist</span>
+        </div>
+        <div class="font-stack-row">
+          <span class="font-stack-role">Numerická data</span>
+          <span class="font-stack-name" style="font-family:'Geist Mono',monospace">Geist Mono</span>
+        </div>
+        <p class="font-desc">Geist je Vercelův font — ultra čistý, maximálně čitelný, nulový vizuální šum. Jeden font family pro vše. Silná koherence, méně vizuální dramatičnosti.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<p class="subtitle" style="margin-top: 20px; font-size: 12px; color: #52525b;">
+  Syne + Inter (současný stav) zachovává enduro charakter v UI — otázka je, jestli Syne Headlines stále sedí nebo působí příliš "art-school" pro precision training tool.
+</p>
