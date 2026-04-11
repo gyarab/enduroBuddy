@@ -750,14 +750,32 @@ watch(
             <small v-if="firstError('email')" class="is-danger">{{ firstError("email") }}</small>
           </label>
 
-          <label class="auth-flow-field">
-            <span>Role</span>
-            <select v-model="signupForm.role">
-              <option value="ATHLETE">Svěřenec</option>
-              <option value="COACH">Trenér</option>
-            </select>
+          <div class="auth-flow-field">
+            <span>Jsem</span>
+            <div class="auth-role-grid">
+              <button
+                type="button"
+                class="auth-role-card"
+                :class="{ 'auth-role-card--active-lime': signupForm.role === 'ATHLETE' }"
+                @click="signupForm.role = 'ATHLETE'"
+              >
+                <span class="auth-role-card__dot auth-role-card__dot--lime"></span>
+                <span class="auth-role-card__name">Sportovec</span>
+                <span class="auth-role-card__desc">Plánuji a zapisuji tréninky</span>
+              </button>
+              <button
+                type="button"
+                class="auth-role-card"
+                :class="{ 'auth-role-card--active-blue': signupForm.role === 'COACH' }"
+                @click="signupForm.role = 'COACH'"
+              >
+                <span class="auth-role-card__dot auth-role-card__dot--blue"></span>
+                <span class="auth-role-card__name">Trenér</span>
+                <span class="auth-role-card__desc">Vedu atlety a připravuji plány</span>
+              </button>
+            </div>
             <small v-if="firstError('role')" class="is-danger">{{ firstError("role") }}</small>
-          </label>
+          </div>
 
           <div class="auth-flow-grid">
             <label class="auth-flow-field">
@@ -1384,6 +1402,62 @@ watch(
   min-height: 2.35rem;
   font-size: var(--eb-type-small-size);
   padding-inline: 0.85rem;
+}
+
+.auth-role-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.625rem;
+}
+
+.auth-role-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.875rem;
+  border-radius: 0.75rem;
+  border: 1px solid var(--eb-border);
+  background: var(--eb-bg);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.auth-role-card:hover {
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+.auth-role-card--active-lime {
+  border-color: rgba(200, 255, 0, 0.28);
+  background: linear-gradient(180deg, rgba(200, 255, 0, 0.07) 0%, transparent 100%);
+}
+
+.auth-role-card--active-blue {
+  border-color: rgba(56, 189, 248, 0.28);
+  background: linear-gradient(180deg, rgba(56, 189, 248, 0.07) 0%, transparent 100%);
+}
+
+.auth-role-card__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.auth-role-card__dot--lime { background: var(--eb-lime); }
+.auth-role-card__dot--blue { background: var(--eb-blue); }
+
+.auth-role-card__name {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--eb-text);
+}
+
+.auth-role-card__desc {
+  font-size: 0.6875rem;
+  color: var(--eb-text-muted);
+  line-height: 1.4;
 }
 
 @media (max-width: 720px) {
