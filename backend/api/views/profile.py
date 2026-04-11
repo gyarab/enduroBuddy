@@ -13,6 +13,26 @@ from dashboard.api import json_error
 from dashboard.texts import ProfileText
 
 
+def _default_app_route_for_role(role: str) -> str:
+    return "/coach/plans" if role == Role.COACH else "/app/dashboard"
+
+
+def _serialize_profile_settings(request) -> dict:
+    profile = request.user.profile
+    role = getattr(profile, "role", Role.ATHLETE)
+    return {
+        "first_name": request.user.first_name,
+        "last_name": request.user.last_name,
+        "full_name": request.user.get_full_name().strip() or request.user.username,
+        "email": request.user.email,
+        "role": role,
+        "language": getattr(request, "LANGUAGE_CODE", "cs"),
+        "default_app_route": _default_app_route_for_role(role),
+        "password_change_url": "/accounts/password/change/",
+        "logout_url": "/accounts/logout/",
+    }
+
+
 def _safe_next_url(request) -> str:
     candidate = ""
     if request.method == "GET":
@@ -86,7 +106,7 @@ def profile_completion(request):
     profile.save(update_fields=["google_profile_completed", "google_role_confirmed"])
 
     role = getattr(profile, "role", Role.ATHLETE)
-    redirect_to = _safe_next_url(request) or ("/coach/plans" if role == Role.COACH else "/app/dashboard")
+    redirect_to = _safe_next_url(request) or _default_app_route_for_role(role)
     return JsonResponse(
         {
             "ok": True,
@@ -99,5 +119,47 @@ def profile_completion(request):
                 "google_profile_completed": True,
                 "google_role_confirmed": True,
             },
+        }
+    )
+
+
+@login_required
+@require_http_methods(["GET", "PATCH"])
+def profile_settings(request):
+    if request.method == "GET":
+        return JsonResponse({"ok": True, "profile": _serialize_profile_settings(request)})
+
+    try:
+        payload = json.loads(request.body.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        return json_error(ProfileText.UNKNOWN_ACTION, status=400)
+
+    if not isinstance(payload, dict):
+        return json_error(ProfileText.UNKNOWN_ACTION, status=400)
+
+    first_name = str(payload.get("first_name") or "").strip()[:150]
+    last_name = str(payload.get("last_name") or "").strip()[:150]
+    if not first_name or not last_name:
+        return JsonResponse(
+            {
+                "ok": False,
+                "message": "Oprav prosim oznacena pole.",
+                "errors": {
+                    "first_name": ["Zadej jmeno."] if not first_name else [],
+                    "last_name": ["Zadej prijmeni."] if not last_name else [],
+                },
+            },
+            status=400,
+        )
+
+    request.user.first_name = first_name
+    request.user.last_name = last_name
+    request.user.save(update_fields=["first_name", "last_name"])
+
+    return JsonResponse(
+        {
+            "ok": True,
+            "message": ProfileText.PROFILE_SAVED,
+            "profile": _serialize_profile_settings(request),
         }
     )

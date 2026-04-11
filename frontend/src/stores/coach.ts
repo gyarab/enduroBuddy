@@ -103,6 +103,19 @@ export const useCoachStore = defineStore("coach", () => {
     return `${formatFixed(totalKm, 1, useCommaDecimal)} ${suffix}`;
   }
 
+  function buildPlannedMetricsPreview(title: string) {
+    const preview = parseTrainingPreview(title);
+    return {
+      planned_km_value: preview.totalKm,
+      planned_km_text: preview.kmText,
+      planned_km_confidence: preview.confidence,
+      planned_km_show: preview.totalKm > 0 || Boolean(preview.warning),
+      planned_km_line_km: preview.kmText,
+      planned_km_line_reason: preview.warning,
+      planned_km_line_where: preview.detectedTags.join(", "),
+    };
+  }
+
   function recomputePlannedWeekTotals() {
     if (!dashboard.value) {
       return;
@@ -179,12 +192,7 @@ export const useCoachStore = defineStore("coach", () => {
 
       if (payload.field === "title") {
         row.title = payload.value.trim() || "-";
-        const preview = parseTrainingPreview(payload.value);
-        row.planned_metrics = {
-          planned_km_value: preview.totalKm,
-          planned_km_text: preview.kmText,
-          planned_km_confidence: preview.confidence,
-        };
+        row.planned_metrics = buildPlannedMetricsPreview(payload.value);
       }
       if (payload.field === "notes") {
         row.notes = payload.value.trim();

@@ -121,6 +121,47 @@ class SpaApiEndpointTests(TestCase):
         self.assertTrue(self.athlete.profile.google_profile_completed)
         self.assertTrue(self.athlete.profile.google_role_confirmed)
 
+    def test_profile_settings_get_and_patch_return_spa_friendly_profile_surface(self):
+        self.client.force_login(self.athlete)
+
+        get_response = self.client.get(reverse("api_profile_settings"))
+        patch_response = self.patch_json(
+            reverse("api_profile_settings"),
+            {
+                "first_name": "Nova",
+                "last_name": "Runner",
+            },
+        )
+
+        self.assertEqual(get_response.status_code, 200)
+        get_payload = get_response.json()
+        self.assertTrue(get_payload["ok"])
+        self.assertEqual(get_payload["profile"]["email"], "athlete@example.com")
+        self.assertEqual(get_payload["profile"]["default_app_route"], "/app/dashboard")
+        self.assertEqual(get_payload["profile"]["password_change_url"], "/accounts/password/change/")
+
+        self.assertEqual(patch_response.status_code, 200)
+        patch_payload = patch_response.json()
+        self.assertTrue(patch_payload["ok"])
+        self.assertEqual(patch_payload["profile"]["first_name"], "Nova")
+        self.assertEqual(patch_payload["profile"]["last_name"], "Runner")
+        self.athlete.refresh_from_db()
+        self.assertEqual(self.athlete.first_name, "Nova")
+        self.assertEqual(self.athlete.last_name, "Runner")
+
+    def test_spa_routes_render_spa_template_for_authenticated_app_runtime(self):
+        self.client.force_login(self.athlete)
+
+        athlete_response = self.client.get("/app/dashboard")
+        coach_response = self.client.get("/coach/plans")
+
+        self.assertEqual(athlete_response.status_code, 200)
+        self.assertEqual(coach_response.status_code, 200)
+        self.assertTemplateUsed(athlete_response, "spa.html")
+        self.assertTemplateUsed(coach_response, "spa.html")
+        self.assertContains(athlete_response, 'id="app"')
+        self.assertContains(coach_response, 'id="app"')
+
     def test_athlete_can_patch_own_planned_and_completed_training(self):
         self.client.force_login(self.athlete)
 
