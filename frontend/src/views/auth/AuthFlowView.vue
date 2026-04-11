@@ -1211,6 +1211,7 @@ watch(
 }
 
 .auth-flow-button--google:hover {
+  transform: translateY(-1px);
   border-color: rgba(255, 255, 255, 0.18);
   background: var(--eb-surface-hover);
 }
