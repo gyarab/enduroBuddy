@@ -92,11 +92,19 @@ None.
 
 Reason: the route switch makes legacy UI a cleanup candidate, but not a zero-risk deletion candidate. The remaining named URL references and regression tests should be migrated deliberately.
 
+## Progress Since Audit
+
+Since this audit was written:
+
+- SPA runtime coverage was strengthened with tests proving `/app/dashboard` and `/coach/plans` render `spa.html`.
+- The authenticated profile surface now exists in Vue as a dedicated settings modal instead of relying only on legacy profile UI or the Google completion flow.
+- The cleanup boundary is therefore clearer: legacy dashboard UI is now primarily a removal and regression-realignment task, not a missing-feature blocker for the SPA rollout.
+
 ## Recommended Next Step
 
 Do a focused "route and test realignment" slice:
 
-- Add/keep tests proving `/app/` and `/coach/*` render `spa.html`.
+- Keep tests proving `/app/` and `/coach/*` render `spa.html`.
 - Move remaining legacy endpoint coverage from `dashboard.tests` to `/api/v1/` coverage where the API already exists.
 - Replace top-nav links that still reverse legacy names only if product wants canonical SPA route names instead of legacy-compatible names.
 - After dashboard tests no longer assert legacy templates for runtime routes, delete legacy rendered UI files in one small removal PR/slice.

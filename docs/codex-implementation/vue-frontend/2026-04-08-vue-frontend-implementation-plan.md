@@ -148,10 +148,10 @@ Tato sekce zachycuje realny stav implementace po dvou vlnach prace a slouzi jako
 
 - Phase 1 je funkcne hotova a overena lokalnim buildem i typecheckem.
 - Phase 2 je hotova v read-only i prakticky pouzitelne athlete podobe.
-- Phase 3 je z velke casti hotova: editace, notifications, imports, parser preview a second-phase flow existuji. Optimistic patching byl opraven — UI se nyni aktualizuje pred network callem a reverts pri chybe.
+- Phase 3 je hotova pro planned create/edit/delete, notifications, imports, parser preview a second-phase flow. Otevrene zustavaji hlavne citlive completed create/delete scenare.
 - Phase 4 je funkcne rozjeta dal, nez puvodne pocital tento plan: coach dashboard, manage athletes, reorder, visibility a planned editace jsou ve Vue.
-- Phase 5 je otevrena a realne rozjeta: profile completion bezi pres SPA a i18n scaffold uz zasahuje shell, dashboard, modaly i cast store/composable vrstvy.
-- Frontend testovaci mezery z prvniho auditu jsou uzavreny: 71 testu prochazi, pokryti zahrnuje vsechny planovane oblasti.
+- Phase 5 uz neni jen otevrena: profile completion bezi pres SPA, profile settings surface existuje primo v shellu a i18n se synchronizuje s Django session.
+- Legacy cleanup a final visual/mobile QA zustavaji posledni vetsi rollout vrstva.
 
 ### Phase-By-Phase Status
 
@@ -336,8 +336,8 @@ Struktura fazi zustava funkcni a neni potreba ji prepisovat. Priority dalsich kr
    - coach self-plan completed ma API endpoint, ale UI surface neni priorita
 3. **Otevreno: backend API testy pro uspesne import scenare.** Garmin/FIT happy-path testy jsou stale slabsi, nez plan predpokladal. Toto je nejvetsi zbyvajici testovaci mezera.
 4. **Otevreno: legacy cleanup.** Stare dashboard JS a partialy pouzivane jen nahrazenou casti nejsou systematicky odstranene. Cleanup je bezpecny az po funkcni nahrade ve Vue — ta uz z velke casti existuje.
-5. **Otevreno: SPA create/delete flow pro planned a completed.** Endpointy nejsou aktualne vystavene v `backend/api/urls.py` a frontend surface neni dokoncena.
-6. **Odlozeno: i18n integrace s Django.** Custom `useI18n` zustava; napojeni na Django language switch je dalsi krok az po legacy cleanup.
+5. **Otevreno: completed create/delete flow.** Planned create/delete je hotove; completed create/delete zustava vedome odlozene kvuli linked activity a import pravidlum.
+6. **Hotovo: i18n integrace s Django session.** Custom `useI18n` zustava a synchronizuje jazyk pres `/i18n/set_language/`.
 
 ### Current Recommended Next Slice (aktualizovano 2026-04-09)
 

@@ -23,12 +23,13 @@ from .views.coach import (
 from .views.dashboard import athlete_dashboard
 from .views.imports import fit_upload, garmin_connect, garmin_revoke, garmin_sync_start, garmin_week_sync, import_job_status
 from .views.notifications import list_notifications, mark_notifications_read_view
-from .views.profile import profile_completion
+from .views.profile import profile_completion, profile_settings
 from .views.training import add_next_month, create_planned_training, second_phase_training, update_completed_training, update_planned_training
 
 urlpatterns = [
     path("auth/me/", auth_me, name="api_auth_me"),
     path("profile/complete/", profile_completion, name="api_profile_complete"),
+    path("profile/settings/", profile_settings, name="api_profile_settings"),
     path("dashboard/", athlete_dashboard, name="api_dashboard"),
     path("coach/athletes/", coach_athletes, name="api_coach_athletes"),
     path("coach/dashboard/", coach_dashboard, name="api_coach_dashboard"),

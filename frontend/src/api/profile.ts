@@ -26,6 +26,18 @@ export type ProfileCompletionSaveResponse = {
   };
 };
 
+export type ProfileSettingsPayload = {
+  first_name: string;
+  last_name: string;
+  full_name: string;
+  email: string;
+  role: "COACH" | "ATHLETE";
+  language: string;
+  default_app_route: string;
+  password_change_url: string;
+  logout_url: string;
+};
+
 export async function fetchProfileCompletion(next?: string) {
   const response = await apiClient.get<ProfileCompletionPayload>("/profile/complete/", {
     params: next ? { next } : undefined,
@@ -40,5 +52,18 @@ export async function saveProfileCompletion(payload: {
   next?: string;
 }) {
   const response = await apiClient.patch<ProfileCompletionSaveResponse>("/profile/complete/", payload);
+  return response.data;
+}
+
+export async function fetchProfileSettings() {
+  const response = await apiClient.get<{ ok: boolean; profile: ProfileSettingsPayload }>("/profile/settings/");
+  return response.data.profile;
+}
+
+export async function saveProfileSettings(payload: {
+  first_name: string;
+  last_name: string;
+}) {
+  const response = await apiClient.patch<{ ok: boolean; message: string; profile: ProfileSettingsPayload }>("/profile/settings/", payload);
   return response.data;
 }

@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
 
 import LegendModal from "@/components/layout/LegendModal.vue";
 import NotificationBell from "@/components/layout/NotificationBell.vue";
 import ProfileDropdown from "@/components/layout/ProfileDropdown.vue";
+import ProfileSettingsModal from "@/components/layout/ProfileSettingsModal.vue";
 import { useI18n } from "@/composables/useI18n";
 import { useAuthStore } from "@/stores/auth";
 import { useCoachStore } from "@/stores/coach";
@@ -19,7 +20,9 @@ const coachStore = useCoachStore();
 const trainingStore = useTrainingStore();
 const route = useRoute();
 const isProfileOpen = ref(false);
+const isProfileSettingsOpen = ref(false);
 const isLegendOpen = ref(false);
+const profileRootRef = ref<HTMLElement | null>(null);
 const brandLogoUrl = "/static/brand/eb-logo-compact.svg";
 const { t } = useI18n();
 
@@ -83,6 +86,29 @@ async function goToNextMonth() {
   }
   await trainingStore.goToNextMonth();
 }
+
+function handleDocumentClick(event: MouseEvent) {
+  const target = event.target;
+  if (!(target instanceof Node)) {
+    return;
+  }
+  if (profileRootRef.value && !profileRootRef.value.contains(target)) {
+    isProfileOpen.value = false;
+  }
+}
+
+function openProfileSettings() {
+  isProfileOpen.value = false;
+  isProfileSettingsOpen.value = true;
+}
+
+onMounted(() => {
+  document.addEventListener("click", handleDocumentClick);
+});
+
+onBeforeUnmount(() => {
+  document.removeEventListener("click", handleDocumentClick);
+});
 </script>
 
 <template>
@@ -126,17 +152,18 @@ async function goToNextMonth() {
         </button>
         <NotificationBell />
 
-        <div class="top-nav__profile">
-          <button class="top-nav__avatar" type="button" @click="isProfileOpen = !isProfileOpen">
+        <div ref="profileRootRef" class="top-nav__profile">
+          <button class="top-nav__avatar" type="button" @click.stop="isProfileOpen = !isProfileOpen">
             {{ authStore.user?.initials || "EB" }}
           </button>
-          <ProfileDropdown v-if="isProfileOpen" />
+          <ProfileDropdown v-if="isProfileOpen" @open-settings="openProfileSettings" />
         </div>
       </div>
     </div>
   </header>
 
   <LegendModal :open="isLegendOpen" @close="isLegendOpen = false" />
+  <ProfileSettingsModal :open="isProfileSettingsOpen" @close="isProfileSettingsOpen = false" />
 </template>
 
 <style scoped>
@@ -299,9 +326,14 @@ async function goToNextMonth() {
 }
 
 @media (max-width: 767px) {
+  .top-nav {
+    height: auto;
+    min-height: var(--eb-topnav-height);
+  }
+
   .top-nav__inner {
-    grid-template-columns: auto minmax(0, 1fr) auto;
-    padding: 0 1rem;
+    grid-template-columns: auto minmax(0, 1fr);
+    padding: 0.7rem 1rem;
     gap: 0.6rem;
   }
 
@@ -314,8 +346,11 @@ async function goToNextMonth() {
   }
 
   .top-nav__month-nav {
+    grid-column: 1 / -1;
+    order: 3;
     gap: 0.4rem;
     justify-content: flex-start;
+    flex-wrap: wrap;
   }
 
   .top-nav__athlete-pill {
@@ -328,6 +363,10 @@ async function goToNextMonth() {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  .top-nav__actions {
+    justify-self: end;
   }
 }
 </style>

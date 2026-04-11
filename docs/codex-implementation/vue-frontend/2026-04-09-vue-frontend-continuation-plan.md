@@ -60,18 +60,20 @@ Hotove nebo dobre rozjete:
 - Garmin/FIT modal a import job status API
 - coach dashboard, sidebar, focus, reorder, visibility a planned editace
 - profile completion pres SPA API/view
+- profile settings modal v SPA pro bezne account nastaveni
 - custom i18n scaffold a locale soubory `cs.json` + `en.json`
+- jazykovy switch uz synchronizuje Django session pres `/i18n/set_language/`
 - frontend test suite pro parser, stores, shared rows, shell, dashboard views
 - backend API smoke tests pro hlavni SPA kontrakty
+- testy potvrzujici, ze `/app/dashboard` a `/coach/plans` renderuji `spa.html`
 
 Hlavni mezery:
 
-- Training create/delete API a Vue surface nejsou hotove.
+- Completed create/delete API a Vue surface nejsou hotove.
 - Uspesne import scenare jsou testovane slabsi nez guard/error scoping.
-- Legacy dashboard JS/partials jeste nejsou systematicky zmapovane k odstraneni.
+- Legacy dashboard JS/partials jsou zmapovane, ale jeste nejsou odpojene od zbylych testu a reference vrstvy.
 - Mobile UI neni znovu auditovane proti visual design specu po vsech feature slices.
-- i18n neni napojene na Django language/session flow.
-- Profile modal/settings surface z Claude planu zatim neni hotovy, pouze completion flow.
+- Dokumentace v nekterych starsich planech zaostava za realnym stavem implementace a musi se brat jen jako historicky snapshot.
 
 ## Continuation Phases
 
@@ -211,7 +213,7 @@ Checklist:
   - Hotovo: month navigator presunut do TopNav pro athlete i coach flow
   - Hotovo: coach athlete pill pridany do TopNav podle visual specu
   - Hotovo: mobile month nav zkracuje label a schovava athlete pill
-  - profile dropdown spacing
+  - Hotovo: profile dropdown uz funguje jako vstup do SPA settings surface
 - Coach shell:
   - sidebar width/sticky behavior
   - mobile hamburger/toggle behavior
@@ -228,6 +230,10 @@ Checklist:
   - mobile full-screen or near-full-screen behavior decision
   - lime glow/focus states
   - reduced-motion respect
+- Profile/settings:
+  - Hotovo: account settings modal v SPA
+  - Hotovo: mobile-safe stacked layout v modalu
+  - Hotovo: quick links na password change / logout
 - Import modal:
   - progress/status layout
   - activity/job result list clarity
@@ -256,10 +262,9 @@ Tasks:
   - fallback key behavior
   - reset mezi testy, aby modul-level state nekontaminoval suite
 - Pridat jazykovy toggle jen pokud je v UI potreba ted.
-- Pokud toggle vznikne:
-  - persist locale v `localStorage`
-  - volitelne volat Django `/i18n/setlang/`
-  - synchronizovat `document.documentElement.lang`
+- Hotovo: toggle existuje v profile dropdown/settings surface.
+- Hotovo: `useI18n` synchronizuje `document.documentElement.lang`.
+- Hotovo: `useI18n` vola Django `/i18n/set_language/` pro session sync.
 - Neprechazet na `vue-i18n`, dokud custom composable neni realny blocker.
 
 Verification:
@@ -280,9 +285,9 @@ Tasks:
   - update name
   - change password
   - coach request by code
-- Rozhodnout, co ma byt ve Vue profile modal a co zustane server-rendered/allauth.
-- Implementovat pouze low-risk profile fields nejdrive.
-- Password/email/allauth flows ponechat server-rendered, pokud neni silny duvod je prepisovat.
+- Hotovo: low-risk profile fields (jmeno/prijmeni) jsou editovatelne pres SPA API.
+- Hotovo: password/logout zustavaji server-rendered/allauth pres jasne odkazy ze SPA settings modal.
+- Rozhodnuto: email/password/allauth flows zustavaji server-rendered, ale vstup do nich je uz z Vue shellu.
 
 Verification:
 

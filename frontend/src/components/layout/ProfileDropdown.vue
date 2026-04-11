@@ -4,6 +4,10 @@ import { computed } from "vue";
 import { useI18n } from "@/composables/useI18n";
 import { useAuthStore } from "@/stores/auth";
 
+const emit = defineEmits<{
+  openSettings: [];
+}>();
+
 const authStore = useAuthStore();
 const { t, locale, setLocale } = useI18n();
 const displayName = computed(() => authStore.user?.full_name || "EnduroBuddy User");
@@ -16,7 +20,7 @@ function switchLocale() {
 <template>
   <div class="profile-dropdown">
     <div class="profile-dropdown__name">{{ displayName }}</div>
-    <a class="profile-dropdown__item" href="/app/profile/complete">{{ t("profileDropdown.profile") }}</a>
+    <button class="profile-dropdown__item" type="button" @click="emit('openSettings')">{{ t("profileDropdown.profile") }}</button>
     <button class="profile-dropdown__item profile-dropdown__lang" type="button" @click="switchLocale">
       <span class="profile-dropdown__lang-label">{{ t("profileDropdown.language") }}</span>
       <span class="profile-dropdown__lang-badge">{{ locale === "cs" ? "EN" : "CS" }}</span>
