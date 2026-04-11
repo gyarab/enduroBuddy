@@ -692,7 +692,7 @@ watch(
         <div v-if="screen === 'login'" class="auth-flow-card">
           <div class="auth-flow-card__eyebrow">Authentication</div>
           <h1>Vítej zpět</h1>
-          <p>Přihlas se a pokračuj do svého tréninkového přehledu, plánů a posledních importů.</p>
+          <p>Pokračuj do svého tréninkového přehledu.</p>
 
           <button class="auth-flow-button auth-flow-button--google" type="button" @click="navigateTo(googleLoginUrl())">
             <span class="auth-flow-google-badge">G</span>
@@ -736,7 +736,7 @@ watch(
         <div v-else-if="screen === 'signup'" class="auth-flow-card">
           <div class="auth-flow-card__eyebrow">Authentication</div>
           <h1>Vytvoř si účet</h1>
-          <p>Založ si EnduroBuddy účet a připrav prostor pro své tréninky nebo sportovce.</p>
+          <p>Založ si účet a začni plánovat trénink.</p>
 
           <button class="auth-flow-button auth-flow-button--google" type="button" @click="navigateTo(googleLoginUrl())">
             <span class="auth-flow-google-badge">G</span>
@@ -895,7 +895,7 @@ watch(
         <div v-else-if="screen === 'verification-sent'" class="auth-flow-card auth-flow-card--status">
           <span class="auth-flow-chip auth-flow-chip--blue">Verification sent</span>
           <h1>Ověř svou e-mailovou adresu</h1>
-          <p>Poslali jsme ti ověřovací e-mail. Dokonči registraci kliknutím na odkaz v e-mailu. Pokud zprávu nevidíš, zkontroluj i spam.</p>
+          <p>Dokonči registraci kliknutím na odkaz v e-mailu.</p>
           <RouterLink class="auth-flow-button auth-flow-button--primary" to="/accounts/login/">Zpět na přihlášení</RouterLink>
         </div>
 
@@ -1073,7 +1073,7 @@ watch(
         <div v-else-if="screen === 'social-error'" class="auth-flow-card auth-flow-card--status">
           <span class="auth-flow-chip auth-flow-chip--danger">Error</span>
           <h1>Přihlášení přes poskytovatele se nezdařilo</h1>
-          <p>Při přihlášení přes Google nebo jiný externí účet nastala chyba. Zkus to prosím znovu.</p>
+          <p>Při přihlášení přes Google nastala chyba. Zkus to znovu.</p>
           <button class="auth-flow-button auth-flow-button--primary" type="button" @click="navigateTo(googleLoginUrl())">Zkusit znovu</button>
           <RouterLink class="auth-flow-button auth-flow-button--secondary" to="/accounts/login/">Použít e-mail</RouterLink>
         </div>
@@ -1081,7 +1081,7 @@ watch(
         <div v-else-if="screen === 'social-cancelled'" class="auth-flow-card auth-flow-card--status">
           <span class="auth-flow-chip auth-flow-chip--blue">Cancelled</span>
           <h1>Přihlášení bylo zrušeno</h1>
-          <p>Přihlášení přes externí účet bylo přerušeno ještě před dokončením. Můžeš to zkusit znovu.</p>
+          <p>Přihlášení bylo přerušeno. Můžeš to zkusit znovu.</p>
           <button class="auth-flow-button auth-flow-button--primary" type="button" @click="navigateTo(googleLoginUrl())">Zkusit znovu</button>
           <RouterLink class="auth-flow-button auth-flow-button--secondary" to="/accounts/signup/">Registrace</RouterLink>
         </div>
@@ -1089,7 +1089,7 @@ watch(
         <div v-else-if="screen === 'connections'" class="auth-flow-card">
           <div class="auth-flow-card__eyebrow">Connections</div>
           <h1>Propojené účty</h1>
-          <p>Spravuj, které externí účty můžeš použít pro přihlášení do EnduroBuddy.</p>
+          <p>Připojené účty pro přihlášení do EnduroBuddy.</p>
 
           <div v-if="socialConnectionsState.isLoading" class="auth-flow-loading">Načítám propojené účty...</div>
 
@@ -1181,10 +1181,10 @@ watch(
 .auth-flow-card h1 {
   margin: 0;
   font-family: var(--eb-font-display);
-  font-size: var(--eb-type-h1-size);
-  font-weight: var(--eb-type-h1-weight);
-  line-height: var(--eb-type-h1-line);
-  letter-spacing: var(--eb-type-h1-tracking);
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
 }
 
 .auth-flow-card p,
@@ -1192,8 +1192,8 @@ watch(
 .auth-connection-row__content span {
   margin: 0;
   color: var(--eb-text-soft);
-  font-size: var(--eb-type-body-size);
-  line-height: var(--eb-type-body-line);
+  font-size: 0.875rem;
+  line-height: 1.55;
 }
 
 .auth-flow-button,
