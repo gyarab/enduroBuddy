@@ -174,7 +174,11 @@ async function deletePlanned() {
 
 <template>
   <article class="training-row" :class="[`training-row--${row.status}`, { 'training-row--editing': editor.isOpen.value, 'training-row--second-phase': row.is_second_phase }]">
-    <div class="training-row__head">
+    <div
+      class="training-row__head"
+      :class="{ 'training-row__head--clickable': row.editable && !editor.isOpen.value }"
+      @click="row.editable && !editor.isOpen.value && openEditor()"
+    >
       <div class="training-row__body">
         <div class="training-row__day">
           <span class="training-row__day-label">{{ dayLabel }}</span>
@@ -205,7 +209,7 @@ async function deletePlanned() {
         <EbBadge :tone="row.status === 'rest' ? 'neutral' : 'planned'">
           {{ row.status === "rest" ? t("plannedRow.rest") : t("plannedRow.plan") }}
         </EbBadge>
-        <EbButton v-if="row.editable" variant="ghost" @click="openEditor">{{ t("plannedRow.edit") }}</EbButton>
+        <EbButton v-if="row.editable" variant="ghost" @click.stop="openEditor">{{ t("plannedRow.edit") }}</EbButton>
       </div>
     </div>
 
@@ -323,6 +327,10 @@ async function deletePlanned() {
   display: flex;
   justify-content: space-between;
   gap: 1rem;
+}
+
+.training-row__head--clickable {
+  cursor: pointer;
 }
 
 .training-row__body {

@@ -41,7 +41,7 @@ const shellClass = computed(() => `app-shell--${props.variant}`);
 }
 
 .app-shell__main {
-  padding: 1.5rem 1rem 2rem;
+  padding: 1.5rem 1rem calc(44px + 2rem);
 }
 
 .app-shell__content,
@@ -60,7 +60,7 @@ const shellClass = computed(() => `app-shell--${props.variant}`);
 
 @media (min-width: 768px) {
   .app-shell__main {
-    padding: 1.5rem 1.5rem 2.5rem;
+    padding: 1.5rem 1.5rem calc(44px + 2.5rem);
   }
 }
 </style>

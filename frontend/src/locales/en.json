@@ -31,7 +31,8 @@
     "manageAthletes": "Manage athletes",
     "focus": "Focus",
     "saveFocus": "Save focus",
-    "saving": "Saving..."
+    "saving": "Saving...",
+    "backToDashboard": "Athlete dashboard"
   },
   "coachManage": {
     "workspace": "Coach workspace",
@@ -226,6 +227,9 @@
     "used": "This invite has already been used.",
     "error": "Invite not found or invalid.",
     "goHome": "Go to dashboard"
+  },
+  "monthBar": {
+    "label": "Month navigation"
   },
   "addMonth": {
     "button": "Add month",

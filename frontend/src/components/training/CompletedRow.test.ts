@@ -65,9 +65,7 @@ describe("CompletedRow", () => {
       },
     });
 
-    const editButton = wrapper.findAll("button").find((candidate) => candidate.text().includes("Edit"));
-    expect(editButton).toBeTruthy();
-    await editButton!.trigger("click");
+    await wrapper.trigger("click");
 
     const inputs = wrapper.findAll("input");
     await inputs[0]!.setValue("8.2");
@@ -99,8 +97,7 @@ describe("CompletedRow", () => {
       },
     });
 
-    const editButton = wrapper.findAll("button").find((candidate) => candidate.text().includes("Edit"));
-    await editButton!.trigger("click");
+    await wrapper.trigger("click");
 
     const saveButton = wrapper.findAll("button").find((candidate) => candidate.text().includes("Save completed"));
     await saveButton!.trigger("click");

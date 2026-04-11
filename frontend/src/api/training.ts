@@ -140,6 +140,7 @@ export async function addNextMonth(athleteId?: number) {
     month_created: boolean;
     weeks_created: number;
     days_created: number;
+    month_value: string;
   }>("/training/months/", athleteId ? { athlete_id: athleteId } : {});
   return response.data;
 }

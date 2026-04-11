@@ -85,22 +85,63 @@
       font-size: 15px; font-weight: 700;
       color: var(--eb-text); letter-spacing: -0.01em;
     }
-    .month-nav {
-      display: flex; align-items: center; gap: 4px;
-      position: absolute; left: 50%; transform: translateX(-50%);
+    /* ─── MONTH BAR (sticky bottom) ─── */
+    .month-bar {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 90;
+      display: flex; align-items: center; gap: 8px;
+      height: 44px;
+      background: rgba(17,17,19,.92);
+      backdrop-filter: blur(12px);
+      border-top: 1px solid var(--eb-border);
+      padding: 0 24px;
     }
-    .month-nav-btn {
-      width: 28px; height: 28px; background: transparent; border: none;
-      border-radius: var(--eb-radius-sm); color: var(--eb-text-muted);
-      cursor: pointer; display: flex; align-items: center; justify-content: center;
-      transition: background 150ms, color 150ms;
+    .month-bar-add {
+      display: inline-flex; align-items: center; gap: 5px;
+      height: 28px; padding: 0 12px;
+      border-radius: var(--eb-radius-sm);
+      border: 1px dashed rgba(200,255,0,.35);
+      background: transparent;
+      color: var(--eb-lime);
+      font-size: 11px; font-weight: 600;
+      cursor: pointer; white-space: nowrap; flex-shrink: 0;
+      transition: background 120ms, border-color 120ms;
     }
-    .month-nav-btn:hover { background: var(--eb-border); color: var(--eb-text); }
-    .month-nav-label {
-      font-weight: 700; font-size: 14px; color: var(--eb-text);
-      min-width: 130px; text-align: center; letter-spacing: -0.01em;
+    .month-bar-add:hover {
+      background: var(--eb-lime-muted);
+      border-color: rgba(200,255,0,.6);
     }
-    .month-nav-label span { font-weight: 400; font-size: 13px; color: var(--eb-text-muted); margin-left: 4px; }
+    .month-bar-divider {
+      width: 1px; height: 20px;
+      background: var(--eb-border);
+      flex-shrink: 0; margin: 0 4px;
+    }
+    .month-bar-pills {
+      display: flex; gap: 2px;
+      overflow-x: auto; flex: 1;
+      scrollbar-width: none;
+    }
+    .month-bar-pills::-webkit-scrollbar { display: none; }
+    .month-pill {
+      display: inline-flex; align-items: center;
+      height: 28px; padding: 0 12px;
+      border-radius: var(--eb-radius-sm);
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--eb-text-muted);
+      font-size: 12px; font-weight: 500;
+      cursor: pointer; white-space: nowrap;
+      transition: background 120ms, color 120ms, border-color 120ms;
+    }
+    .month-pill:hover {
+      background: rgba(255,255,255,.05);
+      color: var(--eb-text);
+    }
+    .month-pill.active {
+      background: var(--eb-lime-muted);
+      border-color: var(--eb-lime-border);
+      color: var(--eb-lime);
+      font-weight: 700;
+    }
     .topnav-right { display: flex; align-items: center; gap: 8px; }
     .topnav-icon-btn {
       width: 36px; height: 36px; background: transparent; border: none;
@@ -127,7 +168,7 @@
     .avatar:hover { border-color: var(--eb-lime); }
 
     /* ─── MAIN ─── */
-    .main { max-width: 1200px; margin: 0 auto; padding: 24px 24px 48px; }
+    .main { max-width: 1200px; margin: 0 auto; padding: 24px 24px 80px; }
 
     /* ─── MONTH SUMMARY ─── */
     .month-summary {
@@ -410,16 +451,6 @@
     </svg>
     <span class="topnav-logo-text">EnduroBuddy</span>
   </a>
-
-  <div class="month-nav">
-    <button class="month-nav-btn">
-      <svg width="14" height="14" viewBox="0 0 16 16"><path d="M10 12L6 8l4-4" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    </button>
-    <div class="month-nav-label">Duben<span>2026</span></div>
-    <button class="month-nav-btn">
-      <svg width="14" height="14" viewBox="0 0 16 16"><path d="M6 12l4-4-4-4" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    </button>
-  </div>
 
   <div class="topnav-right">
     <button class="topnav-icon-btn" id="notif-btn" onclick="toggleNotif()">
@@ -811,6 +842,23 @@
   </div>
 
 </main>
+
+<!-- MONTH BAR -->
+<nav class="month-bar">
+  <button class="month-bar-add">
+    <svg width="11" height="11" viewBox="0 0 16 16"><path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    Přidat měsíc
+  </button>
+  <div class="month-bar-divider"></div>
+  <div class="month-bar-pills">
+    <button class="month-pill">Led 25</button>
+    <button class="month-pill">Úno 25</button>
+    <button class="month-pill">Bře 25</button>
+    <button class="month-pill active">Dub 25</button>
+    <button class="month-pill">Kvě 25</button>
+    <button class="month-pill">Čer 25</button>
+  </div>
+</nav>
 
 <script>
   function toggleNotif() {

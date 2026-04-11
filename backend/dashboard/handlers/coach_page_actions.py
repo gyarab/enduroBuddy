@@ -104,7 +104,7 @@ def handle_coach_month_actions(request, *, athletes):
             messages.error(request, CoachText.INVALID_ATHLETE_SELECTION)
             return redirect("coach_training_plans")
 
-        month_created, weeks_created, days_created = add_next_month_for_athlete(athlete=target_athlete)
+        month_created, weeks_created, days_created, _, _ = add_next_month_for_athlete(athlete=target_athlete)
         if month_created:
             messages.success(request, CoachText.month_created(weeks_created=weeks_created, days_created=days_created))
         else:
