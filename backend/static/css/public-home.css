@@ -10,7 +10,7 @@
       --lp-blue:#38bdf8; --lp-blue-muted:rgba(56,189,248,.10); --lp-blue-border:rgba(56,189,248,.20);
       --lp-danger:#f43f5e; --lp-warning:#f59e0b;
       --lp-text:#fafafa; --lp-text-secondary:#a1a1aa; --lp-text-muted:#71717a;
-      --lp-font-display:"Syne",system-ui,sans-serif; --lp-font-body:"Inter","Segoe UI Variable Text",system-ui,sans-serif; --lp-font-mono:"JetBrains Mono","Cascadia Code",monospace;
+      --lp-font-display:"Space Grotesk",system-ui,sans-serif; --lp-font-body:"Inter","Segoe UI Variable Text",system-ui,sans-serif; --lp-font-mono:"JetBrains Mono","Cascadia Code",monospace;
     }
 
     body { background:var(--lp-bg); color:var(--lp-text); font-family:var(--lp-font-body); -webkit-font-smoothing:antialiased; }
