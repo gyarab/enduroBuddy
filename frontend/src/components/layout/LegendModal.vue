@@ -37,7 +37,23 @@ watch(
     if (open) {
       await legendStore.load();
       if (legendStore.state) {
-        draft.value = JSON.parse(JSON.stringify(legendStore.state));
+        // Backend only stores non-empty values, so loaded state may be partial.
+        // Merge with defaults so draft always has a complete shape.
+        const s = legendStore.state as Partial<LegendState> & {
+          zones?: Partial<LegendState["zones"]>;
+        };
+        draft.value = {
+          zones: {
+            z1: s.zones?.z1 ?? { from: "", to: "" },
+            z2: s.zones?.z2 ?? { from: "", to: "" },
+            z3: s.zones?.z3 ?? { from: "", to: "" },
+            z4: s.zones?.z4 ?? { from: "", to: "" },
+            z5: s.zones?.z5 ?? { from: "", to: "" },
+          },
+          aerobic_threshold: s.aerobic_threshold ?? "",
+          anaerobic_threshold: s.anaerobic_threshold ?? "",
+          prs: s.prs ?? [],
+        };
       }
     }
   },
