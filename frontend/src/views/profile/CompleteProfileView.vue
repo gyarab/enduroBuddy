@@ -144,22 +144,26 @@ onMounted(() => {
 
 .profile-card__eyebrow {
   color: var(--eb-text-muted);
-  font-size: 0.6875rem;
+  font-size: var(--eb-type-label-size);
   font-weight: 600;
-  letter-spacing: 0.08em;
+  letter-spacing: var(--eb-type-label-tracking);
   text-transform: uppercase;
 }
 
 .profile-card__title {
   margin: 0.75rem 0 0;
   font-family: var(--eb-font-display);
-  font-size: clamp(1.75rem, 3vw, 2.3rem);
+  font-size: var(--eb-type-h1-size);
+  font-weight: var(--eb-type-h1-weight);
+  line-height: var(--eb-type-h1-line);
+  letter-spacing: var(--eb-type-h1-tracking);
 }
 
 .profile-card__text {
   max-width: 38rem;
   color: var(--eb-text-soft);
-  line-height: 1.6;
+  font-size: var(--eb-type-body-size);
+  line-height: var(--eb-type-body-line);
 }
 
 .profile-card__loading,
@@ -173,12 +177,13 @@ onMounted(() => {
   justify-items: start;
   margin-top: 1rem;
   color: var(--eb-text-soft);
+  font-size: var(--eb-type-body-size);
 }
 
 .profile-card__error,
 .profile-form__error {
   color: var(--eb-danger);
-  font-size: 0.8125rem;
+  font-size: var(--eb-type-small-size);
 }
 
 .profile-form {
@@ -197,9 +202,9 @@ onMounted(() => {
 
 .profile-form__label {
   color: var(--eb-text-muted);
-  font-size: 0.6875rem;
+  font-size: var(--eb-type-label-size);
   font-weight: 600;
-  letter-spacing: 0.08em;
+  letter-spacing: var(--eb-type-label-tracking);
   text-transform: uppercase;
 }
 

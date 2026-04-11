@@ -58,6 +58,8 @@ class GoogleProfileCompletionMiddleware:
             return False
         if request.path in {self.complete_profile_path, self.logout_path}:
             return False
+        if request.path.startswith("/api/"):
+            return False
         if request.path.startswith("/admin/"):
             return False
         if not SocialAccount.objects.filter(user=user, provider="google").exists():

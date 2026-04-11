@@ -32,6 +32,24 @@
       --eb-font-display: "Space Grotesk", system-ui, sans-serif;
       --eb-font-body: "Inter", "Segoe UI Variable Text", system-ui, sans-serif;
       --eb-font-mono: "JetBrains Mono", monospace;
+      --eb-type-display-size: clamp(2.5rem, 6vw, 4.5rem);
+      --eb-type-display-weight: 700;
+      --eb-type-display-line: .95;
+      --eb-type-display-tracking: -.05em;
+      --eb-type-h1-size: clamp(1.75rem, 4vw, 2.75rem);
+      --eb-type-h1-weight: 700;
+      --eb-type-h1-line: 1.05;
+      --eb-type-h1-tracking: -.04em;
+      --eb-type-h2-size: clamp(1.25rem, 2.5vw, 1.75rem);
+      --eb-type-h2-weight: 600;
+      --eb-type-h2-tracking: -.025em;
+      --eb-type-h3-size: 1.0625rem;
+      --eb-type-h3-tracking: -.01em;
+      --eb-type-body-size: .9375rem;
+      --eb-type-body-line: 1.6;
+      --eb-type-small-size: .8125rem;
+      --eb-type-label-size: .6875rem;
+      --eb-type-label-tracking: .07em;
       --eb-shadow-lg: 0 24px 64px rgba(0, 0, 0, .55);
       --eb-radius-sm: 10px;
       --eb-radius-md: 18px;
@@ -46,6 +64,8 @@
       margin: 0;
       min-height: 100vh;
       font-family: var(--eb-font-body);
+      font-size: var(--eb-type-body-size);
+      line-height: var(--eb-type-body-line);
       color: var(--eb-text);
       background:
         radial-gradient(circle at top right, rgba(200, 255, 0, .10), transparent 26%),
@@ -87,9 +107,9 @@
     .label,
     .screen-note,
     .tiny {
-      font-size: 11px;
+      font-size: var(--eb-type-label-size);
       font-weight: 700;
-      letter-spacing: .1em;
+      letter-spacing: calc(var(--eb-type-label-tracking) + .03em);
       text-transform: uppercase;
       color: var(--eb-text-muted);
     }
@@ -112,9 +132,10 @@
     h1 {
       margin: 16px 0 12px;
       font-family: var(--eb-font-display);
-      font-size: clamp(2.8rem, 7vw, 5.8rem);
-      line-height: .92;
-      letter-spacing: -.05em;
+      font-size: var(--eb-type-display-size);
+      font-weight: var(--eb-type-display-weight);
+      line-height: var(--eb-type-display-line);
+      letter-spacing: var(--eb-type-display-tracking);
       max-width: 10ch;
     }
 
@@ -122,8 +143,8 @@
       max-width: 72ch;
       margin: 0;
       color: var(--eb-text-secondary);
-      font-size: 15px;
-      line-height: 1.75;
+      font-size: var(--eb-type-body-size);
+      line-height: var(--eb-type-body-line);
     }
 
     .hero-meta {
@@ -177,8 +198,9 @@
 
     .screen-title {
       font-family: var(--eb-font-display);
-      font-size: 1.2rem;
-      letter-spacing: -.03em;
+      font-size: var(--eb-type-h2-size);
+      font-weight: var(--eb-type-h2-weight);
+      letter-spacing: var(--eb-type-h2-tracking);
     }
 
     .auth-shell {
@@ -210,9 +232,9 @@
       align-items: center;
       gap: 12px;
       font-family: var(--eb-font-display);
-      font-size: 1.05rem;
+      font-size: var(--eb-type-h3-size);
       font-weight: 700;
-      letter-spacing: -.03em;
+      letter-spacing: var(--eb-type-h3-tracking);
     }
 
     .mark {
@@ -244,12 +266,13 @@
     .auth-card h3 {
       margin: 0;
       font-family: var(--eb-font-display);
-      line-height: .96;
-      letter-spacing: -.05em;
+      line-height: 1.05;
+      letter-spacing: var(--eb-type-h1-tracking);
     }
 
     .brand-copy h2 {
-      font-size: clamp(2rem, 3vw, 3rem);
+      font-size: var(--eb-type-h1-size);
+      font-weight: var(--eb-type-h1-weight);
     }
 
     .brand-copy p,
@@ -260,8 +283,8 @@
     .utility-card p {
       margin: 0;
       color: var(--eb-text-secondary);
-      line-height: 1.7;
-      font-size: 14px;
+      line-height: var(--eb-type-body-line);
+      font-size: var(--eb-type-body-size);
     }
 
     .brand-card,
@@ -281,10 +304,10 @@
     .brand-card strong {
       display: block;
       margin-top: 8px;
-      font-size: 2rem;
+      font-size: var(--eb-type-h1-size);
       font-family: var(--eb-font-display);
       line-height: 1;
-      letter-spacing: -.05em;
+      letter-spacing: var(--eb-type-h1-tracking);
     }
 
     .auth-panel {
@@ -304,7 +327,7 @@
 
     .auth-card h3 {
       margin: 10px 0 8px;
-      font-size: 2rem;
+      font-size: var(--eb-type-h1-size);
     }
 
     .auth-card p {
@@ -316,9 +339,9 @@
     .field.two { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 
     .field label {
-      font-size: 11px;
+      font-size: var(--eb-type-label-size);
       font-weight: 700;
-      letter-spacing: .08em;
+      letter-spacing: var(--eb-type-label-tracking);
       text-transform: uppercase;
       color: var(--eb-text-muted);
     }
@@ -339,7 +362,7 @@
       border: 1px solid var(--eb-border);
       background: #09090b;
       color: var(--eb-text);
-      font-size: 14px;
+      font-size: var(--eb-type-body-size);
       box-shadow: inset 0 1px 0 rgba(255,255,255,.02);
     }
 
@@ -348,7 +371,7 @@
       background: linear-gradient(180deg, rgba(56,189,248,.08) 0%, rgba(9,9,11,1) 100%);
     }
 
-    .field-error { color: #fda4af; font-size: 12px; }
+    .field-error { color: #fda4af; font-size: var(--eb-type-small-size); }
 
     .btn {
       display: inline-flex;
@@ -358,7 +381,7 @@
       width: 100%;
       padding: 0 16px;
       border: 1px solid transparent;
-      font-size: 13px;
+      font-size: var(--eb-type-small-size);
       font-weight: 700;
       letter-spacing: .02em;
     }
@@ -413,9 +436,9 @@
       align-items: center;
       gap: 12px;
       color: var(--eb-text-muted);
-      font-size: 11px;
+      font-size: var(--eb-type-label-size);
       font-weight: 700;
-      letter-spacing: .08em;
+      letter-spacing: var(--eb-type-label-tracking);
       text-transform: uppercase;
     }
 
@@ -434,14 +457,14 @@
     }
 
     .row.start { align-items: flex-start; }
-    .link { color: var(--eb-lime); font-size: 13px; font-weight: 600; }
+    .link { color: var(--eb-lime); font-size: var(--eb-type-small-size); font-weight: 600; }
 
     .checkbox {
       display: inline-flex;
       align-items: center;
       gap: 10px;
       color: var(--eb-text-secondary);
-      font-size: 13px;
+      font-size: var(--eb-type-small-size);
     }
 
     .checkbox-box {
@@ -461,7 +484,7 @@
       margin-top: 18px;
       color: var(--eb-text-secondary);
       text-align: center;
-      font-size: 13px;
+      font-size: var(--eb-type-small-size);
     }
 
     .footer-copy a { color: var(--eb-text); font-weight: 600; }
@@ -545,7 +568,10 @@
     .utility-card h4 {
       display: block;
       margin: 0 0 6px;
-      font-size: 14px;
+      font-family: var(--eb-font-display);
+      font-size: var(--eb-type-h3-size);
+      font-weight: 600;
+      letter-spacing: var(--eb-type-h3-tracking);
     }
 
     .mini-list {

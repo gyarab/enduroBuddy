@@ -1,6 +1,19 @@
 from django.urls import path
 
-from .views.auth import auth_me
+from .views.auth import (
+    auth_email_confirm,
+    auth_email_addresses,
+    auth_login,
+    auth_logout_view,
+    auth_me,
+    auth_password_change,
+    auth_password_reset,
+    auth_password_reset_from_key,
+    auth_password_set,
+    auth_reauthenticate,
+    auth_social_connections,
+    auth_signup,
+)
 from .views.invites import invite_accept, invite_detail
 from .views.legend import legend
 from .views.coach import (
@@ -28,6 +41,21 @@ from .views.training import add_next_month, create_planned_training, second_phas
 
 urlpatterns = [
     path("auth/me/", auth_me, name="api_auth_me"),
+    path("auth/login/", auth_login, name="api_auth_login"),
+    path("auth/signup/", auth_signup, name="api_auth_signup"),
+    path("auth/password/reset/", auth_password_reset, name="api_auth_password_reset"),
+    path(
+        "auth/password/reset/key/<str:uidb36>-<str:key>/",
+        auth_password_reset_from_key,
+        name="api_auth_password_reset_from_key",
+    ),
+    path("auth/password/change/", auth_password_change, name="api_auth_password_change"),
+    path("auth/password/set/", auth_password_set, name="api_auth_password_set"),
+    path("auth/reauthenticate/", auth_reauthenticate, name="api_auth_reauthenticate"),
+    path("auth/email/", auth_email_addresses, name="api_auth_email"),
+    path("auth/email/confirm/<str:key>/", auth_email_confirm, name="api_auth_email_confirm"),
+    path("auth/social/connections/", auth_social_connections, name="api_auth_social_connections"),
+    path("auth/logout/", auth_logout_view, name="api_auth_logout"),
     path("profile/complete/", profile_completion, name="api_profile_complete"),
     path("profile/settings/", profile_settings, name="api_profile_settings"),
     path("dashboard/", athlete_dashboard, name="api_dashboard"),

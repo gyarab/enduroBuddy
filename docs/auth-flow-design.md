@@ -10,6 +10,15 @@ Převést autentizační flow do stejného jazyka jako zbytek značky: `Neon Lab
 - Tmavý základ `#09090b` a elevated surface `#18181b`.
 - Lime jako hlavní rozhodovací akce, blue jako podpůrný informační akcent.
 - Space Grotesk pro headline, Inter pro UI text, JetBrains Mono jen pro technické štítky a meta.
+- Auth používá stejnou typografickou škálu jako landing page i aplikace:
+  - Display `clamp(2.5rem, 6vw, 4.5rem)` / 700 / `-0.05em`
+  - H1 `clamp(1.75rem, 4vw, 2.75rem)` / 700 / `-0.04em`
+  - H2 `clamp(1.25rem, 2.5vw, 1.75rem)` / 600 / `-0.025em`
+  - H3 `1.0625rem` / 500 / `-0.01em`
+  - Body `15px` / 400 / `1.6`
+  - Small `13px` / 500 / `0.01em`
+  - Label `11px` / 600 / uppercase / `0.07em`
+  - Mono data `14px` / 500 / `-0.02em`
 - Minimum vizuálního šumu: 1 primární CTA na obrazovku, jemné glow pouze na focus a hlavní akci.
 
 ## Auth Shell
@@ -232,3 +241,4 @@ Převést autentizační flow do stejného jazyka jako zbytek značky: `Neon Lab
 
 - Spec: `docs/auth-flow-design.md`
 - Preview: `docs/auth-flow-preview.html`
+- Implementace: `frontend/src/assets/design-tokens.css`, `frontend/src/components/auth/AuthPreviewShell.vue`, `frontend/src/views/auth/AuthFlowView.vue`, `frontend/src/views/auth/AuthPreviewView.vue`
