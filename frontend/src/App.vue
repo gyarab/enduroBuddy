@@ -9,6 +9,7 @@ import { useNotificationsStore } from "@/stores/notifications";
 const route = useRoute();
 const authStore = useAuthStore();
 const notificationsStore = useNotificationsStore();
+const usesAppShell = computed(() => !["auth", "auth-preview"].includes(String(route.meta.layout || "")));
 
 const shellVariant = computed(() => {
   const variant = route.meta.appVariant;
@@ -16,15 +17,19 @@ const shellVariant = computed(() => {
 });
 
 onMounted(() => {
-  if (!authStore.hasBootstrapped) {
+  if (usesAppShell.value && !authStore.hasBootstrapped) {
     void authStore.initialize();
   }
 });
 
 watch(
-  () => authStore.user?.id,
-  (userId) => {
-    if (userId) {
+  () => [usesAppShell.value, authStore.user?.id] as const,
+  ([shouldUseAppShell, userId]) => {
+    if (shouldUseAppShell && !authStore.hasBootstrapped) {
+      void authStore.initialize();
+    }
+
+    if (shouldUseAppShell && userId) {
       notificationsStore.initialize();
     }
   },
@@ -33,7 +38,9 @@ watch(
 </script>
 
 <template>
-  <AppShell :variant="shellVariant">
+  <RouterView v-if="!usesAppShell" />
+
+  <AppShell v-else :variant="shellVariant">
     <RouterView />
   </AppShell>
 </template>

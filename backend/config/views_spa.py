@@ -4,9 +4,7 @@ from django.shortcuts import render
 from django.views.decorators.csrf import ensure_csrf_cookie
 
 
-@ensure_csrf_cookie
-@login_required
-def spa_entry(request, path: str | None = None):
+def _render_spa(request):
     return render(
         request,
         "spa.html",
@@ -17,3 +15,14 @@ def spa_entry(request, path: str | None = None):
             "spa_entry_js": "spa/app.js",
         },
     )
+
+
+@ensure_csrf_cookie
+@login_required
+def spa_entry(request, path: str | None = None):
+    return _render_spa(request)
+
+
+@ensure_csrf_cookie
+def public_spa_entry(request, path: str | None = None):
+    return _render_spa(request)

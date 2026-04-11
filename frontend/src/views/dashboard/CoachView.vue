@@ -191,24 +191,27 @@ async function handleAddMonth() {
 
 .coach-card__eyebrow {
   color: var(--eb-text-muted);
-  font-size: 0.6875rem;
+  font-size: var(--eb-type-label-size);
   font-weight: 600;
-  letter-spacing: 0.08em;
+  letter-spacing: var(--eb-type-label-tracking);
   text-transform: uppercase;
 }
 
 .coach-card__title {
   margin: 0.75rem 0 0;
   font-family: var(--eb-font-display);
-  font-size: clamp(1.75rem, 3vw, 2.5rem);
-  line-height: 1;
+  font-size: var(--eb-type-h1-size);
+  font-weight: var(--eb-type-h1-weight);
+  line-height: var(--eb-type-h1-line);
+  letter-spacing: var(--eb-type-h1-tracking);
 }
 
 .coach-card__text {
   max-width: 38rem;
   margin: 1rem 0 0;
   color: var(--eb-text-soft);
-  line-height: 1.6;
+  font-size: var(--eb-type-body-size);
+  line-height: var(--eb-type-body-line);
 }
 
 .coach-toolbar {
@@ -227,7 +230,9 @@ async function handleAddMonth() {
 .coach-toolbar__name {
   margin-top: 0.45rem;
   font-family: var(--eb-font-display);
-  font-size: 1.4rem;
+  font-size: var(--eb-type-h2-size);
+  font-weight: var(--eb-type-h2-weight);
+  letter-spacing: var(--eb-type-h2-tracking);
 }
 
 .coach-toolbar__actions {
@@ -244,9 +249,9 @@ async function handleAddMonth() {
   border-radius: var(--eb-radius-sm);
   background: transparent;
   color: var(--eb-text-muted);
-  font-size: 0.75rem;
+  font-size: var(--eb-type-small-size);
   font-weight: 600;
-  letter-spacing: 0.04em;
+  letter-spacing: var(--eb-type-small-tracking);
   text-decoration: none;
   transition:
     border-color 150ms ease-out,
@@ -270,9 +275,9 @@ async function handleAddMonth() {
 
 .coach-toolbar__label {
   color: var(--eb-text-muted);
-  font-size: 0.6875rem;
+  font-size: var(--eb-type-label-size);
   font-weight: 600;
-  letter-spacing: 0.08em;
+  letter-spacing: var(--eb-type-label-tracking);
   text-transform: uppercase;
 }
 

@@ -1,3 +1,5 @@
+import json
+
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.messages.storage.fallback import FallbackStorage
@@ -81,18 +83,19 @@ class GoogleProfileCompletionTests(TestCase):
         SocialAccount.objects.create(user=user, provider="google", uid="google-finish")
 
         self.client.force_login(user)
-        response = self.client.post(
-            reverse("account_complete_profile"),
-            data={
+        response = self.client.patch(
+            reverse("api_profile_complete"),
+            data=json.dumps({
                 "first_name": "Petr",
                 "last_name": "Svoboda",
                 "role": Role.COACH,
                 "next": reverse("dashboard_home"),
-            },
+            }),
+            content_type="application/json",
         )
 
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, reverse("dashboard_home"))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["redirect_to"], reverse("dashboard_home"))
         user.refresh_from_db()
         self.assertEqual(user.first_name, "Petr")
         self.assertEqual(user.last_name, "Svoboda")

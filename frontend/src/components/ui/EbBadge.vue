@@ -24,9 +24,9 @@ const props = withDefaults(
   padding: 0 0.65rem;
   border-radius: 999px;
   border: 1px solid var(--eb-border);
-  font-size: 0.6875rem;
+  font-size: var(--eb-type-label-size);
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: var(--eb-type-label-tracking);
   text-transform: uppercase;
 }
 

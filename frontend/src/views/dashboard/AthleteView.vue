@@ -158,9 +158,9 @@ onMounted(() => {
   background: var(--eb-surface);
   color: var(--eb-text-soft);
   font-family: var(--eb-font-display);
-  font-size: 0.8125rem;
+  font-size: var(--eb-type-small-size);
   font-weight: 700;
-  letter-spacing: 0.04em;
+  letter-spacing: var(--eb-type-small-tracking);
   transition:
     border-color 150ms ease-out,
     color 150ms ease-out,
@@ -187,9 +187,9 @@ onMounted(() => {
 
 .dashboard-view__request-eyebrow {
   color: var(--eb-text-muted);
-  font-size: 0.6875rem;
+  font-size: var(--eb-type-label-size);
   font-weight: 600;
-  letter-spacing: 0.08em;
+  letter-spacing: var(--eb-type-label-tracking);
   text-transform: uppercase;
 }
 
@@ -206,15 +206,15 @@ onMounted(() => {
   background: var(--eb-bg);
   color: var(--eb-text);
   font-family: var(--eb-font-mono);
-  font-size: 0.875rem;
-  letter-spacing: 0.04em;
+  font-size: var(--eb-type-mono-size);
+  letter-spacing: var(--eb-type-mono-tracking);
   padding: 0.65rem 0.85rem;
 }
 
 .dashboard-view__request-input::placeholder {
   color: var(--eb-text-muted);
   font-family: var(--eb-font-body);
-  font-size: 0.8125rem;
+  font-size: var(--eb-type-small-size);
   letter-spacing: 0;
 }
 
@@ -248,13 +248,16 @@ onMounted(() => {
 .dashboard-view__state-card h2 {
   margin: 0;
   font-family: var(--eb-font-display);
-  font-size: 1.5rem;
+  font-size: var(--eb-type-h2-size);
+  font-weight: var(--eb-type-h2-weight);
+  letter-spacing: var(--eb-type-h2-tracking);
 }
 
 .dashboard-view__state-card p {
   margin: 0.75rem 0 0;
   color: var(--eb-text-soft);
-  line-height: 1.6;
+  font-size: var(--eb-type-body-size);
+  line-height: var(--eb-type-body-line);
 }
 
 .dashboard-view__empty-mark {
