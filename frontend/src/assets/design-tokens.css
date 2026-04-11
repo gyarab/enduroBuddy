@@ -26,7 +26,7 @@
   --eb-shadow-soft: 0 16px 40px rgba(0, 0, 0, 0.32);
   --eb-glow-lime: 0 0 20px rgba(200, 255, 0, 0.16);
   --eb-glow-blue: 0 0 20px rgba(56, 189, 248, 0.16);
-  --eb-font-display: "Syne", system-ui, sans-serif;
+  --eb-font-display: "Space Grotesk", system-ui, sans-serif;
   --eb-font-body: "Inter", "Segoe UI Variable Text", system-ui, sans-serif;
   --eb-font-mono: "JetBrains Mono", "Cascadia Code", monospace;
   --eb-shell-max-width: 1280px;
