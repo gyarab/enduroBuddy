@@ -246,6 +246,9 @@ ACCOUNT_RATE_LIMITS = {
     "reset_password_from_key": "20/1h",
 }
 
+ACCOUNT_ADAPTER = "accounts.adapters.AccountAdapter"
+SOCIALACCOUNT_ADAPTER = "accounts.adapters.SocialAccountAdapter"
+
 EMAIL_BACKEND = os.environ.get(
     "DJANGO_EMAIL_BACKEND",
     "django.core.mail.backends.console.EmailBackend",
@@ -296,6 +299,7 @@ GARMIN_KMS_KEYS = os.environ.get("GARMIN_KMS_KEYS", "")
 GARMIN_KMS_KEY_ID = os.environ.get("GARMIN_KMS_KEY_ID", "local-kms-v1")
 GARMIN_CONNECT_ENABLED = os.environ.get("GARMIN_CONNECT_ENABLED", "true").lower() == "true"
 GARMIN_SYNC_ENABLED = os.environ.get("GARMIN_SYNC_ENABLED", "true").lower() == "true"
+REGISTRATION_ENABLED = os.environ.get("REGISTRATION_ENABLED", "true").lower() == "true"
 IMPORT_TASK_MODE = os.environ.get("IMPORT_TASK_MODE", "inline")
 DASHBOARD_ASSET_VERSION = os.environ.get("DASHBOARD_ASSET_VERSION", "76")
 SPA_VITE_DEV_SERVER_URL = os.environ.get("SPA_VITE_DEV_SERVER_URL", "http://localhost:5173")

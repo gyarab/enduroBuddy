@@ -285,3 +285,41 @@ class GoogleProfileCompletionTests(TestCase):
         sociallogin.account._provider = provider
         sociallogin.state = {"process": "login", "next": reverse("dashboard_home")}
         return sociallogin
+
+
+from django.test import override_settings
+from accounts.adapters import AccountAdapter, SocialAccountAdapter
+
+
+class RegistrationToggleAdapterTests(TestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+
+    def _request(self):
+        req = self.factory.get("/accounts/signup/", HTTP_HOST="localhost")
+        req.user = AnonymousUser()
+        session_middleware = SessionMiddleware(lambda r: None)
+        session_middleware.process_request(req)
+        req.session.save()
+        setattr(req, "_messages", FallbackStorage(req))
+        return req
+
+    @override_settings(REGISTRATION_ENABLED=False)
+    def test_account_adapter_closed_when_disabled(self):
+        adapter = AccountAdapter(self._request())
+        self.assertFalse(adapter.is_open_for_signup(self._request()))
+
+    @override_settings(REGISTRATION_ENABLED=True)
+    def test_account_adapter_open_when_enabled(self):
+        adapter = AccountAdapter(self._request())
+        self.assertTrue(adapter.is_open_for_signup(self._request()))
+
+    @override_settings(REGISTRATION_ENABLED=False)
+    def test_social_adapter_closed_when_disabled(self):
+        adapter = SocialAccountAdapter(self._request())
+        self.assertFalse(adapter.is_open_for_signup(self._request(), sociallogin=None))
+
+    @override_settings(REGISTRATION_ENABLED=True)
+    def test_social_adapter_open_when_enabled(self):
+        adapter = SocialAccountAdapter(self._request())
+        self.assertTrue(adapter.is_open_for_signup(self._request(), sociallogin=None))
