@@ -1,3 +1,5 @@
+import json
+
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.messages.storage.fallback import FallbackStorage
@@ -81,18 +83,19 @@ class GoogleProfileCompletionTests(TestCase):
         SocialAccount.objects.create(user=user, provider="google", uid="google-finish")
 
         self.client.force_login(user)
-        response = self.client.post(
-            reverse("account_complete_profile"),
-            data={
+        response = self.client.patch(
+            reverse("api_profile_complete"),
+            data=json.dumps({
                 "first_name": "Petr",
                 "last_name": "Svoboda",
                 "role": Role.COACH,
                 "next": reverse("dashboard_home"),
-            },
+            }),
+            content_type="application/json",
         )
 
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, reverse("dashboard_home"))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["redirect_to"], reverse("dashboard_home"))
         user.refresh_from_db()
         self.assertEqual(user.first_name, "Petr")
         self.assertEqual(user.last_name, "Svoboda")
@@ -282,3 +285,41 @@ class GoogleProfileCompletionTests(TestCase):
         sociallogin.account._provider = provider
         sociallogin.state = {"process": "login", "next": reverse("dashboard_home")}
         return sociallogin
+
+
+from django.test import override_settings
+from accounts.adapters import AccountAdapter, SocialAccountAdapter
+
+
+class RegistrationToggleAdapterTests(TestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+
+    def _request(self):
+        req = self.factory.get("/accounts/signup/", HTTP_HOST="localhost")
+        req.user = AnonymousUser()
+        session_middleware = SessionMiddleware(lambda r: None)
+        session_middleware.process_request(req)
+        req.session.save()
+        setattr(req, "_messages", FallbackStorage(req))
+        return req
+
+    @override_settings(REGISTRATION_ENABLED=False)
+    def test_account_adapter_closed_when_disabled(self):
+        adapter = AccountAdapter(self._request())
+        self.assertFalse(adapter.is_open_for_signup(self._request()))
+
+    @override_settings(REGISTRATION_ENABLED=True)
+    def test_account_adapter_open_when_enabled(self):
+        adapter = AccountAdapter(self._request())
+        self.assertTrue(adapter.is_open_for_signup(self._request()))
+
+    @override_settings(REGISTRATION_ENABLED=False)
+    def test_social_adapter_closed_when_disabled(self):
+        adapter = SocialAccountAdapter(self._request())
+        self.assertFalse(adapter.is_open_for_signup(self._request(), sociallogin=None))
+
+    @override_settings(REGISTRATION_ENABLED=True)
+    def test_social_adapter_open_when_enabled(self):
+        adapter = SocialAccountAdapter(self._request())
+        self.assertTrue(adapter.is_open_for_signup(self._request(), sociallogin=None))

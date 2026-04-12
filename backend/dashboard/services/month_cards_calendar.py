@@ -176,14 +176,15 @@ def ensure_month_for_athlete(*, athlete, year: int, month: int) -> tuple[bool, i
     return month_created, len(new_weeks), len(missing_days)
 
 
-def add_next_month_for_athlete(*, athlete) -> tuple[bool, int, int]:
+def add_next_month_for_athlete(*, athlete) -> tuple[bool, int, int, int, int]:
     latest = TrainingMonth.objects.filter(athlete=athlete).order_by("-year", "-month").first()
     if latest is None:
         start = timezone.localdate().replace(day=1)
         target_year, target_month = start.year, start.month
     else:
         target_year, target_month = shift_month(latest.year, latest.month, 1)
-    return ensure_month_for_athlete(athlete=athlete, year=target_year, month=target_month)
+    month_created, weeks_created, days_created = ensure_month_for_athlete(athlete=athlete, year=target_year, month=target_month)
+    return month_created, weeks_created, days_created, target_year, target_month
 
 
 def fill_gaps_and_add_next_month_for_athlete(*, athlete) -> tuple[int, int, int]:
@@ -193,7 +194,7 @@ def fill_gaps_and_add_next_month_for_athlete(*, athlete) -> tuple[int, int, int]
         .values_list("year", "month")
     )
     if not months:
-        month_created, weeks_created, days_created = add_next_month_for_athlete(athlete=athlete)
+        month_created, weeks_created, days_created, _, _ = add_next_month_for_athlete(athlete=athlete)
         return (1 if month_created else 0), weeks_created, days_created
 
     created_months = 0
@@ -217,7 +218,7 @@ def fill_gaps_and_add_next_month_for_athlete(*, athlete) -> tuple[int, int, int]
             created_days += days_created
         current_year, current_month = shift_month(current_year, current_month, 1)
 
-    month_created, weeks_created, days_created = add_next_month_for_athlete(athlete=athlete)
+    month_created, weeks_created, days_created, _, _ = add_next_month_for_athlete(athlete=athlete)
     if month_created:
         created_months += 1
     created_weeks += weeks_created

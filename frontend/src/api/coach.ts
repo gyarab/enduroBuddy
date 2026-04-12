@@ -1,0 +1,143 @@
+import { apiClient } from "@/api/client";
+import type { DashboardPayload, PlannedTrainingDraft } from "@/api/training";
+
+export type CoachAthlete = {
+  id: number;
+  name: string;
+  focus: string;
+  hidden: boolean;
+  sort_order: number;
+  selected: boolean;
+};
+
+export type CoachAthletesPayload = {
+  athletes: CoachAthlete[];
+};
+
+export type CoachDashboardPayload = DashboardPayload & {
+  selected_athlete: {
+    id: number;
+    name: string;
+    focus: string;
+  } | null;
+  athletes: CoachAthlete[];
+};
+
+export async function fetchCoachDashboard(athleteId?: number, month?: string) {
+  const response = await apiClient.get<CoachDashboardPayload>("/coach/dashboard/", {
+    params: {
+      ...(athleteId ? { athlete_id: athleteId } : {}),
+      ...(month ? { month } : {}),
+    },
+  });
+  return response.data;
+}
+
+export async function fetchCoachAthletes(athleteId?: number) {
+  const response = await apiClient.get<CoachAthletesPayload>("/coach/athletes/", {
+    params: athleteId ? { athlete_id: athleteId } : undefined,
+  });
+  return response.data;
+}
+
+export async function updateCoachAthleteFocus(athleteId: number, focus: string) {
+  const response = await apiClient.patch<{ ok: boolean; athlete_id: number; focus: string }>("/coach/athlete-focus/", {
+    athlete_id: athleteId,
+    focus,
+  });
+  return response.data;
+}
+
+export async function reorderCoachAthletes(athleteIds: number[]) {
+  const response = await apiClient.patch<CoachAthletesPayload>("/coach/reorder-athletes/", {
+    athlete_ids: athleteIds,
+  });
+  return response.data;
+}
+
+export async function updateCoachAthleteVisibility(athleteId: number, hidden: boolean) {
+  const response = await apiClient.patch<CoachAthletesPayload & { ok: boolean; athlete_id: number; hidden: boolean }>(
+    "/coach/athlete-visibility/",
+    {
+      athlete_id: athleteId,
+      hidden,
+    },
+  );
+  return response.data;
+}
+
+export async function updateCoachPlannedTraining(
+  plannedId: number,
+  payload: {
+    field: "title" | "notes" | "session_type";
+    value: string;
+  },
+) {
+  const response = await apiClient.patch(`/coach/training/planned/${plannedId}/`, payload);
+  return response.data;
+}
+
+export async function createCoachPlannedTraining(athleteId: number, payload: PlannedTrainingDraft) {
+  const response = await apiClient.post("/coach/training/planned/", {
+    ...payload,
+    athlete_id: athleteId,
+  });
+  return response.data;
+}
+
+export async function deleteCoachPlannedTraining(plannedId: number) {
+  const response = await apiClient.delete(`/coach/training/planned/${plannedId}/`);
+  return response.data;
+}
+
+export async function addCoachSecondPhaseTraining(plannedId: number) {
+  const response = await apiClient.post(`/coach/training/planned/${plannedId}/second-phase/`);
+  return response.data;
+}
+
+export async function removeCoachSecondPhaseTraining(plannedId: number) {
+  const response = await apiClient.delete(`/coach/training/planned/${plannedId}/second-phase/`);
+  return response.data;
+}
+
+export type CoachJoinRequest = {
+  id: number;
+  athlete_name: string;
+  athlete_username: string;
+  created_at: string;
+};
+
+export async function fetchCoachCode() {
+  const response = await apiClient.get<{ ok: boolean; coach_join_code: string }>("/coach/code/");
+  return response.data;
+}
+
+export async function fetchJoinRequests() {
+  const response = await apiClient.get<{ ok: boolean; requests: CoachJoinRequest[] }>("/coach/join-requests/");
+  return response.data;
+}
+
+export async function approveJoinRequest(requestId: number) {
+  const response = await apiClient.post<{ ok: boolean; request_id: number }>(`/coach/join-requests/${requestId}/approve/`);
+  return response.data;
+}
+
+export async function rejectJoinRequest(requestId: number) {
+  const response = await apiClient.post<{ ok: boolean; request_id: number }>(`/coach/join-requests/${requestId}/reject/`);
+  return response.data;
+}
+
+export async function requestCoachByCode(coachCode: string) {
+  const response = await apiClient.post<{ ok: boolean; coach_name: string }>("/coach/join-request/", {
+    coach_code: coachCode,
+  });
+  return response.data;
+}
+
+export async function removeAthlete(athleteId: number, confirmName: string) {
+  const response = await apiClient.delete<{ ok: boolean; removed_athlete_id: number }>(
+    `/coach/athletes/${athleteId}/`,
+    { data: { confirm_name: confirmName } },
+  );
+  return response.data;
+}

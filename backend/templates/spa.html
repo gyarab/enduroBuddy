@@ -1,0 +1,48 @@
+{% load static %}
+<!doctype html>
+<html lang="{{ LANGUAGE_CODE|default:'cs' }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>EnduroBuddy App</title>
+
+  <!-- Self-hosted fonts — no external CDN dependency -->
+  <style>
+    @font-face { font-family: 'Syne'; src: url('{% static "fonts/syne-600.woff2" %}') format('woff2'); font-weight: 600; font-style: normal; font-display: swap; }
+    @font-face { font-family: 'Syne'; src: url('{% static "fonts/syne-700.woff2" %}') format('woff2'); font-weight: 700; font-style: normal; font-display: swap; }
+    @font-face { font-family: 'Syne'; src: url('{% static "fonts/syne-800.woff2" %}') format('woff2'); font-weight: 800; font-style: normal; font-display: swap; }
+    @font-face { font-family: 'Nunito'; src: url('{% static "fonts/nunito-400.woff2" %}') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
+    @font-face { font-family: 'Nunito'; src: url('{% static "fonts/nunito-500.woff2" %}') format('woff2'); font-weight: 500; font-style: normal; font-display: swap; }
+    @font-face { font-family: 'Nunito'; src: url('{% static "fonts/nunito-600.woff2" %}') format('woff2'); font-weight: 600; font-style: normal; font-display: swap; }
+    @font-face { font-family: 'Nunito'; src: url('{% static "fonts/nunito-700.woff2" %}') format('woff2'); font-weight: 700; font-style: normal; font-display: swap; }
+    @font-face { font-family: 'JetBrains Mono'; src: url('{% static "fonts/jetbrains-mono-400.woff2" %}') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
+    @font-face { font-family: 'JetBrains Mono'; src: url('{% static "fonts/jetbrains-mono-500.woff2" %}') format('woff2'); font-weight: 500; font-style: normal; font-display: swap; }
+
+    :root {
+      --eb-font-display: "Syne", system-ui, sans-serif;
+      --eb-font-body: "Nunito", system-ui, sans-serif;
+      --eb-font-mono: "JetBrains Mono", "Cascadia Code", monospace;
+      --eb-bg: #09090b;
+      --eb-text: #fafafa;
+    }
+    body {
+      margin: 0;
+      background: #09090b;
+      color: #fafafa;
+      font-family: "Nunito", system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+  </style>
+
+  {% if debug %}
+    <script type="module" src="{{ spa_vite_dev_server_url }}/@vite/client"></script>
+    <script type="module" src="{{ spa_vite_dev_server_url }}/src/main.ts"></script>
+  {% else %}
+    <link rel="stylesheet" href="{% static spa_entry_css %}">
+    <script type="module" src="{% static spa_entry_js %}"></script>
+  {% endif %}
+</head>
+<body>
+  <div id="app"></div>
+</body>
+</html>

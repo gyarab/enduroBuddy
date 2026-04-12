@@ -6,7 +6,11 @@
   <title>EnduroBuddy — Dashboard Svěřenec (preview)</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<<<<<<< HEAD
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+=======
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+>>>>>>> vue-frontend-codex
   <style>
     :root {
       --eb-bg: #09090b;
@@ -34,7 +38,11 @@
       --eb-radius-full: 9999px;
       --eb-shadow-lg: 0 12px 40px rgba(0,0,0,.5);
       --eb-glow-lime: 0 0 20px rgba(200,255,0,.15);
+<<<<<<< HEAD
       --eb-font-display: 'Syne', system-ui, sans-serif;
+=======
+      --eb-font-display: 'Space Grotesk', system-ui, sans-serif;
+>>>>>>> vue-frontend-codex
       --eb-font-body: 'Inter', 'Segoe UI', system-ui, sans-serif;
       --eb-font-mono: 'JetBrains Mono', 'Cascadia Code', monospace;
     }
@@ -85,6 +93,7 @@
       font-size: 15px; font-weight: 700;
       color: var(--eb-text); letter-spacing: -0.01em;
     }
+<<<<<<< HEAD
     .month-nav {
       display: flex; align-items: center; gap: 4px;
       position: absolute; left: 50%; transform: translateX(-50%);
@@ -101,6 +110,65 @@
       min-width: 130px; text-align: center; letter-spacing: -0.01em;
     }
     .month-nav-label span { font-weight: 400; font-size: 13px; color: var(--eb-text-muted); margin-left: 4px; }
+=======
+    /* ─── MONTH BAR (sticky bottom) ─── */
+    .month-bar {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 90;
+      display: flex; align-items: center; gap: 8px;
+      height: 44px;
+      background: rgba(17,17,19,.92);
+      backdrop-filter: blur(12px);
+      border-top: 1px solid var(--eb-border);
+      padding: 0 24px;
+    }
+    .month-bar-add {
+      display: inline-flex; align-items: center; gap: 5px;
+      height: 28px; padding: 0 12px;
+      border-radius: var(--eb-radius-sm);
+      border: 1px dashed rgba(200,255,0,.35);
+      background: transparent;
+      color: var(--eb-lime);
+      font-size: 11px; font-weight: 600;
+      cursor: pointer; white-space: nowrap; flex-shrink: 0;
+      transition: background 120ms, border-color 120ms;
+    }
+    .month-bar-add:hover {
+      background: var(--eb-lime-muted);
+      border-color: rgba(200,255,0,.6);
+    }
+    .month-bar-divider {
+      width: 1px; height: 20px;
+      background: var(--eb-border);
+      flex-shrink: 0; margin: 0 4px;
+    }
+    .month-bar-pills {
+      display: flex; gap: 2px;
+      overflow-x: auto; flex: 1;
+      scrollbar-width: none;
+    }
+    .month-bar-pills::-webkit-scrollbar { display: none; }
+    .month-pill {
+      display: inline-flex; align-items: center;
+      height: 28px; padding: 0 12px;
+      border-radius: var(--eb-radius-sm);
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--eb-text-muted);
+      font-size: 12px; font-weight: 500;
+      cursor: pointer; white-space: nowrap;
+      transition: background 120ms, color 120ms, border-color 120ms;
+    }
+    .month-pill:hover {
+      background: rgba(255,255,255,.05);
+      color: var(--eb-text);
+    }
+    .month-pill.active {
+      background: var(--eb-lime-muted);
+      border-color: var(--eb-lime-border);
+      color: var(--eb-lime);
+      font-weight: 700;
+    }
+>>>>>>> vue-frontend-codex
     .topnav-right { display: flex; align-items: center; gap: 8px; }
     .topnav-icon-btn {
       width: 36px; height: 36px; background: transparent; border: none;
@@ -127,7 +195,11 @@
     .avatar:hover { border-color: var(--eb-lime); }
 
     /* ─── MAIN ─── */
+<<<<<<< HEAD
     .main { max-width: 1200px; margin: 0 auto; padding: 24px 24px 48px; }
+=======
+    .main { max-width: 1200px; margin: 0 auto; padding: 24px 24px 80px; }
+>>>>>>> vue-frontend-codex
 
     /* ─── MONTH SUMMARY ─── */
     .month-summary {
@@ -411,6 +483,7 @@
     <span class="topnav-logo-text">EnduroBuddy</span>
   </a>
 
+<<<<<<< HEAD
   <div class="month-nav">
     <button class="month-nav-btn">
       <svg width="14" height="14" viewBox="0 0 16 16"><path d="M10 12L6 8l4-4" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -421,6 +494,8 @@
     </button>
   </div>
 
+=======
+>>>>>>> vue-frontend-codex
   <div class="topnav-right">
     <button class="topnav-icon-btn" id="notif-btn" onclick="toggleNotif()">
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
@@ -812,6 +887,26 @@
 
 </main>
 
+<<<<<<< HEAD
+=======
+<!-- MONTH BAR -->
+<nav class="month-bar">
+  <button class="month-bar-add">
+    <svg width="11" height="11" viewBox="0 0 16 16"><path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    Přidat měsíc
+  </button>
+  <div class="month-bar-divider"></div>
+  <div class="month-bar-pills">
+    <button class="month-pill">Led 25</button>
+    <button class="month-pill">Úno 25</button>
+    <button class="month-pill">Bře 25</button>
+    <button class="month-pill active">Dub 25</button>
+    <button class="month-pill">Kvě 25</button>
+    <button class="month-pill">Čer 25</button>
+  </div>
+</nav>
+
+>>>>>>> vue-frontend-codex
 <script>
   function toggleNotif() {
     const dd = document.getElementById('notif-dd');

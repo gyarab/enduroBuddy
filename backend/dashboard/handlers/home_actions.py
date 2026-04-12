@@ -51,7 +51,7 @@ def handle_home_post(request, *, logger, queue_garmin_sync_job_for_user):
         return _home_response(request, ok=True, message=HomeText.JOIN_REQUEST_SENT, tone="success")
 
     if action == "add_next_month_self":
-        month_created, weeks_created, days_created = add_next_month_for_athlete(athlete=request.user)
+        month_created, weeks_created, days_created, _, _ = add_next_month_for_athlete(athlete=request.user)
         if month_created:
             messages.success(request, HomeText.month_created(weeks_created=weeks_created, days_created=days_created))
         else:

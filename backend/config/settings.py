@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+import importlib.util
 import os
 import sys
 from pathlib import Path
@@ -84,10 +85,22 @@ INSTALLED_APPS = [
 
 ]
 
+if importlib.util.find_spec("rest_framework") is not None:
+    INSTALLED_APPS.append("rest_framework")
+
+if DEBUG and importlib.util.find_spec("corsheaders") is not None:
+    INSTALLED_APPS.append("corsheaders")
+
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+]
+
+if DEBUG and importlib.util.find_spec("corsheaders") is not None:
+    MIDDLEWARE.append("corsheaders.middleware.CorsMiddleware")
+
+MIDDLEWARE += [
     "django.middleware.locale.LocaleMiddleware",
     "django.middleware.common.CommonMiddleware",
     "config.middleware.GoogleOAuthRateLimitMiddleware",
@@ -183,7 +196,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [BASE_DIR / "static"]
+STATICFILES_DIRS = [BASE_DIR / "static", BASE_DIR / "static_build"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 STORAGES = {
@@ -232,6 +245,9 @@ ACCOUNT_RATE_LIMITS = {
     "reset_password": "5/1h",
     "reset_password_from_key": "20/1h",
 }
+
+ACCOUNT_ADAPTER = "accounts.adapters.AccountAdapter"
+SOCIALACCOUNT_ADAPTER = "accounts.adapters.SocialAccountAdapter"
 
 EMAIL_BACKEND = os.environ.get(
     "DJANGO_EMAIL_BACKEND",
@@ -283,8 +299,15 @@ GARMIN_KMS_KEYS = os.environ.get("GARMIN_KMS_KEYS", "")
 GARMIN_KMS_KEY_ID = os.environ.get("GARMIN_KMS_KEY_ID", "local-kms-v1")
 GARMIN_CONNECT_ENABLED = os.environ.get("GARMIN_CONNECT_ENABLED", "true").lower() == "true"
 GARMIN_SYNC_ENABLED = os.environ.get("GARMIN_SYNC_ENABLED", "true").lower() == "true"
+REGISTRATION_ENABLED = os.environ.get("REGISTRATION_ENABLED", "true").lower() == "true"
 IMPORT_TASK_MODE = os.environ.get("IMPORT_TASK_MODE", "inline")
 DASHBOARD_ASSET_VERSION = os.environ.get("DASHBOARD_ASSET_VERSION", "76")
+SPA_VITE_DEV_SERVER_URL = os.environ.get("SPA_VITE_DEV_SERVER_URL", "http://localhost:5173")
+CORS_ALLOWED_ORIGINS = [
+    origin.strip()
+    for origin in os.environ.get("DJANGO_CORS_ALLOWED_ORIGINS", SPA_VITE_DEV_SERVER_URL).split(",")
+    if origin.strip()
+]
 
 USE_HTTPS = os.environ.get("DJANGO_USE_HTTPS", "false").lower() == "true"
 
@@ -296,4 +319,14 @@ if USE_HTTPS:
     SECURE_HSTS_SECONDS = int(os.environ.get("DJANGO_SECURE_HSTS_SECONDS", "3600"))
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
+
+if importlib.util.find_spec("rest_framework") is not None:
+    REST_FRAMEWORK = {
+        "DEFAULT_AUTHENTICATION_CLASSES": [
+            "rest_framework.authentication.SessionAuthentication",
+        ],
+        "DEFAULT_PERMISSION_CLASSES": [
+            "rest_framework.permissions.IsAuthenticated",
+        ],
+    }
 
