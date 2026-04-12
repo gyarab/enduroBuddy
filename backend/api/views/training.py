@@ -118,9 +118,6 @@ def _delete_planned_training_for_actor(*, planned: PlannedTraining):
 @login_required
 @require_http_methods(["POST"])
 def create_planned_training(request):
-    if is_coach(request.user):
-        return json_error(ApiText.FORBIDDEN_FOR_ATHLETE, status=403)
-
     payload, error = parse_json_body(request)
     if error:
         return error
@@ -141,7 +138,7 @@ def update_planned_training(request, planned_id: int):
         planned, error = load_planned_training(planned_id)
         if error:
             return error
-        if planned_athlete_id(planned) != request.user.id or is_coach(request.user):
+        if planned_athlete_id(planned) != request.user.id:
             return json_error(ApiText.FORBIDDEN_FOR_ATHLETE, status=403)
         removed_planned_id, error = _delete_planned_training_for_actor(planned=planned)
         if error:
@@ -165,7 +162,7 @@ def update_planned_training(request, planned_id: int):
     if error:
         return error
 
-    if planned_athlete_id(planned) != request.user.id or is_coach(request.user):
+    if planned_athlete_id(planned) != request.user.id:
         return json_error(ApiText.FORBIDDEN_FOR_ATHLETE, status=403)
 
     normalized = save_planned_field(planned=planned, field=field, value=value)
@@ -199,7 +196,7 @@ def update_completed_training(request, planned_id: int):
     if error:
         return error
 
-    if planned_athlete_id(planned) != request.user.id or is_coach(request.user):
+    if planned_athlete_id(planned) != request.user.id:
         return json_error(ApiText.FORBIDDEN_FOR_ATHLETE, status=403)
 
     try:
@@ -224,7 +221,7 @@ def second_phase_training(request, planned_id: int):
     if error:
         return error
 
-    if planned_athlete_id(planned) != request.user.id or is_coach(request.user):
+    if planned_athlete_id(planned) != request.user.id:
         return json_error(ApiText.FORBIDDEN_FOR_ATHLETE, status=403)
 
     if request.method == "POST":
