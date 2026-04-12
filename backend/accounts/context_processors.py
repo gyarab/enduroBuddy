@@ -36,4 +36,5 @@ def role_flags(request):
         "profile_approved_coach_links": approved_coach_links,
         "app_notifications": app_notifications,
         "dashboard_asset_version": str(getattr(settings, "DASHBOARD_ASSET_VERSION", "50")),
+        "registration_enabled": getattr(settings, "REGISTRATION_ENABLED", True),
     }

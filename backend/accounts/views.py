@@ -1,6 +1,7 @@
 from allauth.account import views as account_views
 from allauth.account.views import LoginView
 from allauth.socialaccount import views as socialaccount_views
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
@@ -35,6 +36,8 @@ def spa_account_login(request, *args, **kwargs):
 
 def spa_account_signup(request, *args, **kwargs):
     if request.method == "GET":
+        if not settings.REGISTRATION_ENABLED:
+            return redirect(reverse("account_login"))
         return _spa_or_public(request, path="accounts/signup")
     return account_views.signup(request, *args, **kwargs)
 

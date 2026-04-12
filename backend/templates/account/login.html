@@ -97,8 +97,10 @@
               </button>
 
               <p class="text-muted text-center mb-0">
+                {% if registration_enabled %}
                 Nemáš účet?
                 <a href="{% url 'account_signup' %}">Registrovat se</a>
+                {% endif %}
               </p>
             </form>
           </div>
