@@ -6,25 +6,19 @@ import { useAuthStore } from "@/stores/auth";
 
 const emit = defineEmits<{
   openSettings: [];
+  openGarmin: [];
 }>();
 
 const authStore = useAuthStore();
-const { t, locale, setLocale } = useI18n();
+const { t } = useI18n();
 const displayName = computed(() => authStore.user?.full_name || "EnduroBuddy User");
-
-function switchLocale() {
-  void setLocale(locale.value === "cs" ? "en" : "cs");
-}
 </script>
 
 <template>
   <div class="profile-dropdown">
     <div class="profile-dropdown__name">{{ displayName }}</div>
     <button class="profile-dropdown__item" type="button" @click="emit('openSettings')">{{ t("profileDropdown.profile") }}</button>
-    <button class="profile-dropdown__item profile-dropdown__lang" type="button" @click="switchLocale">
-      <span class="profile-dropdown__lang-label">{{ t("profileDropdown.language") }}</span>
-      <span class="profile-dropdown__lang-badge">{{ locale === "cs" ? "EN" : "CS" }}</span>
-    </button>
+    <button class="profile-dropdown__item" type="button" @click="emit('openGarmin')">{{ t("profileDropdown.garmin") }}</button>
     <div class="profile-dropdown__divider" />
     <a class="profile-dropdown__item profile-dropdown__item--danger" href="/accounts/logout/">{{ t("profileDropdown.logout") }}</a>
   </div>
@@ -67,30 +61,6 @@ function switchLocale() {
 
 .profile-dropdown__item:hover {
   background: var(--eb-surface-hover);
-}
-
-.profile-dropdown__lang {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.profile-dropdown__lang-label {
-  color: var(--eb-text-soft);
-  font-size: 0.8125rem;
-}
-
-.profile-dropdown__lang-badge {
-  display: inline-flex;
-  align-items: center;
-  min-height: 1.375rem;
-  padding: 0 0.5rem;
-  border: 1px solid var(--eb-border);
-  border-radius: 999px;
-  color: var(--eb-lime);
-  font-size: 0.625rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
 }
 
 .profile-dropdown__divider {

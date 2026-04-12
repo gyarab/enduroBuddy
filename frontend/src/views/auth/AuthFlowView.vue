@@ -170,9 +170,9 @@ const shellConfig = computed(() => {
   switch (screen.value) {
     case "signup":
       return {
-        eyebrow: "Start Clean",
-        title: "Začni plánovat s přesností od prvního dne.",
-        description: "Registrace je rychlá a už během prvního kroku je jasné, jestli vstupuješ jako coach nebo athlete.",
+        eyebrow: "New Account",
+        title: "Sportovec nebo trenér — za minutu jsi uvnitř.",
+        description: "Zvol svou roli, zadej e-mail a heslo. To je vše.",
         stats: [
           { icon: "🏃", label: "Pro sportovce", value: "Plán · Trénink · Analýza" },
           { icon: "🎯", label: "Pro trenéry", value: "Skupiny · Plány · Přehled", blue: true },
@@ -181,48 +181,48 @@ const shellConfig = computed(() => {
     case "password-reset":
       return {
         eyebrow: "Recovery",
-        title: "Vrátíme tě zpět bez tření.",
-        description: "Recovery stránky jsou méně marketingové a víc utilitární. Jedna úloha, jedna akce, jeden klidný výsledek.",
+        title: "Zapomenuté heslo vyřešíš za dvě minuty.",
+        description: "Zadej svůj e-mail a pošleme ti odkaz pro nastavení nového hesla.",
         stats: [
-          { icon: "🔒", label: "Bezpečný reset", value: "E-mail odkaz" },
+          { icon: "🔒", label: "Bezpečný reset", value: "Odkaz na e-mail" },
           { icon: "✓", label: "Po obnově", value: "Přímý vstup do app", blue: true },
         ],
       };
     case "password-reset-done":
       return {
         eyebrow: "Recovery",
-        title: "Reset link je na cestě.",
-        description: "Pokud účet existuje, poslali jsme odkaz pro obnovu hesla. Zbytek flow může proběhnout klidně mimo aplikaci.",
+        title: "Odkaz je na cestě.",
+        description: "Zkontroluj e-mail a klikni na odkaz. Pak si nastavíš nové heslo.",
         stats: [
-          { icon: "🔒", label: "Bezpečný reset", value: "E-mail odkaz" },
-          { icon: "✓", label: "Po obnově", value: "Přímý vstup do app", blue: true },
+          { icon: "✉️", label: "E-mail odeslán", value: "Zkontroluj schránku" },
+          { icon: "✓", label: "Platnost odkazu", value: "Časově omezeno", blue: true },
         ],
       };
     case "password-reset-key":
       return {
         eyebrow: "Recovery",
-        title: "Bezpečné nastavení nového hesla.",
-        description: "Link z e-mailu držíme v tom samém auth shellu a po validaci necháme uživatele heslo změnit přímo ve Vue flow.",
+        title: "Nastav nové heslo a vrať se k tréninku.",
+        description: "Heslo musí mít alespoň 8 znaků. Po změně se budeš moct přihlásit.",
         stats: [
-          { icon: "🔑", label: "Reset klíč", value: "Ověřený token" },
+          { icon: "🔑", label: "Reset klíč", value: "Ověřený odkaz" },
           { icon: "✓", label: "Po změně", value: "Heslo aktualizováno", blue: true },
         ],
       };
     case "password-reset-key-done":
       return {
         eyebrow: "Recovery",
-        title: "Heslo je změněné a cesta zpět je jasná.",
-        description: "Po úspěšné změně hesla zůstáváme ve stejném auth jazyce a vracíme uživatele přirozeně na login.",
+        title: "Heslo je změněno.",
+        description: "Přihlas se svým novým heslem a pokračuj tam, kde jsi skončil.",
         stats: [
-          { icon: "🔑", label: "Reset klíč", value: "Ověřený token" },
-          { icon: "✓", label: "Po změně", value: "Heslo aktualizováno", blue: true },
+          { icon: "🔑", label: "Nové heslo", value: "Aktivní" },
+          { icon: "✓", label: "Stav účtu", value: "Připraven k přihlášení", blue: true },
         ],
       };
     case "verification-sent":
       return {
         eyebrow: "Email Verification",
-        title: "Potvrzení e-mailu je další čistý krok v auth flow.",
-        description: "Po registraci držíme uživatele ve stejném designu a jasně vysvětlíme, co se stane dál.",
+        title: "Jeden krok zbývá.",
+        description: "Poslali jsme ti ověřovací e-mail. Klikni na odkaz a účet bude aktivní.",
         stats: [
           { icon: "✉️", label: "Ověřovací e-mail", value: "Odesláno" },
           { icon: "✓", label: "Po potvrzení", value: "Účet aktivní", blue: true },
@@ -231,101 +231,101 @@ const shellConfig = computed(() => {
     case "email-confirm-key":
       return {
         eyebrow: "Email Verification",
-        title: "Potvrzení e-mailu jako finální krok bez vizuálního zlomu.",
-        description: "Ověřovací link z e-mailu je teď obsloužený stejným Vue auth shellem jako login a signup.",
+        title: "Potvrzení e-mailové adresy.",
+        description: "Klikni na tlačítko níže a adresa bude ověřena. Pak tě pustíme dál.",
         stats: [
-          { icon: "✉️", label: "Ověřovací e-mail", value: "Odesláno" },
+          { icon: "✉️", label: "E-mailová adresa", value: "Čeká na potvrzení" },
           { icon: "✓", label: "Po potvrzení", value: "Účet aktivní", blue: true },
         ],
       };
     case "email-management":
       return {
-        eyebrow: "Account Email",
-        title: "Správa e-mailů ve stejném auth jazyce.",
-        description: "Primární, ověřené i čekající e-maily teď běží v tom samém Vue modulu jako login a signup.",
+        eyebrow: "Account",
+        title: "Správa e-mailových adres.",
+        description: "Přidej záložní adresu, změň primární nebo odeber nepoužívané.",
         stats: [
-          { icon: "@", label: "Správa e-mailů", value: "Primární · Záložní" },
-          { icon: "✓", label: "Ověřeno", value: "Zabezpečený účet", blue: true },
+          { icon: "@", label: "Primární adresa", value: "Ověřená" },
+          { icon: "✓", label: "Záložní adresa", value: "Volitelná ochrana", blue: true },
         ],
       };
     case "password-change":
       return {
         eyebrow: "Security",
-        title: "Změna hesla bez návratu ke starým template.",
-        description: "Když má uživatel heslo, může ho změnit ve stejném auth shellu a pořád zůstává v rámci SPA.",
+        title: "Změna hesla.",
+        description: "Zadej aktuální heslo a pak dvakrát nové. Změna se projeví okamžitě.",
         stats: [
-          { icon: "🔐", label: "Zabezpečení", value: "Session Auth" },
-          { icon: "✓", label: "Po akci", value: "Návrat do app", blue: true },
+          { icon: "🔐", label: "Aktuální heslo", value: "Vyžadováno" },
+          { icon: "✓", label: "Po změně", value: "Okamžitě aktivní", blue: true },
         ],
       };
     case "password-set":
       return {
         eyebrow: "Security",
-        title: "Nastav heslo i k účtu z Google loginu.",
-        description: "Pro social-only účet je nastavení hesla další čistý krok v auth modulu, ne starý fallback formulář.",
+        title: "Přidej heslo k účtu.",
+        description: "Přihlašuješ se přes Google, ale heslo ti dá zálohu i přímý přístup.",
         stats: [
-          { icon: "🔐", label: "Zabezpečení", value: "Session Auth" },
-          { icon: "✓", label: "Po akci", value: "Návrat do app", blue: true },
+          { icon: "🔐", label: "Google účet", value: "Propojeno" },
+          { icon: "✓", label: "Po nastavení", value: "Dvojí přihlášení", blue: true },
         ],
       };
     case "reauthenticate":
       return {
         eyebrow: "Security",
-        title: "Potvrzení přístupu bez odskoku mimo auth modul.",
-        description: "Když je potřeba znovu potvrdit citlivou akci, heslo se ověří ve stejném Vue auth flow.",
+        title: "Potvrď, že jsi to ty.",
+        description: "Před citlivou akcí vyžadujeme ověření heslem. Trvá to pět sekund.",
         stats: [
-          { icon: "🔐", label: "Zabezpečení", value: "Session Auth" },
-          { icon: "✓", label: "Po akci", value: "Návrat do app", blue: true },
+          { icon: "🔐", label: "Ověření identity", value: "Jednorázové" },
+          { icon: "✓", label: "Po potvrzení", value: "Akce povolena", blue: true },
         ],
       };
     case "logout":
       return {
         eyebrow: "Session",
-        title: "Odhlášení bez zbytečného tření.",
-        description: "Jedno potvrzení, jeden výsledek. Logout screen používá stejnou strukturu jako zbytek auth flow.",
+        title: "Odhlásit se?",
+        description: "Přihlásit se zpátky trvá pár sekund.",
         stats: [
-          { icon: "👋", label: "Odhlášení", value: "Session ukončena" },
+          { icon: "👋", label: "Session", value: "Aktivní" },
           { icon: "→", label: "Po odhlášení", value: "Přihlašovací stránka", blue: true },
         ],
       };
     case "inactive":
       return {
-        eyebrow: "Account State",
-        title: "Tento účet teď není aktivní.",
-        description: "I fallback a chybové auth stavy drží stejnou kvalitu a tonality jako hlavní flow.",
+        eyebrow: "Account",
+        title: "Tento účet není aktivní.",
+        description: "Pokus o přihlášení selhal. Zkus obnovit heslo nebo nás kontaktuj.",
         stats: [
-          { icon: "⚠", label: "Stav účtu", value: "Vyžaduje akci" },
-          { icon: "→", label: "Další krok", value: "Kontaktuj podporu", blue: true },
+          { icon: "⚠", label: "Stav účtu", value: "Neaktivní" },
+          { icon: "→", label: "Možnosti", value: "Reset hesla · Podpora", blue: true },
         ],
       };
     case "social-error":
       return {
         eyebrow: "Social Login",
-        title: "Google flow se tentokrát nepodařilo dokončit.",
-        description: "Když externí provider selže, uživatel pořád zůstává v našem produktu a dostává srozumitelnou cestu dál.",
+        title: "Přihlášení přes Google se nezdařilo.",
+        description: "Zkus to znovu nebo se přihlas e-mailem a heslem.",
         stats: [
-          { icon: "⚠", label: "Stav účtu", value: "Vyžaduje akci" },
-          { icon: "→", label: "Další krok", value: "Kontaktuj podporu", blue: true },
+          { icon: "⚠", label: "Chyba", value: "Google OAuth" },
+          { icon: "→", label: "Záloha", value: "E-mail a heslo", blue: true },
         ],
       };
     case "social-cancelled":
       return {
         eyebrow: "Social Login",
-        title: "Přihlášení bylo zrušeno ještě před dokončením.",
-        description: "Neutral state, žádná panika. Jen čistá možnost zkusit to znovu nebo přejít na registraci.",
+        title: "Přihlášení bylo zrušeno.",
+        description: "Nic se nestalo. Zkus to znovu nebo použij e-mail a heslo.",
         stats: [
-          { icon: "⚠", label: "Stav účtu", value: "Vyžaduje akci" },
-          { icon: "→", label: "Další krok", value: "Kontaktuj podporu", blue: true },
+          { icon: "→", label: "Možnosti", value: "Google · E-mail" },
+          { icon: "✓", label: "Registrace", value: "Zdarma, bez závazků", blue: true },
         ],
       };
     case "connections":
       return {
-        eyebrow: "Connected Accounts",
-        title: "Správa providerů bez vizuálního chaosu.",
-        description: "Connections používají stejný shell, ale obsah je přehledový. Řádky providerů fungují jako čisté management karty.",
+        eyebrow: "Account",
+        title: "Propojené účty.",
+        description: "Připoj Google pro rychlé přihlášení jedním kliknutím.",
         stats: [
-          { icon: "🔗", label: "Propojené účty", value: "Google OAuth" },
-          { icon: "✓", label: "Spravovat", value: "Připojit · Odpojit", blue: true },
+          { icon: "🔗", label: "Google", value: "OAuth 2.0" },
+          { icon: "✓", label: "Správa", value: "Připojit · Odpojit", blue: true },
         ],
       };
     default:

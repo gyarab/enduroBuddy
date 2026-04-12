@@ -8,7 +8,8 @@
     "completeProfile": "Complete Profile",
     "dashboardOverview": "Dashboard overview",
     "plansAndFocus": "Plans and athlete focus",
-    "athletesReady": "{count} athletes ready"
+    "athletesReady": "{count} athletes ready",
+    "switchToCoach": "Coach"
   },
   "notifications": {
     "label": "Notifikace",
@@ -123,7 +124,16 @@
     "emptyPlanned": "No planned sessions in this week.",
     "emptyCompleted": "No completed sessions yet.",
     "addPlanned": "Add planned training",
-    "date": "Date",
+    "date": "Datum",
+    "day": "Den",
+    "training": "Trenink",
+    "coachNotes": "Poznamky",
+    "time": "Cas",
+    "intervals": "Intervaly",
+    "total": "Celkem",
+    "clickToAdd": "Klikni pro pridani",
+    "titlePlaceholder": "Popis treninku...",
+    "notesPlaceholder": "Poznamky trenera...",
     "newTitle": "Title",
     "session": "Session",
     "run": "Run",
@@ -190,9 +200,9 @@
     "completionSubtext": "splnění měsíce"
   },
   "profileDropdown": {
-    "profile": "Profil",
-    "logout": "Odhlásit se",
-    "language": "Jazyk"
+    "profile": "Nastavení profilu",
+    "garmin": "Import z Garminu",
+    "logout": "Odhlásit se"
   },
   "profileSettings": {
     "eyebrow": "Nastavení účtu",
@@ -203,6 +213,7 @@
     "identity": "Identita",
     "workspace": "Workspace",
     "security": "Zabezpečení",
+    "connectCoach": "Připojit trenéra",
     "firstName": "Jméno",
     "lastName": "Příjmení",
     "email": "Email",
@@ -211,7 +222,19 @@
     "roleAthlete": "Svěřenec",
     "defaultRoute": "Výchozí cesta",
     "language": "Jazyk",
+    "currentPassword": "Současné heslo",
+    "newPassword": "Nové heslo",
+    "confirmPassword": "Potvrdit nové heslo",
     "changePassword": "Změnit heslo",
+    "changingPassword": "Měním heslo...",
+    "changePasswordSuccess": "Heslo bylo úspěšně změněno.",
+    "changePasswordError": "Nepodařilo se změnit heslo.",
+    "coachCodeLabel": "Kód trenéra",
+    "coachCodePlaceholder": "Zadejte kód trenéra",
+    "requestCoach": "Požádat o trenéra",
+    "requestCoachSubmitting": "Odesílám...",
+    "requestCoachSuccess": "Žádost o trenéra {name} byla odeslána.",
+    "requestCoachError": "Nepodařilo se odeslat žádost.",
     "logout": "Odhlásit se",
     "cancel": "Zrušit",
     "save": "Uložit změny",

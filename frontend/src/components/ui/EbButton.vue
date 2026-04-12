@@ -29,6 +29,7 @@ const props = withDefaults(
   padding: 0.625rem 1rem;
   border-radius: var(--eb-radius-md);
   border: 1px solid transparent;
+  font-family: var(--eb-font-display);
   font-size: var(--eb-type-small-size);
   font-weight: 600;
   letter-spacing: 0.02em;
