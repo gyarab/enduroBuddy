@@ -21,6 +21,13 @@ const trainingStore = useTrainingStore();
 const coachStore = useCoachStore();
 const toastStore = useToastStore();
 
+// ── vAutofocus directive ─────────────────────────────────────
+const vAutofocus = {
+  mounted(el: HTMLElement, binding: { value: boolean }) {
+    if (binding.value !== false) el.focus();
+  },
+};
+
 // ── Garmin sync ─────────────────────────────────────────────
 const isSyncingGarmin = ref(false);
 const showGarminSync = computed(
@@ -118,7 +125,9 @@ interface RowEdit {
   maxHr: string;
   // ui
   isSaving: boolean;
-  error: string;
+  isDirty: boolean;
+  debounceTimer: ReturnType<typeof setTimeout> | null;
+  focusField: string;
 }
 
 const editingRows = reactive<Map<string, RowEdit>>(new Map());
@@ -131,7 +140,7 @@ function isEditing(date: string): boolean {
   return editingRows.has(date);
 }
 
-function openEdit(slot: DaySlot) {
+function openEdit(slot: DaySlot, focusField = "title") {
   if (editingRows.has(slot.date)) return;
   const planned = slot.planned.find((r) => !r.is_second_phase) ?? null;
   const completed = slot.completed[0] ?? null;
@@ -146,24 +155,26 @@ function openEdit(slot: DaySlot) {
     notes: planned?.notes ?? "",
     sessionType: (planned?.session_type as "RUN" | "WORKOUT") ?? "RUN",
     isCreating: !planned,
-    completedId: completed?.id ?? null,
+    completedId: canEditCompleted ? (completed?.id ?? null) : null,
     km: completed?.completed_metrics?.km ?? "",
     minutes: completed?.completed_metrics?.minutes ?? "",
     details: completed?.completed_metrics?.details ?? "",
     avgHr: completed?.completed_metrics?.avg_hr?.toString() ?? "",
     maxHr: completed?.completed_metrics?.max_hr?.toString() ?? "",
     isSaving: false,
-    error: "",
+    isDirty: false,
+    debounceTimer: null,
+    focusField,
   });
 }
 
-function cancelEdit(date: string) {
-  editingRows.delete(date);
-}
-
 async function saveRow(slot: DaySlot, edit: RowEdit) {
+  if (!edit.isDirty) {
+    editingRows.delete(slot.date);
+    return;
+  }
+  if (edit.isSaving) return;
   edit.isSaving = true;
-  edit.error = "";
   try {
     // Save / create planned
     if (edit.isCreating && edit.title.trim()) {
@@ -209,26 +220,75 @@ async function saveRow(slot: DaySlot, edit: RowEdit) {
     }
 
     editingRows.delete(slot.date);
+    flashRow(slot.date);
   } catch (err) {
-    edit.error = err instanceof Error ? err.message : t("weekCard.createError");
-    toastStore.push(edit.error, "danger");
+    toastStore.push(err instanceof Error ? err.message : t("weekCard.createError"), "danger");
   } finally {
     edit.isSaving = false;
   }
 }
 
-async function deletePlannedRow(slot: DaySlot, row: TrainingRow) {
-  if (!row.id) return;
-  if (!window.confirm(t("plannedRow.confirmDelete"))) return;
-  try {
-    if (props.editorContext === "coach") {
-      await coachStore.deletePlannedTrainingRow(row.id);
-    } else {
-      await trainingStore.deletePlannedTrainingRow(row.id);
+// ── Flash feedback ───────────────────────────────────────────
+const flashingRows = reactive<Set<string>>(new Set());
+
+function flashRow(date: string) {
+  flashingRows.add(date);
+  setTimeout(() => flashingRows.delete(date), 600);
+}
+
+// ── Auto-save helpers ────────────────────────────────────────
+function onFieldInput(date: string, slot: DaySlot) {
+  const edit = editingRows.get(date);
+  if (!edit) return;
+  edit.isDirty = true;
+  if (edit.debounceTimer) clearTimeout(edit.debounceTimer);
+  edit.debounceTimer = setTimeout(() => {
+    edit.debounceTimer = null;
+    saveRow(slot, edit);
+  }, 1000);
+}
+
+function onRowFocusOut(slot: DaySlot, event: FocusEvent) {
+  const edit = editingRows.get(slot.date);
+  if (!edit) return;
+  const row = event.currentTarget as HTMLElement;
+  if (row.contains(event.relatedTarget as Node)) return;
+  if (edit.debounceTimer) {
+    clearTimeout(edit.debounceTimer);
+    edit.debounceTimer = null;
+  }
+  saveRow(slot, edit);
+}
+
+function canEditCompleted(slot: DaySlot): boolean {
+  const c = slot.completed[0];
+  return !!c && c.editable && !c.has_linked_activity;
+}
+
+async function toggleSessionType(slot: DaySlot) {
+  const edit = editingRows.get(slot.date);
+  if (edit) {
+    edit.sessionType = edit.sessionType === "RUN" ? "WORKOUT" : "RUN";
+    onFieldInput(slot.date, slot);
+    return;
+  }
+  const planned = slot.planned.find((r) => !r.is_second_phase) ?? null;
+  if (planned?.id) {
+    const newType = planned.session_type === "RUN" ? "WORKOUT" : "RUN";
+    try {
+      if (props.editorContext === "coach") {
+        await coachStore.savePlannedDraft(planned.id, [{ field: "session_type", value: newType }]);
+      } else {
+        await trainingStore.savePlannedDraft(planned.id, [{ field: "session_type", value: newType }]);
+      }
+      flashRow(slot.date);
+    } catch (err) {
+      toastStore.push(err instanceof Error ? err.message : t("weekCard.createError"), "danger");
     }
-    editingRows.delete(slot.date);
-  } catch (err) {
-    toastStore.push(err instanceof Error ? err.message : t("plannedRow.deleteError"), "danger");
+  } else {
+    openEdit(slot, "title");
+    const newEdit = editingRows.get(slot.date);
+    if (newEdit) newEdit.sessionType = "WORKOUT";
   }
 }
 </script>
@@ -272,46 +332,47 @@ async function deletePlannedRow(slot: DaySlot, row: TrainingRow) {
           'wt__row--editing': isEditing(slot.date),
           'wt__row--done': slot.completed[0]?.status === 'done',
           'wt__row--missed': slot.completed[0]?.status === 'missed',
-          'wt__row--clickable': !isEditing(slot.date) && (slot.planned[0]?.editable || (!slot.planned.length)),
+          'wt__row--saved': flashingRows.has(slot.date),
         }"
-        @click="!isEditing(slot.date) && openEdit(slot)"
+        @focusout="onRowFocusOut(slot, $event)"
       >
         <!-- Date -->
-        <div class="wt__cell wt__cell--date">{{ slot.dateLabel }}</div>
+        <div class="wt__cell wt__cell--date wt__cell--readonly">{{ slot.dateLabel }}</div>
 
         <!-- Day -->
-        <div class="wt__cell wt__cell--day">{{ slot.dayLabel }}</div>
+        <div class="wt__cell wt__cell--day wt__cell--readonly">{{ slot.dayLabel }}</div>
 
         <!-- Session type -->
         <div class="wt__cell wt__cell--type" @click.stop>
-          <template v-if="isEditing(slot.date) && getEdit(slot.date)">
-            <select
-              v-model="getEdit(slot.date)!.sessionType"
-              class="wt__type-select"
-              :disabled="getEdit(slot.date)!.isSaving"
-            >
-              <option value="RUN">{{ t("weekCard.run") }}</option>
-              <option value="WORKOUT">{{ t("weekCard.workout") }}</option>
-            </select>
-          </template>
-          <template v-else>
-            <span
-              class="wt__type-dot"
-              :class="slot.planned[0] ? `wt__type-dot--${slot.planned[0].session_type.toLowerCase()}` : 'wt__type-dot--empty'"
-            />
-          </template>
+          <button
+            v-if="isEditing(slot.date) && getEdit(slot.date)"
+            class="wt__type-pill"
+            :class="`wt__type-pill--${getEdit(slot.date)!.sessionType.toLowerCase()}`"
+            type="button"
+            @click.stop="toggleSessionType(slot)"
+          >{{ getEdit(slot.date)!.sessionType === 'RUN' ? 'RUN' : 'WKT' }}</button>
+          <button
+            v-else-if="slot.planned[0]"
+            class="wt__type-pill"
+            :class="`wt__type-pill--${slot.planned[0].session_type.toLowerCase()}`"
+            type="button"
+            @click.stop="toggleSessionType(slot)"
+          >{{ slot.planned[0].session_type === 'RUN' ? 'RUN' : 'WKT' }}</button>
+          <span v-else class="wt__type-dot wt__type-dot--empty" />
         </div>
 
         <!-- Training title -->
-        <div class="wt__cell wt__cell--title" @click.stop="!isEditing(slot.date) && openEdit(slot)">
+        <div class="wt__cell wt__cell--title" @click.stop="!isEditing(slot.date) && openEdit(slot, 'title')">
           <template v-if="isEditing(slot.date) && getEdit(slot.date)">
             <textarea
               v-model="getEdit(slot.date)!.title"
+              v-autofocus="getEdit(slot.date)!.focusField === 'title'"
               class="wt__textarea"
               :disabled="getEdit(slot.date)!.isSaving"
               :placeholder="t('weekCard.titlePlaceholder')"
               rows="2"
               @click.stop
+              @input="onFieldInput(slot.date, slot)"
             />
           </template>
           <template v-else>
@@ -321,14 +382,16 @@ async function deletePlannedRow(slot: DaySlot, row: TrainingRow) {
         </div>
 
         <!-- Coach notes -->
-        <div class="wt__cell wt__cell--notes" @click.stop="!isEditing(slot.date) && openEdit(slot)">
+        <div class="wt__cell wt__cell--notes" @click.stop="!isEditing(slot.date) && openEdit(slot, 'notes')">
           <template v-if="isEditing(slot.date) && getEdit(slot.date)">
             <input
               v-model="getEdit(slot.date)!.notes"
+              v-autofocus="getEdit(slot.date)!.focusField === 'notes'"
               class="wt__input"
               :disabled="getEdit(slot.date)!.isSaving"
               :placeholder="t('weekCard.notesPlaceholder')"
               @click.stop
+              @input="onFieldInput(slot.date, slot)"
             />
           </template>
           <template v-else>
@@ -340,9 +403,9 @@ async function deletePlannedRow(slot: DaySlot, row: TrainingRow) {
         <div class="wt__sep-col" />
 
         <!-- km -->
-        <div class="wt__cell wt__cell--num" @click.stop="!isEditing(slot.date) && slot.completed[0]?.editable && !slot.completed[0]?.has_linked_activity && openEdit(slot)">
+        <div class="wt__cell wt__cell--num" @click.stop="!isEditing(slot.date) && canEditCompleted(slot) && openEdit(slot, 'km')">
           <template v-if="isEditing(slot.date) && getEdit(slot.date) && getEdit(slot.date)!.completedId">
-            <input v-model="getEdit(slot.date)!.km" class="wt__input wt__input--num" :disabled="getEdit(slot.date)!.isSaving" @click.stop />
+            <input v-model="getEdit(slot.date)!.km" v-autofocus="getEdit(slot.date)!.focusField === 'km'" class="wt__input wt__input--num" :disabled="getEdit(slot.date)!.isSaving" @click.stop @input="onFieldInput(slot.date, slot)" />
           </template>
           <template v-else>
             <span class="wt__num-val wt__num-val--done">{{ slot.completed[0]?.completed_metrics?.km || "-" }}</span>
@@ -350,9 +413,9 @@ async function deletePlannedRow(slot: DaySlot, row: TrainingRow) {
         </div>
 
         <!-- Time (HH:MM) -->
-        <div class="wt__cell wt__cell--num" @click.stop>
+        <div class="wt__cell wt__cell--num" @click.stop="!isEditing(slot.date) && canEditCompleted(slot) && openEdit(slot, 'minutes')">
           <template v-if="isEditing(slot.date) && getEdit(slot.date) && getEdit(slot.date)!.completedId">
-            <input v-model="getEdit(slot.date)!.minutes" class="wt__input wt__input--num" :disabled="getEdit(slot.date)!.isSaving" placeholder="min" @click.stop />
+            <input v-model="getEdit(slot.date)!.minutes" v-autofocus="getEdit(slot.date)!.focusField === 'minutes'" class="wt__input wt__input--num" :disabled="getEdit(slot.date)!.isSaving" placeholder="min" @click.stop @input="onFieldInput(slot.date, slot)" />
           </template>
           <template v-else>
             <span class="wt__num-val wt__num-val--done">{{ formatMinutes(slot.completed[0]?.completed_metrics?.minutes) }}</span>
@@ -360,9 +423,9 @@ async function deletePlannedRow(slot: DaySlot, row: TrainingRow) {
         </div>
 
         <!-- Intervals / details -->
-        <div class="wt__cell wt__cell--intervals" @click.stop>
+        <div class="wt__cell wt__cell--intervals" @click.stop="!isEditing(slot.date) && canEditCompleted(slot) && openEdit(slot, 'details')">
           <template v-if="isEditing(slot.date) && getEdit(slot.date) && getEdit(slot.date)!.completedId">
-            <input v-model="getEdit(slot.date)!.details" class="wt__input" :disabled="getEdit(slot.date)!.isSaving" @click.stop />
+            <input v-model="getEdit(slot.date)!.details" v-autofocus="getEdit(slot.date)!.focusField === 'details'" class="wt__input" :disabled="getEdit(slot.date)!.isSaving" @click.stop @input="onFieldInput(slot.date, slot)" />
           </template>
           <template v-else>
             <span class="wt__intervals-text">{{ slot.completed[0]?.completed_metrics?.details }}</span>
@@ -370,9 +433,9 @@ async function deletePlannedRow(slot: DaySlot, row: TrainingRow) {
         </div>
 
         <!-- Avg HR -->
-        <div class="wt__cell wt__cell--num" @click.stop>
+        <div class="wt__cell wt__cell--num" @click.stop="!isEditing(slot.date) && canEditCompleted(slot) && openEdit(slot, 'avgHr')">
           <template v-if="isEditing(slot.date) && getEdit(slot.date) && getEdit(slot.date)!.completedId">
-            <input v-model="getEdit(slot.date)!.avgHr" class="wt__input wt__input--num" :disabled="getEdit(slot.date)!.isSaving" @click.stop />
+            <input v-model="getEdit(slot.date)!.avgHr" v-autofocus="getEdit(slot.date)!.focusField === 'avgHr'" class="wt__input wt__input--num" :disabled="getEdit(slot.date)!.isSaving" @click.stop @input="onFieldInput(slot.date, slot)" />
           </template>
           <template v-else>
             <span class="wt__num-val wt__num-val--hr">{{ slot.completed[0]?.completed_metrics?.avg_hr ?? "-" }}</span>
@@ -380,31 +443,13 @@ async function deletePlannedRow(slot: DaySlot, row: TrainingRow) {
         </div>
 
         <!-- Max HR -->
-        <div class="wt__cell wt__cell--num" @click.stop>
+        <div class="wt__cell wt__cell--num" @click.stop="!isEditing(slot.date) && canEditCompleted(slot) && openEdit(slot, 'maxHr')">
           <template v-if="isEditing(slot.date) && getEdit(slot.date) && getEdit(slot.date)!.completedId">
-            <input v-model="getEdit(slot.date)!.maxHr" class="wt__input wt__input--num" :disabled="getEdit(slot.date)!.isSaving" @click.stop />
+            <input v-model="getEdit(slot.date)!.maxHr" v-autofocus="getEdit(slot.date)!.focusField === 'maxHr'" class="wt__input wt__input--num" :disabled="getEdit(slot.date)!.isSaving" @click.stop @input="onFieldInput(slot.date, slot)" />
           </template>
           <template v-else>
             <span class="wt__num-val wt__num-val--hr">{{ slot.completed[0]?.completed_metrics?.max_hr ?? "-" }}</span>
           </template>
-        </div>
-      </div>
-
-      <!-- Edit action bar (shown when editing) -->
-      <div v-if="isEditing(slot.date) && getEdit(slot.date)" class="wt__action-bar">
-        <p v-if="getEdit(slot.date)!.error" class="wt__action-error">{{ getEdit(slot.date)!.error }}</p>
-        <div class="wt__action-btns">
-          <button
-            v-if="slot.planned[0]?.editable && !slot.planned[0]?.is_second_phase"
-            class="wt__btn wt__btn--danger"
-            type="button"
-            :disabled="getEdit(slot.date)!.isSaving"
-            @click="deletePlannedRow(slot, slot.planned[0])"
-          >{{ t("plannedRow.delete") }}</button>
-          <button class="wt__btn wt__btn--ghost" type="button" :disabled="getEdit(slot.date)!.isSaving" @click="cancelEdit(slot.date)">{{ t("plannedRow.cancel") }}</button>
-          <button class="wt__btn wt__btn--save" type="button" :disabled="getEdit(slot.date)!.isSaving" @click="saveRow(slot, getEdit(slot.date)!)">
-            {{ getEdit(slot.date)!.isSaving ? t("plannedRow.saving") : t("plannedRow.save") }}
-          </button>
         </div>
       </div>
 
@@ -493,7 +538,7 @@ async function deletePlannedRow(slot: DaySlot, row: TrainingRow) {
 /* ── Table grid ── */
 .wt__cols {
   display: grid;
-  grid-template-columns: 52px 40px 32px minmax(0, 2fr) minmax(0, 1fr) 2px 64px 56px minmax(0, 1fr) 52px 52px;
+  grid-template-columns: 52px 40px 44px minmax(0, 2fr) minmax(0, 1fr) 2px 64px 56px minmax(0, 1fr) 52px 52px;
   align-items: start;
   min-height: 2.5rem;
 }
@@ -553,6 +598,15 @@ async function deletePlannedRow(slot: DaySlot, row: TrainingRow) {
 
 .wt__row--p2 { opacity: 0.75; }
 
+.wt__row--saved {
+  animation: row-saved-flash 600ms ease-out forwards;
+}
+
+@keyframes row-saved-flash {
+  0%   { background-color: rgba(200,255,0,.12); }
+  100% { background-color: transparent; }
+}
+
 /* ── Cells ── */
 .wt__cell {
   padding: 0.3rem 0.35rem;
@@ -590,6 +644,11 @@ async function deletePlannedRow(slot: DaySlot, row: TrainingRow) {
   padding-left: 0.5rem;
 }
 
+.wt__cell--readonly {
+  cursor: default;
+  user-select: none;
+}
+
 /* ── Type dot ── */
 .wt__type-dot {
   width: 0.5rem;
@@ -602,15 +661,29 @@ async function deletePlannedRow(slot: DaySlot, row: TrainingRow) {
 .wt__type-dot--workout { background: var(--eb-lime); }
 .wt__type-dot--empty { background: transparent; border: 1px dashed var(--eb-border); }
 
-/* ── Type select ── */
-.wt__type-select {
-  width: 100%;
-  border: 1px solid var(--eb-border);
-  border-radius: var(--eb-radius-sm);
-  background: var(--eb-bg);
-  color: var(--eb-text);
-  font-size: 0.6875rem;
-  padding: 0.3rem 0.25rem;
+/* ── Type pill ── */
+.wt__type-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+  font-size: 0.5625rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  background: transparent;
+  transition: opacity 120ms;
+  white-space: nowrap;
+}
+.wt__type-pill:hover { opacity: 0.75; }
+.wt__type-pill--run {
+  color: var(--eb-blue);
+  border: 1px solid rgba(56,189,248,.35);
+}
+.wt__type-pill--workout {
+  color: var(--eb-lime);
+  border: 1px solid rgba(200,255,0,.35);
 }
 
 /* ── Text content ── */
@@ -700,57 +773,6 @@ async function deletePlannedRow(slot: DaySlot, row: TrainingRow) {
   line-height: 1.45;
 }
 
-/* ── Action bar ── */
-.wt__action-bar {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 0.5rem;
-  padding: 0.4rem 1rem 0.65rem;
-  background: rgba(200,255,0,.04);
-  border-bottom: 1px solid var(--eb-border-soft);
-}
-
-.wt__action-error {
-  flex: 1;
-  margin: 0;
-  color: var(--eb-danger);
-  font-size: 0.75rem;
-}
-
-.wt__action-btns {
-  display: flex;
-  gap: 0.5rem;
-  flex-shrink: 0;
-}
-
-.wt__btn {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.3rem 0.85rem;
-  border: 1px solid var(--eb-border);
-  border-radius: var(--eb-radius-sm);
-  background: transparent;
-  font-size: 0.75rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 120ms, border-color 120ms;
-}
-.wt__btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-.wt__btn--ghost { color: var(--eb-text-soft); }
-.wt__btn--ghost:hover { background: var(--eb-surface-hover); }
-
-.wt__btn--danger { color: var(--eb-danger); border-color: rgba(244,63,94,.25); }
-.wt__btn--danger:hover { background: rgba(244,63,94,.08); }
-
-.wt__btn--save {
-  color: #09090b;
-  background: var(--eb-lime);
-  border-color: var(--eb-lime);
-  box-shadow: 0 0 12px rgba(200,255,0,.2);
-}
-.wt__btn--save:hover { background: #d4ff33; }
 
 /* ── Summary row ── */
 .wt__summary-row {
@@ -780,14 +802,14 @@ async function deletePlannedRow(slot: DaySlot, row: TrainingRow) {
 /* ── Responsive ── */
 @media (max-width: 1023px) {
   .wt__cols {
-    grid-template-columns: 48px 36px 28px minmax(0, 1fr) 80px 2px 54px 48px 0 44px 44px;
+    grid-template-columns: 48px 36px 40px minmax(0, 1fr) 80px 2px 54px 48px 0 44px 44px;
   }
   .wt__cell--intervals { display: none; }
 }
 
 @media (max-width: 767px) {
   .wt__cols {
-    grid-template-columns: 44px 32px 26px minmax(0, 1fr) 2px 52px 46px 42px 42px;
+    grid-template-columns: 44px 32px 38px minmax(0, 1fr) 2px 52px 46px 42px 42px;
   }
   .wt__h--type,
   .wt__cell--type,
