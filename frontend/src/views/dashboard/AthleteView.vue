@@ -1,42 +1,21 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
-import { RouterLink } from "vue-router";
 
 import MonthBar from "@/components/training/MonthBar.vue";
 import MonthSummaryBar from "@/components/training/MonthSummaryBar.vue";
-import GarminImportModal from "@/components/training/GarminImportModal.vue";
 import WeekCard from "@/components/training/WeekCard.vue";
 import WeekCardSkeleton from "@/components/training/WeekCardSkeleton.vue";
 import EbButton from "@/components/ui/EbButton.vue";
 import EbCard from "@/components/ui/EbCard.vue";
 import { useI18n } from "@/composables/useI18n";
-import { useAuthStore } from "@/stores/auth";
 import { useToastStore } from "@/stores/toasts";
 import { useTrainingStore } from "@/stores/training";
 import { addNextMonth } from "@/api/training";
-import { requestCoachByCode } from "@/api/coach";
 
-const authStore = useAuthStore();
 const trainingStore = useTrainingStore();
 const toastStore = useToastStore();
 const { t } = useI18n();
 const isAddingMonth = ref(false);
-const coachCodeInput = ref("");
-const isRequestingCoach = ref(false);
-
-async function handleRequestCoach() {
-  if (!coachCodeInput.value.trim()) return;
-  isRequestingCoach.value = true;
-  try {
-    const data = await requestCoachByCode(coachCodeInput.value.trim());
-    toastStore.push(t("requestCoach.success", { name: data.coach_name }), "success");
-    coachCodeInput.value = "";
-  } catch {
-    toastStore.push(t("requestCoach.error"), "danger");
-  } finally {
-    isRequestingCoach.value = false;
-  }
-}
 
 async function handleAddMonth() {
   isAddingMonth.value = true;
@@ -60,36 +39,6 @@ onMounted(() => {
 
 <template>
   <section class="dashboard-view">
-    <div class="dashboard-view__toolbar">
-      <RouterLink v-if="authStore.user?.capabilities.can_view_coach" to="/coach/plans" class="dashboard-view__coach-link">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-          <circle cx="9" cy="7" r="4" />
-          <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-          <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-        </svg>
-        {{ t("topNav.coachWorkspace") }}
-      </RouterLink>
-
-      <div class="dashboard-view__toolbar-right">
-        <GarminImportModal />
-        <form class="dashboard-view__request-coach" @submit.prevent="handleRequestCoach">
-          <div class="dashboard-view__request-eyebrow">{{ t("requestCoach.title") }}</div>
-          <div class="dashboard-view__request-row">
-            <input
-              v-model="coachCodeInput"
-              class="dashboard-view__request-input"
-              :placeholder="t('requestCoach.codePlaceholder')"
-              :disabled="isRequestingCoach"
-            />
-            <EbButton type="submit" variant="secondary" :disabled="isRequestingCoach || !coachCodeInput.trim()">
-              {{ isRequestingCoach ? t("requestCoach.submitting") : t("requestCoach.submit") }}
-            </EbButton>
-          </div>
-        </form>
-      </div>
-    </div>
-
     <div v-if="trainingStore.isLoading" class="dashboard-view__loading">
       <div class="dashboard-view__summary-skeleton">
         <div v-for="index in 4" :key="`summary-${index}`" class="dashboard-view__summary-block" />
@@ -139,83 +88,6 @@ onMounted(() => {
 .dashboard-view__weeks {
   display: grid;
   gap: 1rem;
-}
-
-.dashboard-view__toolbar {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 1rem;
-}
-
-.dashboard-view__coach-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-  padding: 0.5rem 0.9rem;
-  border: 1px solid var(--eb-border);
-  border-radius: var(--eb-radius-sm);
-  background: var(--eb-surface);
-  color: var(--eb-text-soft);
-  font-family: var(--eb-font-display);
-  font-size: var(--eb-type-small-size);
-  font-weight: 700;
-  letter-spacing: var(--eb-type-small-tracking);
-  transition:
-    border-color 150ms ease-out,
-    color 150ms ease-out,
-    background-color 150ms ease-out;
-}
-
-.dashboard-view__coach-link:hover {
-  border-color: rgba(200, 255, 0, 0.25);
-  color: var(--eb-lime);
-  background: rgba(200, 255, 0, 0.04);
-}
-
-.dashboard-view__toolbar-right {
-  display: flex;
-  align-items: flex-end;
-  gap: 1rem;
-}
-
-.dashboard-view__request-coach {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-}
-
-.dashboard-view__request-eyebrow {
-  color: var(--eb-text-muted);
-  font-size: var(--eb-type-label-size);
-  font-weight: 600;
-  letter-spacing: var(--eb-type-label-tracking);
-  text-transform: uppercase;
-}
-
-.dashboard-view__request-row {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-}
-
-.dashboard-view__request-input {
-  min-width: 9rem;
-  border: 1px solid var(--eb-border);
-  border-radius: var(--eb-radius-sm);
-  background: var(--eb-bg);
-  color: var(--eb-text);
-  font-family: var(--eb-font-mono);
-  font-size: var(--eb-type-mono-size);
-  letter-spacing: var(--eb-type-mono-tracking);
-  padding: 0.65rem 0.85rem;
-}
-
-.dashboard-view__request-input::placeholder {
-  color: var(--eb-text-muted);
-  font-family: var(--eb-font-body);
-  font-size: var(--eb-type-small-size);
-  letter-spacing: 0;
 }
 
 .dashboard-view__loading {
@@ -310,20 +182,4 @@ onMounted(() => {
   }
 }
 
-@media (max-width: 639px) {
-  .dashboard-view__toolbar {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .dashboard-view__toolbar-right {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .dashboard-view__request-input {
-    min-width: 0;
-    flex: 1;
-  }
-}
 </style>

@@ -9,6 +9,14 @@ import { useAuthStore } from "@/stores/auth";
 import { useToastStore } from "@/stores/toasts";
 import { useTrainingStore } from "@/stores/training";
 
+const props = defineProps<{
+  open: boolean;
+}>();
+
+const emit = defineEmits<{
+  close: [];
+}>();
+
 const authStore = useAuthStore();
 const toastStore = useToastStore();
 const trainingStore = useTrainingStore();
@@ -80,6 +88,15 @@ async function handleFitChange(event: Event) {
 }
 
 watch(
+  () => props.open,
+  (isOpen) => {
+    if (isOpen) {
+      importFlow.open();
+    }
+  },
+);
+
+watch(
   () => importFlow.job.value?.done,
   async (done, previous) => {
     if (done && !previous) {
@@ -88,23 +105,24 @@ watch(
     }
   },
 );
+
+function handleClose() {
+  emit("close");
+}
 </script>
 
 <template>
-  <div class="import-launcher">
-    <EbButton variant="secondary" @click="importFlow.open">{{ t("imports.open") }}</EbButton>
-
-    <EbModal :open="importFlow.isOpen.value">
-      <div class="import-modal">
-        <div class="import-modal__header">
-          <div>
-            <div class="import-modal__eyebrow">{{ t("imports.eyebrow") }}</div>
-            <h2>{{ t("imports.title") }}</h2>
-          </div>
-          <EbButton variant="ghost" @click="importFlow.close">{{ t("imports.close") }}</EbButton>
+  <EbModal :open="props.open">
+    <div class="import-modal">
+      <div class="import-modal__header">
+        <div>
+          <div class="import-modal__eyebrow">{{ t("imports.eyebrow") }}</div>
+          <h2>{{ t("imports.title") }}</h2>
         </div>
+        <EbButton variant="ghost" @click="handleClose">{{ t("imports.close") }}</EbButton>
+      </div>
 
-        <div class="import-modal__body">
+      <div class="import-modal__body">
           <section class="import-section">
             <div class="import-section__title">{{ t("imports.connectionTitle") }}</div>
             <p class="import-section__copy">
@@ -194,15 +212,10 @@ watch(
           <p v-else-if="importFlow.statusMessage.value" class="import-modal__status">{{ importFlow.statusMessage.value }}</p>
         </div>
       </div>
-    </EbModal>
-  </div>
+  </EbModal>
 </template>
 
 <style scoped>
-.import-launcher {
-  display: inline-flex;
-}
-
 .import-modal {
   display: grid;
 }

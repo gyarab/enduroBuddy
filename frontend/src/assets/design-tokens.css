@@ -6,6 +6,7 @@
   --eb-surface-strong: #111113;
   --eb-surface-hover: #1f1f23;
   --eb-border: #27272a;
+  --eb-border-soft: rgba(39, 39, 42, 0.6);
   --eb-text: #fafafa;
   --eb-text-muted: #71717a;
   --eb-text-soft: #a1a1aa;
@@ -26,8 +27,8 @@
   --eb-shadow-soft: 0 16px 40px rgba(0, 0, 0, 0.32);
   --eb-glow-lime: 0 0 20px rgba(200, 255, 0, 0.16);
   --eb-glow-blue: 0 0 20px rgba(56, 189, 248, 0.16);
-  --eb-font-display: "Space Grotesk", system-ui, sans-serif;
-  --eb-font-body: "Inter", "Segoe UI Variable Text", system-ui, sans-serif;
+  --eb-font-display: "Syne", system-ui, sans-serif;
+  --eb-font-body: "Nunito", system-ui, sans-serif;
   --eb-font-mono: "JetBrains Mono", "Cascadia Code", monospace;
   --eb-type-display-size: clamp(2.5rem, 6vw, 4.5rem);
   --eb-type-display-weight: 700;
@@ -90,7 +91,6 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-body,
 button,
 input,
 textarea,

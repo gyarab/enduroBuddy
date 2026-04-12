@@ -2,6 +2,7 @@
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
 
+import GarminImportModal from "@/components/training/GarminImportModal.vue";
 import LegendModal from "@/components/layout/LegendModal.vue";
 import NotificationBell from "@/components/layout/NotificationBell.vue";
 import ProfileDropdown from "@/components/layout/ProfileDropdown.vue";
@@ -22,8 +23,10 @@ const route = useRoute();
 const isProfileOpen = ref(false);
 const isProfileSettingsOpen = ref(false);
 const isLegendOpen = ref(false);
+const isGarminOpen = ref(false);
 const profileRootRef = ref<HTMLElement | null>(null);
-const brandLogoUrl = "/static/brand/eb-logo-compact.svg";
+const logoFullUrl = "/static/brand/eb-logo-full.svg";
+const logoMarkUrl = "/static/brand/eb-mark.svg";
 const { t } = useI18n();
 
 const title = computed(() => {
@@ -51,41 +54,6 @@ const subtitle = computed(() => {
   return trainingStore.selectedMonth?.label || t("topNav.dashboardOverview");
 });
 
-const activeMonth = computed(() => {
-  return props.variant === "coach" ? coachStore.selectedMonth : trainingStore.selectedMonth;
-});
-
-const activeNavigation = computed(() => {
-  return props.variant === "coach" ? coachStore.navigation : trainingStore.navigation;
-});
-
-const activeAthleteName = computed(() => {
-  return props.variant === "coach" ? coachStore.selectedAthlete?.name || "" : "";
-});
-
-const showMonthNavigator = computed(() => Boolean(activeMonth.value?.label));
-
-async function goToPreviousMonth() {
-  if (!activeNavigation.value?.previous || authStore.isLoading) {
-    return;
-  }
-  if (props.variant === "coach") {
-    await coachStore.goToPreviousMonth();
-    return;
-  }
-  await trainingStore.goToPreviousMonth();
-}
-
-async function goToNextMonth() {
-  if (!activeNavigation.value?.next || authStore.isLoading) {
-    return;
-  }
-  if (props.variant === "coach") {
-    await coachStore.goToNextMonth();
-    return;
-  }
-  await trainingStore.goToNextMonth();
-}
 
 function handleDocumentClick(event: MouseEvent) {
   const target = event.target;
@@ -102,6 +70,11 @@ function openProfileSettings() {
   isProfileSettingsOpen.value = true;
 }
 
+function openGarmin() {
+  isProfileOpen.value = false;
+  isGarminOpen.value = true;
+}
+
 onMounted(() => {
   document.addEventListener("click", handleDocumentClick);
 });
@@ -115,38 +88,23 @@ onBeforeUnmount(() => {
   <header class="top-nav">
     <div class="top-nav__inner">
       <a class="top-nav__brand" :href="props.variant === 'coach' ? '/coach/plans' : '/app/dashboard'">
-        <img :src="brandLogoUrl" alt="EnduroBuddy" />
+        <img class="top-nav__logo-full" :src="logoFullUrl" alt="EnduroBuddy" />
+        <img class="top-nav__logo-mark" :src="logoMarkUrl" alt="EB" />
       </a>
 
-      <div v-if="showMonthNavigator" class="top-nav__month-nav" aria-label="Month navigation">
-        <span v-if="activeAthleteName" class="top-nav__athlete-pill">{{ activeAthleteName }}</span>
-        <button
-          class="top-nav__month-button"
-          type="button"
-          :disabled="!activeNavigation?.previous"
-          :aria-label="activeNavigation?.previous?.label || 'Previous month'"
-          @click="goToPreviousMonth"
-        >
-          &lt;
-        </button>
-        <div class="top-nav__month-label">{{ activeMonth?.label }}</div>
-        <button
-          class="top-nav__month-button"
-          type="button"
-          :disabled="!activeNavigation?.next"
-          :aria-label="activeNavigation?.next?.label || 'Next month'"
-          @click="goToNextMonth"
-        >
-          &gt;
-        </button>
-      </div>
-
-      <div v-else class="top-nav__headline">
+      <div class="top-nav__headline">
         <div class="top-nav__title">{{ title }}</div>
         <div class="top-nav__subtitle">{{ subtitle }}</div>
       </div>
 
       <div class="top-nav__actions">
+        <a
+          v-if="authStore.isCoach && props.variant === 'athlete'"
+          class="top-nav__coach-btn"
+          href="/coach/plans"
+        >
+          {{ t("topNav.switchToCoach") }}
+        </a>
         <button class="top-nav__legend-btn" type="button" @click="isLegendOpen = true">
           {{ t("legend.button") }}
         </button>
@@ -156,7 +114,7 @@ onBeforeUnmount(() => {
           <button class="top-nav__avatar" type="button" @click.stop="isProfileOpen = !isProfileOpen">
             {{ authStore.user?.initials || "EB" }}
           </button>
-          <ProfileDropdown v-if="isProfileOpen" @open-settings="openProfileSettings" />
+          <ProfileDropdown v-if="isProfileOpen" @open-settings="openProfileSettings" @open-garmin="openGarmin" />
         </div>
       </div>
     </div>
@@ -164,6 +122,7 @@ onBeforeUnmount(() => {
 
   <LegendModal :open="isLegendOpen" @close="isLegendOpen = false" />
   <ProfileSettingsModal :open="isProfileSettingsOpen" @close="isProfileSettingsOpen = false" />
+  <GarminImportModal :open="isGarminOpen" @close="isGarminOpen = false" />
 </template>
 
 <style scoped>
@@ -188,7 +147,12 @@ onBeforeUnmount(() => {
   padding: 0 1.5rem;
 }
 
-.top-nav__brand img {
+.top-nav__logo-full {
+  height: 1.75rem;
+}
+
+.top-nav__logo-mark {
+  display: none;
   height: 1.75rem;
 }
 
@@ -199,68 +163,6 @@ onBeforeUnmount(() => {
   min-width: 0;
 }
 
-.top-nav__month-nav {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.65rem;
-  min-width: 0;
-}
-
-.top-nav__athlete-pill {
-  display: inline-flex;
-  align-items: center;
-  min-height: 1.75rem;
-  max-width: 14rem;
-  padding: 0 0.75rem;
-  border: 1px solid rgba(56, 189, 248, 0.2);
-  border-radius: 999px;
-  background: rgba(56, 189, 248, 0.12);
-  color: var(--eb-blue);
-  font-size: var(--eb-type-label-size);
-  font-weight: 700;
-  letter-spacing: var(--eb-type-label-tracking);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-
-.top-nav__month-button {
-  display: inline-grid;
-  place-items: center;
-  width: 1.75rem;
-  height: 1.75rem;
-  border: 0;
-  border-radius: var(--eb-radius-sm);
-  background: transparent;
-  color: var(--eb-text-soft);
-  font-family: var(--eb-font-mono);
-  font-size: var(--eb-type-mono-size);
-  transition:
-    background-color 150ms ease-out,
-    color 150ms ease-out;
-}
-
-.top-nav__month-button:not(:disabled):hover {
-  background: var(--eb-surface-hover);
-  color: var(--eb-text);
-}
-
-.top-nav__month-button:disabled {
-  cursor: not-allowed;
-  opacity: 0.35;
-}
-
-.top-nav__month-label {
-  min-width: 8.75rem;
-  color: var(--eb-text);
-  font-family: var(--eb-font-display);
-  font-size: var(--eb-type-h3-size);
-  font-weight: 600;
-  letter-spacing: var(--eb-type-h3-tracking);
-  text-align: center;
-}
 
 .top-nav__title {
   font-family: var(--eb-font-display);
@@ -280,6 +182,28 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   gap: var(--eb-spacing-3);
+}
+
+.top-nav__coach-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.85rem;
+  border: 1px solid rgba(200, 255, 0, 0.3);
+  border-radius: var(--eb-radius-sm);
+  background: rgba(200, 255, 0, 0.08);
+  color: var(--eb-lime);
+  font-size: var(--eb-type-small-size);
+  font-weight: 600;
+  letter-spacing: var(--eb-type-small-tracking);
+  text-transform: uppercase;
+  transition:
+    border-color 150ms ease-out,
+    background-color 150ms ease-out;
+}
+
+.top-nav__coach-btn:hover {
+  border-color: rgba(200, 255, 0, 0.5);
+  background: rgba(200, 255, 0, 0.14);
 }
 
 .top-nav__legend-btn {
@@ -341,28 +265,13 @@ onBeforeUnmount(() => {
     display: none;
   }
 
-  .top-nav__brand img {
-    height: 1.5rem;
-  }
-
-  .top-nav__month-nav {
-    grid-column: 1 / -1;
-    order: 3;
-    gap: 0.4rem;
-    justify-content: flex-start;
-    flex-wrap: wrap;
-  }
-
-  .top-nav__athlete-pill {
+  .top-nav__logo-full {
     display: none;
   }
 
-  .top-nav__month-label {
-    min-width: 0;
-    max-width: 7.5rem;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+  .top-nav__logo-mark {
+    display: block;
+    height: 1.5rem;
   }
 
   .top-nav__actions {

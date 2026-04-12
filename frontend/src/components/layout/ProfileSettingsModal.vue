@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 
+import { changePassword } from "@/api/auth";
+import { requestCoachByCode } from "@/api/coach";
 import { fetchProfileSettings, saveProfileSettings, type ProfileSettingsPayload } from "@/api/profile";
 import EbButton from "@/components/ui/EbButton.vue";
 import EbModal from "@/components/ui/EbModal.vue";
@@ -26,6 +28,16 @@ const lastName = ref("");
 const isLoading = ref(false);
 const isSaving = ref(false);
 const errorMessage = ref("");
+
+// Password change
+const currentPassword = ref("");
+const newPassword = ref("");
+const confirmPassword = ref("");
+const isChangingPassword = ref(false);
+
+// Coach connection
+const coachCode = ref("");
+const isRequestingCoach = ref(false);
 
 const roleLabel = computed(() => {
   if (profile.value?.role === "COACH") {
@@ -88,6 +100,36 @@ async function toggleLanguage() {
     };
   }
 }
+
+async function handleChangePassword() {
+  if (!currentPassword.value || !newPassword.value || !confirmPassword.value) return;
+  isChangingPassword.value = true;
+  try {
+    await changePassword(currentPassword.value, newPassword.value, confirmPassword.value);
+    toastStore.push(t("profileSettings.changePasswordSuccess"), "success");
+    currentPassword.value = "";
+    newPassword.value = "";
+    confirmPassword.value = "";
+  } catch (error) {
+    toastStore.push(error instanceof Error ? error.message : t("profileSettings.changePasswordError"), "danger");
+  } finally {
+    isChangingPassword.value = false;
+  }
+}
+
+async function handleRequestCoach() {
+  if (!coachCode.value.trim()) return;
+  isRequestingCoach.value = true;
+  try {
+    const data = await requestCoachByCode(coachCode.value.trim());
+    toastStore.push(t("profileSettings.requestCoachSuccess", { name: data.coach_name }), "success");
+    coachCode.value = "";
+  } catch {
+    toastStore.push(t("profileSettings.requestCoachError"), "danger");
+  } finally {
+    isRequestingCoach.value = false;
+  }
+}
 </script>
 
 <template>
@@ -148,9 +190,50 @@ async function toggleLanguage() {
 
         <section class="profile-settings__panel">
           <div class="profile-settings__panel-title">{{ t("profileSettings.security") }}</div>
-          <div class="profile-settings__links">
-            <a class="profile-settings__link" :href="profile.password_change_url">{{ t("profileSettings.changePassword") }}</a>
-            <a class="profile-settings__link profile-settings__link--danger" :href="profile.logout_url">{{ t("profileSettings.logout") }}</a>
+          <div class="profile-settings__grid">
+            <label class="profile-settings__field">
+              <span>{{ t("profileSettings.currentPassword") }}</span>
+              <input v-model="currentPassword" type="password" :disabled="isChangingPassword" />
+            </label>
+            <label class="profile-settings__field">
+              <span>{{ t("profileSettings.newPassword") }}</span>
+              <input v-model="newPassword" type="password" :disabled="isChangingPassword" />
+            </label>
+            <label class="profile-settings__field profile-settings__field--wide">
+              <span>{{ t("profileSettings.confirmPassword") }}</span>
+              <input v-model="confirmPassword" type="password" :disabled="isChangingPassword" />
+            </label>
+          </div>
+          <div class="profile-settings__panel-footer">
+            <EbButton
+              variant="secondary"
+              :disabled="isChangingPassword || !currentPassword || !newPassword || !confirmPassword"
+              @click="handleChangePassword"
+            >
+              {{ isChangingPassword ? t("profileSettings.changingPassword") : t("profileSettings.changePassword") }}
+            </EbButton>
+          </div>
+        </section>
+
+        <section v-if="profile.role === 'ATHLETE'" class="profile-settings__panel">
+          <div class="profile-settings__panel-title">{{ t("profileSettings.connectCoach") }}</div>
+          <div class="profile-settings__request-row">
+            <label class="profile-settings__field" style="flex: 1">
+              <span>{{ t("profileSettings.coachCodeLabel") }}</span>
+              <input
+                v-model="coachCode"
+                class="profile-settings__mono-input"
+                :placeholder="t('profileSettings.coachCodePlaceholder')"
+                :disabled="isRequestingCoach"
+              />
+            </label>
+            <EbButton
+              variant="secondary"
+              :disabled="isRequestingCoach || !coachCode.trim()"
+              @click="handleRequestCoach"
+            >
+              {{ isRequestingCoach ? t("profileSettings.requestCoachSubmitting") : t("profileSettings.requestCoach") }}
+            </EbButton>
           </div>
         </section>
 
@@ -290,25 +373,27 @@ async function toggleLanguage() {
   letter-spacing: 0.08em;
 }
 
-.profile-settings__links {
+.profile-settings__panel-footer {
   display: flex;
-  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.profile-settings__request-row {
+  display: flex;
+  align-items: flex-end;
   gap: 0.75rem;
 }
 
-.profile-settings__link {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.7rem 0.85rem;
+.profile-settings__mono-input {
+  width: 100%;
   border: 1px solid var(--eb-border);
   border-radius: var(--eb-radius-sm);
+  background: var(--eb-bg);
   color: var(--eb-text);
-  font-size: 0.875rem;
-  text-decoration: none;
-}
-
-.profile-settings__link--danger {
-  color: var(--eb-danger);
+  font-family: var(--eb-font-mono);
+  font-size: var(--eb-type-mono-size);
+  letter-spacing: var(--eb-type-mono-tracking);
+  padding: 0.75rem 0.85rem;
 }
 
 .profile-settings__footer {
@@ -335,6 +420,11 @@ async function toggleLanguage() {
 
   .profile-settings__footer {
     flex-direction: column-reverse;
+  }
+
+  .profile-settings__request-row {
+    flex-direction: column;
+    align-items: stretch;
   }
 }
 </style>

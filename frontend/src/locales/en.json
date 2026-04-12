@@ -8,7 +8,8 @@
     "completeProfile": "Complete Profile",
     "dashboardOverview": "Dashboard overview",
     "plansAndFocus": "Plans and athlete focus",
-    "athletesReady": "{count} athletes ready"
+    "athletesReady": "{count} athletes ready",
+    "switchToCoach": "Coach"
   },
   "notifications": {
     "label": "Notifications",
@@ -124,6 +125,15 @@
     "emptyCompleted": "No completed sessions yet.",
     "addPlanned": "Add planned training",
     "date": "Date",
+    "day": "Day",
+    "training": "Training",
+    "coachNotes": "Notes",
+    "time": "Time",
+    "intervals": "Intervals",
+    "total": "Total",
+    "clickToAdd": "Click to add",
+    "titlePlaceholder": "Training description...",
+    "notesPlaceholder": "Coach notes...",
     "newTitle": "Title",
     "session": "Session",
     "run": "Run",
@@ -190,9 +200,9 @@
     "completionSubtext": "month completion"
   },
   "profileDropdown": {
-    "profile": "Profile",
-    "logout": "Sign out",
-    "language": "Language"
+    "profile": "Profile settings",
+    "garmin": "Garmin Import",
+    "logout": "Sign out"
   },
   "profileSettings": {
     "eyebrow": "Account settings",
@@ -203,6 +213,7 @@
     "identity": "Identity",
     "workspace": "Workspace",
     "security": "Security",
+    "connectCoach": "Connect coach",
     "firstName": "First name",
     "lastName": "Last name",
     "email": "Email",
@@ -211,7 +222,19 @@
     "roleAthlete": "Athlete",
     "defaultRoute": "Default route",
     "language": "Language",
+    "currentPassword": "Current password",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm new password",
     "changePassword": "Change password",
+    "changingPassword": "Changing password...",
+    "changePasswordSuccess": "Password changed successfully.",
+    "changePasswordError": "Could not change password.",
+    "coachCodeLabel": "Coach code",
+    "coachCodePlaceholder": "Enter coach code",
+    "requestCoach": "Request coach",
+    "requestCoachSubmitting": "Submitting...",
+    "requestCoachSuccess": "Request for coach {name} was sent.",
+    "requestCoachError": "Could not submit request.",
     "logout": "Sign out",
     "cancel": "Cancel",
     "save": "Save changes",
