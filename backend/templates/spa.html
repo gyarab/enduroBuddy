@@ -43,6 +43,11 @@
   {% endif %}
 </head>
 <body>
+  <script>
+    window.ENDUROBUDDY_CONFIG = {
+      registrationEnabled: {% if registration_enabled %}true{% else %}false{% endif %}
+    };
+  </script>
   <div id="app"></div>
 </body>
 </html>

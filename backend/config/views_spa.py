@@ -10,6 +10,7 @@ def _render_spa(request):
         "spa.html",
         {
             "debug": settings.DEBUG,
+            "registration_enabled": getattr(settings, "REGISTRATION_ENABLED", True),
             "spa_vite_dev_server_url": getattr(settings, "SPA_VITE_DEV_SERVER_URL", "http://localhost:5173"),
             "spa_entry_css": "spa/app.css",
             "spa_entry_js": "spa/app.js",

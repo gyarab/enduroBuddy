@@ -1,80 +1,10 @@
 {% extends "public/base_public.html" %}
-{% load static %}
 {% load i18n %}
 
 {% block title %}{% get_current_language as CURRENT_LANGUAGE %}{% if CURRENT_LANGUAGE == "en" %}About | EnduroBuddy{% else %}O aplikaci | EnduroBuddy{% endif %}{% endblock %}
 
-{% block page_styles %}
-  <link rel="stylesheet" href="{% static 'css/public-about.css' %}">
-{% endblock %}
-
 {% block content %}
-{% get_current_language as CURRENT_LANGUAGE %}
-<main class="eb-about-main">
-  <div class="eb-about-shell">
-
-    <!-- ── Intro ── -->
-    <section class="eb-about-intro">
-      <div class="eb-about-kicker">{% if CURRENT_LANGUAGE == "en" %}About{% else %}O projektu{% endif %}</div>
-      {% if CURRENT_LANGUAGE == "en" %}
-        <h1 class="eb-about-h1">Training without<br>unnecessary noise.</h1>
-        <p class="eb-about-lead">EnduroBuddy connects coaches and athletes in one focused workspace — from monthly planning to completed sessions and Garmin data.</p>
-      {% else %}
-        <h1 class="eb-about-h1">Trénink bez<br>zbytečného šumu.</h1>
-        <p class="eb-about-lead">EnduroBuddy propojuje trenéry a sportovce v jednom soustředěném rozhraní — od měsíčního plánování až po splněné tréninky a data z Garminu.</p>
-      {% endif %}
-    </section>
-
-    <!-- ── Story ── -->
-    <section class="eb-about-story">
-      {% if CURRENT_LANGUAGE == "en" %}
-        <h2 class="eb-about-h2">Where it started</h2>
-        <p>EnduroBuddy grew out of a real frustration: coaches managing athletes across spreadsheets, messaging apps, and Garmin exports — with no single place where plan meets reality. We built the tool we wished existed.</p>
-        <p>The platform is built for endurance sport — running, cycling, triathlon. It's designed to stay out of the way and let coaching work speak for itself: structured monthly plans, week-by-week load distribution, and a clear view of how what was planned compares to what actually happened.</p>
-        <p>It's currently in active development and free to try. New features ship regularly.</p>
-      {% else %}
-        <h2 class="eb-about-h2">Jak to vzniklo</h2>
-        <p>EnduroBuddy vznikl z reálné frustrace: trenéři spravují sportovce přes tabulky, aplikace pro zprávy a Garmin exporty — bez jediného místa, kde plán potkává realitu. Postavili jsme nástroj, který jsme sami chtěli mít.</p>
-        <p>Platforma je postavená pro vytrvalostní sport — běh, cyklistiku, triatlon. Je navržená tak, aby nepřekážela a nechala tréninkovou práci mluvit za sebe: strukturované měsíční plány, rozložení zátěže po týdnech a jasný pohled na to, jak naplánované odpovídá skutečnému.</p>
-        <p>Aplikace je v aktivním vývoji a je zdarma k vyzkoušení. Nové funkce přibývají pravidelně.</p>
-      {% endif %}
-    </section>
-
-    <!-- ── Mission ── -->
-    <section class="eb-about-mission">
-      {% if CURRENT_LANGUAGE == "en" %}
-        <p class="eb-about-mission-statement">One system for the coach and the athlete. Clear. Fast. No clutter.</p>
-        <ul class="eb-about-mission-list">
-          <li class="coach">Monthly plans with week-by-week structure for every athlete</li>
-          <li class="coach">Coach overview — all athletes, all sessions, one screen</li>
-          <li class="athlete">Athlete dashboard — plan, log, compare with a single glance</li>
-          <li class="athlete">Garmin Connect sync and FIT file import built in</li>
-        </ul>
-      {% else %}
-        <p class="eb-about-mission-statement">Jeden systém pro trenéra i sportovce. Přehledný. Rychlý. Bez balastu.</p>
-        <ul class="eb-about-mission-list">
-          <li class="coach">Měsíční plány s týdenní strukturou pro každého sportovce</li>
-          <li class="coach">Coach přehled — všichni svěřenci, všechny tréninky, jedna obrazovka</li>
-          <li class="athlete">Dashboard sportovce — plán, záznam a porovnání jedním pohledem</li>
-          <li class="athlete">Synchronizace Garmin Connect a import FIT souborů v základu</li>
-        </ul>
-      {% endif %}
-    </section>
-
-    <!-- ── Founder ── -->
-    <div class="eb-about-founder">
-      <div class="eb-about-avatar">VH</div>
-      <div>
-        <div class="eb-about-founder-name">Vojtěch Holcman</div>
-        <div class="eb-about-founder-role">{% if CURRENT_LANGUAGE == "en" %}Founder &amp; developer{% else %}Zakladatel a vývojář{% endif %}</div>
-        {% if CURRENT_LANGUAGE == "en" %}
-          <p class="eb-about-founder-quote">"I built EnduroBuddy because I coach athletes myself and couldn't find a tool that handles planning and execution in one place without unnecessary complexity. This is that tool — and it keeps getting better."</p>
-        {% else %}
-          <p class="eb-about-founder-quote">„EnduroBuddy jsem postavil proto, že sám trénuji sportovce a nemohl jsem najít nástroj, který zvládá plánování i evidenci na jednom místě bez zbytečné složitosti. Toto je ten nástroj — a stále se zlepšuje."</p>
-        {% endif %}
-      </div>
-    </div>
-
-  </div>
+<main style="padding: 96px 24px; text-align: center;">
+  <h1>Soon</h1>
 </main>
 {% endblock %}

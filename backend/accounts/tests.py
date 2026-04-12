@@ -323,3 +323,39 @@ class RegistrationToggleAdapterTests(TestCase):
     def test_social_adapter_open_when_enabled(self):
         adapter = SocialAccountAdapter(self._request())
         self.assertTrue(adapter.is_open_for_signup(self._request(), sociallogin=None))
+
+    @override_settings(REGISTRATION_ENABLED=False)
+    def test_signup_get_redirects_to_login_when_disabled(self):
+        response = self.client.get(reverse("account_signup"))
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, reverse("account_login"))
+
+    @override_settings(REGISTRATION_ENABLED=True)
+    def test_signup_get_renders_page_when_enabled(self):
+        response = self.client.get(reverse("account_signup"))
+        self.assertEqual(response.status_code, 200)
+
+    @override_settings(REGISTRATION_ENABLED=False)
+    def test_context_processor_exposes_false_when_disabled(self):
+        response = self.client.get(reverse("public_home"))
+        self.assertFalse(response.context["registration_enabled"])
+
+    @override_settings(REGISTRATION_ENABLED=True)
+    def test_context_processor_exposes_true_when_enabled(self):
+        response = self.client.get(reverse("public_home"))
+        self.assertTrue(response.context["registration_enabled"])
+
+    @override_settings(REGISTRATION_ENABLED=False)
+    def test_home_page_signup_buttons_disabled_when_registration_off(self):
+        response = self.client.get(reverse("public_home"))
+        self.assertEqual(response.status_code, 200)
+        content = response.content.decode()
+        self.assertNotIn('href="/accounts/signup/"', content)
+        self.assertIn("eb-btn-disabled", content)
+
+    @override_settings(REGISTRATION_ENABLED=True)
+    def test_home_page_signup_buttons_active_when_registration_on(self):
+        response = self.client.get(reverse("public_home"))
+        self.assertEqual(response.status_code, 200)
+        content = response.content.decode()
+        self.assertIn('href="/accounts/signup/"', content)

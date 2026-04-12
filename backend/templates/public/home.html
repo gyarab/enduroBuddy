@@ -14,7 +14,11 @@
 
 {% block topbar_actions %}
   {% get_current_language as CURRENT_LANGUAGE %}
+  {% if registration_enabled %}
   <a class="eb-btn-nav lp-btn-cta" href="{% url 'account_signup' %}">{% if CURRENT_LANGUAGE == "en" %}Start free{% else %}Začít zdarma{% endif %}</a>
+  {% else %}
+  <a class="eb-btn-nav lp-btn-cta eb-btn-disabled">{% if CURRENT_LANGUAGE == "en" %}Start free{% else %}Začít zdarma{% endif %}</a>
+  {% endif %}
 {% endblock %}
 
 {% block page_styles %}
@@ -32,7 +36,11 @@
         <h1 class="lp-h1">{% if CURRENT_LANGUAGE == "en" %}Plan, track and manage every athlete <em>in one place.</em>{% else %}Plánuj, sleduj a řiď přípravu každého sportovce <em>na jednom místě.</em>{% endif %}</h1>
         <p class="lp-subtitle">{% if CURRENT_LANGUAGE == "en" %}EnduroBuddy connects monthly training plans, completed sessions and coach-athlete collaboration in one modern workspace.{% else %}EnduroBuddy propojuje měsíční tréninkové plány, splněné tréninky a spolupráci trenéra se sportovcem v jednom moderním rozhraní.{% endif %}</p>
         <div class="lp-actions">
+          {% if registration_enabled %}
           <a class="lp-btn lp-btn-primary lp-btn-lg lp-btn-pill" href="{% url 'account_signup' %}">{% if CURRENT_LANGUAGE == "en" %}Try for free{% else %}Vyzkoušet zdarma{% endif %}</a>
+          {% else %}
+          <a class="lp-btn lp-btn-primary lp-btn-lg lp-btn-pill eb-btn-disabled">{% if CURRENT_LANGUAGE == "en" %}Try for free{% else %}Vyzkoušet zdarma{% endif %}</a>
+          {% endif %}
           <a class="lp-btn lp-btn-ghost lp-btn-lg" href="#how">{% if CURRENT_LANGUAGE == "en" %}How it works →{% else %}Jak to funguje →{% endif %}</a>
         </div>
         <div class="lp-pills">
@@ -146,7 +154,11 @@
         <div class="lp-cta-heading">{% if CURRENT_LANGUAGE == "en" %}Start planning better today{% else %}Začni plánovat lépe ještě dnes{% endif %}</div>
         <p class="lp-cta-sub">{% if CURRENT_LANGUAGE == "en" %}Free to use. No credit card required.{% else %}Registrace zdarma. Žádná kreditní karta.{% endif %}</p>
         <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+          {% if registration_enabled %}
           <a class="lp-btn lp-btn-primary lp-btn-lg lp-btn-pill" href="{% url 'account_signup' %}">{% if CURRENT_LANGUAGE == "en" %}Start free →{% else %}Začít zdarma →{% endif %}</a>
+          {% else %}
+          <a class="lp-btn lp-btn-primary lp-btn-lg lp-btn-pill eb-btn-disabled">{% if CURRENT_LANGUAGE == "en" %}Start free →{% else %}Začít zdarma →{% endif %}</a>
+          {% endif %}
           <a class="lp-btn lp-btn-secondary lp-btn-lg" href="{% url 'account_login' %}">{% if CURRENT_LANGUAGE == "en" %}Log in{% else %}Přihlásit se{% endif %}</a>
         </div>
       </section>

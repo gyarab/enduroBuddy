@@ -46,6 +46,13 @@ type AuthScreen =
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
+const registrationEnabled = Boolean(
+  (
+    window as typeof window & {
+      ENDUROBUDDY_CONFIG?: { registrationEnabled?: boolean };
+    }
+  ).ENDUROBUDDY_CONFIG?.registrationEnabled ?? true,
+);
 
 const isSubmitting = ref(false);
 const formError = ref("");
@@ -165,6 +172,16 @@ const screen = computed<AuthScreen>(() => {
   const value = String(route.meta.authScreen || "login");
   return value as AuthScreen;
 });
+
+watch(
+  screen,
+  (currentScreen) => {
+    if (!registrationEnabled && currentScreen === "signup") {
+      void router.replace("/accounts/login/");
+    }
+  },
+  { immediate: true },
+);
 
 const shellConfig = computed(() => {
   switch (screen.value) {
@@ -315,7 +332,9 @@ const shellConfig = computed(() => {
         description: "Nic se nestalo. Zkus to znovu nebo použij e-mail a heslo.",
         stats: [
           { icon: "→", label: "Možnosti", value: "Google · E-mail" },
-          { icon: "✓", label: "Registrace", value: "Zdarma, bez závazků", blue: true },
+          registrationEnabled
+            ? { icon: "✓", label: "Registrace", value: "Zdarma, bez závazků", blue: true }
+            : { icon: "✓", label: "Přístup", value: "Pouze pro existující účty", blue: true },
         ],
       };
     case "connections":
@@ -728,8 +747,10 @@ watch(
           </button>
 
           <div class="auth-flow-footer">
+            <template v-if="registrationEnabled">
             Nemáš účet?
             <RouterLink to="/accounts/signup/">Registrovat se</RouterLink>
+            </template>
           </div>
         </div>
 
@@ -1083,7 +1104,8 @@ watch(
           <h1>Přihlášení bylo zrušeno</h1>
           <p>Přihlášení bylo přerušeno. Můžeš to zkusit znovu.</p>
           <button class="auth-flow-button auth-flow-button--primary" type="button" @click="navigateTo(googleLoginUrl())">Zkusit znovu</button>
-          <RouterLink class="auth-flow-button auth-flow-button--secondary" to="/accounts/signup/">Registrace</RouterLink>
+          <RouterLink v-if="registrationEnabled" class="auth-flow-button auth-flow-button--secondary" to="/accounts/signup/">Registrace</RouterLink>
+          <RouterLink v-else class="auth-flow-button auth-flow-button--secondary" to="/accounts/login/">Zpět na přihlášení</RouterLink>
         </div>
 
         <div v-else-if="screen === 'connections'" class="auth-flow-card">

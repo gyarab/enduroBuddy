@@ -3,8 +3,6 @@
    Design tokens · body reset · shell · navbar · footer
    ============================================================ */
 
-<<<<<<< HEAD
-=======
 /* ── Self-hosted fonts ───────────────────────────────────── */
 @font-face { font-family: 'Syne'; src: url('/static/fonts/syne-600.woff2') format('woff2'); font-weight: 600; font-style: normal; font-display: swap; }
 @font-face { font-family: 'Syne'; src: url('/static/fonts/syne-700.woff2') format('woff2'); font-weight: 700; font-style: normal; font-display: swap; }
@@ -15,8 +13,6 @@
 @font-face { font-family: 'Nunito'; src: url('/static/fonts/nunito-700.woff2') format('woff2'); font-weight: 700; font-style: normal; font-display: swap; }
 @font-face { font-family: 'JetBrains Mono'; src: url('/static/fonts/jetbrains-mono-400.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
 @font-face { font-family: 'JetBrains Mono'; src: url('/static/fonts/jetbrains-mono-500.woff2') format('woff2'); font-weight: 500; font-style: normal; font-display: swap; }
-
->>>>>>> vue-frontend-codex
 /* ── Design Tokens ───────────────────────────────────────── */
 :root {
   --eb-bg: #09090b;
@@ -38,11 +34,7 @@
   --eb-danger: #f43f5e;
   --eb-warning: #f59e0b;
   --eb-font-display: 'Syne', system-ui, sans-serif;
-<<<<<<< HEAD
-  --eb-font-body: 'Inter', 'Segoe UI Variable Text', system-ui, sans-serif;
-=======
   --eb-font-body: 'Nunito', system-ui, sans-serif;
->>>>>>> vue-frontend-codex
   --eb-font-mono: 'JetBrains Mono', 'Cascadia Code', monospace;
   --eb-radius-sm: 6px;
   --eb-radius-md: 10px;
@@ -169,6 +161,12 @@ img, svg { display: block; max-width: 100%; }
 .eb-btn-nav:focus-visible {
   outline: 2px solid var(--eb-lime);
   outline-offset: 2px;
+}
+
+.eb-btn-disabled {
+  opacity: 0.38;
+  pointer-events: none;
+  cursor: default;
 }
 
 /* ── Footer ──────────────────────────────────────────────── */
