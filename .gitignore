@@ -1,16 +1,38 @@
 .venv/
 __pycache__/
 *.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+*.tsbuildinfo
 db.sqlite3
 .env
 .env.*
 !.env.example
+*.log
+*.err.log
+*.out.log
+*.pid
+.idea/
+.vscode/
 media/
 backend/media/
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/coverage/
+backend/static_build/
 .garminconnect/
+.superpowers/**/state/
 endurobuddy*
 Vojtěch Holcman.xlsx
 22150739590_ACTIVITY.fit
 Vojt* Holcman*.xlsx
 tmp_22163202434.fit
 IOČ - EnduroBuddy - Holcman v2.md
+.claude/
+.cursor/
+.windsurf/

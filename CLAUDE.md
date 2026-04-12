@@ -4,7 +4,11 @@
 
 Django webová aplikace pro plánování vytrvalostního tréninku. Propojuje trenéra a sportovce: trenér připravuje měsíční plány, sportovec zapisuje splněné tréninky a importuje aktivity z Garmin Connect nebo FIT souborů.
 
+<<<<<<< HEAD
 **Stack:** Python 3.12, Django 5.2, PostgreSQL, Bootstrap 5, server-rendered templates + vlastní JS/CSS, Docker Compose.
+=======
+**Stack:** Python 3.12, Django 5.2, PostgreSQL, Vue 3 + TypeScript + Vite (SPA pro přihlášenou část), vlastní CSS bez frameworků, Docker Compose.
+>>>>>>> vue-frontend-codex
 
 **Jazyky UI:** Česky + anglicky (django i18n, language switcher).
 
@@ -21,9 +25,16 @@ Django webová aplikace pro plánování vytrvalostního tréninku. Propojuje tr
 
 | URL | Popis |
 |-----|-------|
+<<<<<<< HEAD
 | `/` | Veřejná landing page |
 | `/app/` | Dashboard sportovce |
 | `/coach/plans/` | Dashboard trenéra |
+=======
+| `/` | Veřejná landing page (Django template) |
+| `/app/*` | Athlete SPA (Vue Router — `AthleteView`) |
+| `/coach/*` | Coach SPA (Vue Router — `CoachView`) |
+| `/api/v1/` | DRF API (session auth, CSRF) |
+>>>>>>> vue-frontend-codex
 | `/accounts/` | Autentizace (django-allauth) |
 | `/admin/` | Django admin |
 
@@ -31,16 +42,64 @@ Django webová aplikace pro plánování vytrvalostního tréninku. Propojuje tr
 
 ## Architektura
 
+<<<<<<< HEAD
+=======
+### Backend (Django)
+
+>>>>>>> vue-frontend-codex
 ```
 backend/
   accounts/    # profily, role, coach-athlete vazby, skupiny, Garmin připojení
   activities/  # import aktivit, FIT soubory, intervaly, vzorky
+<<<<<<< HEAD
   dashboard/   # hlavní dashboard, coach rozhraní, servisní logika
   training/    # měsíce, týdny, plánované a dokončené tréninky
   templates/   # Django templates (server-rendered)
   static/      # CSS, JS, brand assets
 ```
 
+=======
+  dashboard/   # servisní logika (handlers, validátory) — žádné views pro SPA
+  training/    # měsíce, týdny, plánované a dokončené tréninky (modely + logika)
+  api/         # DRF API vrstva — views/, urls.py (auth, training, coach, imports…)
+  templates/
+    public/    # veřejné stránky (home, about, legal) — Django server-rendered
+    spa.html   # entry point pro Vue SPA (načte Vite build output)
+  static/brand/  # SVG loga — neměnit
+  static_build/  # Vite build output (generovaný, není v gitu)
+```
+
+### Frontend (Vue SPA)
+
+```
+frontend/src/
+  main.ts              # app init, importuje design-tokens.css + fonts.css
+  App.vue              # RouterView wrapper
+  router/index.ts      # /app/dashboard, /coach/plans, /app/profile/complete
+  stores/              # Pinia — auth, training, coach, notifications, toasts
+  api/                 # axios klient (client.ts) + wrappery per doména
+  composables/
+    useI18n.ts         # vlastní i18n (cs.json + en.json), sync s Django set_language
+    useInlineEditor.ts # sdílená inline editor logika
+    useTrainingParser.ts  # parser tréninkové notace
+    useGarminImport.ts # Garmin import flow + polling
+  components/
+    ui/                # EbButton, EbBadge, EbCard, EbToast, EbModal, EbSpinner
+    training/          # WeekCard, PlannedRow, CompletedRow, MonthSummaryBar…
+    coach/             # CoachSidebar, AthleteManageModal
+    layout/            # AppShell, TopNav, NotificationBell, ProfileDropdown
+  views/
+    dashboard/         # AthleteView.vue, CoachView.vue
+    profile/           # CompleteProfileView.vue
+  locales/             # cs.json, en.json
+  assets/              # design-tokens.css, fonts.css
+```
+
+**Vývoj:** `npm run dev` v `frontend/` (Vite na `:5173`, proxy `/api/*` → Django `:8000`)
+**Build:** `npm run build` — output do `backend/static_build/spa/`
+**Testy:** `npm test` — Vitest, 75 testů
+
+>>>>>>> vue-frontend-codex
 ---
 
 ## Vizuální design systém — "Neon Lab × Swiss Precision"
@@ -124,6 +183,7 @@ Home page overriduje `{% block topbar_links %}` (přidává anchory #features, #
 
 ## Důležitá pravidla
 
+<<<<<<< HEAD
 - **Nezasahuj do aplikačního kódu** pokud user explicitně nepožádá — dashboard, auth, modely, views jsou stabilní
 - Page-specific styly jdou do externího CSS souboru, načteného přes `{% block page_styles %}` — **ne inline `<style>` tag**
 - Bilingualita: všechny texty v templates musí mít CS i EN variantu přes `{% if CURRENT_LANGUAGE == "en" %}`
@@ -132,6 +192,23 @@ Home page overriduje `{% block topbar_links %}` (přidává anchory #features, #
 - Prefix `eb-` pro sdílené CSS třídy; `lp-` pro landing-page-only třídy
 - Každý template musí mít `{% load static %}` pokud používá `{% static %}`
 
+=======
+### Veřejná sekce (Django templates)
+- Page-specific styly jdou do externího CSS souboru, načteného přes `{% block page_styles %}` — **ne inline `<style>` tag**
+- Bilingualita: texty v Django templates přes `{% if CURRENT_LANGUAGE == "en" %}`
+- Fonty: Syne + Inter + JetBrains Mono — načítá `base_public.html`, v page templates se nepřidávají znovu
+- Prefix `eb-` pro sdílené CSS třídy; `lp-` pro landing-page-only třídy
+- Každý template musí mít `{% load static %}` pokud používá `{% static %}`
+
+### Vue SPA (frontend/)
+- **Nezasahuj do Django views pro `/app/*` a `/coach/*`** — tyto URL obsluhuje Vue Router
+- CSS výhradně přes `<style scoped>` s design tokeny — žádný Bootstrap, žádné inline styly
+- Texty v komponentách výhradně přes `useI18n()` a `t()` — žádné hardcoded stringy
+- Lokalizace: klíče přidávat do obou `frontend/src/locales/cs.json` i `en.json`
+- Při změně API endpointů aktualizovat `frontend/src/api/` i `backend/api/views/`
+- `npm run build` musí projít bez chyb a `npm test` musí být zelené před commitem
+
+>>>>>>> vue-frontend-codex
 ---
 
 ## Demo

@@ -1,0 +1,380 @@
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  .approach-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-top: 24px;
+  }
+
+  .approach-card {
+    background: #18181b;
+    border: 1.5px solid #27272a;
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: border-color 0.15s, transform 0.15s;
+  }
+  .approach-card:hover { border-color: #3f3f46; transform: translateY(-2px); }
+  .approach-card.selected { border-color: #c8ff00; }
+
+  .approach-header {
+    padding: 14px 18px 12px;
+    border-bottom: 1px solid #1f1f23;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .approach-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #71717a;
+  }
+  .approach-name {
+    font-family: 'Inter', sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #a1a1aa;
+  }
+
+  .approach-body { padding: 18px; }
+
+  /* Simulace UI bloků */
+  .demo-hero {
+    background: #09090b;
+    border-radius: 8px;
+    padding: 18px;
+    margin-bottom: 14px;
+    border: 1px solid #1f1f23;
+  }
+
+  .demo-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #52525b;
+    margin-bottom: 10px;
+  }
+
+  /* ── Variant A: Conservative ── */
+  .va-display {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 36px;
+    font-weight: 800;
+    color: #fafafa;
+    line-height: 0.95;
+    letter-spacing: -0.04em;
+    margin-bottom: 5px;
+  }
+  .va-h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 26px;
+    font-weight: 700;
+    color: #fafafa;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    margin-bottom: 5px;
+  }
+  .va-h2 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 19px;
+    font-weight: 700;
+    color: #fafafa;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    margin-bottom: 5px;
+  }
+  .va-h3 {
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: #a1a1aa;
+    letter-spacing: -0.01em;
+    margin-bottom: 4px;
+  }
+  .va-body {
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    color: #71717a;
+    line-height: 1.55;
+    margin-bottom: 4px;
+  }
+  .va-label-ui {
+    font-family: 'Inter', sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #71717a;
+    margin-bottom: 4px;
+  }
+  .va-mono {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 500;
+    color: #c8ff00;
+  }
+
+  /* ── Variant B: Refined ── */
+  .vb-display {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 36px;
+    font-weight: 700;
+    color: #fafafa;
+    line-height: 1.0;
+    letter-spacing: -0.05em;
+    margin-bottom: 5px;
+  }
+  .vb-h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 26px;
+    font-weight: 700;
+    color: #fafafa;
+    line-height: 1.1;
+    letter-spacing: -0.04em;
+    margin-bottom: 5px;
+  }
+  .vb-h2 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 19px;
+    font-weight: 600;
+    color: #fafafa;
+    line-height: 1.2;
+    letter-spacing: -0.025em;
+    margin-bottom: 5px;
+  }
+  .vb-h3 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: #a1a1aa;
+    letter-spacing: -0.01em;
+    margin-bottom: 4px;
+  }
+  .vb-body {
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    color: #71717a;
+    line-height: 1.6;
+    margin-bottom: 4px;
+  }
+  .vb-label-ui {
+    font-family: 'Inter', sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: #52525b;
+    margin-bottom: 4px;
+  }
+  .vb-mono {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 500;
+    color: #c8ff00;
+    letter-spacing: -0.02em;
+  }
+
+  /* ── Variant C: Bold hierarchy ── */
+  .vc-display {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 40px;
+    font-weight: 700;
+    color: #fafafa;
+    line-height: 0.92;
+    letter-spacing: -0.06em;
+    margin-bottom: 5px;
+  }
+  .vc-h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: #fafafa;
+    line-height: 1.05;
+    letter-spacing: -0.04em;
+    margin-bottom: 5px;
+  }
+  .vc-h2 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 18px;
+    font-weight: 600;
+    color: #fafafa;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    margin-bottom: 5px;
+  }
+  .vc-h3 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: #a1a1aa;
+    letter-spacing: 0;
+    margin-bottom: 4px;
+  }
+  .vc-body {
+    font-family: 'Inter', sans-serif;
+    font-size: 13.5px;
+    color: #71717a;
+    line-height: 1.65;
+    margin-bottom: 4px;
+  }
+  .vc-label-ui {
+    font-family: 'Inter', sans-serif;
+    font-size: 9.5px;
+    font-weight: 600;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: #52525b;
+    margin-bottom: 4px;
+  }
+  .vc-mono {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    font-weight: 500;
+    color: #c8ff00;
+    letter-spacing: -0.03em;
+  }
+
+  .scale-table {
+    margin-top: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: #52525b;
+    letter-spacing: 0.02em;
+    line-height: 1.8;
+  }
+  .scale-row { display: flex; justify-content: space-between; border-bottom: 1px solid #1f1f23; padding: 2px 0; }
+  .scale-key { color: #3f3f46; }
+  .scale-val { color: #52525b; }
+
+  .approach-desc {
+    font-family: 'Inter', sans-serif;
+    font-size: 10.5px;
+    color: #52525b;
+    line-height: 1.5;
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid #1f1f23;
+  }
+  .approach-desc strong { color: #71717a; }
+
+  .rec-badge {
+    font-family: 'Inter', sans-serif;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    background: rgba(200,255,0,.08);
+    color: #c8ff00;
+    border: 1px solid rgba(200,255,0,.15);
+    padding: 2px 7px;
+    border-radius: 9999px;
+  }
+</style>
+
+<h2>Jak zacházet s typografickou škálou</h2>
+<p class="subtitle">Space Grotesk ve třech různých škálových přístupech — od konzervativního po výrazný. Klikni na preferovaný.</p>
+
+<div class="approach-grid">
+
+  <!-- ── A: Conservative swap ── -->
+  <div class="approach-card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="approach-header">
+      <span class="approach-tag">Přístup A</span>
+      <span class="approach-name">Conservative</span>
+    </div>
+    <div class="approach-body">
+      <div class="demo-hero">
+        <div class="demo-label">Typografická hierarchie</div>
+        <div class="va-display">Dubnový plán</div>
+        <div class="va-h1">Týden 15</div>
+        <div class="va-h2">Intervalový trénink</div>
+        <div class="va-h3">Poznámka trenéra</div>
+        <div class="va-body">Zaměřit se na kadenci 90+ RPM při 5× 4min intervalech.</div>
+        <div class="va-label-ui">Pace průměr</div>
+        <div class="va-mono">4:52 / km</div>
+      </div>
+      <div class="scale-table">
+        <div class="scale-row"><span class="scale-key">Display</span><span class="scale-val">SG 800 −0.04em</span></div>
+        <div class="scale-row"><span class="scale-key">H1</span><span class="scale-val">SG 700 −0.03em</span></div>
+        <div class="scale-row"><span class="scale-key">H2</span><span class="scale-val">SG 700 −0.02em</span></div>
+        <div class="scale-row"><span class="scale-key">H3</span><span class="scale-val">Inter 600 −0.01em</span></div>
+        <div class="scale-row"><span class="scale-key">Body</span><span class="scale-val">Inter 400</span></div>
+        <div class="scale-row"><span class="scale-key">Label</span><span class="scale-val">Inter 600 +0.06em</span></div>
+      </div>
+      <div class="approach-desc">
+        Jen swap Syne → Space Grotesk. Zbytek systému zůstává. <strong>Nejmenší riziko regresi, rychlá implementace.</strong> H3 a labely zůstávají Inter — jasná hranice display vs functional.
+      </div>
+    </div>
+  </div>
+
+  <!-- ── B: Refined system ── -->
+  <div class="approach-card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="approach-header">
+      <span class="approach-tag">Přístup B</span>
+      <span class="approach-name">Refined &nbsp;<span class="rec-badge">doporučuji</span></span>
+    </div>
+    <div class="approach-body">
+      <div class="demo-hero">
+        <div class="demo-label">Typografická hierarchie</div>
+        <div class="vb-display">Dubnový plán</div>
+        <div class="vb-h1">Týden 15</div>
+        <div class="vb-h2">Intervalový trénink</div>
+        <div class="vb-h3">Poznámka trenéra</div>
+        <div class="vb-body">Zaměřit se na kadenci 90+ RPM při 5× 4min intervalech.</div>
+        <div class="vb-label-ui">Pace průměr</div>
+        <div class="vb-mono">4:52 / km</div>
+      </div>
+      <div class="scale-table">
+        <div class="scale-row"><span class="scale-key">Display</span><span class="scale-val">SG 700 −0.05em</span></div>
+        <div class="scale-row"><span class="scale-key">H1</span><span class="scale-val">SG 700 −0.04em</span></div>
+        <div class="scale-row"><span class="scale-key">H2</span><span class="scale-val">SG 600 −0.025em</span></div>
+        <div class="scale-row"><span class="scale-key">H3</span><span class="scale-val">SG 500 −0.01em</span></div>
+        <div class="scale-row"><span class="scale-key">Body</span><span class="scale-val">Inter 400 lh 1.6</span></div>
+        <div class="scale-row"><span class="scale-key">Label</span><span class="scale-val">Inter 600 +0.07em</span></div>
+      </div>
+      <div class="approach-desc">
+        Space Grotesk expanduje přes všechna heading levels (Display–H3). Inter zůstává pro body a labely. Tighter tracking optimalizovaný pro SG charakter. <strong>Koherentní hierarchie s jasným řezem na body textu.</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── C: Bold hierarchy ── -->
+  <div class="approach-card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="approach-header">
+      <span class="approach-tag">Přístup C</span>
+      <span class="approach-name">Bold Hierarchy</span>
+    </div>
+    <div class="approach-body">
+      <div class="demo-hero">
+        <div class="demo-label">Typografická hierarchie</div>
+        <div class="vc-display">Dubnový plán</div>
+        <div class="vc-h1">Týden 15</div>
+        <div class="vc-h2">Intervalový trénink</div>
+        <div class="vc-h3">Poznámka trenéra</div>
+        <div class="vc-body">Zaměřit se na kadenci 90+ RPM při 5× 4min intervalech.</div>
+        <div class="vc-label-ui">Pace průměr</div>
+        <div class="vc-mono">4:52 / km</div>
+      </div>
+      <div class="scale-table">
+        <div class="scale-row"><span class="scale-key">Display</span><span class="scale-val">SG 700 −0.06em</span></div>
+        <div class="scale-row"><span class="scale-key">H1</span><span class="scale-val">SG 700 −0.04em</span></div>
+        <div class="scale-row"><span class="scale-key">H2</span><span class="scale-val">SG 600 −0.02em</span></div>
+        <div class="scale-row"><span class="scale-key">H3</span><span class="scale-val">SG 500 0em</span></div>
+        <div class="scale-row"><span class="scale-key">Body</span><span class="scale-val">Inter 400 13.5px</span></div>
+        <div class="scale-row"><span class="scale-key">Label</span><span class="scale-val">Inter 600 +0.09em</span></div>
+      </div>
+      <div class="approach-desc">
+        Největší kontrast — display je velmi tight, body je menší a vzdušnější. Dramatická hierarchie, data vynikají. <strong>Agresivnější cesta, blíže k media/editorial designu.</strong>
+      </div>
+    </div>
+  </div>
+
+</div>
