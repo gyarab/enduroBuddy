@@ -5,7 +5,8 @@ import { defineConfig } from "vite";
 
 const djangoOrigin = process.env.DJANGO_ORIGIN ?? "http://127.0.0.1:8000";
 
-export default defineConfig({
+export default defineConfig(({ command }) => ({
+  base: command === "build" ? "/static/spa/" : "/",
   plugins: [vue()],
   resolve: {
     alias: {
@@ -41,4 +42,4 @@ export default defineConfig({
       },
     },
   },
-});
+}));
