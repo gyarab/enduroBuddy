@@ -1,0 +1,516 @@
+<style>
+  :root {
+    --eb-bg: #09090b;
+    --eb-surface: #18181b;
+    --eb-surface-strong: #1f1f23;
+    --eb-border: #27272a;
+    --eb-border-soft: rgba(255,255,255,.06);
+    --eb-text: #fafafa;
+    --eb-text-soft: #a1a1aa;
+    --eb-text-muted: #71717a;
+    --eb-lime: #c8ff00;
+    --eb-blue: #38bdf8;
+    --eb-danger: #f43f5e;
+    --eb-radius-sm: 6px;
+    --eb-radius-md: 10px;
+  }
+
+  .demo-wrap {
+    background: var(--eb-bg);
+    border-radius: var(--eb-radius-md);
+    border: 1px solid var(--eb-border);
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 13px;
+    color: var(--eb-text);
+  }
+
+  .demo-label {
+    padding: 0.6rem 1rem;
+    background: var(--eb-surface-strong);
+    border-bottom: 1px solid var(--eb-border);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--eb-text-muted);
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+  }
+
+  .demo-label .badge {
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 9px;
+  }
+  .badge--problem { background: rgba(244,63,94,.15); color: #f43f5e; border: 1px solid rgba(244,63,94,.3); }
+  .badge--option  { background: rgba(56,189,248,.1); color: var(--eb-blue); border: 1px solid rgba(56,189,248,.25); }
+
+  /* grid table */
+  .wt {
+    display: grid;
+    grid-template-columns: 48px 36px 44px minmax(0,2fr) minmax(0,1fr) 2px 60px 52px minmax(0,1fr) 50px 50px;
+  }
+
+  .wt--adaptive {
+    /* columns same but table can grow — handled by wrapper */
+    display: grid;
+    grid-template-columns: 48px 36px 44px max-content max-content 2px 60px 52px max-content 50px 50px;
+  }
+
+  .wt-head {
+    padding: .35rem 1rem;
+    border-bottom: 1px solid var(--eb-border);
+    background: rgba(255,255,255,.025);
+  }
+
+  .wt-head .wt-cell {
+    color: var(--eb-text-muted);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    padding: 0 .35rem;
+  }
+
+  .wt-row {
+    padding: 0 1rem;
+    border-bottom: 1px solid var(--eb-border-soft);
+    min-height: 2.75rem;
+    align-items: center;
+  }
+
+  .wt-row--editing-old {
+    background: rgba(200,255,0,.04);
+    align-items: start;
+    padding-top: .5rem;
+    padding-bottom: .25rem;
+    border-left: 2px solid rgba(200,255,0,.35);
+    padding-left: calc(1rem - 2px);
+  }
+
+  .wt-row--editing-new {
+    background: rgba(200,255,0,.04);
+    align-items: center;   /* ← stays centered, same height */
+    border-left: 2px solid rgba(200,255,0,.35);
+    padding-left: calc(1rem - 2px);
+  }
+
+  .wt-cell {
+    padding: .3rem .35rem;
+    font-size: 13px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+  }
+
+  .wt-cell--date { color: var(--eb-text-soft); font-family: monospace; font-size: 12px; padding-left: 0; }
+  .wt-cell--day  { color: var(--eb-text-muted); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
+  .wt-cell--num  { justify-content: flex-end; padding-right: .5rem; font-family: monospace; color: var(--eb-text-muted); }
+  .wt-cell--num-done { color: var(--eb-lime); }
+
+  .wt-sep { align-self: stretch; background: var(--eb-border); width: 1px; margin: .25rem 0; }
+
+  .title-text {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .notes-text {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--eb-text-muted);
+    font-size: 12px;
+  }
+
+  .type-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: .15rem .45rem;
+    border-radius: 999px;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--eb-blue);
+    border: 1px solid rgba(56,189,248,.35);
+    white-space: nowrap;
+  }
+
+  /* OLD: textarea grows row */
+  .wt-textarea-old {
+    width: 100%;
+    border: 1px solid rgba(200,255,0,.3);
+    border-radius: var(--eb-radius-sm);
+    background: var(--eb-bg);
+    color: var(--eb-text);
+    font: inherit;
+    font-family: monospace;
+    font-size: 12px;
+    padding: .3rem .45rem;
+    resize: none;
+    line-height: 1.45;
+    min-height: 52px; /* simulates rows=2 */
+    box-shadow: 0 0 0 2px rgba(200,255,0,.1);
+    outline: none;
+  }
+
+  /* NEW: single-line input, same height as row */
+  .wt-input-new {
+    width: 100%;
+    border: 1px solid rgba(200,255,0,.3);
+    border-radius: var(--eb-radius-sm);
+    background: var(--eb-bg);
+    color: var(--eb-text);
+    font: inherit;
+    font-size: 13px;
+    padding: .28rem .45rem;
+    box-shadow: 0 0 0 2px rgba(200,255,0,.1);
+    outline: none;
+  }
+
+  .wt-input-sm {
+    width: 100%;
+    border: 1px solid rgba(200,255,0,.2);
+    border-radius: var(--eb-radius-sm);
+    background: var(--eb-bg);
+    color: var(--eb-text);
+    font: inherit;
+    font-family: monospace;
+    font-size: 12px;
+    padding: .2rem .35rem;
+    outline: none;
+    text-align: right;
+  }
+
+  /* adaptive wrapper */
+  .adaptive-scroll {
+    overflow-x: auto;
+  }
+
+  .adaptive-scroll .wt--adaptive {
+    min-width: max-content;
+  }
+
+  /* Long content demo */
+  .title-long {
+    white-space: nowrap;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--eb-text);
+  }
+
+  .title-clipped {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .clip-warn {
+    display: inline-block;
+    padding: 1px 6px;
+    background: rgba(244,63,94,.12);
+    color: #f43f5e;
+    border-radius: 4px;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    margin-left: .5rem;
+    vertical-align: middle;
+  }
+
+  .clip-ok {
+    display: inline-block;
+    padding: 1px 6px;
+    background: rgba(200,255,0,.1);
+    color: var(--eb-lime);
+    border-radius: 4px;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    margin-left: .5rem;
+    vertical-align: middle;
+  }
+
+  .section-gap { margin-top: 2rem; }
+</style>
+
+<h2>Inline editace — chování řádků</h2>
+<p class="subtitle">Dvě nezávislé změny. Koukni na mockupy a řekni co sedí.</p>
+
+<!-- ── CHANGE 1: row height ── -->
+<div class="section">
+  <h3>1. Výška řádku při editaci</h3>
+  <p class="subtitle">Vlevo: aktuální stav (textarea rozepne řádek). Vpravo: fixní výška — řádek se nezmění.</p>
+
+  <div class="split">
+
+    <!-- Current / problem -->
+    <div>
+      <div class="demo-wrap">
+        <div class="demo-label">Současný stav <span class="badge badge--problem">Problém</span></div>
+        <div class="wt wt-head">
+          <div class="wt-cell">datum</div>
+          <div class="wt-cell">den</div>
+          <div class="wt-cell">typ</div>
+          <div class="wt-cell">trénink</div>
+          <div class="wt-cell">poznámky</div>
+          <div class="wt-sep"></div>
+          <div class="wt-cell">km</div>
+          <div class="wt-cell">čas</div>
+          <div class="wt-cell">intervaly</div>
+          <div class="wt-cell">⌀HR</div>
+          <div class="wt-cell">HR↑</div>
+        </div>
+        <!-- idle row -->
+        <div class="wt wt-row">
+          <div class="wt-cell wt-cell--date">14.4.</div>
+          <div class="wt-cell wt-cell--day">Po</div>
+          <div class="wt-cell"><span class="type-pill">RUN</span></div>
+          <div class="wt-cell"><span class="title-text">Regenerační klus 8 km</span></div>
+          <div class="wt-cell"><span class="notes-text">pomalé tempo</span></div>
+          <div class="wt-sep"></div>
+          <div class="wt-cell wt-cell--num wt-cell--num-done">8.2</div>
+          <div class="wt-cell wt-cell--num wt-cell--num-done">52</div>
+          <div class="wt-cell"><span style="font-family:monospace;font-size:12px;color:#71717a">—</span></div>
+          <div class="wt-cell wt-cell--num" style="color:#a1a1aa">138</div>
+          <div class="wt-cell wt-cell--num" style="color:#a1a1aa">158</div>
+        </div>
+        <!-- editing row — OLD: grows -->
+        <div class="wt wt-row wt-row--editing-old">
+          <div class="wt-cell wt-cell--date">15.4.</div>
+          <div class="wt-cell wt-cell--day">Út</div>
+          <div class="wt-cell"><span class="type-pill">RUN</span></div>
+          <div class="wt-cell" style="align-items:start"><textarea class="wt-textarea-old">Tempo 12 km @ 4:30</textarea></div>
+          <div class="wt-cell" style="align-items:start"><input class="wt-input-new" style="margin-top:.3rem" value="brzký ráno"></div>
+          <div class="wt-sep"></div>
+          <div class="wt-cell wt-cell--num"><input class="wt-input-sm" value=""></div>
+          <div class="wt-cell wt-cell--num"><input class="wt-input-sm" value=""></div>
+          <div class="wt-cell"><span style="font-family:monospace;font-size:12px;color:#71717a">—</span></div>
+          <div class="wt-cell wt-cell--num" style="color:#a1a1aa">—</div>
+          <div class="wt-cell wt-cell--num" style="color:#a1a1aa">—</div>
+        </div>
+        <!-- next idle -->
+        <div class="wt wt-row">
+          <div class="wt-cell wt-cell--date">16.4.</div>
+          <div class="wt-cell wt-cell--day">St</div>
+          <div class="wt-cell"><span class="type-pill" style="color:var(--eb-lime);border-color:rgba(200,255,0,.35)">WKT</span></div>
+          <div class="wt-cell"><span class="title-text">Silový trénink</span></div>
+          <div class="wt-cell"><span class="notes-text"></span></div>
+          <div class="wt-sep"></div>
+          <div class="wt-cell wt-cell--num" style="color:#71717a">—</div>
+          <div class="wt-cell wt-cell--num" style="color:#71717a">—</div>
+          <div class="wt-cell"></div>
+          <div class="wt-cell wt-cell--num" style="color:#71717a">—</div>
+          <div class="wt-cell wt-cell--num" style="color:#71717a">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Proposed / fixed height -->
+    <div>
+      <div class="demo-wrap">
+        <div class="demo-label">Navrhované — fixní výška <span class="badge badge--option">Oprava</span></div>
+        <div class="wt wt-head">
+          <div class="wt-cell">datum</div>
+          <div class="wt-cell">den</div>
+          <div class="wt-cell">typ</div>
+          <div class="wt-cell">trénink</div>
+          <div class="wt-cell">poznámky</div>
+          <div class="wt-sep"></div>
+          <div class="wt-cell">km</div>
+          <div class="wt-cell">čas</div>
+          <div class="wt-cell">intervaly</div>
+          <div class="wt-cell">⌀HR</div>
+          <div class="wt-cell">HR↑</div>
+        </div>
+        <!-- idle row -->
+        <div class="wt wt-row">
+          <div class="wt-cell wt-cell--date">14.4.</div>
+          <div class="wt-cell wt-cell--day">Po</div>
+          <div class="wt-cell"><span class="type-pill">RUN</span></div>
+          <div class="wt-cell"><span class="title-text">Regenerační klus 8 km</span></div>
+          <div class="wt-cell"><span class="notes-text">pomalé tempo</span></div>
+          <div class="wt-sep"></div>
+          <div class="wt-cell wt-cell--num wt-cell--num-done">8.2</div>
+          <div class="wt-cell wt-cell--num wt-cell--num-done">52</div>
+          <div class="wt-cell"><span style="font-family:monospace;font-size:12px;color:#71717a">—</span></div>
+          <div class="wt-cell wt-cell--num" style="color:#a1a1aa">138</div>
+          <div class="wt-cell wt-cell--num" style="color:#a1a1aa">158</div>
+        </div>
+        <!-- editing row — NEW: same height -->
+        <div class="wt wt-row wt-row--editing-new">
+          <div class="wt-cell wt-cell--date">15.4.</div>
+          <div class="wt-cell wt-cell--day">Út</div>
+          <div class="wt-cell"><span class="type-pill">RUN</span></div>
+          <div class="wt-cell"><input class="wt-input-new" value="Tempo 12 km @ 4:30"></div>
+          <div class="wt-cell"><input class="wt-input-new" value="brzký ráno"></div>
+          <div class="wt-sep"></div>
+          <div class="wt-cell wt-cell--num"><input class="wt-input-sm" value=""></div>
+          <div class="wt-cell wt-cell--num"><input class="wt-input-sm" value=""></div>
+          <div class="wt-cell"><span style="font-family:monospace;font-size:12px;color:#71717a">—</span></div>
+          <div class="wt-cell wt-cell--num" style="color:#a1a1aa">—</div>
+          <div class="wt-cell wt-cell--num" style="color:#a1a1aa">—</div>
+        </div>
+        <!-- next idle -->
+        <div class="wt wt-row">
+          <div class="wt-cell wt-cell--date">16.4.</div>
+          <div class="wt-cell wt-cell--day">St</div>
+          <div class="wt-cell"><span class="type-pill" style="color:var(--eb-lime);border-color:rgba(200,255,0,.35)">WKT</span></div>
+          <div class="wt-cell"><span class="title-text">Silový trénink</span></div>
+          <div class="wt-cell"><span class="notes-text"></span></div>
+          <div class="wt-sep"></div>
+          <div class="wt-cell wt-cell--num" style="color:#71717a">—</div>
+          <div class="wt-cell wt-cell--num" style="color:#71717a">—</div>
+          <div class="wt-cell"></div>
+          <div class="wt-cell wt-cell--num" style="color:#71717a">—</div>
+          <div class="wt-cell wt-cell--num" style="color:#71717a">—</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── CHANGE 2: table width adapts ── -->
+<div class="section section-gap">
+  <h3>2. Šířka tabulky — přizpůsobení obsahu</h3>
+  <p class="subtitle">Vlevo: aktuální stav (dlouhý text se ořezává). Vpravo: tabulka se rozšíří, celý text je vidět.</p>
+
+  <div class="split">
+
+    <!-- Current: text clipped -->
+    <div>
+      <div class="demo-wrap">
+        <div class="demo-label">Současný stav <span class="badge badge--problem">Text se ořezává</span></div>
+        <div class="wt wt-head">
+          <div class="wt-cell">datum</div>
+          <div class="wt-cell">den</div>
+          <div class="wt-cell">typ</div>
+          <div class="wt-cell">trénink</div>
+          <div class="wt-cell">poznámky</div>
+          <div class="wt-sep"></div>
+          <div class="wt-cell">km</div>
+          <div class="wt-cell">čas</div>
+          <div class="wt-cell">intervaly</div>
+          <div class="wt-cell">⌀HR</div>
+          <div class="wt-cell">HR↑</div>
+        </div>
+        <div class="wt wt-row">
+          <div class="wt-cell wt-cell--date">14.4.</div>
+          <div class="wt-cell wt-cell--day">Po</div>
+          <div class="wt-cell"><span class="type-pill">RUN</span></div>
+          <div class="wt-cell"><span class="title-clipped">Regenerační klus 8 km — pomalé aerobní tempo Z1-Z2</span></div>
+          <div class="wt-cell"><span class="notes-text">Z1-Z2, žádné tempo</span></div>
+          <div class="wt-sep"></div>
+          <div class="wt-cell wt-cell--num wt-cell--num-done">8.2</div>
+          <div class="wt-cell wt-cell--num wt-cell--num-done">52</div>
+          <div class="wt-cell"><span style="font-family:monospace;font-size:12px;color:#71717a">—</span></div>
+          <div class="wt-cell wt-cell--num" style="color:#a1a1aa">138</div>
+          <div class="wt-cell wt-cell--num" style="color:#a1a1aa">158</div>
+        </div>
+        <div class="wt wt-row">
+          <div class="wt-cell wt-cell--date">15.4.</div>
+          <div class="wt-cell wt-cell--day">Út</div>
+          <div class="wt-cell"><span class="type-pill">RUN</span></div>
+          <div class="wt-cell"><span class="title-clipped">10× 1000m @ 3:50/km, 90s odpočinek mezi úseky, WU + WD 2 km</span></div>
+          <div class="wt-cell"><span class="notes-text">intervalový trénink</span></div>
+          <div class="wt-sep"></div>
+          <div class="wt-cell wt-cell--num" style="color:#71717a">—</div>
+          <div class="wt-cell wt-cell--num" style="color:#71717a">—</div>
+          <div class="wt-cell"></div>
+          <div class="wt-cell wt-cell--num" style="color:#71717a">—</div>
+          <div class="wt-cell wt-cell--num" style="color:#71717a">—</div>
+        </div>
+        <div class="wt wt-row">
+          <div class="wt-cell wt-cell--date">16.4.</div>
+          <div class="wt-cell wt-cell--day">St</div>
+          <div class="wt-cell"><span class="type-pill" style="color:var(--eb-lime);border-color:rgba(200,255,0,.35)">WKT</span></div>
+          <div class="wt-cell"><span class="title-clipped">Klus</span></div>
+          <div class="wt-cell"><span class="notes-text"></span></div>
+          <div class="wt-sep"></div>
+          <div class="wt-cell wt-cell--num" style="color:#71717a">—</div>
+          <div class="wt-cell wt-cell--num" style="color:#71717a">—</div>
+          <div class="wt-cell"></div>
+          <div class="wt-cell wt-cell--num" style="color:#71717a">—</div>
+          <div class="wt-cell wt-cell--num" style="color:#71717a">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Proposed: table expands -->
+    <div>
+      <div class="demo-wrap">
+        <div class="demo-label">Navrhované — tabulka se rozšíří <span class="badge badge--option">Plný text</span></div>
+        <div class="adaptive-scroll">
+          <div class="wt--adaptive wt-head" style="padding: .35rem 1rem;">
+            <div class="wt-cell">datum</div>
+            <div class="wt-cell">den</div>
+            <div class="wt-cell">typ</div>
+            <div class="wt-cell">trénink</div>
+            <div class="wt-cell">poznámky</div>
+            <div class="wt-sep"></div>
+            <div class="wt-cell">km</div>
+            <div class="wt-cell">čas</div>
+            <div class="wt-cell">intervaly</div>
+            <div class="wt-cell">⌀HR</div>
+            <div class="wt-cell">HR↑</div>
+          </div>
+          <div class="wt--adaptive wt-row" style="padding: 0 1rem; min-height: 2.75rem; align-items: center; border-bottom: 1px solid rgba(255,255,255,.06);">
+            <div class="wt-cell wt-cell--date">14.4.</div>
+            <div class="wt-cell wt-cell--day">Po</div>
+            <div class="wt-cell"><span class="type-pill">RUN</span></div>
+            <div class="wt-cell"><span class="title-long">Regenerační klus 8 km — pomalé aerobní tempo Z1-Z2</span></div>
+            <div class="wt-cell"><span style="color:var(--eb-text-muted);font-size:12px;white-space:nowrap">Z1-Z2, žádné tempo</span></div>
+            <div class="wt-sep"></div>
+            <div class="wt-cell wt-cell--num wt-cell--num-done">8.2</div>
+            <div class="wt-cell wt-cell--num wt-cell--num-done">52</div>
+            <div class="wt-cell"><span style="font-family:monospace;font-size:12px;color:#71717a">—</span></div>
+            <div class="wt-cell wt-cell--num" style="color:#a1a1aa">138</div>
+            <div class="wt-cell wt-cell--num" style="color:#a1a1aa">158</div>
+          </div>
+          <div class="wt--adaptive wt-row" style="padding: 0 1rem; min-height: 2.75rem; align-items: center; border-bottom: 1px solid rgba(255,255,255,.06);">
+            <div class="wt-cell wt-cell--date">15.4.</div>
+            <div class="wt-cell wt-cell--day">Út</div>
+            <div class="wt-cell"><span class="type-pill">RUN</span></div>
+            <div class="wt-cell"><span class="title-long">10× 1000m @ 3:50/km, 90s odpočinek mezi úseky, WU + WD 2 km</span></div>
+            <div class="wt-cell"><span style="color:var(--eb-text-muted);font-size:12px;white-space:nowrap">intervalový trénink</span></div>
+            <div class="wt-sep"></div>
+            <div class="wt-cell wt-cell--num" style="color:#71717a">—</div>
+            <div class="wt-cell wt-cell--num" style="color:#71717a">—</div>
+            <div class="wt-cell"></div>
+            <div class="wt-cell wt-cell--num" style="color:#71717a">—</div>
+            <div class="wt-cell wt-cell--num" style="color:#71717a">—</div>
+          </div>
+          <div class="wt--adaptive wt-row" style="padding: 0 1rem; min-height: 2.75rem; align-items: center;">
+            <div class="wt-cell wt-cell--date">16.4.</div>
+            <div class="wt-cell wt-cell--day">St</div>
+            <div class="wt-cell"><span class="type-pill" style="color:var(--eb-lime);border-color:rgba(200,255,0,.35)">WKT</span></div>
+            <div class="wt-cell"><span class="title-long">Klus</span></div>
+            <div class="wt-cell"><span style="color:var(--eb-text-muted);font-size:12px"></span></div>
+            <div class="wt-sep"></div>
+            <div class="wt-cell wt-cell--num" style="color:#71717a">—</div>
+            <div class="wt-cell wt-cell--num" style="color:#71717a">—</div>
+            <div class="wt-cell"></div>
+            <div class="wt-cell wt-cell--num" style="color:#71717a">—</div>
+            <div class="wt-cell wt-cell--num" style="color:#71717a">—</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
