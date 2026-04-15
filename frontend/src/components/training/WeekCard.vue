@@ -308,187 +308,194 @@ async function toggleSessionType(slot: DaySlot) {
       </div>
     </div>
 
-    <!-- ── Column headers ── -->
-    <div class="wt__cols wt__head-row">
-      <div class="wt__h wt__h--date">{{ t("weekCard.date") }}</div>
-      <div class="wt__h">{{ t("weekCard.day") }}</div>
-      <div class="wt__h wt__h--type"></div>
-      <div class="wt__h">{{ t("weekCard.training") }}</div>
-      <div class="wt__h">{{ t("weekCard.coachNotes") }}</div>
-      <div class="wt__sep-col"></div>
-      <div class="wt__h wt__h--num">km</div>
-      <div class="wt__h wt__h--num">{{ t("weekCard.time") }}</div>
-      <div class="wt__h">{{ t("weekCard.intervals") }}</div>
-      <div class="wt__h wt__h--num">⌀HR</div>
-      <div class="wt__h wt__h--num">HR↑</div>
-    </div>
-
-    <!-- ── Day rows ── -->
-    <template v-for="slot in daySlots" :key="slot.date">
-      <!-- Main planned row -->
-      <div
-        class="wt__cols wt__row"
-        :class="{
-          'wt__row--editing': isEditing(slot.date),
-          'wt__row--done': slot.completed[0]?.status === 'done',
-          'wt__row--missed': slot.completed[0]?.status === 'missed',
-          'wt__row--saved': flashingRows.has(slot.date),
-        }"
-        @focusout="onRowFocusOut(slot, $event)"
-      >
-        <!-- Date -->
-        <div class="wt__cell wt__cell--date wt__cell--readonly">{{ slot.dateLabel }}</div>
-
-        <!-- Day -->
-        <div class="wt__cell wt__cell--day wt__cell--readonly">{{ slot.dayLabel }}</div>
-
-        <!-- Session type -->
-        <div class="wt__cell wt__cell--type" @click.stop>
-          <button
-            v-if="isEditing(slot.date) && getEdit(slot.date)"
-            class="wt__type-pill"
-            :class="`wt__type-pill--${getEdit(slot.date)!.sessionType.toLowerCase()}`"
-            type="button"
-            @click.stop="toggleSessionType(slot)"
-          >{{ getEdit(slot.date)!.sessionType === 'RUN' ? 'RUN' : 'WKT' }}</button>
-          <button
-            v-else-if="slot.planned[0]"
-            class="wt__type-pill"
-            :class="`wt__type-pill--${slot.planned[0].session_type.toLowerCase()}`"
-            type="button"
-            @click.stop="toggleSessionType(slot)"
-          >{{ slot.planned[0].session_type === 'RUN' ? 'RUN' : 'WKT' }}</button>
-          <span v-else class="wt__type-dot wt__type-dot--empty" />
-        </div>
-
-        <!-- Training title -->
-        <div class="wt__cell wt__cell--title" @click.stop="!isEditing(slot.date) && openEdit(slot, 'title')">
-          <template v-if="isEditing(slot.date) && getEdit(slot.date)">
-            <textarea
-              v-model="getEdit(slot.date)!.title"
-              v-autofocus="getEdit(slot.date)!.focusField === 'title'"
-              class="wt__textarea"
-              :disabled="getEdit(slot.date)!.isSaving"
-              :placeholder="t('weekCard.titlePlaceholder')"
-              rows="1"
-              @click.stop
-              @input="onFieldInput(slot.date, slot)"
-            />
-          </template>
-          <template v-else>
-            <span v-if="slot.planned[0]" class="wt__title-text">{{ slot.planned[0].title }}</span>
-            <span v-else class="wt__empty-hint">{{ t("weekCard.clickToAdd") }}</span>
-          </template>
-        </div>
-
-        <!-- Coach notes -->
-        <div class="wt__cell wt__cell--notes" @click.stop="!isEditing(slot.date) && openEdit(slot, 'notes')">
-          <template v-if="isEditing(slot.date) && getEdit(slot.date)">
-            <input
-              v-model="getEdit(slot.date)!.notes"
-              v-autofocus="getEdit(slot.date)!.focusField === 'notes'"
-              class="wt__input"
-              :disabled="getEdit(slot.date)!.isSaving"
-              :placeholder="t('weekCard.notesPlaceholder')"
-              @click.stop
-              @input="onFieldInput(slot.date, slot)"
-            />
-          </template>
-          <template v-else>
-            <span class="wt__notes-text">{{ slot.planned[0]?.notes }}</span>
-          </template>
-        </div>
-
-        <!-- Separator -->
-        <div class="wt__sep-col" />
-
-        <!-- km -->
-        <div class="wt__cell wt__cell--num" @click.stop="!isEditing(slot.date) && canEditCompleted(slot) && openEdit(slot, 'km')">
-          <template v-if="isEditing(slot.date) && getEdit(slot.date) && getEdit(slot.date)!.completedId">
-            <input v-model="getEdit(slot.date)!.km" v-autofocus="getEdit(slot.date)!.focusField === 'km'" class="wt__input wt__input--num" :disabled="getEdit(slot.date)!.isSaving" @click.stop @input="onFieldInput(slot.date, slot)" />
-          </template>
-          <template v-else>
-            <span class="wt__num-val wt__num-val--done">{{ slot.completed[0]?.completed_metrics?.km || "-" }}</span>
-          </template>
-        </div>
-
-        <!-- Time (HH:MM) -->
-        <div class="wt__cell wt__cell--num" @click.stop="!isEditing(slot.date) && canEditCompleted(slot) && openEdit(slot, 'minutes')">
-          <template v-if="isEditing(slot.date) && getEdit(slot.date) && getEdit(slot.date)!.completedId">
-            <input v-model="getEdit(slot.date)!.minutes" v-autofocus="getEdit(slot.date)!.focusField === 'minutes'" class="wt__input wt__input--num" :disabled="getEdit(slot.date)!.isSaving" placeholder="min" @click.stop @input="onFieldInput(slot.date, slot)" />
-          </template>
-          <template v-else>
-            <span class="wt__num-val wt__num-val--done">{{ formatMinutes(slot.completed[0]?.completed_metrics?.minutes) }}</span>
-          </template>
-        </div>
-
-        <!-- Intervals / details -->
-        <div class="wt__cell wt__cell--intervals" @click.stop="!isEditing(slot.date) && canEditCompleted(slot) && openEdit(slot, 'details')">
-          <template v-if="isEditing(slot.date) && getEdit(slot.date) && getEdit(slot.date)!.completedId">
-            <input v-model="getEdit(slot.date)!.details" v-autofocus="getEdit(slot.date)!.focusField === 'details'" class="wt__input" :disabled="getEdit(slot.date)!.isSaving" @click.stop @input="onFieldInput(slot.date, slot)" />
-          </template>
-          <template v-else>
-            <span class="wt__intervals-text">{{ slot.completed[0]?.completed_metrics?.details }}</span>
-          </template>
-        </div>
-
-        <!-- Avg HR -->
-        <div class="wt__cell wt__cell--num" @click.stop="!isEditing(slot.date) && canEditCompleted(slot) && openEdit(slot, 'avgHr')">
-          <template v-if="isEditing(slot.date) && getEdit(slot.date) && getEdit(slot.date)!.completedId">
-            <input v-model="getEdit(slot.date)!.avgHr" v-autofocus="getEdit(slot.date)!.focusField === 'avgHr'" class="wt__input wt__input--num" :disabled="getEdit(slot.date)!.isSaving" @click.stop @input="onFieldInput(slot.date, slot)" />
-          </template>
-          <template v-else>
-            <span class="wt__num-val wt__num-val--hr">{{ slot.completed[0]?.completed_metrics?.avg_hr ?? "-" }}</span>
-          </template>
-        </div>
-
-        <!-- Max HR -->
-        <div class="wt__cell wt__cell--num" @click.stop="!isEditing(slot.date) && canEditCompleted(slot) && openEdit(slot, 'maxHr')">
-          <template v-if="isEditing(slot.date) && getEdit(slot.date) && getEdit(slot.date)!.completedId">
-            <input v-model="getEdit(slot.date)!.maxHr" v-autofocus="getEdit(slot.date)!.focusField === 'maxHr'" class="wt__input wt__input--num" :disabled="getEdit(slot.date)!.isSaving" @click.stop @input="onFieldInput(slot.date, slot)" />
-          </template>
-          <template v-else>
-            <span class="wt__num-val wt__num-val--hr">{{ slot.completed[0]?.completed_metrics?.max_hr ?? "-" }}</span>
-          </template>
-        </div>
+    <div class="wt__table">
+      <!-- ── Column headers ── -->
+      <div class="wt__cols wt__head-row">
+        <div class="wt__h wt__h--date">{{ t("weekCard.date") }}</div>
+        <div class="wt__h">{{ t("weekCard.day") }}</div>
+        <div class="wt__h wt__h--type"></div>
+        <div class="wt__h">{{ t("weekCard.training") }}</div>
+        <div class="wt__h">{{ t("weekCard.coachNotes") }}</div>
+        <div class="wt__sep-col"></div>
+        <div class="wt__h wt__h--num">km</div>
+        <div class="wt__h wt__h--num">{{ t("weekCard.time") }}</div>
+        <div class="wt__h">{{ t("weekCard.intervals") }}</div>
+        <div class="wt__h wt__h--num">⌀HR</div>
+        <div class="wt__h wt__h--num">HR↑</div>
       </div>
 
-      <!-- P2 sub-rows (second phase) -->
-      <template v-for="p2 in slot.planned.filter(r => r.is_second_phase)" :key="`p2-${p2.id}`">
-        <div class="wt__cols wt__row wt__row--p2">
-          <div class="wt__cell wt__cell--date" />
-          <div class="wt__cell wt__cell--day" />
-          <div class="wt__cell wt__cell--type">
-            <span class="wt__type-dot" :class="`wt__type-dot--${p2.session_type.toLowerCase()}`" />
-          </div>
-          <div class="wt__cell wt__cell--title">
-            <span class="wt__p2-label">P2</span>
-            <span class="wt__title-text">{{ p2.title }}</span>
-          </div>
-          <div class="wt__cell wt__cell--notes"><span class="wt__notes-text">{{ p2.notes }}</span></div>
-          <div class="wt__sep-col" />
-          <div class="wt__cell wt__cell--num" /><div class="wt__cell wt__cell--num" /><div class="wt__cell wt__cell--intervals" /><div class="wt__cell wt__cell--num" /><div class="wt__cell wt__cell--num" />
-        </div>
-      </template>
-    </template>
+      <!-- ── Day rows ── -->
+      <template v-for="slot in daySlots" :key="slot.date">
+        <!-- Main planned row -->
+        <div
+          class="wt__cols wt__row"
+          :class="{
+            'wt__row--editing': isEditing(slot.date),
+            'wt__row--done': slot.completed[0]?.status === 'done',
+            'wt__row--missed': slot.completed[0]?.status === 'missed',
+            'wt__row--saved': flashingRows.has(slot.date),
+          }"
+          @focusout="onRowFocusOut(slot, $event)"
+        >
+          <!-- Date -->
+          <div class="wt__cell wt__cell--date wt__cell--readonly">{{ slot.dateLabel }}</div>
 
-    <!-- ── Summary row ── -->
-    <div class="wt__cols wt__summary-row">
-      <div class="wt__summary-label" style="grid-column: 1 / 6">{{ t("weekCard.total") }}</div>
-      <div class="wt__sep-col" />
-      <div class="wt__cell wt__cell--num wt__summary-val">{{ week.completed_total.km }}</div>
-      <div class="wt__cell wt__cell--num wt__summary-val">{{ formatMinutes(week.completed_total.time) }}</div>
-      <div class="wt__cell wt__cell--intervals" />
-      <div class="wt__cell wt__cell--num wt__summary-val wt__num-val--hr">{{ week.completed_total.avg_hr ?? "-" }}</div>
-      <div class="wt__cell wt__cell--num" />
+          <!-- Day -->
+          <div class="wt__cell wt__cell--day wt__cell--readonly">{{ slot.dayLabel }}</div>
+
+          <!-- Session type -->
+          <div class="wt__cell wt__cell--type" @click.stop>
+            <button
+              v-if="isEditing(slot.date) && getEdit(slot.date)"
+              class="wt__type-pill"
+              :class="`wt__type-pill--${getEdit(slot.date)!.sessionType.toLowerCase()}`"
+              type="button"
+              @click.stop="toggleSessionType(slot)"
+            >{{ getEdit(slot.date)!.sessionType === 'RUN' ? 'RUN' : 'WKT' }}</button>
+            <button
+              v-else-if="slot.planned[0]"
+              class="wt__type-pill"
+              :class="`wt__type-pill--${slot.planned[0].session_type.toLowerCase()}`"
+              type="button"
+              @click.stop="toggleSessionType(slot)"
+            >{{ slot.planned[0].session_type === 'RUN' ? 'RUN' : 'WKT' }}</button>
+            <span v-else class="wt__type-dot wt__type-dot--empty" />
+          </div>
+
+          <!-- Training title -->
+          <div class="wt__cell wt__cell--title" @click.stop="!isEditing(slot.date) && openEdit(slot, 'title')">
+            <template v-if="isEditing(slot.date) && getEdit(slot.date)">
+              <textarea
+                v-model="getEdit(slot.date)!.title"
+                v-autofocus="getEdit(slot.date)!.focusField === 'title'"
+                class="wt__textarea"
+                :disabled="getEdit(slot.date)!.isSaving"
+                :placeholder="t('weekCard.titlePlaceholder')"
+                rows="1"
+                @click.stop
+                @input="onFieldInput(slot.date, slot)"
+              />
+            </template>
+            <template v-else>
+              <span v-if="slot.planned[0]" class="wt__title-text">{{ slot.planned[0].title }}</span>
+              <span v-else class="wt__empty-hint">{{ t("weekCard.clickToAdd") }}</span>
+            </template>
+          </div>
+
+          <!-- Coach notes -->
+          <div class="wt__cell wt__cell--notes" @click.stop="!isEditing(slot.date) && openEdit(slot, 'notes')">
+            <template v-if="isEditing(slot.date) && getEdit(slot.date)">
+              <input
+                v-model="getEdit(slot.date)!.notes"
+                v-autofocus="getEdit(slot.date)!.focusField === 'notes'"
+                class="wt__input"
+                :disabled="getEdit(slot.date)!.isSaving"
+                :placeholder="t('weekCard.notesPlaceholder')"
+                @click.stop
+                @input="onFieldInput(slot.date, slot)"
+              />
+            </template>
+            <template v-else>
+              <span class="wt__notes-text">{{ slot.planned[0]?.notes }}</span>
+            </template>
+          </div>
+
+          <!-- Separator -->
+          <div class="wt__sep-col" />
+
+          <!-- km -->
+          <div class="wt__cell wt__cell--num" @click.stop="!isEditing(slot.date) && canEditCompleted(slot) && openEdit(slot, 'km')">
+            <template v-if="isEditing(slot.date) && getEdit(slot.date) && getEdit(slot.date)!.completedId">
+              <input v-model="getEdit(slot.date)!.km" v-autofocus="getEdit(slot.date)!.focusField === 'km'" class="wt__input wt__input--num" :disabled="getEdit(slot.date)!.isSaving" @click.stop @input="onFieldInput(slot.date, slot)" />
+            </template>
+            <template v-else>
+              <span class="wt__num-val wt__num-val--done">{{ slot.completed[0]?.completed_metrics?.km || "-" }}</span>
+            </template>
+          </div>
+
+          <!-- Time (HH:MM) -->
+          <div class="wt__cell wt__cell--num" @click.stop="!isEditing(slot.date) && canEditCompleted(slot) && openEdit(slot, 'minutes')">
+            <template v-if="isEditing(slot.date) && getEdit(slot.date) && getEdit(slot.date)!.completedId">
+              <input v-model="getEdit(slot.date)!.minutes" v-autofocus="getEdit(slot.date)!.focusField === 'minutes'" class="wt__input wt__input--num" :disabled="getEdit(slot.date)!.isSaving" placeholder="min" @click.stop @input="onFieldInput(slot.date, slot)" />
+            </template>
+            <template v-else>
+              <span class="wt__num-val wt__num-val--done">{{ formatMinutes(slot.completed[0]?.completed_metrics?.minutes) }}</span>
+            </template>
+          </div>
+
+          <!-- Intervals / details -->
+          <div class="wt__cell wt__cell--intervals" @click.stop="!isEditing(slot.date) && canEditCompleted(slot) && openEdit(slot, 'details')">
+            <template v-if="isEditing(slot.date) && getEdit(slot.date) && getEdit(slot.date)!.completedId">
+              <input v-model="getEdit(slot.date)!.details" v-autofocus="getEdit(slot.date)!.focusField === 'details'" class="wt__input" :disabled="getEdit(slot.date)!.isSaving" @click.stop @input="onFieldInput(slot.date, slot)" />
+            </template>
+            <template v-else>
+              <span class="wt__intervals-text">{{ slot.completed[0]?.completed_metrics?.details }}</span>
+            </template>
+          </div>
+
+          <!-- Avg HR -->
+          <div class="wt__cell wt__cell--num" @click.stop="!isEditing(slot.date) && canEditCompleted(slot) && openEdit(slot, 'avgHr')">
+            <template v-if="isEditing(slot.date) && getEdit(slot.date) && getEdit(slot.date)!.completedId">
+              <input v-model="getEdit(slot.date)!.avgHr" v-autofocus="getEdit(slot.date)!.focusField === 'avgHr'" class="wt__input wt__input--num" :disabled="getEdit(slot.date)!.isSaving" @click.stop @input="onFieldInput(slot.date, slot)" />
+            </template>
+            <template v-else>
+              <span class="wt__num-val wt__num-val--hr">{{ slot.completed[0]?.completed_metrics?.avg_hr ?? "-" }}</span>
+            </template>
+          </div>
+
+          <!-- Max HR -->
+          <div class="wt__cell wt__cell--num" @click.stop="!isEditing(slot.date) && canEditCompleted(slot) && openEdit(slot, 'maxHr')">
+            <template v-if="isEditing(slot.date) && getEdit(slot.date) && getEdit(slot.date)!.completedId">
+              <input v-model="getEdit(slot.date)!.maxHr" v-autofocus="getEdit(slot.date)!.focusField === 'maxHr'" class="wt__input wt__input--num" :disabled="getEdit(slot.date)!.isSaving" @click.stop @input="onFieldInput(slot.date, slot)" />
+            </template>
+            <template v-else>
+              <span class="wt__num-val wt__num-val--hr">{{ slot.completed[0]?.completed_metrics?.max_hr ?? "-" }}</span>
+            </template>
+          </div>
+        </div>
+
+        <!-- P2 sub-rows (second phase) -->
+        <template v-for="p2 in slot.planned.filter(r => r.is_second_phase)" :key="`p2-${p2.id}`">
+          <div class="wt__cols wt__row wt__row--p2">
+            <div class="wt__cell wt__cell--date" />
+            <div class="wt__cell wt__cell--day" />
+            <div class="wt__cell wt__cell--type">
+              <span class="wt__type-dot" :class="`wt__type-dot--${p2.session_type.toLowerCase()}`" />
+            </div>
+            <div class="wt__cell wt__cell--title">
+              <span class="wt__p2-label">P2</span>
+              <span class="wt__title-text">{{ p2.title }}</span>
+            </div>
+            <div class="wt__cell wt__cell--notes"><span class="wt__notes-text">{{ p2.notes }}</span></div>
+            <div class="wt__sep-col" />
+            <div class="wt__cell wt__cell--num" /><div class="wt__cell wt__cell--num" /><div class="wt__cell wt__cell--intervals" /><div class="wt__cell wt__cell--num" /><div class="wt__cell wt__cell--num" />
+          </div>
+        </template>
+      </template>
+
+      <!-- ── Summary row ── -->
+      <div class="wt__cols wt__summary-row">
+        <div class="wt__summary-label" style="grid-column: 1 / 6">{{ t("weekCard.total") }}</div>
+        <div class="wt__sep-col" />
+        <div class="wt__cell wt__cell--num wt__summary-val">{{ week.completed_total.km }}</div>
+        <div class="wt__cell wt__cell--num wt__summary-val">{{ formatMinutes(week.completed_total.time) }}</div>
+        <div class="wt__cell wt__cell--intervals" />
+        <div class="wt__cell wt__cell--num wt__summary-val wt__num-val--hr">{{ week.completed_total.avg_hr ?? "-" }}</div>
+        <div class="wt__cell wt__cell--num" />
+      </div>
     </div>
   </EbCard>
 </template>
 
 <style scoped>
 .week-card {
-  overflow: hidden;
+  overflow-x: auto;
   padding: 0;
+}
+
+.wt__table {
+  min-width: 100%;
+  width: max-content;
 }
 
 /* ── Header ── */
@@ -538,7 +545,7 @@ async function toggleSessionType(slot: DaySlot) {
 /* ── Table grid ── */
 .wt__cols {
   display: grid;
-  grid-template-columns: 52px 40px 44px minmax(0, 2fr) minmax(0, 1fr) 2px 64px 56px minmax(0, 1fr) 52px 52px;
+  grid-template-columns: 52px 40px 44px max-content max-content 2px 64px 56px max-content 52px 52px;
   align-items: start;
   min-height: 2.5rem;
 }
@@ -608,7 +615,6 @@ async function toggleSessionType(slot: DaySlot) {
 .wt__cell {
   padding: 0.3rem 0.35rem;
   font-size: 0.8125rem;
-  overflow: hidden;
 }
 
 .wt__cell--date {
@@ -686,8 +692,6 @@ async function toggleSessionType(slot: DaySlot) {
 /* ── Text content ── */
 .wt__title-text {
   display: block;
-  overflow: hidden;
-  text-overflow: ellipsis;
   white-space: nowrap;
   color: var(--eb-text);
   font-size: 0.875rem;
@@ -695,8 +699,6 @@ async function toggleSessionType(slot: DaySlot) {
 
 .wt__notes-text {
   display: block;
-  overflow: hidden;
-  text-overflow: ellipsis;
   white-space: nowrap;
   color: var(--eb-text-muted);
   font-size: 0.75rem;
@@ -704,8 +706,6 @@ async function toggleSessionType(slot: DaySlot) {
 
 .wt__intervals-text {
   display: block;
-  overflow: hidden;
-  text-overflow: ellipsis;
   white-space: nowrap;
   color: var(--eb-text-soft);
   font-size: 0.75rem;
@@ -803,14 +803,14 @@ async function toggleSessionType(slot: DaySlot) {
 /* ── Responsive ── */
 @media (max-width: 1023px) {
   .wt__cols {
-    grid-template-columns: 48px 36px 40px minmax(0, 1fr) 80px 2px 54px 48px 0 44px 44px;
+    grid-template-columns: 48px 36px 40px max-content max-content 2px 54px 48px 0 44px 44px;
   }
   .wt__cell--intervals { display: none; }
 }
 
 @media (max-width: 767px) {
   .wt__cols {
-    grid-template-columns: 44px 32px 38px minmax(0, 1fr) 2px 52px 46px 42px 42px;
+    grid-template-columns: 44px 32px 38px max-content 2px 52px 46px 42px 42px;
   }
   .wt__h--type,
   .wt__cell--type,
