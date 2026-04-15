@@ -545,7 +545,7 @@ async function toggleSessionType(slot: DaySlot) {
 /* ── Table grid ── */
 .wt__cols {
   display: grid;
-  grid-template-columns: 52px 40px 44px max-content max-content 2px 64px 56px max-content 52px 52px;
+  grid-template-columns: 52px 40px 44px minmax(12rem, 2fr) minmax(6rem, 1fr) 2px 64px 56px max-content 52px 52px;
   align-items: start;
   min-height: 2.5rem;
 }
@@ -803,14 +803,14 @@ async function toggleSessionType(slot: DaySlot) {
 /* ── Responsive ── */
 @media (max-width: 1023px) {
   .wt__cols {
-    grid-template-columns: 48px 36px 40px max-content max-content 2px 54px 48px 0 44px 44px;
+    grid-template-columns: 48px 36px 40px minmax(10rem, 2fr) minmax(5rem, 1fr) 2px 54px 48px 0 44px 44px;
   }
   .wt__cell--intervals { display: none; }
 }
 
 @media (max-width: 767px) {
   .wt__cols {
-    grid-template-columns: 44px 32px 38px max-content 2px 52px 46px 42px 42px;
+    grid-template-columns: 44px 32px 38px minmax(8rem, 1fr) 2px 52px 46px 42px 42px;
   }
   .wt__h--type,
   .wt__cell--type,
