@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coach Dashboard — Layout Options</title>
+<style>
+  :root {
+    --eb-bg: #09090b;
+    --eb-surface: #18181b;
+    --eb-border: #27272a;
+    --eb-text: #fafafa;
+    --eb-text-muted: #71717a;
+    --eb-text-soft: #a1a1aa;
+    --eb-lime: #c8ff00;
+    --eb-blue: #38bdf8;
+    --eb-danger: #f43f5e;
+    --eb-warning: #f59e0b;
+    --eb-radius-sm: 6px;
+    --eb-radius-md: 10px;
+    --eb-radius-lg: 16px;
+    --font-display: 'Syne', sans-serif;
+    --font-body: 'Inter', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #050507;
+    color: var(--eb-text);
+    font-family: var(--font-body);
+    font-size: 14px;
+    padding: 2rem;
+    line-height: 1.5;
+  }
+
+  h1 {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.375rem;
+    color: var(--eb-text);
+  }
+
+  .subtitle {
+    color: var(--eb-text-muted);
+    font-size: 0.875rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .options-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .option-card {
+    border: 2px solid var(--eb-border);
+    border-radius: var(--eb-radius-lg);
+    background: #0d0d0f;
+    cursor: pointer;
+    transition: border-color 200ms ease, box-shadow 200ms ease;
+    overflow: hidden;
+  }
+
+  .option-card:hover {
+    border-color: #3f3f46;
+  }
+
+  .option-card.selected {
+    border-color: var(--eb-lime);
+    box-shadow: 0 0 0 1px rgba(200,255,0,0.15), 0 0 24px rgba(200,255,0,0.08);
+  }
+
+  .option-label {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem 0.875rem;
+    border-bottom: 1px solid var(--eb-border);
+  }
+
+  .option-letter {
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 50%;
+    background: var(--eb-border);
+    color: var(--eb-text-muted);
+    font-size: 0.75rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    letter-spacing: 0;
+    flex-shrink: 0;
+    transition: background 200ms, color 200ms;
+  }
+
+  .option-card.selected .option-letter {
+    background: var(--eb-lime);
+    color: #09090b;
+  }
+
+  .option-title {
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: var(--eb-text);
+  }
+
+  .option-desc {
+    font-size: 0.75rem;
+    color: var(--eb-text-muted);
+    margin-top: 0.125rem;
+  }
+
+  .mockup-area {
+    padding: 1rem;
+  }
+
+  /* ---- Mockup components ---- */
+  .m-surface {
+    background: var(--eb-surface);
+    border: 1px solid var(--eb-border);
+    border-radius: var(--eb-radius-md);
+  }
+
+  .m-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--eb-text-muted);
+  }
+
+  .m-name {
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--eb-text);
+    line-height: 1.1;
+  }
+
+  .m-focus-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.2rem 0.55rem;
+    background: rgba(56,189,248,0.1);
+    border: 1px solid rgba(56,189,248,0.2);
+    border-radius: 999px;
+    color: var(--eb-blue);
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .m-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.35rem 0.65rem;
+    border-radius: var(--eb-radius-sm);
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+  }
+
+  .m-btn-ghost {
+    background: transparent;
+    border: 1px solid var(--eb-border);
+    color: var(--eb-text-muted);
+  }
+
+  .m-btn-primary {
+    background: var(--eb-lime);
+    border: none;
+    color: #09090b;
+  }
+
+  .m-btn-secondary {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--eb-border);
+    color: var(--eb-text-soft);
+  }
+
+  .m-btn-icon {
+    width: 1.75rem;
+    height: 1.75rem;
+    padding: 0;
+    border-radius: var(--eb-radius-sm);
+    justify-content: center;
+    font-size: 0.75rem;
+  }
+
+  .m-input {
+    background: var(--eb-bg);
+    border: 1px solid var(--eb-border);
+    border-radius: var(--eb-radius-sm);
+    color: var(--eb-text);
+    padding: 0.3rem 0.55rem;
+    font-size: 0.65rem;
+    width: 5.5rem;
+  }
+
+  .m-label {
+    font-size: 0.55rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--eb-text-muted);
+  }
+
+  .m-sidebar {
+    background: var(--eb-surface);
+    border: 1px solid var(--eb-border);
+    border-radius: var(--eb-radius-md);
+    overflow: hidden;
+  }
+
+  .m-sidebar-header {
+    padding: 0.6rem 0.75rem;
+    border-bottom: 1px solid var(--eb-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .m-sidebar-title {
+    font-size: 0.55rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--eb-text-muted);
+  }
+
+  .m-athlete-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.55rem 0.75rem;
+    border-left: 2px solid transparent;
+  }
+
+  .m-athlete-row.active {
+    border-left-color: var(--eb-lime);
+    background: rgba(200,255,0,0.05);
+  }
+
+  .m-dot {
+    width: 0.375rem;
+    height: 0.375rem;
+    border-radius: 50%;
+    background: var(--eb-lime);
+    flex-shrink: 0;
+  }
+
+  .m-dot.muted {
+    background: var(--eb-border);
+  }
+
+  .m-athlete-name {
+    flex: 1;
+    font-size: 0.65rem;
+    font-weight: 500;
+    color: var(--eb-text-soft);
+  }
+
+  .m-athlete-row.active .m-athlete-name {
+    color: var(--eb-text);
+    font-weight: 600;
+  }
+
+  .m-athlete-focus {
+    font-size: 0.55rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--eb-blue);
+  }
+
+  .m-drag-handle {
+    width: 0.75rem;
+    height: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    justify-content: center;
+    align-items: center;
+    opacity: 0.3;
+    flex-shrink: 0;
+    cursor: grab;
+  }
+
+  .m-drag-handle span {
+    display: block;
+    width: 0.5rem;
+    height: 1px;
+    background: var(--eb-text-muted);
+    border-radius: 1px;
+  }
+
+  .m-week-skeleton {
+    background: var(--eb-surface);
+    border: 1px solid var(--eb-border);
+    border-radius: var(--eb-radius-md);
+    padding: 0.75rem;
+    margin-top: 0.5rem;
+  }
+
+  .m-skel-line {
+    height: 0.5rem;
+    background: var(--eb-border);
+    border-radius: 2px;
+    margin-bottom: 0.375rem;
+  }
+
+  .m-skel-line.short { width: 40%; }
+  .m-skel-line.med { width: 65%; }
+  .m-skel-line.full { width: 100%; }
+
+  .m-badge {
+    padding: 0.15rem 0.45rem;
+    border-radius: 999px;
+    font-size: 0.55rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .m-badge-lime {
+    background: rgba(200,255,0,0.12);
+    color: var(--eb-lime);
+  }
+
+  /* ===== OPTION A ===== */
+  .opt-a-toolbar {
+    padding: 0.75rem 0.875rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .opt-a-identity {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .opt-a-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+  }
+
+  /* ===== OPTION B ===== */
+  .opt-b-toolbar {
+    padding: 0.875rem 1rem;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 1rem;
+    align-items: end;
+  }
+
+  .opt-b-identity {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+
+  .opt-b-focus-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.2rem;
+  }
+
+  .opt-b-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+  }
+
+  /* ===== OPTION C ===== */
+  .opt-c-toolbar {
+    padding: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .opt-c-left {
+    padding: 0.875rem 1rem;
+    border-right: 1px solid var(--eb-border);
+  }
+
+  .opt-c-right {
+    padding: 0.875rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+    justify-content: center;
+  }
+
+  .opt-c-focus-row {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+  }
+
+  .opt-c-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    flex-wrap: wrap;
+  }
+
+  /* ===== Layout preview section ===== */
+  .layout-preview {
+    display: grid;
+    grid-template-columns: 5.5rem 1fr;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+  }
+
+  .selected-check {
+    display: none;
+    width: 1.25rem;
+    height: 1.25rem;
+    background: var(--eb-lime);
+    border-radius: 50%;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-left: auto;
+  }
+
+  .selected-check svg {
+    width: 0.7rem;
+    height: 0.7rem;
+    stroke: #09090b;
+    stroke-width: 3;
+  }
+
+  .option-card.selected .selected-check {
+    display: flex;
+  }
+
+  .footer-note {
+    color: var(--eb-text-muted);
+    font-size: 0.75rem;
+    text-align: center;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--eb-border);
+  }
+</style>
+</head>
+<body>
+
+<h1>Coach dashboard — layout toolbar</h1>
+<p class="subtitle">Klikni na variantu, která ti přijde nejlepší pro rozložení toolbar + identity atletky</p>
+
+<div class="options-grid">
+
+  <!-- OPTION A: Compact single-line toolbar -->
+  <div class="option-card" onclick="select('a', this)">
+    <div class="option-label">
+      <div class="option-letter">A</div>
+      <div>
+        <div class="option-title">Kompaktní lišta</div>
+        <div class="option-desc">Vše na jedné řádce, maximální vertikální prostor</div>
+      </div>
+      <div class="selected-check">
+        <svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+    </div>
+    <div class="mockup-area">
+      <!-- Full layout preview: sidebar + content -->
+      <div class="layout-preview">
+        <!-- Sidebar -->
+        <div class="m-sidebar">
+          <div class="m-sidebar-header">
+            <span class="m-sidebar-title">Athletes</span>
+          </div>
+          <div class="m-athlete-row active">
+            <div class="m-drag-handle"><span/><span/><span/></div>
+            <div class="m-dot"></div>
+            <div class="m-athlete-name">Jan Novák</div>
+            <div class="m-athlete-focus">Z1</div>
+          </div>
+          <div class="m-athlete-row">
+            <div class="m-drag-handle"><span/><span/><span/></div>
+            <div class="m-dot muted"></div>
+            <div class="m-athlete-name">Eva Horáčková</div>
+          </div>
+          <div class="m-athlete-row">
+            <div class="m-drag-handle"><span/><span/><span/></div>
+            <div class="m-dot muted"></div>
+            <div class="m-athlete-name">Petr Šimánek</div>
+          </div>
+        </div>
+        <!-- Content -->
+        <div style="display:grid;gap:0.5rem;">
+          <!-- Toolbar: single line -->
+          <div class="m-surface opt-a-toolbar">
+            <div class="opt-a-identity">
+              <div class="m-name">Jan Novák</div>
+              <div class="m-focus-pill">Z1</div>
+            </div>
+            <div class="opt-a-actions">
+              <div class="m-input" style="width:4rem;font-size:0.6rem;padding:0.25rem 0.4rem;"></div>
+              <div class="m-btn m-btn-secondary" style="font-size:0.55rem;padding:0.25rem 0.5rem;">Uložit</div>
+              <div class="m-btn m-btn-ghost" style="font-size:0.55rem;padding:0.25rem 0.5rem;">Manage</div>
+              <div class="m-btn m-btn-ghost" style="font-size:0.55rem;padding:0.25rem 0.5rem;">← Dash</div>
+            </div>
+          </div>
+          <!-- Week cards -->
+          <div class="m-week-skeleton">
+            <div class="m-skel-line short" style="width:30%;height:0.4rem;"></div>
+            <div style="margin-top:0.5rem;display:grid;gap:0.25rem;">
+              <div class="m-skel-line full" style="height:0.35rem;"></div>
+              <div class="m-skel-line med" style="height:0.35rem;"></div>
+              <div class="m-skel-line short" style="height:0.35rem;"></div>
+            </div>
+          </div>
+          <div class="m-week-skeleton">
+            <div class="m-skel-line short" style="width:30%;height:0.4rem;"></div>
+            <div style="margin-top:0.5rem;display:grid;gap:0.25rem;">
+              <div class="m-skel-line full" style="height:0.35rem;"></div>
+              <div class="m-skel-line med" style="height:0.35rem;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:0.75rem;color:var(--eb-text-muted);font-size:0.65rem;line-height:1.4;">
+        ✓ Nejmenší výška toolbaru<br>
+        ✓ Jméno + focus + input + akce na 1 řádce<br>
+        △ Na malém ekranu se může crampit
+      </div>
+    </div>
+  </div>
+
+  <!-- OPTION B: Two-row with focus prominently below name -->
+  <div class="option-card" onclick="select('b', this)">
+    <div class="option-label">
+      <div class="option-letter">B</div>
+      <div>
+        <div class="option-title">Dvouúrovňový toolbar</div>
+        <div class="option-desc">Jméno nahoře, Focus + akce na druhé řádce</div>
+      </div>
+      <div class="selected-check">
+        <svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+    </div>
+    <div class="mockup-area">
+      <div class="layout-preview">
+        <!-- Sidebar -->
+        <div class="m-sidebar">
+          <div class="m-sidebar-header">
+            <span class="m-sidebar-title">Athletes</span>
+            <div class="m-btn m-btn-ghost" style="font-size:0.5rem;padding:0.15rem 0.4rem;">+ Manage</div>
+          </div>
+          <div class="m-athlete-row active">
+            <div class="m-drag-handle"><span/><span/><span/></div>
+            <div class="m-dot"></div>
+            <div class="m-athlete-name">Jan Novák</div>
+            <div class="m-athlete-focus">Z1</div>
+          </div>
+          <div class="m-athlete-row">
+            <div class="m-drag-handle"><span/><span/><span/></div>
+            <div class="m-dot muted"></div>
+            <div class="m-athlete-name">Eva Horáčková</div>
+          </div>
+          <div class="m-athlete-row">
+            <div class="m-drag-handle"><span/><span/><span/></div>
+            <div class="m-dot muted"></div>
+            <div class="m-athlete-name">Petr Šimánek</div>
+          </div>
+        </div>
+        <!-- Content -->
+        <div style="display:grid;gap:0.5rem;">
+          <!-- Toolbar: two rows -->
+          <div class="m-surface opt-b-toolbar">
+            <div class="opt-b-identity">
+              <div class="m-tag">Selected athlete</div>
+              <div class="m-name">Jan Novák</div>
+              <div class="opt-b-focus-row">
+                <div class="m-label">Focus</div>
+                <div class="m-input" style="width:3.5rem;font-size:0.6rem;padding:0.22rem 0.4rem;"></div>
+                <div class="m-btn m-btn-primary" style="font-size:0.55rem;padding:0.22rem 0.5rem;">Uložit</div>
+              </div>
+            </div>
+            <div class="opt-b-actions">
+              <div class="m-btn m-btn-ghost" style="font-size:0.55rem;padding:0.25rem 0.5rem;">← Dash</div>
+              <div class="m-btn m-btn-ghost" style="font-size:0.55rem;padding:0.25rem 0.5rem;">Manage</div>
+            </div>
+          </div>
+          <div class="m-week-skeleton">
+            <div class="m-skel-line short" style="width:30%;height:0.4rem;"></div>
+            <div style="margin-top:0.5rem;display:grid;gap:0.25rem;">
+              <div class="m-skel-line full" style="height:0.35rem;"></div>
+              <div class="m-skel-line med" style="height:0.35rem;"></div>
+            </div>
+          </div>
+          <div class="m-week-skeleton">
+            <div class="m-skel-line short" style="width:30%;height:0.4rem;"></div>
+            <div style="margin-top:0.5rem;display:grid;gap:0.25rem;">
+              <div class="m-skel-line full" style="height:0.35rem;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:0.75rem;color:var(--eb-text-muted);font-size:0.65rem;line-height:1.4;">
+        ✓ Přehledná hierarchie: jméno → focus → akce<br>
+        ✓ "Manage" tlačítko i v sidebar headeru<br>
+        △ Trochu více vertikálního prostoru
+      </div>
+    </div>
+  </div>
+
+  <!-- OPTION C: Split panel — identity left, controls right -->
+  <div class="option-card" onclick="select('c', this)">
+    <div class="option-label">
+      <div class="option-letter">C</div>
+      <div>
+        <div class="option-title">Rozdělený panel</div>
+        <div class="option-desc">Levá část: identita, Pravá část: focus + akce</div>
+      </div>
+      <div class="selected-check">
+        <svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+    </div>
+    <div class="mockup-area">
+      <div class="layout-preview">
+        <!-- Sidebar -->
+        <div class="m-sidebar">
+          <div class="m-sidebar-header">
+            <span class="m-sidebar-title">Athletes</span>
+          </div>
+          <div class="m-athlete-row active">
+            <div class="m-drag-handle"><span/><span/><span/></div>
+            <div class="m-dot"></div>
+            <div class="m-athlete-name">Jan Novák</div>
+            <div class="m-athlete-focus">Z1</div>
+          </div>
+          <div class="m-athlete-row">
+            <div class="m-drag-handle"><span/><span/><span/></div>
+            <div class="m-dot muted"></div>
+            <div class="m-athlete-name">Eva Horáčková</div>
+          </div>
+          <div class="m-athlete-row">
+            <div class="m-drag-handle"><span/><span/><span/></div>
+            <div class="m-dot muted"></div>
+            <div class="m-athlete-name">Petr Šimánek</div>
+          </div>
+        </div>
+        <!-- Content -->
+        <div style="display:grid;gap:0.5rem;">
+          <!-- Toolbar: split -->
+          <div class="m-surface opt-c-toolbar">
+            <div class="opt-c-left">
+              <div class="m-tag">Selected athlete</div>
+              <div class="m-name" style="margin-top:0.3rem;">Jan Novák</div>
+              <div style="margin-top:0.4rem;">
+                <div class="m-btn m-btn-ghost" style="font-size:0.5rem;padding:0.2rem 0.4rem;">← Athlete dashboard</div>
+              </div>
+            </div>
+            <div class="opt-c-right">
+              <div class="opt-c-focus-row">
+                <div class="m-label" style="white-space:nowrap;">Focus</div>
+                <div class="m-input" style="flex:1;min-width:0;font-size:0.6rem;padding:0.22rem 0.4rem;"></div>
+                <div class="m-btn m-btn-primary" style="font-size:0.55rem;padding:0.22rem 0.5rem;">OK</div>
+              </div>
+              <div class="opt-c-actions">
+                <div class="m-btn m-btn-ghost" style="font-size:0.5rem;padding:0.2rem 0.45rem;">Manage athletes</div>
+              </div>
+            </div>
+          </div>
+          <div class="m-week-skeleton">
+            <div class="m-skel-line short" style="width:30%;height:0.4rem;"></div>
+            <div style="margin-top:0.5rem;display:grid;gap:0.25rem;">
+              <div class="m-skel-line full" style="height:0.35rem;"></div>
+              <div class="m-skel-line med" style="height:0.35rem;"></div>
+            </div>
+          </div>
+          <div class="m-week-skeleton">
+            <div class="m-skel-line short" style="width:30%;height:0.4rem;"></div>
+            <div style="margin-top:0.5rem;display:grid;gap:0.25rem;">
+              <div class="m-skel-line full" style="height:0.35rem;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:0.75rem;color:var(--eb-text-muted);font-size:0.65rem;line-height:1.4;">
+        ✓ Jasné oddělení: kdo vs. co děláme<br>
+        ✓ Vizuálně nejsymetričtější<br>
+        △ Vertikálně trochu vyšší než A
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer-note">
+  Ve všech variantách: drag handle v sidebaru pro přeskupení atletů · keyboard nav (↑↓ v sidebaru, Tab/Enter v toolbaru)
+</div>
+
+<script>
+  let current = null;
+  function select(choice, el) {
+    if (current) current.classList.remove('selected');
+    el.classList.add('selected');
+    current = el;
+    if (window.__eb_select) window.__eb_select(choice, el.querySelector('.option-title').textContent);
+  }
+</script>
+</body>
+</html>
