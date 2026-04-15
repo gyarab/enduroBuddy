@@ -370,7 +370,7 @@ async function toggleSessionType(slot: DaySlot) {
               class="wt__textarea"
               :disabled="getEdit(slot.date)!.isSaving"
               :placeholder="t('weekCard.titlePlaceholder')"
-              rows="2"
+              rows="1"
               @click.stop
               @input="onFieldInput(slot.date, slot)"
             />
@@ -588,9 +588,6 @@ async function toggleSessionType(slot: DaySlot) {
 .wt__row--editing {
   background: rgba(200,255,0,.04);
   cursor: default;
-  align-items: start;
-  padding-top: 0.5rem;
-  padding-bottom: 0.25rem;
 }
 
 .wt__row--done { border-left: 2px solid var(--eb-lime); padding-left: calc(1rem - 2px); }
@@ -771,6 +768,10 @@ async function toggleSessionType(slot: DaySlot) {
   resize: none;
   font-family: var(--eb-font-mono);
   line-height: 1.45;
+  height: 1.75rem;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  white-space: nowrap;
 }
 
 
