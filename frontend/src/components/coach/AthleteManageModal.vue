@@ -5,6 +5,8 @@ import type { CoachAthlete, CoachJoinRequest } from "@/api/coach";
 import { fetchCoachCode, fetchJoinRequests, approveJoinRequest, rejectJoinRequest, removeAthlete } from "@/api/coach";
 import EbButton from "@/components/ui/EbButton.vue";
 import EbModal from "@/components/ui/EbModal.vue";
+import EbContextMenu from "@/components/ui/EbContextMenu.vue";
+import type { ContextMenuItem } from "@/components/ui/context-menu-types";
 import { useI18n } from "@/composables/useI18n";
 import { useToastStore } from "@/stores/toasts";
 
@@ -12,11 +14,12 @@ const props = defineProps<{
   athletes: CoachAthlete[];
   open: boolean;
   saving?: boolean;
+  startRemoveId?: number | null;
 }>();
 
 const emit = defineEmits<{
   close: [];
-  save: [athleteIds: number[]];
+  autoSave: [athleteIds: number[]];
   toggleHidden: [athleteId: number, hidden: boolean];
   athleteRemoved: [athleteId: number];
 }>();
@@ -36,10 +39,35 @@ const removeAthleteId = ref<number | null>(null);
 const removeConfirmName = ref("");
 const isRemoving = ref(false);
 
+// Drag and drop state
+const dragSourceIndex = ref<number | null>(null);
+const dragOverIndex = ref<number | null>(null);
+
+// Context menu state
+const ctxMenu = ref<{
+  open: boolean;
+  athlete: CoachAthlete | null;
+  x: number;
+  y: number;
+}>({ open: false, athlete: null, x: 0, y: 0 });
+
 watch(
   () => [props.open, props.athletes] as const,
   () => {
     draft.value = props.athletes.map((athlete) => ({ ...athlete }));
+  },
+  { immediate: true },
+);
+
+// When startRemoveId is set, immediately open the confirm dialog for that athlete
+watch(
+  () => props.startRemoveId,
+  (id) => {
+    if (id != null) {
+      removeAthleteId.value = id;
+      removeConfirmName.value = "";
+      activeTab.value = "order";
+    }
   },
   { immediate: true },
 );
@@ -65,23 +93,108 @@ watch(activeTab, async (tab) => {
 
 const visibleCount = computed(() => draft.value.filter((athlete) => !athlete.hidden).length);
 
-function moveItem(index: number, direction: -1 | 1) {
-  const targetIndex = index + direction;
-  if (targetIndex < 0 || targetIndex >= draft.value.length) {
+// --- Drag and drop ---
+
+function onDragStart(e: DragEvent, index: number) {
+  dragSourceIndex.value = index;
+  if (e.dataTransfer) {
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", String(index));
+  }
+}
+
+function onDragOver(e: DragEvent, index: number) {
+  e.preventDefault();
+  if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
+  dragOverIndex.value = index;
+}
+
+function onDragLeave(e: DragEvent, el: HTMLElement) {
+  if (el.contains(e.relatedTarget as Node)) return;
+  dragOverIndex.value = null;
+}
+
+function onDrop(e: DragEvent, targetIndex: number) {
+  e.preventDefault();
+  const sourceIndex = dragSourceIndex.value;
+  if (sourceIndex === null || sourceIndex === targetIndex) {
+    dragSourceIndex.value = null;
+    dragOverIndex.value = null;
     return;
   }
   const next = [...draft.value];
-  const [moved] = next.splice(index, 1);
+  const [moved] = next.splice(sourceIndex, 1);
   next.splice(targetIndex, 0, moved);
-  draft.value = next.map((athlete, orderIndex) => ({
-    ...athlete,
-    sort_order: orderIndex + 1,
-  }));
+  draft.value = next.map((athlete, i) => ({ ...athlete, sort_order: i + 1 }));
+  emit("autoSave", draft.value.map((a) => a.id));
+  dragSourceIndex.value = null;
+  dragOverIndex.value = null;
 }
 
-function save() {
-  emit("save", draft.value.map((athlete) => athlete.id));
+function onDragEnd() {
+  dragSourceIndex.value = null;
+  dragOverIndex.value = null;
 }
+
+// --- Context menu ---
+
+function openCtxMenu(e: MouseEvent, athlete: CoachAthlete) {
+  e.preventDefault();
+  ctxMenu.value = { open: true, athlete, x: e.clientX, y: e.clientY };
+}
+
+function ctxItems(athlete: CoachAthlete): ContextMenuItem[] {
+  return [
+    { action: "go", label: t("athleteCtx.goToDashboard"), icon: "↗" },
+    {
+      action: "toggleHidden",
+      label: athlete.hidden ? t("athleteCtx.show") : t("athleteCtx.hide"),
+      icon: athlete.hidden ? "👁" : "🚫",
+    },
+    { action: "remove", label: t("athleteCtx.remove"), icon: "✕", variant: "danger" },
+  ];
+}
+
+function onCtxSelect(action: string) {
+  const athlete = ctxMenu.value.athlete;
+  ctxMenu.value.open = false;
+  ctxMenu.value.athlete = null;
+  if (!athlete) return;
+
+  if (action === "go") {
+    emit("close");
+  } else if (action === "toggleHidden") {
+    emit("toggleHidden", athlete.id, !athlete.hidden);
+  } else if (action === "remove") {
+    startRemove(athlete.id);
+  }
+}
+
+// --- Remove athlete ---
+
+function startRemove(athleteId: number) {
+  removeAthleteId.value = athleteId;
+  removeConfirmName.value = "";
+}
+
+async function confirmRemove() {
+  if (!removeAthleteId.value) return;
+  isRemoving.value = true;
+  try {
+    await removeAthlete(removeAthleteId.value, removeConfirmName.value);
+    emit("athleteRemoved", removeAthleteId.value);
+    draft.value = draft.value.filter((a) => a.id !== removeAthleteId.value);
+    removeAthleteId.value = null;
+    removeConfirmName.value = "";
+    toastStore.push("Athlete removed.", "success");
+  } catch {
+    toastStore.push(t("removeAthlete.error"), "danger");
+  } finally {
+    isRemoving.value = false;
+  }
+}
+
+// --- Coach code ---
 
 async function copyCode() {
   try {
@@ -91,6 +204,8 @@ async function copyCode() {
     toastStore.push("Could not copy.", "danger");
   }
 }
+
+// --- Join requests ---
 
 async function approve(requestId: number) {
   processingRequestId.value = requestId;
@@ -115,28 +230,6 @@ async function reject(requestId: number) {
     toastStore.push(t("joinRequests.rejectError"), "danger");
   } finally {
     processingRequestId.value = null;
-  }
-}
-
-function startRemove(athleteId: number) {
-  removeAthleteId.value = athleteId;
-  removeConfirmName.value = "";
-}
-
-async function confirmRemove() {
-  if (!removeAthleteId.value) return;
-  isRemoving.value = true;
-  try {
-    await removeAthlete(removeAthleteId.value, removeConfirmName.value);
-    emit("athleteRemoved", removeAthleteId.value);
-    draft.value = draft.value.filter((a) => a.id !== removeAthleteId.value);
-    removeAthleteId.value = null;
-    removeConfirmName.value = "";
-    toastStore.push("Athlete removed.", "success");
-  } catch {
-    toastStore.push(t("removeAthlete.error"), "danger");
-  } finally {
-    isRemoving.value = false;
   }
 }
 </script>
@@ -179,42 +272,41 @@ async function confirmRemove() {
         </button>
       </div>
 
-      <!-- Order tab -->
+      <!-- Athletes tab -->
       <template v-if="activeTab === 'order'">
         <p class="athlete-manage__text">
           {{ t("coachManage.summary", { count: visibleCount }) }}
         </p>
 
         <div class="athlete-manage__list">
-          <div v-for="(athlete, index) in draft" :key="athlete.id" class="athlete-manage__item">
-            <div class="athlete-manage__meta">
-              <div class="athlete-manage__name">{{ athlete.name }}</div>
-              <div class="athlete-manage__detail">
-                <span v-if="athlete.focus">{{ athlete.focus }}</span>
-                <span v-else>{{ t("coachManage.noFocus") }}</span>
-                <span v-if="athlete.hidden" class="athlete-manage__hidden">{{ t("coachManage.hidden") }}</span>
-              </div>
-            </div>
+          <div
+            v-for="(athlete, index) in draft"
+            :key="athlete.id"
+            class="athlete-manage__item"
+            :class="{
+              'athlete-manage__item--hidden': athlete.hidden,
+              'athlete-manage__item--drag-over': dragOverIndex === index,
+              'athlete-manage__item--dragging': dragSourceIndex === index,
+            }"
+            draggable="true"
+            @dragstart="onDragStart($event, index)"
+            @dragover="onDragOver($event, index)"
+            @dragleave="onDragLeave($event, $event.currentTarget as HTMLElement)"
+            @drop="onDrop($event, index)"
+            @dragend="onDragEnd"
+            @contextmenu="openCtxMenu($event, athlete)"
+          >
+            <div class="athlete-manage__item-row">
+              <div class="athlete-manage__drag-handle" aria-hidden="true">⠿</div>
 
-            <div class="athlete-manage__actions">
-              <EbButton
-                variant="secondary"
-                :disabled="saving"
-                @click="emit('toggleHidden', athlete.id, !athlete.hidden)"
-              >
-                {{ athlete.hidden ? t("coachManage.show") : t("coachManage.hide") }}
-              </EbButton>
-              <EbButton variant="ghost" :disabled="index === 0 || saving" @click="moveItem(index, -1)">{{ t("coachManage.up") }}</EbButton>
-              <EbButton
-                variant="ghost"
-                :disabled="index === draft.length - 1 || saving"
-                @click="moveItem(index, 1)"
-              >
-                {{ t("coachManage.down") }}
-              </EbButton>
-              <EbButton variant="ghost" class="athlete-manage__remove-btn" @click="startRemove(athlete.id)">
-                {{ t("removeAthlete.button") }}
-              </EbButton>
+              <div class="athlete-manage__meta">
+                <div class="athlete-manage__name">{{ athlete.name }}</div>
+                <div class="athlete-manage__detail">
+                  <span v-if="athlete.focus">{{ athlete.focus }}</span>
+                  <span v-else>{{ t("coachManage.noFocus") }}</span>
+                  <span v-if="athlete.hidden" class="athlete-manage__hidden-badge">{{ t("coachManage.hidden") }}</span>
+                </div>
+              </div>
             </div>
 
             <!-- Inline remove confirm -->
@@ -240,7 +332,6 @@ async function confirmRemove() {
 
         <div class="athlete-manage__footer">
           <EbButton variant="ghost" :disabled="saving" @click="emit('close')">{{ t("coachManage.cancel") }}</EbButton>
-          <EbButton :disabled="saving" @click="save">{{ saving ? t("coachManage.saving") : t("coachManage.saveOrder") }}</EbButton>
         </div>
       </template>
 
@@ -287,6 +378,16 @@ async function confirmRemove() {
       </template>
     </div>
   </EbModal>
+
+  <!-- Context menu — Teleport to body handled inside EbContextMenu -->
+  <EbContextMenu
+    :open="ctxMenu.open"
+    :items="ctxMenu.athlete ? ctxItems(ctxMenu.athlete) : []"
+    :x="ctxMenu.x"
+    :y="ctxMenu.y"
+    @close="ctxMenu.open = false; ctxMenu.athlete = null"
+    @select="onCtxSelect"
+  />
 </template>
 
 <style scoped>
@@ -360,14 +461,55 @@ async function confirmRemove() {
 }
 
 .athlete-manage__item {
+  display: flex;
+  flex-direction: column;
   padding: 0.9rem 1rem;
   border: 1px solid var(--eb-border);
   border-radius: var(--eb-radius-md);
   background: var(--eb-bg-elevated);
+  cursor: grab;
+  transition: border-color 150ms ease-out, opacity 150ms ease-out;
+}
+
+.athlete-manage__item-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.athlete-manage__item:active {
+  cursor: grabbing;
+}
+
+.athlete-manage__item--drag-over {
+  border-color: var(--eb-lime);
+}
+
+.athlete-manage__item--dragging {
+  opacity: 0.4;
+}
+
+.athlete-manage__item--hidden {
+  opacity: 0.45;
+}
+
+.athlete-manage__item--hidden .athlete-manage__name {
+  text-decoration: line-through;
+}
+
+.athlete-manage__drag-handle {
+  flex-shrink: 0;
+  color: var(--eb-text-muted);
+  font-size: 1rem;
+  line-height: 1.4;
+  user-select: none;
+  cursor: grab;
 }
 
 .athlete-manage__meta {
-  margin-bottom: 0.5rem;
+  flex: 1;
+  min-width: 0;
+  margin-bottom: 0;
 }
 
 .athlete-manage__actions {
@@ -380,7 +522,7 @@ async function confirmRemove() {
 .athlete-manage__footer {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 0.75rem;
 }
 
@@ -398,12 +540,8 @@ async function confirmRemove() {
   letter-spacing: 0.06em;
 }
 
-.athlete-manage__hidden {
+.athlete-manage__hidden-badge {
   color: var(--eb-warning);
-}
-
-.athlete-manage__remove-btn {
-  color: var(--eb-danger);
 }
 
 .athlete-manage__remove-confirm {
@@ -412,6 +550,7 @@ async function confirmRemove() {
   border-top: 1px solid var(--eb-border);
   display: grid;
   gap: 0.5rem;
+  width: 100%;
 }
 
 .athlete-manage__remove-text {
