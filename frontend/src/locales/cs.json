@@ -295,7 +295,9 @@
   "coachCode": {
     "tabLabel": "Kód trenéra",
     "copy": "Kopírovat",
-    "copied": "Zkopírováno!"
+    "copied": "Zkopírováno!",
+    "loadError": "Nepodařilo se načíst coach kód.",
+    "copyError": "Kopírování se nezdařilo."
   },
   "joinRequests": {
     "tabLabel": "Žádosti",
@@ -314,6 +316,7 @@
     "confirmPlaceholder": "Celé jméno",
     "confirm": "Odebrat",
     "confirming": "Odebírám...",
+    "success": "Atlet byl odstraněn.",
     "error": "Nepodařilo se odebrat atleta."
   },
   "profileCompletion": {

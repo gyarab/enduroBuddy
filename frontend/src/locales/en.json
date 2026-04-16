@@ -295,7 +295,9 @@
   "coachCode": {
     "tabLabel": "Coach Code",
     "copy": "Copy",
-    "copied": "Copied!"
+    "copied": "Copied!",
+    "loadError": "Could not load coach code.",
+    "copyError": "Could not copy."
   },
   "joinRequests": {
     "tabLabel": "Requests",
@@ -314,6 +316,7 @@
     "confirmPlaceholder": "Full name",
     "confirm": "Remove",
     "confirming": "Removing...",
+    "success": "Athlete removed.",
     "error": "Could not remove athlete."
   },
   "profileCompletion": {

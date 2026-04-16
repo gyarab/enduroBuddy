@@ -22,6 +22,7 @@ const emit = defineEmits<{
   autoSave: [athleteIds: number[]];
   toggleHidden: [athleteId: number, hidden: boolean];
   athleteRemoved: [athleteId: number];
+  goToDashboard: [];
 }>();
 
 const draft = ref<CoachAthlete[]>([]);
@@ -78,7 +79,7 @@ watch(activeTab, async (tab) => {
       const data = await fetchCoachCode();
       coachCode.value = data.coach_join_code;
     } catch {
-      toastStore.push("Could not load coach code.", "danger");
+      toastStore.push(t("coachCode.loadError"), "danger");
     }
   }
   if (tab === "requests") {
@@ -145,11 +146,11 @@ function openCtxMenu(e: MouseEvent, athlete: CoachAthlete) {
 
 function ctxItems(athlete: CoachAthlete): ContextMenuItem[] {
   return [
-    { action: "go", label: t("athleteCtx.goToDashboard"), icon: "↗" },
+    { action: "go", label: t("athleteCtx.goToDashboard"), icon: "→" },
     {
-      action: "toggleHidden",
+      action: athlete.hidden ? "show" : "hide",
       label: athlete.hidden ? t("athleteCtx.show") : t("athleteCtx.hide"),
-      icon: athlete.hidden ? "👁" : "🚫",
+      icon: athlete.hidden ? "●" : "○",
     },
     { action: "remove", label: t("athleteCtx.remove"), icon: "✕", variant: "danger" },
   ];
@@ -163,8 +164,11 @@ function onCtxSelect(action: string) {
 
   if (action === "go") {
     emit("close");
-  } else if (action === "toggleHidden") {
-    emit("toggleHidden", athlete.id, !athlete.hidden);
+    emit("goToDashboard");
+  } else if (action === "hide") {
+    emit("toggleHidden", athlete.id, true);
+  } else if (action === "show") {
+    emit("toggleHidden", athlete.id, false);
   } else if (action === "remove") {
     startRemove(athlete.id);
   }
@@ -178,15 +182,16 @@ function startRemove(athleteId: number) {
 }
 
 async function confirmRemove() {
-  if (!removeAthleteId.value) return;
+  const athleteId = removeAthleteId.value;
+  if (!athleteId) return;
   isRemoving.value = true;
   try {
-    await removeAthlete(removeAthleteId.value, removeConfirmName.value);
-    emit("athleteRemoved", removeAthleteId.value);
-    draft.value = draft.value.filter((a) => a.id !== removeAthleteId.value);
+    await removeAthlete(athleteId, removeConfirmName.value);
+    emit("athleteRemoved", athleteId);
+    draft.value = draft.value.filter((a) => a.id !== athleteId);
     removeAthleteId.value = null;
     removeConfirmName.value = "";
-    toastStore.push("Athlete removed.", "success");
+    toastStore.push(t("removeAthlete.success"), "success");
   } catch {
     toastStore.push(t("removeAthlete.error"), "danger");
   } finally {
@@ -201,7 +206,7 @@ async function copyCode() {
     await navigator.clipboard.writeText(coachCode.value);
     toastStore.push(t("coachCode.copied"), "success");
   } catch {
-    toastStore.push("Could not copy.", "danger");
+    toastStore.push(t("coachCode.copyError"), "danger");
   }
 }
 
