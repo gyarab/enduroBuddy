@@ -85,4 +85,12 @@ describe("CoachSidebar", () => {
     expect(document.activeElement).toBe(items[0]!.element);
     wrapper.unmount();
   });
+
+  it("emits select on Enter key", async () => {
+    const wrapper = mount(CoachSidebar, { props: { athletes }, attachTo: document.body });
+    const items = wrapper.findAll(".coach-sidebar__item");
+    await items[1]!.trigger("keydown", { key: "Enter" });
+    expect(wrapper.emitted("select")).toEqual([[202]]);
+    wrapper.unmount();
+  });
 });
