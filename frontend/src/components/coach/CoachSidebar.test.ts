@@ -70,7 +70,7 @@ describe("CoachSidebar", () => {
   it("moves focus down with ArrowDown key", async () => {
     const wrapper = mount(CoachSidebar, { props: { athletes }, attachTo: document.body });
     const items = wrapper.findAll(".coach-sidebar__item");
-    items[0]!.element.focus();
+    (items[0]!.element as HTMLElement).focus();
     await items[0]!.trigger("keydown", { key: "ArrowDown" });
     expect(document.activeElement).toBe(items[1]!.element);
     wrapper.unmount();
@@ -79,7 +79,7 @@ describe("CoachSidebar", () => {
   it("moves focus up with ArrowUp key", async () => {
     const wrapper = mount(CoachSidebar, { props: { athletes }, attachTo: document.body });
     const items = wrapper.findAll(".coach-sidebar__item");
-    items[1]!.element.focus();
+    (items[1]!.element as HTMLElement).focus();
     await items[1]!.trigger("keydown", { key: "ArrowUp" });
     expect(document.activeElement).toBe(items[0]!.element);
     wrapper.unmount();
