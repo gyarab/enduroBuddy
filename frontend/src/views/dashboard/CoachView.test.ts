@@ -66,13 +66,14 @@ function mountCoachView() {
         AthleteManageModal: {
           template: "<div class='athlete-manage-modal-stub' />",
         },
-        MonthSummaryBar: { template: "<div class='summary-bar-stub' />" },
-        WeekCard: { template: "<div class='week-card-stub' />" },
-        WeekCardSkeleton: { template: "<div class='week-skeleton-stub' />" },
+        MonthSummaryBar: { template: "<div />" },
+        WeekCard: { template: "<div />" },
+        WeekCardSkeleton: { template: "<div />" },
         EbButton: {
           template: "<button><slot /></button>",
         },
         EbCard: { template: "<div class='eb-card-stub'><slot /></div>" },
+        MonthBar: { template: "<div />" },
       },
     },
   });
@@ -83,7 +84,7 @@ describe("CoachView", () => {
     setActivePinia(createPinia());
   });
 
-  it("loads coach dashboard on mount when store is empty", () => {
+  it("1. loads coach dashboard on mount when store is empty", () => {
     const store = useCoachStore();
     store.loadDashboard = vi.fn().mockResolvedValue(undefined);
 
@@ -92,7 +93,43 @@ describe("CoachView", () => {
     expect(store.loadDashboard).toHaveBeenCalledOnce();
   });
 
-  it("saves focus from toolbar input", async () => {
+  it("2. Manage athletes button is visible with no selected athlete", async () => {
+    const store = useCoachStore();
+    store.loadDashboard = vi.fn().mockResolvedValue(undefined);
+    store.loadAthletes = vi.fn().mockResolvedValue(undefined);
+    // no dashboard set → no selected athlete
+
+    const wrapper = mountCoachView();
+
+    const manageButton = wrapper.findAll("button").find((btn) => btn.text().includes("Manage athletes"));
+    expect(manageButton).toBeTruthy();
+  });
+
+  it("3. empty state card shown when no athlete selected", async () => {
+    const store = useCoachStore();
+    store.loadDashboard = vi.fn().mockResolvedValue(undefined);
+    // Ensure isLoading is false so the empty-state branch renders
+    store.isLoading = false;
+
+    const wrapper = mountCoachView();
+    // Wait for onMounted microtasks to settle
+    await wrapper.vm.$nextTick();
+
+    // i18n may return czech or english depending on locale; check for the empty-state class
+    expect(wrapper.find(".coach-card--empty").exists()).toBe(true);
+  });
+
+  it("4. athlete name shown in toolbar when athlete is selected", async () => {
+    const store = useCoachStore();
+    store.dashboard = { ...dashboardPayload };
+    store.loadDashboard = vi.fn().mockResolvedValue(undefined);
+
+    const wrapper = mountCoachView();
+
+    expect(wrapper.html()).toContain("Alice Runner");
+  });
+
+  it("5. focus input and Save focus button call coachStore.saveFocus", async () => {
     const store = useCoachStore();
     store.dashboard = { ...dashboardPayload };
     store.saveFocus = vi.fn().mockResolvedValue(undefined);
@@ -102,24 +139,51 @@ describe("CoachView", () => {
     const input = wrapper.get("#coach-focus-input");
     await input.setValue("Trail");
 
-    const saveButton = wrapper.findAll("button").find((candidate) => candidate.text().includes("Save focus"));
+    const saveButton = wrapper.findAll("button").find((btn) => btn.text().includes("Save focus"));
     expect(saveButton).toBeTruthy();
     await saveButton!.trigger("click");
 
     expect(store.saveFocus).toHaveBeenCalledWith("Trail");
   });
 
-  it("opens manage flow by loading athletes before modal use", async () => {
+  it("6. clicking Manage athletes button opens modal (calls loadAthletes)", async () => {
     const store = useCoachStore();
     store.dashboard = { ...dashboardPayload };
     store.loadAthletes = vi.fn().mockResolvedValue(undefined);
     store.loadDashboard = vi.fn().mockResolvedValue(undefined);
 
     const wrapper = mountCoachView();
-    const manageButton = wrapper.findAll("button").find((candidate) => candidate.text().includes("Manage athletes"));
+    const manageButton = wrapper.findAll("button").find((btn) => btn.text().includes("Manage athletes"));
     expect(manageButton).toBeTruthy();
     await manageButton!.trigger("click");
 
     expect(store.loadAthletes).toHaveBeenCalledOnce();
+  });
+
+  it("7. handleSidebarReorder calls saveAthleteOrder with hidden athletes appended", async () => {
+    const store = useCoachStore();
+    store.dashboard = {
+      ...dashboardPayload,
+      athletes: [
+        { id: 101, name: "Alice Runner", focus: "10K", hidden: false, sort_order: 1, selected: true },
+      ],
+    };
+    // managedAthletes includes a hidden athlete
+    store.managedAthletes = [
+      { id: 101, name: "Alice Runner", focus: "10K", hidden: false, sort_order: 1, selected: true },
+      { id: 202, name: "Bob Climber", focus: "", hidden: true, sort_order: 2, selected: false },
+    ] as any;
+    store.saveAthleteOrder = vi.fn().mockResolvedValue(undefined);
+    store.loadDashboard = vi.fn().mockResolvedValue(undefined);
+
+    const wrapper = mountCoachView();
+
+    // Get the CoachSidebar stub and emit a reorder event
+    const sidebar = wrapper.findComponent({ name: "CoachSidebar" });
+    // Directly invoke the handler via vm
+    const vm = wrapper.vm as any;
+    await vm.handleSidebarReorder([101]);
+
+    expect(store.saveAthleteOrder).toHaveBeenCalledWith([101, 202]);
   });
 });
