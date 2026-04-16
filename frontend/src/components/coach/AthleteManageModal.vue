@@ -302,11 +302,10 @@ async function reject(requestId: number) {
               <div class="athlete-manage__meta">
                 <div class="athlete-manage__name">{{ athlete.name }}</div>
                 <div class="athlete-manage__detail">
-                  <span v-if="athlete.focus">{{ athlete.focus }}</span>
-                  <span v-else>{{ t("coachManage.noFocus") }}</span>
                   <span v-if="athlete.hidden" class="athlete-manage__hidden-badge">{{ t("coachManage.hidden") }}</span>
                 </div>
               </div>
+              <span v-if="athlete.focus" class="athlete-manage__focus-tag">{{ athlete.focus }}</span>
             </div>
 
             <!-- Inline remove confirm -->
@@ -542,6 +541,16 @@ async function reject(requestId: number) {
 
 .athlete-manage__hidden-badge {
   color: var(--eb-warning);
+}
+
+.athlete-manage__focus-tag {
+  color: var(--eb-blue);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  flex-shrink: 0;
+  margin-left: auto;
 }
 
 .athlete-manage__remove-confirm {
