@@ -69,17 +69,27 @@ async function handleToggleHidden(athleteId: number, hidden: boolean) {
   await coachStore.setAthleteHidden(athleteId, hidden);
 }
 
-function handleSidebarRemove(athleteId: number) {
-  void openManageModal().then(() => {
+async function handleSidebarRemove(athleteId: number) {
+  try {
+    await openManageModal();
     startRemoveId.value = athleteId;
-  });
+  } catch {
+    // openManageModal failure already shows a toast via the store
+  }
 }
 
-function handleAthleteRemoved(athleteId: number) {
-  coachStore.managedAthletes.splice(
-    coachStore.managedAthletes.findIndex((a) => a.id === athleteId),
-    1,
-  );
+function handleAthleteRemoved(_athleteId: number) {
+  void coachStore.loadAthletes();
+}
+
+async function handleSidebarSelect(athleteId: number) {
+  isSidebarOpen.value = false;
+  await coachStore.selectAthlete(athleteId);
+}
+
+function handleMonthSelect(monthValue: string) {
+  const athlete = coachStore.selectedAthlete;
+  if (athlete) void coachStore.loadDashboard(athlete.id, monthValue);
 }
 
 function handleGoToDashboard() {
@@ -106,12 +116,7 @@ async function handleAddMonth() {
     <aside class="coach-view__sidebar" :class="{ 'coach-view__sidebar--open': isSidebarOpen }">
       <CoachSidebar
         :athletes="coachStore.athletes"
-        @select="
-          async (athleteId) => {
-            isSidebarOpen = false;
-            await coachStore.selectAthlete(athleteId);
-          }
-        "
+        @select="handleSidebarSelect"
         @reorder="handleSidebarReorder"
         @toggle-hidden="handleToggleHidden"
         @remove="handleSidebarRemove"
@@ -168,7 +173,7 @@ async function handleAddMonth() {
         <template v-else>
           <!-- Empty state toolbar: title + manage button -->
           <span class="coach-toolbar__workspace-title">{{ t("coachView.workspace") }}</span>
-          <div class="coach-toolbar__actions" style="margin-left: auto;">
+          <div class="coach-toolbar__actions coach-toolbar__actions--end">
             <EbButton variant="ghost" @click="openManageModal">{{ t("coachView.manageAthletes") }}</EbButton>
           </div>
         </template>
@@ -212,7 +217,7 @@ async function handleAddMonth() {
     :months="coachStore.navigation?.available ?? []"
     :active-month="coachStore.selectedMonth?.value"
     :adding="isAddingMonth"
-    @select="(value) => coachStore.loadDashboard(coachStore.selectedAthlete!.id, value)"
+    @select="handleMonthSelect"
     @add-month="handleAddMonth"
   />
 
@@ -281,8 +286,8 @@ async function handleAddMonth() {
   display: inline-flex;
   align-items: center;
   padding: 0.2rem 0.6rem;
-  background: rgba(56, 189, 248, 0.1);
-  border: 1px solid rgba(56, 189, 248, 0.2);
+  background: color-mix(in srgb, var(--eb-blue) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--eb-blue) 20%, transparent);
   border-radius: 999px;
   color: var(--eb-blue);
   font-size: 0.6875rem;
@@ -319,6 +324,10 @@ async function handleAddMonth() {
   align-items: center;
   gap: 0.5rem;
   flex-shrink: 0;
+}
+
+.coach-toolbar__actions--end {
+  margin-left: auto;
 }
 
 .coach-toolbar__back-link {
@@ -412,6 +421,10 @@ async function handleAddMonth() {
   .coach-toolbar__actions {
     width: 100%;
     justify-content: flex-start;
+  }
+
+  .coach-toolbar__actions--end {
+    margin-left: 0;
   }
 
   .coach-toolbar__input {

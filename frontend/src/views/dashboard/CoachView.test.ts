@@ -82,6 +82,7 @@ function mountCoachView() {
 describe("CoachView", () => {
   beforeEach(() => {
     setActivePinia(createPinia());
+    // locale is pinned to English by default in test environment
   });
 
   it("1. loads coach dashboard on mount when store is empty", () => {
@@ -140,7 +141,7 @@ describe("CoachView", () => {
     await input.setValue("Trail");
 
     const saveButton = wrapper.findAll("button").find((btn) => btn.text().includes("Save focus"));
-    expect(saveButton).toBeTruthy();
+    expect(saveButton).toBeDefined();
     await saveButton!.trigger("click");
 
     expect(store.saveFocus).toHaveBeenCalledWith("Trail");
