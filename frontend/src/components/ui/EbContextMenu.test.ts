@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { nextTick } from "vue";
 
 import EbContextMenu from "@/components/ui/EbContextMenu.vue";
-import type { ContextMenuItem } from "@/components/ui/EbContextMenu.vue";
+import type { ContextMenuItem } from "@/components/ui/context-menu-types";
 
 const items: ContextMenuItem[] = [
   { action: "go", label: "Go to dashboard" },

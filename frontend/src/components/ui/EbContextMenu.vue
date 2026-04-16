@@ -1,18 +1,16 @@
 <script setup lang="ts">
 import { onUnmounted, ref, watch } from "vue";
 
-export type ContextMenuItem = {
-  action: string;
-  label: string;
-  icon?: string;
-  variant?: "default" | "danger";
-};
+import type { ContextMenuItem } from "@/components/ui/context-menu-types";
+
+export type { ContextMenuItem };
 
 const props = defineProps<{
   open: boolean;
   items: ContextMenuItem[];
   x: number;
   y: number;
+  label?: string;
 }>();
 
 const emit = defineEmits<{
@@ -78,7 +76,7 @@ onUnmounted(() => {
       class="eb-ctx"
       :style="{ left: `${x}px`, top: `${y}px` }"
       role="menu"
-      aria-label="Athlete actions"
+      :aria-label="label ?? 'Actions'"
     >
       <button
         v-for="(item, i) in items"
