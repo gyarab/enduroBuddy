@@ -335,5 +335,8 @@
     "hide": "Hide athlete",
     "show": "Show athlete",
     "remove": "Remove..."
+  },
+  "sidebar": {
+    "athletesHeading": "Athletes"
   }
 }

@@ -335,5 +335,8 @@
     "hide": "Skryt atletku",
     "show": "Zobrazit atletku",
     "remove": "Odebrat..."
+  },
+  "sidebar": {
+    "athletesHeading": "Atleti"
   }
 }

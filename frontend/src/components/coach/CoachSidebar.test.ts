@@ -56,8 +56,7 @@ describe("CoachSidebar", () => {
     await items[1]!.trigger("drop");
     expect(wrapper.emitted("reorder")).toBeTruthy();
     const [emittedIds] = wrapper.emitted("reorder")![0] as [number[]];
-    expect(emittedIds).toContain(101);
-    expect(emittedIds).toContain(202);
+    expect(emittedIds).toEqual([202, 101, 303]);
   });
 
   it("opens context menu on contextmenu event", async () => {
