@@ -266,6 +266,8 @@ async function handleAddMonth() {
 }
 
 .coach-toolbar__name {
+  flex: 1;
+  min-width: 0;
   font-family: var(--eb-font-display);
   font-size: var(--eb-type-h2-size);
   font-weight: var(--eb-type-h2-weight);
@@ -294,10 +296,10 @@ async function handleAddMonth() {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  margin-left: auto;
 }
 
 .coach-toolbar__input {
+  min-width: 8rem;
   width: 8rem;
   border: 1px solid var(--eb-border);
   border-radius: var(--eb-radius-sm);
@@ -405,6 +407,11 @@ async function handleAddMonth() {
   .coach-toolbar__focus-form {
     margin-left: 0;
     width: 100%;
+  }
+
+  .coach-toolbar__actions {
+    width: 100%;
+    justify-content: flex-start;
   }
 
   .coach-toolbar__input {
