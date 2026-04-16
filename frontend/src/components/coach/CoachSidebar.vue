@@ -32,7 +32,9 @@ function onDragOver(index: number) {
   dragOverIndex.value = index;
 }
 
-function onDragLeave() {
+function onDragLeave(e: DragEvent) {
+  const el = e.currentTarget as HTMLElement;
+  if (el.contains(e.relatedTarget as Node)) return;
   dragOverIndex.value = null;
 }
 
@@ -114,7 +116,7 @@ function onCtxSelect(action: string) {
 
 <template>
   <aside class="coach-sidebar">
-    <div class="coach-sidebar__header">Athletes</div>
+    <div class="coach-sidebar__header">{{ t("sidebar.athletesHeading") }}</div>
     <div ref="listEl" class="coach-sidebar__list">
       <button
         v-for="(athlete, index) in athletes"
@@ -132,7 +134,7 @@ function onCtxSelect(action: string) {
         @contextmenu="openCtxMenu($event, athlete)"
         @dragstart="onDragStart(index)"
         @dragover.prevent="onDragOver(index)"
-        @dragleave="onDragLeave"
+        @dragleave="onDragLeave($event)"
         @drop.prevent="onDrop(index)"
         @dragend="onDragEnd"
         @keydown="onKeydown($event, index)"
@@ -150,7 +152,7 @@ function onCtxSelect(action: string) {
       :x="ctxMenu.x"
       :y="ctxMenu.y"
       :label="t('athleteCtx.goToDashboard')"
-      @close="ctxMenu.open = false"
+      @close="ctxMenu.open = false; ctxMenu.athlete = null"
       @select="onCtxSelect"
     />
   </aside>

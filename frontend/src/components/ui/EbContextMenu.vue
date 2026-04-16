@@ -76,7 +76,7 @@ onUnmounted(() => {
       class="eb-ctx"
       :style="{ left: `${x}px`, top: `${y}px` }"
       role="menu"
-      :aria-label="label ?? 'Actions'"
+      aria-label="Actions"
     >
       <button
         v-for="(item, i) in items"
@@ -102,10 +102,10 @@ onUnmounted(() => {
 .eb-ctx {
   position: fixed;
   z-index: 500;
-  background: #1c1c1f;
-  border: 1px solid #3f3f46;
+  background: var(--eb-surface);
+  border: 1px solid var(--eb-border);
   border-radius: var(--eb-radius-md);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 2px 6px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
   min-width: 10rem;
   overflow: hidden;
   padding: 0.25rem 0;
