@@ -69,6 +69,10 @@ function onKeydown(e: KeyboardEvent, index: number) {
     e.preventDefault();
     items[index - 1]?.focus();
   }
+  if (e.key === "Enter") {
+    e.preventDefault();
+    emit("select", props.athletes[index]!.id);
+  }
 }
 
 // Context menu
@@ -136,7 +140,7 @@ function onCtxSelect(action: string) {
         <span class="coach-sidebar__drag-handle" aria-hidden="true">⠿</span>
         <span class="coach-sidebar__dot" :class="{ 'coach-sidebar__dot--muted': !athlete.selected }" />
         <span class="coach-sidebar__name" :title="athlete.name">{{ athlete.name }}</span>
-        <span v-if="athlete.focus && !athlete.hidden" class="coach-sidebar__focus">{{ athlete.focus }}</span>
+        <span v-if="athlete.focus" class="coach-sidebar__focus">{{ athlete.focus }}</span>
       </button>
     </div>
 
