@@ -33,7 +33,9 @@
     "focus": "Focus",
     "saveFocus": "Save focus",
     "saving": "Saving...",
-    "backToDashboard": "Athlete dashboard"
+    "backToDashboard": "Athlete dashboard",
+    "noAthletesTitle": "No athletes yet",
+    "noAthletesText": "Add athletes via Manage athletes — share your coach code or approve a join request."
   },
   "coachManage": {
     "workspace": "Coach workspace",
@@ -44,10 +46,7 @@
     "hidden": "Hidden",
     "show": "Show",
     "hide": "Hide",
-    "up": "Up",
-    "down": "Down",
     "cancel": "Cancel",
-    "saveOrder": "Save order",
     "saving": "Saving..."
   },
   "imports": {
@@ -330,5 +329,11 @@
     "saving": "Saving...",
     "loadError": "Could not load profile.",
     "saveError": "Could not save profile."
+  },
+  "athleteCtx": {
+    "goToDashboard": "Athlete dashboard",
+    "hide": "Hide athlete",
+    "show": "Show athlete",
+    "remove": "Remove..."
   }
 }

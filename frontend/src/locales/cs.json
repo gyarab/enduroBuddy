@@ -33,7 +33,9 @@
     "focus": "Focus",
     "saveFocus": "Save focus",
     "saving": "Saving...",
-    "backToDashboard": "Athlete dashboard"
+    "backToDashboard": "Athlete dashboard",
+    "noAthletesTitle": "Zatim zadni sverenci",
+    "noAthletesText": "Pridej atlety pres Manage athletes — coach kod nebo join request."
   },
   "coachManage": {
     "workspace": "Coach workspace",
@@ -44,10 +46,7 @@
     "hidden": "Hidden",
     "show": "Show",
     "hide": "Hide",
-    "up": "Up",
-    "down": "Down",
     "cancel": "Cancel",
-    "saveOrder": "Save order",
     "saving": "Saving..."
   },
   "imports": {
@@ -330,5 +329,11 @@
     "saving": "Ukladam...",
     "loadError": "Nepodarilo se nacist profil.",
     "saveError": "Nepodarilo se ulozit profil."
+  },
+  "athleteCtx": {
+    "goToDashboard": "Athlete dashboard",
+    "hide": "Skryt atletku",
+    "show": "Zobrazit atletku",
+    "remove": "Odebrat..."
   }
 }
