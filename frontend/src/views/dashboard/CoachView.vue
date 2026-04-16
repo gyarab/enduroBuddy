@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from "vue";
 
-import { RouterLink } from "vue-router";
+import { RouterLink, useRouter } from "vue-router";
 
 import AthleteManageModal from "@/components/coach/AthleteManageModal.vue";
 import CoachSidebar from "@/components/coach/CoachSidebar.vue";
@@ -16,6 +16,7 @@ import { useToastStore } from "@/stores/toasts";
 import { useCoachStore } from "@/stores/coach";
 import { addNextMonth } from "@/api/training";
 
+const router = useRouter();
 const coachStore = useCoachStore();
 const toastStore = useToastStore();
 const focusDraft = ref("");
@@ -23,6 +24,7 @@ const isSavingFocus = ref(false);
 const isManageOpen = ref(false);
 const isSidebarOpen = ref(false);
 const isAddingMonth = ref(false);
+const startRemoveId = ref<number | null>(null);
 const { t } = useI18n();
 
 onMounted(() => {
@@ -53,13 +55,35 @@ async function openManageModal() {
   isManageOpen.value = true;
 }
 
-async function saveAthleteOrder(athleteIds: number[]) {
-  await coachStore.saveAthleteOrder(athleteIds);
-  isManageOpen.value = false;
+async function handleSidebarReorder(athleteIds: number[]) {
+  const hidden = coachStore.managedAthletes.filter((a) => a.hidden);
+  const allIds = [...athleteIds, ...hidden.map((a) => a.id)];
+  await coachStore.saveAthleteOrder(allIds);
 }
 
-async function toggleAthleteHidden(athleteId: number, hidden: boolean) {
+async function handleModalAutoSave(athleteIds: number[]) {
+  await coachStore.saveAthleteOrder(athleteIds);
+}
+
+async function handleToggleHidden(athleteId: number, hidden: boolean) {
   await coachStore.setAthleteHidden(athleteId, hidden);
+}
+
+function handleSidebarRemove(athleteId: number) {
+  void openManageModal().then(() => {
+    startRemoveId.value = athleteId;
+  });
+}
+
+function handleAthleteRemoved(athleteId: number) {
+  coachStore.managedAthletes.splice(
+    coachStore.managedAthletes.findIndex((a) => a.id === athleteId),
+    1,
+  );
+}
+
+function handleGoToDashboard() {
+  void router.push("/app/dashboard");
 }
 
 async function handleAddMonth() {
@@ -88,41 +112,34 @@ async function handleAddMonth() {
             await coachStore.selectAthlete(athleteId);
           }
         "
+        @reorder="handleSidebarReorder"
+        @toggle-hidden="handleToggleHidden"
+        @remove="handleSidebarRemove"
+        @go-to-dashboard="handleGoToDashboard"
       />
     </aside>
 
     <div class="coach-view__content">
-      <div v-if="coachStore.isLoading" class="coach-view__loading">
-        <WeekCardSkeleton v-for="index in 3" :key="`coach-skeleton-${index}`" />
-      </div>
+      <!-- Always-visible toolbar -->
+      <EbCard class="coach-toolbar">
+        <!-- Mobile toggle -->
+        <EbButton variant="ghost" class="coach-toolbar__mobile-button" @click="isSidebarOpen = !isSidebarOpen">
+          {{ isSidebarOpen ? t("coachView.hideAthletes") : t("coachView.showAthletes") }}
+        </EbButton>
 
-      <EbCard v-else-if="coachStore.errorMessage" class="coach-card">
-        <div class="coach-card__eyebrow">{{ t("coachView.workspace") }}</div>
-        <h1 class="coach-card__title">{{ t("coachView.loadErrorTitle") }}</h1>
-        <p class="coach-card__text">{{ coachStore.errorMessage }}</p>
-      </EbCard>
+        <template v-if="coachStore.selectedAthlete">
+          <!-- Athlete name -->
+          <span class="coach-toolbar__name" :title="coachStore.selectedAthlete.name">
+            {{ coachStore.selectedAthlete.name }}
+          </span>
 
-      <template v-else-if="coachStore.selectedAthlete">
-        <EbCard class="coach-toolbar">
-          <div class="coach-toolbar__identity">
-            <div class="coach-card__eyebrow">{{ t("coachView.selectedAthlete") }}</div>
-            <div class="coach-toolbar__name">{{ coachStore.selectedAthlete.name }}</div>
-            <div class="coach-toolbar__actions">
-              <RouterLink to="/app/dashboard" class="coach-toolbar__back-link">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                  <path d="M19 12H5M12 5l-7 7 7 7" />
-                </svg>
-                {{ t("coachView.backToDashboard") }}
-              </RouterLink>
-              <EbButton variant="ghost" class="coach-toolbar__mobile-button" @click="isSidebarOpen = !isSidebarOpen">
-                {{ isSidebarOpen ? t("coachView.hideAthletes") : t("coachView.showAthletes") }}
-              </EbButton>
-              <EbButton variant="ghost" @click="openManageModal">{{ t("coachView.manageAthletes") }}</EbButton>
-            </div>
-          </div>
+          <!-- Focus pill (read-only indicator) -->
+          <span v-if="coachStore.selectedAthlete.focus" class="coach-toolbar__focus-pill">
+            ● {{ coachStore.selectedAthlete.focus }}
+          </span>
 
-          <div class="coach-toolbar__focus">
-            <label class="coach-toolbar__label" for="coach-focus-input">{{ t("coachView.focus") }}</label>
+          <!-- Focus form -->
+          <div class="coach-toolbar__focus-form">
             <input
               id="coach-focus-input"
               v-model="focusDraft"
@@ -135,8 +152,52 @@ async function handleAddMonth() {
               {{ isSavingFocus ? t("coachView.saving") : t("coachView.saveFocus") }}
             </EbButton>
           </div>
-        </EbCard>
 
+          <!-- Actions -->
+          <div class="coach-toolbar__actions">
+            <EbButton variant="ghost" @click="openManageModal">{{ t("coachView.manageAthletes") }}</EbButton>
+            <RouterLink to="/app/dashboard" class="coach-toolbar__back-link">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M19 12H5M12 5l-7 7 7 7" />
+              </svg>
+              {{ t("coachView.backToDashboard") }}
+            </RouterLink>
+          </div>
+        </template>
+
+        <template v-else>
+          <!-- Empty state toolbar: title + manage button -->
+          <span class="coach-toolbar__workspace-title">{{ t("coachView.workspace") }}</span>
+          <div class="coach-toolbar__actions" style="margin-left: auto;">
+            <EbButton variant="ghost" @click="openManageModal">{{ t("coachView.manageAthletes") }}</EbButton>
+          </div>
+        </template>
+      </EbCard>
+
+      <!-- Loading state -->
+      <div v-if="coachStore.isLoading" class="coach-view__loading">
+        <WeekCardSkeleton v-for="index in 3" :key="`coach-skeleton-${index}`" />
+      </div>
+
+      <!-- Error state -->
+      <EbCard v-else-if="coachStore.errorMessage" class="coach-card">
+        <div class="coach-card__eyebrow">{{ t("coachView.workspace") }}</div>
+        <h1 class="coach-card__title">{{ t("coachView.loadErrorTitle") }}</h1>
+        <p class="coach-card__text">{{ coachStore.errorMessage }}</p>
+      </EbCard>
+
+      <!-- Empty state: no athlete selected -->
+      <EbCard v-else-if="!coachStore.selectedAthlete" class="coach-card coach-card--empty">
+        <div class="coach-card__eyebrow">{{ t("coachView.workspace") }}</div>
+        <h1 class="coach-card__title">{{ t("coachView.noAthletesTitle") }}</h1>
+        <p class="coach-card__text">{{ t("coachView.noAthletesText") }}</p>
+        <EbButton variant="primary" class="coach-card__action" @click="openManageModal">
+          {{ t("coachView.manageAthletes") }}
+        </EbButton>
+      </EbCard>
+
+      <!-- Athlete content -->
+      <template v-else>
         <MonthSummaryBar v-if="coachStore.summary" :summary="coachStore.summary" />
 
         <div class="coach-view__weeks">
@@ -159,9 +220,12 @@ async function handleAddMonth() {
     :athletes="coachStore.managedAthletes"
     :open="isManageOpen"
     :saving="coachStore.isManagingAthletes"
-    @close="isManageOpen = false"
-    @save="saveAthleteOrder"
-    @toggle-hidden="toggleAthleteHidden"
+    :start-remove-id="startRemoveId"
+    @close="isManageOpen = false; startRemoveId = null"
+    @auto-save="handleModalAutoSave"
+    @toggle-hidden="handleToggleHidden"
+    @athlete-removed="handleAthleteRemoved"
+    @go-to-dashboard="handleGoToDashboard"
   />
 </template>
 
@@ -185,8 +249,109 @@ async function handleAddMonth() {
   gap: 1rem;
 }
 
+/* ── Toolbar ─────────────────────────────────────────── */
+.coach-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.75rem 1.125rem;
+  min-height: 3.25rem;
+}
+
+.coach-toolbar__workspace-title {
+  font-family: var(--eb-font-display);
+  font-size: var(--eb-type-h2-size);
+  font-weight: var(--eb-type-h2-weight);
+}
+
+.coach-toolbar__name {
+  font-family: var(--eb-font-display);
+  font-size: var(--eb-type-h2-size);
+  font-weight: var(--eb-type-h2-weight);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 14rem;
+}
+
+.coach-toolbar__focus-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.6rem;
+  background: rgba(56, 189, 248, 0.1);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  border-radius: 999px;
+  color: var(--eb-blue);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+.coach-toolbar__focus-form {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+
+.coach-toolbar__input {
+  width: 8rem;
+  border: 1px solid var(--eb-border);
+  border-radius: var(--eb-radius-sm);
+  background: var(--eb-bg);
+  color: var(--eb-text);
+  padding: 0.5rem 0.75rem;
+  font-size: var(--eb-type-small-size);
+}
+
+.coach-toolbar__input:focus {
+  outline: none;
+  border-color: var(--eb-lime);
+}
+
+.coach-toolbar__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.coach-toolbar__back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.75rem;
+  border: 1px solid var(--eb-border);
+  border-radius: var(--eb-radius-sm);
+  background: transparent;
+  color: var(--eb-text-muted);
+  font-size: var(--eb-type-small-size);
+  font-weight: 600;
+  text-decoration: none;
+  transition:
+    border-color 150ms ease-out,
+    color 150ms ease-out;
+}
+
+.coach-toolbar__back-link:hover {
+  color: var(--eb-text-soft);
+}
+
+.coach-toolbar__mobile-button {
+  display: none;
+}
+
+/* ── Cards ───────────────────────────────────────────── */
 .coach-card {
   padding: 1.5rem;
+}
+
+.coach-card--empty {
+  text-align: center;
+  padding: 3rem 2rem;
 }
 
 .coach-card__eyebrow {
@@ -214,82 +379,11 @@ async function handleAddMonth() {
   line-height: var(--eb-type-body-line);
 }
 
-.coach-toolbar {
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-  align-items: end;
-  padding: 1.25rem;
+.coach-card__action {
+  margin-top: 1.5rem;
 }
 
-.coach-toolbar__identity {
-  display: grid;
-  gap: 0.5rem;
-}
-
-.coach-toolbar__name {
-  margin-top: 0.45rem;
-  font-family: var(--eb-font-display);
-  font-size: var(--eb-type-h2-size);
-  font-weight: var(--eb-type-h2-weight);
-  letter-spacing: var(--eb-type-h2-tracking);
-}
-
-.coach-toolbar__actions {
-  display: flex;
-  gap: 0.75rem;
-}
-
-.coach-toolbar__back-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  padding: 0.4rem 0.75rem;
-  border: 1px solid var(--eb-border);
-  border-radius: var(--eb-radius-sm);
-  background: transparent;
-  color: var(--eb-text-muted);
-  font-size: var(--eb-type-small-size);
-  font-weight: 600;
-  letter-spacing: var(--eb-type-small-tracking);
-  text-decoration: none;
-  transition:
-    border-color 150ms ease-out,
-    color 150ms ease-out;
-}
-
-.coach-toolbar__back-link:hover {
-  border-color: var(--eb-border);
-  color: var(--eb-text-soft);
-}
-
-.coach-toolbar__mobile-button {
-  display: none;
-}
-
-.coach-toolbar__focus {
-  display: flex;
-  gap: 0.75rem;
-  align-items: end;
-}
-
-.coach-toolbar__label {
-  color: var(--eb-text-muted);
-  font-size: var(--eb-type-label-size);
-  font-weight: 600;
-  letter-spacing: var(--eb-type-label-tracking);
-  text-transform: uppercase;
-}
-
-.coach-toolbar__input {
-  min-width: 12rem;
-  border: 1px solid var(--eb-border);
-  border-radius: var(--eb-radius-sm);
-  background: var(--eb-bg);
-  color: var(--eb-text);
-  padding: 0.75rem 0.85rem;
-}
-
+/* ── Mobile ──────────────────────────────────────────── */
 @media (max-width: 1023px) {
   .coach-view {
     grid-template-columns: 1fr;
@@ -304,17 +398,18 @@ async function handleAddMonth() {
     display: block;
   }
 
-  .coach-toolbar {
-    display: grid;
-    align-items: start;
-  }
-
-  .coach-toolbar__focus {
-    display: grid;
-  }
-
   .coach-toolbar__mobile-button {
     display: inline-flex;
+  }
+
+  .coach-toolbar__focus-form {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .coach-toolbar__input {
+    flex: 1;
+    width: auto;
   }
 }
 </style>
