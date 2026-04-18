@@ -1,14 +1,24 @@
 # EnduroBuddy — Project Context for Claude
 
+## Pravidla pro Clauda
+
+1. **Při každé implementované změně nebo vytvoření plánu aktualizuj sekci "Aktivní plány a změny" v tomto CLAUDE.md** — napiš co bylo uděláno nebo co se plánuje, aby byl kontext viditelný napříč sezeními.
+
+2. **Spec ukládej do `docs/superpowers/specs/YYYY-MM-DD-<tema>.md`** — design rozhodnutí, motivace, chování funkce.
+
+3. **Implementační plán ukládej do `docs/superpowers/plans/YYYY-MM-DD-<tema>.md`** — konkrétní kroky, soubory, kód.
+
+4. **Před implementací prohledej historii v `docs/superpowers/`** — tam jsou předchozí specs a plány, které mohou obsahovat relevantní kontext, rozhodnutí nebo hotové části.
+
+5. **Commity bez Co-Authored-By** — autor je vždy jen uživatel, nikdy nepřidávej `Co-Authored-By: Claude` do commit message.
+
+---
+
 ## Co je EnduroBuddy
 
 Django webová aplikace pro plánování vytrvalostního tréninku. Propojuje trenéra a sportovce: trenér připravuje měsíční plány, sportovec zapisuje splněné tréninky a importuje aktivity z Garmin Connect nebo FIT souborů.
 
-<<<<<<< HEAD
-**Stack:** Python 3.12, Django 5.2, PostgreSQL, Bootstrap 5, server-rendered templates + vlastní JS/CSS, Docker Compose.
-=======
 **Stack:** Python 3.12, Django 5.2, PostgreSQL, Vue 3 + TypeScript + Vite (SPA pro přihlášenou část), vlastní CSS bez frameworků, Docker Compose.
->>>>>>> vue-frontend-codex
 
 **Jazyky UI:** Česky + anglicky (django i18n, language switcher).
 
@@ -25,16 +35,10 @@ Django webová aplikace pro plánování vytrvalostního tréninku. Propojuje tr
 
 | URL | Popis |
 |-----|-------|
-<<<<<<< HEAD
-| `/` | Veřejná landing page |
-| `/app/` | Dashboard sportovce |
-| `/coach/plans/` | Dashboard trenéra |
-=======
 | `/` | Veřejná landing page (Django template) |
 | `/app/*` | Athlete SPA (Vue Router — `AthleteView`) |
 | `/coach/*` | Coach SPA (Vue Router — `CoachView`) |
 | `/api/v1/` | DRF API (session auth, CSRF) |
->>>>>>> vue-frontend-codex
 | `/accounts/` | Autentizace (django-allauth) |
 | `/admin/` | Django admin |
 
@@ -42,23 +46,12 @@ Django webová aplikace pro plánování vytrvalostního tréninku. Propojuje tr
 
 ## Architektura
 
-<<<<<<< HEAD
-=======
 ### Backend (Django)
 
->>>>>>> vue-frontend-codex
 ```
 backend/
   accounts/    # profily, role, coach-athlete vazby, skupiny, Garmin připojení
   activities/  # import aktivit, FIT soubory, intervaly, vzorky
-<<<<<<< HEAD
-  dashboard/   # hlavní dashboard, coach rozhraní, servisní logika
-  training/    # měsíce, týdny, plánované a dokončené tréninky
-  templates/   # Django templates (server-rendered)
-  static/      # CSS, JS, brand assets
-```
-
-=======
   dashboard/   # servisní logika (handlers, validátory) — žádné views pro SPA
   training/    # měsíce, týdny, plánované a dokončené tréninky (modely + logika)
   api/         # DRF API vrstva — views/, urls.py (auth, training, coach, imports…)
@@ -99,7 +92,6 @@ frontend/src/
 **Build:** `npm run build` — output do `backend/static_build/spa/`
 **Testy:** `npm test` — Vitest, 75 testů
 
->>>>>>> vue-frontend-codex
 ---
 
 ## Vizuální design systém — "Neon Lab × Swiss Precision"
@@ -167,32 +159,16 @@ Všechny veřejné stránky rozšiřují `backend/templates/public/base_public.h
 | `backend/static/css/public-about.css` | About page — 4 sekce (intro, story, mission, founder) |
 | `backend/static/css/public-legal.css` | Privacy + Terms — back-link, card layout, typografie |
 
-Každá stránka načítá jen svůj CSS přes `{% block page_styles %}` s `<link>` tagem.
-
 ### Landing page
 
 Soubor: `backend/templates/public/home.html` (extends `public/base_public.html`)
 
 Sekce: Hero (dashboard mockup) → Features (6 karet) → Jak to funguje (3 kroky) → Pro koho (Coach + Athlete) → CTA
 
-Cílí primárně na **trenéry**. Design přístup: "Coach Command Center".
-
-Home page overriduje `{% block topbar_links %}` (přidává anchory #features, #how, #audience) a `{% block topbar_actions %}` (lime CTA "Začít zdarma" místo login tlačítka).
-
 ---
 
 ## Důležitá pravidla
 
-<<<<<<< HEAD
-- **Nezasahuj do aplikačního kódu** pokud user explicitně nepožádá — dashboard, auth, modely, views jsou stabilní
-- Page-specific styly jdou do externího CSS souboru, načteného přes `{% block page_styles %}` — **ne inline `<style>` tag**
-- Bilingualita: všechny texty v templates musí mít CS i EN variantu přes `{% if CURRENT_LANGUAGE == "en" %}`
-- Fonty: Syne + Inter + JetBrains Mono — načítá `base_public.html`, v page templates se nepřidávají znovu
-- Bootstrap 5 je k dispozici, ale UI se staví přes vlastní CSS třídy s `eb-` prefixem
-- Prefix `eb-` pro sdílené CSS třídy; `lp-` pro landing-page-only třídy
-- Každý template musí mít `{% load static %}` pokud používá `{% static %}`
-
-=======
 ### Veřejná sekce (Django templates)
 - Page-specific styly jdou do externího CSS souboru, načteného přes `{% block page_styles %}` — **ne inline `<style>` tag**
 - Bilingualita: texty v Django templates přes `{% if CURRENT_LANGUAGE == "en" %}`
@@ -208,7 +184,6 @@ Home page overriduje `{% block topbar_links %}` (přidává anchory #features, #
 - Při změně API endpointů aktualizovat `frontend/src/api/` i `backend/api/views/`
 - `npm run build` musí projít bez chyb a `npm test` musí být zelené před commitem
 
->>>>>>> vue-frontend-codex
 ---
 
 ## Demo
@@ -218,3 +193,31 @@ cd backend
 python manage.py seed_coach_demo
 # coach_demo@endurobuddy.local / demo12345
 ```
+
+---
+
+## Aktivní plány a změny
+
+### 2026-04-18 — Dashboard: editace completed trainingu + Garmin modal
+
+**Soubory:** `frontend/src/components/training/WeekCard.vue`, `frontend/src/views/dashboard/AthleteView.vue`
+
+**Co chybí:**
+
+1. **Editace completed trainingu** — inline editace v WeekCard funguje jen pokud completed řádek *už existuje*. Pokud má den planned training ale žádný completed záznam, pole km/čas/HR nejsou klikatelná.
+
+2. **Garmin Import Modal** — `GarminImportModal.vue` existuje (connect účtu, range sync, FIT upload), ale není přístupný z `AthleteView` — chybí tlačítko a mount komponenty.
+
+**Plán WeekCard.vue:**
+- Přidat `canEditCompletedGlobal` computed (čte `trainingStore.dashboard?.flags.can_edit_completed`)
+- Přepsat `canEditCompleted(slot)` — vrátit `true` i když completed neexistuje, ale planned ano
+- V `openEdit()`: nastavit `completedId = planned?.id` když žádný completed záznam neexistuje (backend `PATCH /training/completed/{planned_id}/` vytváří záznam pokud neexistuje)
+- V `saveRow()`: po úspěšném vytvoření nového záznamu provést silent reload (`trainingStore.loadDashboard(..., { silent: true })`)
+
+**Plán AthleteView.vue:**
+- Importovat `GarminImportModal` a `useAuthStore`
+- Přidat tlačítko "Import" (viditelné jen když `garmin_connect_enabled`) nad `MonthSummaryBar`
+- Mountovat `<GarminImportModal>` na konec šablony
+- i18n klíč `imports.open` už existuje — žádný nový klíč není potřeba
+
+**Status:** ✅ Implementováno a mergnuto do main (2026-04-18)
