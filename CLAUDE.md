@@ -249,12 +249,23 @@ Spec: `docs/superpowers/specs/2026-04-18-nuxt-migration-design.md`
 - `docs/superpowers/plans/2026-04-18-infrastructure.md` — uv, pnpm, Redis, Celery (9 tasků)
 - `docs/superpowers/plans/2026-04-18-nuxt-migration-impl.md` — Nuxt migrace (12 tasků)
 
-**Status:** Fáze 1 (Redis + Celery) hotová — Tasks 4–6 implementovány (2026-04-18)
+**Status:** Fáze 1 hotová, Fáze 2 (Nuxt setup) — Task 7 hotový (2026-04-18)
 
 #### Hotovo v Fázi 1
 - **Task 4** — Redis service v `docker-compose.yml` + `docker-compose.prod.yml` (volume `endurobuddy_redis`, `web` závisí na `redis`)
 - **Task 5** — `backend/config/celery.py`, `backend/config/__init__.py`, Celery konfigurace v `settings.py`, `django_celery_beat` + `django_celery_results` v `INSTALLED_APPS`, migrace aplikovány
 - **Task 6** — `celery-worker` + `celery-beat` services v `docker-compose.yml`
+
+#### Hotovo ve Fázi 2
+- **Task 7** — Nuxt 3 inicializace v `frontend/`:
+  - `frontend/nuxt.config.ts` — SSR pro `/`, `/about`, `/terms`, `/privacy`; SPA pro `/app/**`, `/coach/**`, `/accounts/**`; @pinia/nuxt + @nuxtjs/i18n moduly; Vite proxy pro Django API
+  - `frontend/app.vue` — minimální wrapper s `<NuxtLayout><NuxtPage />`
+  - `frontend/pages/index.vue` — placeholder index stránka
+  - `frontend/i18n/locales/cs.json` + `en.json` — prázdné locale soubory (i18n v9 je hledá v `i18n/locales/`)
+  - `frontend/assets/design-tokens.css` + `fonts.css` — kopie z `src/assets/` pro Nuxt CSS pipeline
+  - `frontend/vite.config.ts` → `vite.config.ts.bak` — přejmenováno (Nuxt nepodporuje standalone vite.config)
+  - `package.json` aktualizován: nuxt, @pinia/nuxt, @nuxtjs/i18n, axios, vue, vue-router
+  - Všech 93 testů zelených, Nuxt dev server startuje na `:3000`
 
 ---
 
