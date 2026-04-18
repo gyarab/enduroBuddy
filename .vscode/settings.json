@@ -1,0 +1,55 @@
+{
+  // Python
+  "python.defaultInterpreterPath": "${workspaceFolder}/.venv/Scripts/python",
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.black-formatter",
+    "editor.formatOnSave": true,
+    "editor.tabSize": 4
+  },
+  "black-formatter.args": ["--line-length", "88"],
+
+  // Vue + TypeScript + CSS
+  "[vue]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true
+  },
+  "[css]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true
+  },
+  "typescript.tsdk": "frontend/node_modules/typescript/lib",
+
+  // Django HTML templates
+  "files.associations": {
+    "**/templates/**/*.html": "django-html"
+  },
+
+  // Editor globálně
+  "editor.tabSize": 2,
+  "editor.rulers": [88],
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  "editor.bracketPairColorization.enabled": true,
+
+  // Vyloučit z vyhledávání a průzkumníku
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/__pycache__": true,
+    "backend/static_build": true,
+    "**/.venv": true,
+    "**/*.pyc": true,
+    "**/.git": true
+  },
+  "files.exclude": {
+    "**/__pycache__": true,
+    "**/*.pyc": true
+  }
+}
