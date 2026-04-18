@@ -12,6 +12,16 @@ services:
     networks:
       - backend
 
+  redis:
+    image: redis:7-alpine
+    container_name: endurobuddy-redis
+    restart: unless-stopped
+    volumes:
+      - endurobuddy_redis:/var/lib/redis/data
+    networks:
+      - backend
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+
   web:
     build:
       context: .
@@ -20,6 +30,7 @@ services:
     restart: unless-stopped
     depends_on:
       - db
+      - redis
     environment:
       POSTGRES_HOST: db
       POSTGRES_PORT: 5432
@@ -47,6 +58,7 @@ services:
 
 volumes:
   endurobuddy_pgdata:
+  endurobuddy_redis:
 
 networks:
   backend:
