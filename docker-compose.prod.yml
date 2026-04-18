@@ -53,3 +53,4 @@ networks:
     internal: true
   traefik-public:
     external: true
+    name: proxy
