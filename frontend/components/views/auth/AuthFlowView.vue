@@ -2,6 +2,8 @@
 import { computed, reactive, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
+const props = withDefaults(defineProps<{ authScreen?: string }>(), { authScreen: undefined });
+
 import AuthPreviewShell from "@/components/auth/AuthPreviewShell.vue";
 import {
   confirmEmailKey,
@@ -169,7 +171,7 @@ const passwordResetKeyState = ref<{
 });
 
 const screen = computed<AuthScreen>(() => {
-  const value = String(route.meta.authScreen || "login");
+  const value = String(props.authScreen ?? route.meta.authScreen ?? "login");
   return value as AuthScreen;
 });
 
