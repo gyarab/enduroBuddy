@@ -24,10 +24,12 @@ RUN apt-get update && apt-get install -y \
     netcat-openbsd \
     && rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt .
+# Install uv
+RUN pip install uv
 
-RUN pip install --upgrade pip
-RUN pip install -r requirements.txt
+# Install Python dependencies via uv (frozen = respektuje uv.lock)
+COPY backend/pyproject.toml backend/uv.lock ./
+RUN uv sync --frozen --no-dev
 
 COPY backend ./backend
 
