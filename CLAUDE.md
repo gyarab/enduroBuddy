@@ -249,7 +249,12 @@ Spec: `docs/superpowers/specs/2026-04-18-nuxt-migration-design.md`
 - `docs/superpowers/plans/2026-04-18-infrastructure.md` — uv, pnpm, Redis, Celery (9 tasků)
 - `docs/superpowers/plans/2026-04-18-nuxt-migration-impl.md` — Nuxt migrace (12 tasků)
 
-**Status:** Implementační plány napsány — připraveno k implementaci
+**Status:** Fáze 1 (Redis + Celery) hotová — Tasks 4–6 implementovány (2026-04-18)
+
+#### Hotovo v Fázi 1
+- **Task 4** — Redis service v `docker-compose.yml` + `docker-compose.prod.yml` (volume `endurobuddy_redis`, `web` závisí na `redis`)
+- **Task 5** — `backend/config/celery.py`, `backend/config/__init__.py`, Celery konfigurace v `settings.py`, `django_celery_beat` + `django_celery_results` v `INSTALLED_APPS`, migrace aplikovány
+- **Task 6** — `celery-worker` + `celery-beat` services v `docker-compose.yml`
 
 ---
 
