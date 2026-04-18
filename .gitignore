@@ -17,7 +17,6 @@ db.sqlite3
 *.out.log
 *.pid
 .idea/
-.vscode/
 media/
 backend/media/
 frontend/node_modules/
