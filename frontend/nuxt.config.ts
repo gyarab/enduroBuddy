@@ -38,6 +38,10 @@ export default defineNuxtConfig({
   css: [
     "~/assets/design-tokens.css",
     "~/assets/fonts.css",
+    "~/assets/css/public-base.css",
+    "~/assets/css/public-home.css",
+    "~/assets/css/public-about.css",
+    "~/assets/css/public-legal.css",
   ],
 
   alias: {
