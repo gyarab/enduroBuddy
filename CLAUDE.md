@@ -196,7 +196,40 @@ python manage.py seed_coach_demo
 
 ---
 
+## Git workflow — aktivní migrace
+
+```
+main (produkce)
+  ├── backup/pre-nuxt-20260418   ← snapshot před Nuxt migrací, NEMĚNIT
+  └── feat/nuxt-migration        ← veškerá Nuxt migrace probíhá zde
+```
+
+Veškerá práce na Nuxt migraci probíhá na větvi `feat/nuxt-migration`. Po dokončení se mergne do `main`. Větev `backup/pre-nuxt-20260418` je záchranná síť — neměnit.
+
+Spec: `docs/superpowers/specs/2026-04-18-nuxt-migration-design.md`
+
+---
+
 ## Aktivní plány a změny
+
+### 2026-04-18 — Nuxt migrace: eliminace Django templates
+
+**Větev:** `feat/nuxt-migration`
+**Spec:** `docs/superpowers/specs/2026-04-18-nuxt-migration-design.md`
+
+**Cíl:** Nahradit Vite SPA + Django templates jedním Nuxt 3 stackem.
+- Nuxt jako Node.js server (SSR pro veřejné stránky, SPA pro `/app/*` a `/coach/*`)
+- Django zůstane čistě jako REST API + admin
+- Nginx routuje `/api/*` a `/admin/*` → Django, zbytek → Nuxt
+
+**Blokující chybějící věci (důvod migrace):**
+- Veřejné stránky (home, about, terms, privacy) — jen Django templates, bez Vue ekvivalentu
+- Error stránky (404, 500) — jen Django templates
+- Help modál (km pravidla) — jen Django template
+
+**Status:** Spec napsán, implementační plán se připravuje
+
+---
 
 ### 2026-04-18 — Dashboard: editace completed trainingu + Garmin modal
 
@@ -221,3 +254,43 @@ python manage.py seed_coach_demo
 - i18n klíč `imports.open` už existuje — žádný nový klíč není potřeba
 
 **Status:** ✅ Implementováno a mergnuto do main (2026-04-18)
+
+---
+
+### 2026-04-18 — Analýza: stav migrace Django templates → Vue SPA
+
+Kompletní průzkum repozitáře na větvi `main`.
+
+#### Portováno do Vue (templates lze postupně mazat)
+| Oblast | Django template | Vue komponenta |
+|---|---|---|
+| Auth stránky | `account/*.html`, `socialaccount/*.html` | `AuthFlowView.vue` |
+| Athlete dashboard | `dashboard/dashboard.html` + partialy | `AthleteView.vue`, `WeekCard.vue` atd. |
+| Coach dashboard | `dashboard/coach_training_plans.html` | `CoachView.vue` |
+| Pozvánka | `dashboard/accept_training_group_invite.html` | `InviteView.vue` |
+| Doplnění profilu | `account/complete_profile.html` | `CompleteProfileView.vue` |
+| Profil modal | `includes/_profile_modal.html` | `ProfileSettingsModal.vue` |
+| Notifikace | `includes/_notifications_dropdown.html` | `NotificationBell.vue` |
+| Top nav | `includes/_top_nav.html` | `TopNav.vue` |
+| Garmin import modal | `dashboard/_import_modal.html` | `GarminImportModal.vue` |
+| Legend modál | `dashboard/_legend_modals.html` | `LegendModal.vue` |
+| Coach sidebar | `dashboard/_coach_sidebar.html` | `CoachSidebar.vue` |
+| Coach manage modal | `dashboard/_coach_manage_modal.html` | `AthleteManageModal.vue` |
+
+#### BLOKUJÍCÍ — chybí ve Vue (templates zatím nelze mazat)
+1. **Veřejné stránky** — `public/home.html`, `public/about.html`, `public/terms.html`, `public/privacy.html` — celý veřejný web stále běží na Django templates.
+2. **Help modál (km pravidla)** — `dashboard/_planned_km_rules_modal.html` — Vue má live parser preview, ale chybí standalone modál s vysvětlivkami.
+3. **Error stránky** — `400.html`, `403.html`, `404.html`, `500.html` — jen Django templates.
+
+#### Co má Vue navíc (není v Django templates)
+- Live training parser preview v `PlannedRow.vue`
+- FIT file upload v `GarminImportModal.vue`
+- Job polling pro Garmin sync
+- Language switcher přímo v `ProfileSettingsModal.vue`
+- Skeleton loading states (`WeekCardSkeleton.vue`)
+- Auth Preview sandbox (`/auth-preview/`)
+
+#### URL routing — poznámka
+V `config/urls.py` jsou SPA routes `/app/*` definovány **před** `include("dashboard.urls")`, takže legacy Django dashboard na `/app/` je v produkci překrytý SPA a nedostupný. Django route pro dashboard existuje v kódu, ale není dosažitelná.
+
+**Status:** Analýza dokončena, implementace migrace veřejných stránek do Vue zatím neplánována.
