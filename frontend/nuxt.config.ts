@@ -1,3 +1,5 @@
+import { resolve } from "path"
+
 export default defineNuxtConfig({
   compatibilityDate: "2024-11-01",
   devtools: { enabled: true },
@@ -37,6 +39,10 @@ export default defineNuxtConfig({
     "~/assets/design-tokens.css",
     "~/assets/fonts.css",
   ],
+
+  alias: {
+    "@": resolve(__dirname, "./src"),
+  },
 
   vite: {
     server: {
