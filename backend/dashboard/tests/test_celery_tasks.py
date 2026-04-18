@@ -28,7 +28,8 @@ def test_execute_garmin_sync_job_marks_success(import_job):
     """Job musí skončit SUCCESS po úspěšném sync."""
     from dashboard.services.tasks import _execute_garmin_sync_job
 
-    with patch("dashboard.services.tasks.sync_garmin_for_user") as mock_sync:
+    with patch("dashboard.services.tasks.sync_garmin_for_user") as mock_sync, \
+         patch("dashboard.services.imports.audit_garmin") as mock_audit:
         mock_sync.return_value = (5, 2, MagicMock())
         _execute_garmin_sync_job(import_job.id)
 
@@ -38,6 +39,7 @@ def test_execute_garmin_sync_job_marks_success(import_job):
     assert import_job.skipped_count == 2
 
 
+@pytest.mark.django_db
 def test_execute_garmin_sync_job_nonexistent_id():
     """Task s neexistujícím job ID musí tiše skončit bez výjimky."""
     from dashboard.services.tasks import _execute_garmin_sync_job

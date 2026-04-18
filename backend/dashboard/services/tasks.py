@@ -1,36 +1,34 @@
 from __future__ import annotations
 
-from concurrent.futures import ThreadPoolExecutor
-from typing import Any, Callable
 import logging
 
-from django.conf import settings
+from celery import shared_task
 from django.utils import timezone
 
 from .imports import import_fit_for_user, sync_garmin_for_user
 
-
-_executor = ThreadPoolExecutor(max_workers=2)
 logger = logging.getLogger(__name__)
 
 
-def _mode() -> str:
-    return str(getattr(settings, "IMPORT_TASK_MODE", "inline") or "inline").lower()
-
-
-def _run_or_enqueue(func: Callable[..., Any], *args, **kwargs):
-    if _mode() == "async":
-        _executor.submit(func, *args, **kwargs)
-        return None
-    return func(*args, **kwargs)
-
-
 def run_fit_import(user, uploaded_file):
-    return _run_or_enqueue(import_fit_for_user, user, uploaded_file)
+    """FIT import — synchronní (soubory jsou malé)."""
+    return import_fit_for_user(user, uploaded_file)
 
 
 def run_garmin_sync(user, *, window: str):
-    return _run_or_enqueue(sync_garmin_for_user, user, window=window)
+    """Garmin sync — synchronní (legacy non-AJAX fallback)."""
+    return sync_garmin_for_user(user, window=window)
+
+
+def enqueue_garmin_sync_job(import_job_id: int) -> None:
+    """Odešle Garmin sync job do Celery fronty."""
+    execute_garmin_sync_job.delay(import_job_id)
+
+
+@shared_task(bind=True, max_retries=0, name="dashboard.tasks.execute_garmin_sync_job")
+def execute_garmin_sync_job(self, import_job_id: int) -> None:
+    """Celery task — vykoná Garmin sync pro daný ImportJob."""
+    _execute_garmin_sync_job(import_job_id)
 
 
 def _execute_garmin_sync_job(import_job_id: int) -> None:
@@ -158,7 +156,3 @@ def _execute_garmin_sync_job(import_job_id: int) -> None:
             window=job.window,
             message="Unexpected Garmin sync error.",
         )
-
-
-def enqueue_garmin_sync_job(import_job_id: int) -> None:
-    _executor.submit(_execute_garmin_sync_job, import_job_id)
