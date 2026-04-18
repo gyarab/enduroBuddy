@@ -7,7 +7,7 @@ import {
   startGarminSync,
   uploadFitFile,
   type ImportJob,
-} from "@/api/imports";
+} from "~/utils/api/imports";
 
 type AuthCapabilities = {
   has_garmin_connection: boolean;

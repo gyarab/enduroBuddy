@@ -1,7 +1,7 @@
 import { ref } from "vue";
 import { defineStore } from "pinia";
 
-import { fetchLegend, saveLegend, type LegendState } from "@/api/legend";
+import { fetchLegend, saveLegend, type LegendState } from "~/utils/api/legend";
 
 export const useLegendStore = defineStore("legend", () => {
   const state = ref<LegendState | null>(null);

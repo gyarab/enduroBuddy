@@ -5,7 +5,7 @@ import {
   fetchNotifications,
   markNotificationsRead,
   type AppNotification,
-} from "@/api/notifications";
+} from "~/utils/api/notifications";
 
 export const useNotificationsStore = defineStore("notifications", () => {
   const items = ref<AppNotification[]>([]);

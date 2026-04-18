@@ -14,10 +14,10 @@ import {
   updateCoachAthleteFocus,
   type CoachDashboardPayload,
   type CoachAthlete,
-} from "@/api/coach";
-import type { PlannedTrainingDraft, TrainingRow } from "@/api/training";
-import { useToastStore } from "@/stores/toasts";
-import { parseTrainingPreview } from "@/utils/trainingPreview";
+} from "~/utils/api/coach";
+import type { PlannedTrainingDraft, TrainingRow } from "~/utils/api/training";
+import { useToastStore } from "~/stores/toasts";
+import { parseTrainingPreview } from "~/utils/trainingPreview";
 
 export const useCoachStore = defineStore("coach", () => {
   const dashboard = ref<CoachDashboardPayload | null>(null);

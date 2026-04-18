@@ -13,10 +13,10 @@ import {
   reorderCoachAthletes,
   updateCoachAthleteVisibility,
   updateCoachPlannedTraining,
-} from "@/api/coach";
-import { useCoachStore } from "@/stores/coach";
+} from "~/utils/api/coach";
+import { useCoachStore } from "~/stores/coach";
 
-vi.mock("@/api/coach", () => ({
+vi.mock("~/utils/api/coach", () => ({
   addCoachSecondPhaseTraining: vi.fn(),
   createCoachPlannedTraining: vi.fn(),
   deleteCoachPlannedTraining: vi.fn(),

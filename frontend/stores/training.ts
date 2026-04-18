@@ -13,9 +13,9 @@ import {
   type TrainingRow,
   updateCompletedTraining,
   updatePlannedTraining,
-} from "@/api/training";
-import { useToastStore } from "@/stores/toasts";
-import { parseTrainingPreview } from "@/utils/trainingPreview";
+} from "~/utils/api/training";
+import { useToastStore } from "~/stores/toasts";
+import { parseTrainingPreview } from "~/utils/trainingPreview";
 
 export const useTrainingStore = defineStore("training", () => {
   const dashboard = ref<DashboardPayload | null>(null);

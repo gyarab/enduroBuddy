@@ -10,10 +10,10 @@ import {
   removeSecondPhaseTraining,
   updateCompletedTraining,
   updatePlannedTraining,
-} from "@/api/training";
-import { useTrainingStore } from "@/stores/training";
+} from "~/utils/api/training";
+import { useTrainingStore } from "~/stores/training";
 
-vi.mock("@/api/training", () => ({
+vi.mock("~/utils/api/training", () => ({
   addSecondPhaseTraining: vi.fn(),
   createPlannedTraining: vi.fn(),
   deletePlannedTraining: vi.fn(),
@@ -23,11 +23,11 @@ vi.mock("@/api/training", () => ({
   updatePlannedTraining: vi.fn(),
 }));
 
-vi.mock("@/stores/toasts", () => ({
+vi.mock("~/stores/toasts", () => ({
   useToastStore: () => ({ push: vi.fn() }),
 }));
 
-vi.mock("@/composables/useI18n", () => ({
+vi.mock("~/composables/useI18n", () => ({
   useI18n: () => ({ t: (k: string) => k }),
 }));
 
