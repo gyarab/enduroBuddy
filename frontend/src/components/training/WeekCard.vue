@@ -38,6 +38,10 @@ const showGarminSync = computed(
     authStore.user?.capabilities.garmin_sync_enabled,
 );
 
+const canEditCompletedGlobal = computed(
+  () => props.editorContext !== "coach" && !!trainingStore.dashboard?.flags.can_edit_completed,
+);
+
 async function syncGarmin() {
   isSyncingGarmin.value = true;
   try {
@@ -144,9 +148,14 @@ function openEdit(slot: DaySlot, focusField = "title") {
   if (editingRows.has(slot.date)) return;
   const planned = slot.planned.find((r) => !r.is_second_phase) ?? null;
   const completed = slot.completed[0] ?? null;
-  const canEditPlanned = planned ? planned.editable : true; // empty days are editable for coaches/athletes
-  const canEditCompleted = completed ? (completed.editable && !completed.has_linked_activity) : false;
-  if (!canEditPlanned && !canEditCompleted) return;
+  const canEditPlanned = planned ? planned.editable : true;
+  const completedEditable = completed
+    ? (completed.editable && !completed.has_linked_activity)
+    : (canEditCompletedGlobal.value && planned !== null);
+  const completedId = completedEditable
+    ? (completed?.id ?? planned?.id ?? null)
+    : null;
+  if (!canEditPlanned && !completedEditable) return;
 
   editingRows.set(slot.date, {
     date: slot.date,
@@ -155,7 +164,7 @@ function openEdit(slot: DaySlot, focusField = "title") {
     notes: planned?.notes ?? "",
     sessionType: (planned?.session_type as "RUN" | "WORKOUT") ?? "RUN",
     isCreating: !planned,
-    completedId: canEditCompleted ? (completed?.id ?? null) : null,
+    completedId: completedId,
     km: completed?.completed_metrics?.km ?? "",
     minutes: completed?.completed_metrics?.minutes ?? "",
     details: completed?.completed_metrics?.details ?? "",
@@ -221,6 +230,10 @@ async function saveRow(slot: DaySlot, edit: RowEdit) {
 
     editingRows.delete(slot.date);
     flashRow(slot.date);
+    // If we just created a new completed record, reload to get server data
+    if (edit.completedId && slot.completed.length === 0) {
+      await trainingStore.loadDashboard(trainingStore.selectedMonthValue, { silent: true });
+    }
   } catch (err) {
     toastStore.push(err instanceof Error ? err.message : t("weekCard.createError"), "danger");
   } finally {
@@ -261,8 +274,12 @@ function onRowFocusOut(slot: DaySlot, event: FocusEvent) {
 }
 
 function canEditCompleted(slot: DaySlot): boolean {
+  if (!canEditCompletedGlobal.value) return false;
   const c = slot.completed[0];
-  return !!c && c.editable && !c.has_linked_activity;
+  if (c) return c.editable && !c.has_linked_activity;
+  // No completed record yet — allow creation if a planned training exists
+  const planned = slot.planned.find((r) => !r.is_second_phase) ?? null;
+  return planned !== null;
 }
 
 async function toggleSessionType(slot: DaySlot) {
