@@ -341,5 +341,20 @@
   },
   "sidebar": {
     "athletesHeading": "Athletes"
+  },
+  "nav": {
+    "home": "Home",
+    "features": "Features",
+    "howItWorks": "How it works",
+    "about": "About",
+    "login": "Log in",
+    "terms": "Terms",
+    "privacy": "Privacy",
+    "mainNavLabel": "Main navigation",
+    "footerNavLabel": "Footer navigation"
+  },
+  "footer": {
+    "tagline": "Training workspace for coaches and athletes.",
+    "language": "Language"
   }
 }

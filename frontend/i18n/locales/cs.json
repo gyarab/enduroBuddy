@@ -341,5 +341,20 @@
   },
   "sidebar": {
     "athletesHeading": "Atleti"
+  },
+  "nav": {
+    "home": "Domů",
+    "features": "Funkce",
+    "howItWorks": "Jak funguje",
+    "about": "O aplikaci",
+    "login": "Přihlášení",
+    "terms": "Podmínky",
+    "privacy": "Ochrana dat",
+    "mainNavLabel": "Hlavní navigace",
+    "footerNavLabel": "Patička navigace"
+  },
+  "footer": {
+    "tagline": "Tréninkový workspace pro trenéry a sportovce.",
+    "language": "Jazyk"
   }
 }
