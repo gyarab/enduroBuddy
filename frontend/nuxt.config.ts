@@ -1,0 +1,52 @@
+export default defineNuxtConfig({
+  compatibilityDate: "2024-11-01",
+  devtools: { enabled: true },
+
+  modules: [
+    "@pinia/nuxt",
+    "@nuxtjs/i18n",
+  ],
+
+  routeRules: {
+    "/": { ssr: true },
+    "/about": { ssr: true },
+    "/terms": { ssr: true },
+    "/privacy": { ssr: true },
+    "/app/**": { ssr: false },
+    "/coach/**": { ssr: false },
+    "/accounts/**": { ssr: false },
+  },
+
+  runtimeConfig: {
+    public: {
+      apiBase: "/api/v1",
+    },
+  },
+
+  i18n: {
+    locales: [
+      { code: "cs", file: "cs.json" },
+      { code: "en", file: "en.json" },
+    ],
+    defaultLocale: "cs",
+    langDir: "locales/",
+    strategy: "no_prefix",
+  },
+
+  css: [
+    "~/assets/design-tokens.css",
+    "~/assets/fonts.css",
+  ],
+
+  vite: {
+    server: {
+      proxy: {
+        "/api": "http://localhost:8000",
+        "/admin": "http://localhost:8000",
+        "/accounts": "http://localhost:8000",
+        "/i18n/set_language": "http://localhost:8000",
+        "/static": "http://localhost:8000",
+      },
+    },
+  },
+})
