@@ -39,7 +39,7 @@ services:
     image: node:20-alpine
     container_name: endurobuddy-frontend
     working_dir: /app/frontend
-    command: sh -c "npm ci && npm run dev"
+    command: sh -c "npm install -g pnpm && pnpm install --frozen-lockfile && pnpm dev"
     environment:
       DJANGO_ORIGIN: "http://web:8000"
     volumes:

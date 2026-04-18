@@ -1,13 +1,15 @@
 # Stage 1: Build Vue SPA
 FROM node:20-alpine AS frontend-build
 
+RUN npm install -g pnpm
+
 WORKDIR /app/frontend
 
-COPY frontend/package*.json ./
-RUN npm ci
+COPY frontend/pnpm-lock.yaml frontend/package.json frontend/.npmrc ./
+RUN pnpm install --frozen-lockfile
 
 COPY frontend/ ./
-RUN npm run build
+RUN pnpm build
 # Output: /app/backend/static_build/spa (per vite.config.ts outDir)
 
 # Stage 2: Django runtime
