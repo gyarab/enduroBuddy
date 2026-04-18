@@ -212,22 +212,43 @@ Spec: `docs/superpowers/specs/2026-04-18-nuxt-migration-design.md`
 
 ## Aktivní plány a změny
 
-### 2026-04-18 — Nuxt migrace: eliminace Django templates
+### 2026-04-18 — Nuxt migrace + infrastrukturní základ
 
 **Větev:** `feat/nuxt-migration`
 **Spec:** `docs/superpowers/specs/2026-04-18-nuxt-migration-design.md`
+**Plán:** `docs/superpowers/plans/2026-04-18-nuxt-migration.md`
 
-**Cíl:** Nahradit Vite SPA + Django templates jedním Nuxt 3 stackem.
-- Nuxt jako Node.js server (SSR pro veřejné stránky, SPA pro `/app/*` a `/coach/*`)
-- Django zůstane čistě jako REST API + admin
-- Nginx routuje `/api/*` a `/admin/*` → Django, zbytek → Nuxt
+**Cíl:** Nahradit Vite SPA + Django templates jedním Nuxt 3 stackem, přejít na moderní tooling a přidat async task queue.
 
-**Blokující chybějící věci (důvod migrace):**
+#### Co je součástí plánu
+
+| Oblast | Technologie | Stav |
+|--------|------------|------|
+| Python package manager | uv (nahrazuje pip) | plánováno |
+| Node package manager | pnpm (nahrazuje npm) | plánováno |
+| Task queue + broker | Celery + Redis | plánováno |
+| Frontend framework | Nuxt 3 (nahrazuje Vite SPA + Django templates) | plánováno |
+
+#### Fáze
+
+- **Fáze 0a** — uv: `pyproject.toml`, aktualizace Dockerfile
+- **Fáze 0b** — pnpm: nahradit npm, přechod `pnpm-lock.yaml`
+- **Fáze 1** — Redis + Celery: Docker service, Celery worker + beat, Garmin sync jako async task
+- **Fáze 2** — Nuxt setup, migrace komponent, veřejné stránky (SSR), error stránka, help modál
+- **Fáze 3** — Cleanup Django templates + Nginx routing
+- **Fáze 4** — QA
+
+#### Blokující chybějící věci (původní motivace)
 - Veřejné stránky (home, about, terms, privacy) — jen Django templates, bez Vue ekvivalentu
 - Error stránky (404, 500) — jen Django templates
 - Help modál (km pravidla) — jen Django template
+- Garmin sync je synchronní (blokuje request) — Celery to opraví
 
-**Status:** Spec napsán, implementační plán se připravuje
+**Implementační plány (bite-sized TDD):**
+- `docs/superpowers/plans/2026-04-18-infrastructure.md` — uv, pnpm, Redis, Celery (9 tasků)
+- `docs/superpowers/plans/2026-04-18-nuxt-migration-impl.md` — Nuxt migrace (12 tasků)
+
+**Status:** Implementační plány napsány — připraveno k implementaci
 
 ---
 
