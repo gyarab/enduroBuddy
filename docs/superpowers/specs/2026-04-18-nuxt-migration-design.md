@@ -132,15 +132,13 @@ Nová komponenta `PlannedKmRulesModal.vue` — standalone modál s pravidly záp
 ## Git workflow pro tuto migraci
 
 ```
-main (produkce)
-  ├── backup/pre-nuxt-20260418   ← snapshot stavu před migrací, NEMĚNIT
-  └── feat/nuxt-migration        ← veškerá práce probíhá zde
-        ↓ (po dokončení)
-      merge → main
+origin:
+  main                       ← produkce
+  backup/pre-nuxt-20260418   ← historický snapshot (nepoužívá se)
+  feat/nuxt-migration        ← veškerý vývoj ↓ merge → main po dokončení
 ```
 
 - Veškerá implementace probíhá na větvi `feat/nuxt-migration`
-- Větev `backup/pre-nuxt-20260418` slouží jako záchranná síť — odráží stav `main` před migrací
 - Po dokončení a otestování se `feat/nuxt-migration` mergne do `main`
 
 ---

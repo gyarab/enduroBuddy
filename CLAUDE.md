@@ -199,12 +199,13 @@ python manage.py seed_coach_demo
 ## Git workflow — aktivní migrace
 
 ```
-main (produkce)
-  ├── backup/pre-nuxt-20260418   ← snapshot před Nuxt migrací, NEMĚNIT
-  └── feat/nuxt-migration        ← veškerá Nuxt migrace probíhá zde
+origin:
+  main                  ← produkce
+  backup/pre-nuxt-20260418  ← historický snapshot (nepoužívá se)
+  feat/nuxt-migration   ← veškerý vývoj probíhá zde
 ```
 
-Veškerá práce na Nuxt migraci probíhá na větvi `feat/nuxt-migration`. Po dokončení se mergne do `main`. Větev `backup/pre-nuxt-20260418` je záchranná síť — neměnit.
+Veškerá práce probíhá na větvi `feat/nuxt-migration`. Po dokončení se mergne do `main`. Větev `backup/pre-nuxt-20260418` existuje v origin jako historický záznam — aktivně se nepoužívá.
 
 Spec: `docs/superpowers/specs/2026-04-18-nuxt-migration-design.md`
 
