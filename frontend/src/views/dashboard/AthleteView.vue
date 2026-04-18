@@ -1,13 +1,15 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 
 import MonthBar from "@/components/training/MonthBar.vue";
 import MonthSummaryBar from "@/components/training/MonthSummaryBar.vue";
 import WeekCard from "@/components/training/WeekCard.vue";
 import WeekCardSkeleton from "@/components/training/WeekCardSkeleton.vue";
+import GarminImportModal from "@/components/training/GarminImportModal.vue";
 import EbButton from "@/components/ui/EbButton.vue";
 import EbCard from "@/components/ui/EbCard.vue";
 import { useI18n } from "@/composables/useI18n";
+import { useAuthStore } from "@/stores/auth";
 import { useToastStore } from "@/stores/toasts";
 import { useTrainingStore } from "@/stores/training";
 import { addNextMonth } from "@/api/training";
@@ -16,6 +18,12 @@ const trainingStore = useTrainingStore();
 const toastStore = useToastStore();
 const { t } = useI18n();
 const isAddingMonth = ref(false);
+const authStore = useAuthStore();
+const isGarminModalOpen = ref(false);
+
+const showGarminImportButton = computed(
+  () => !!authStore.user?.capabilities.garmin_connect_enabled,
+);
 
 async function handleAddMonth() {
   isAddingMonth.value = true;
@@ -62,6 +70,12 @@ onMounted(() => {
     </EbCard>
 
     <template v-else>
+      <div v-if="showGarminImportButton" class="dashboard-view__toolbar">
+        <EbButton variant="ghost" @click="isGarminModalOpen = true">
+          {{ t("imports.open") }}
+        </EbButton>
+      </div>
+
       <MonthSummaryBar v-if="trainingStore.summary" :summary="trainingStore.summary" />
 
       <div class="dashboard-view__weeks">
@@ -77,12 +91,23 @@ onMounted(() => {
       @add-month="handleAddMonth"
     />
   </section>
+
+  <GarminImportModal
+    v-if="showGarminImportButton"
+    :open="isGarminModalOpen"
+    @close="isGarminModalOpen = false"
+  />
 </template>
 
 <style scoped>
 .dashboard-view {
   display: grid;
   gap: 1rem;
+}
+
+.dashboard-view__toolbar {
+  display: flex;
+  justify-content: flex-end;
 }
 
 .dashboard-view__weeks {
