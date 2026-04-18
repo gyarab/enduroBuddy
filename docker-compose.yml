@@ -48,6 +48,46 @@ services:
     networks:
       - backend
 
+  celery-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: endurobuddy-celery-worker
+    restart: unless-stopped
+    command: sh -c "cd /app/backend && celery -A config worker -l info"
+    depends_on:
+      - db
+      - redis
+    env_file:
+      - .env
+    environment:
+      POSTGRES_HOST: db
+      DJANGO_DEBUG: "true"
+    volumes:
+      - ./backend:/app/backend
+    networks:
+      - backend
+
+  celery-beat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: endurobuddy-celery-beat
+    restart: unless-stopped
+    command: sh -c "cd /app/backend && celery -A config beat -l info"
+    depends_on:
+      - db
+      - redis
+    env_file:
+      - .env
+    environment:
+      POSTGRES_HOST: db
+      DJANGO_DEBUG: "true"
+    volumes:
+      - ./backend:/app/backend
+    networks:
+      - backend
+
   frontend:
     image: node:20-alpine
     container_name: endurobuddy-frontend
