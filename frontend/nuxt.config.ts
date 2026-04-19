@@ -33,6 +33,10 @@ export default defineNuxtConfig({
     defaultLocale: "cs",
     langDir: "locales/",
     strategy: "no_prefix",
+    detectBrowserLanguage: false,
+    bundle: {
+      optimizeTranslationDirective: false,
+    },
   },
 
   css: [
