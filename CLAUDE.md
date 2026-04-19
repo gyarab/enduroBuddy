@@ -290,6 +290,13 @@ Spec: `docs/superpowers/specs/2026-04-18-nuxt-migration-design.md`
   - `templates/includes/_top_nav.html` — nahrazeny `{% url 'public_home' %}`, `{% url 'dashboard_home' %}`, `{% url 'coach_training_plans' %}` přímými URL; odstraněny tlačítka legend/import (jsou v Nuxt SPA)
   - Testy: odstraněny testy HTML views (`_fit_import_rendering_cases.py` vyřazen z test_fit_import.py, `_coach_training_page_cases.py` vyřazen z test_coach_training_plans.py); opraveny testy v `accounts/tests.py`, `test_profile_manage.py`, `test_spa_api.py`, `_coach_training_planned_cases.py`, `_coach_training_completed_cases.py`, `_fit_import_flow_cases.py`, `_fit_import_garmin_cases.py`
   - Django check: 0 issues; 141 testů zelených (1 skipped)
+- **Task 11 residual fix** — Odstranění mrtvého kódu po cleanup (2026-04-19):
+  - `dashboard/handlers/home_actions.py` — nahrazeny 4x `redirect("dashboard_home")` za `redirect("/app/dashboard")`
+  - `dashboard/views_invites.py` — odstraněna celá funkce `accept_training_group_invite()` (URL byla smazána v Task 11, view bylo nedosažitelné); soubor zredukován na prázdný stub
+  - `backend/templates/dashboard/accept_training_group_invite.html` — odstraněn (`git rm`)
+  - `dashboard/tests/_fit_import_rendering_cases.py` — odstraněn (`git rm`; obsahoval reference na `dashboard_home`)
+  - `dashboard/tests/_coach_training_page_cases.py` — odstraněn (`git rm`; obsahoval reference na `dashboard_home` a `training_group_invite_accept`)
+  - Django check: 0 issues; 141 testů zelených (1 skipped)
 
 ---
 
