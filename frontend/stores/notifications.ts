@@ -13,7 +13,7 @@ export const useNotificationsStore = defineStore("notifications", () => {
   const isOpen = ref(false);
   const hasBootstrapped = ref(false);
   const errorMessage = ref("");
-  const { t } = useI18n();
+  const { $i18n } = useNuxtApp(); const t = $i18n.t.bind($i18n);
   const unreadCount = computed(() => items.value.filter((item) => item.unread).length);
 
   let pollTimer: number | null = null;

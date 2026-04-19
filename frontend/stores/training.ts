@@ -23,7 +23,7 @@ export const useTrainingStore = defineStore("training", () => {
   const errorMessage = ref("");
   const isRefreshing = ref(false);
   const toastStore = useToastStore();
-  const { t } = useI18n();
+  const { $i18n } = useNuxtApp(); const t = $i18n.t.bind($i18n);
 
   const selectedMonth = computed(() => dashboard.value?.selected_month ?? null);
   const weeks = computed(() => dashboard.value?.weeks ?? []);

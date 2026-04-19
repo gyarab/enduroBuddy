@@ -26,7 +26,7 @@ export const useCoachStore = defineStore("coach", () => {
   const isManagingAthletes = ref(false);
   const errorMessage = ref("");
   const toastStore = useToastStore();
-  const { t } = useI18n();
+  const { $i18n } = useNuxtApp(); const t = $i18n.t.bind($i18n);
 
   const athletes = computed(() => dashboard.value?.athletes ?? []);
   const selectedAthlete = computed(() => dashboard.value?.selected_athlete ?? null);

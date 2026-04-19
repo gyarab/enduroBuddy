@@ -4,3 +4,6 @@ import { vi } from "vitest"
 vi.stubGlobal("useI18n", () => ({ t: (k: string) => k }))
 vi.stubGlobal("useCookie", () => ({ value: null }))
 vi.stubGlobal("$fetch", vi.fn())
+vi.stubGlobal("useNuxtApp", () => ({
+  $i18n: { t: (k: string) => k },
+}))
