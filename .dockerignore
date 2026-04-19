@@ -1,0 +1,9 @@
+frontend/node_modules
+frontend/.nuxt
+frontend/.output
+frontend/dist
+backend/__pycache__
+backend/**/__pycache__
+backend/**/*.pyc
+backend/static_build
+.git
