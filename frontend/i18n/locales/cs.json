@@ -460,6 +460,7 @@
   },
   "kmRules": {
     "title": "Pravidla zápisu km",
+    "close": "Zavřít",
     "basicTitle": "Základní zápis",
     "basicKm": "15 km",
     "basicTime": "1 hodina 30 minut",

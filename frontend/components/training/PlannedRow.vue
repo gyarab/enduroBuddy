@@ -226,7 +226,7 @@ async function deletePlanned() {
         <label class="training-row__field training-row__field--wide">
           <span class="training-row__field-label">
             {{ t("plannedRow.title") }}
-            <button class="planned-row-help" type="button" @click.stop="showKmRules = true" title="Pravidla zápisu">?</button>
+            <button class="planned-row-help" type="button" @click.stop="showKmRules = true" :title="t('kmRules.title')">?</button>
           </span>
           <textarea v-model="editor.draft.value.title" class="training-row__textarea" :disabled="!editor.canInteract.value" />
         </label>

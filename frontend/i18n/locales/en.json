@@ -460,6 +460,7 @@
   },
   "kmRules": {
     "title": "Training notation rules",
+    "close": "Close",
     "basicTitle": "Basic notation",
     "basicKm": "15 km",
     "basicTime": "1 hour 30 minutes",

@@ -52,4 +52,25 @@ const title = computed(() => {
   color: var(--eb-text-muted);
   margin-bottom: 2rem;
 }
+.eb-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  border-radius: var(--eb-radius-md);
+  font-family: var(--eb-font-body);
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  border: none;
+  transition: opacity 0.15s;
+}
+.eb-btn-primary {
+  background: var(--eb-lime);
+  color: var(--eb-bg);
+}
+.eb-btn-primary:hover {
+  opacity: 0.9;
+}
 </style>

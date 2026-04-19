@@ -5,10 +5,10 @@
       class="eb-modal-overlay"
       @click.self="$emit('close')"
     >
-      <div class="eb-modal" role="dialog" aria-modal="true">
+      <div class="eb-modal" role="dialog" aria-modal="true" aria-labelledby="km-rules-modal-title">
         <div class="eb-modal-header">
-          <h2 class="eb-modal-title">{{ t("kmRules.title") }}</h2>
-          <button class="eb-modal-close" @click="$emit('close')" aria-label="Zavřít">✕</button>
+          <h2 id="km-rules-modal-title" class="eb-modal-title">{{ t("kmRules.title") }}</h2>
+          <button class="eb-modal-close" @click="$emit('close')" :aria-label="t('kmRules.close')">✕</button>
         </div>
         <div class="eb-modal-body km-rules-body">
           <section>
@@ -40,9 +40,17 @@
 </template>
 
 <script setup lang="ts">
-defineProps<{ isOpen: boolean }>()
-defineEmits<{ close: [] }>()
+import { onMounted, onUnmounted } from 'vue'
+
+const props = defineProps<{ isOpen: boolean }>()
+const emit = defineEmits<{ close: [] }>()
 const { t } = useI18n()
+
+function onKeyDown(e: KeyboardEvent) {
+  if (e.key === 'Escape' && props.isOpen) emit('close')
+}
+onMounted(() => document.addEventListener('keydown', onKeyDown))
+onUnmounted(() => document.removeEventListener('keydown', onKeyDown))
 </script>
 
 <style scoped>
