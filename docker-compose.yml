@@ -104,6 +104,34 @@ services:
     networks:
       - backend
 
+  nuxt:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: endurobuddy-nuxt
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NUXT_PUBLIC_API_BASE: /api/v1
+    depends_on:
+      - web
+    networks:
+      - backend
+
+  nginx:
+    build:
+      context: ./nginx
+    container_name: endurobuddy-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - web
+      - nuxt
+    networks:
+      - backend
+
 volumes:
   endurobuddy_pgdata:
   endurobuddy_redis:
