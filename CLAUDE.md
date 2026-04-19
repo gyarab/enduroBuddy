@@ -249,7 +249,7 @@ Spec: `docs/superpowers/specs/2026-04-18-nuxt-migration-design.md`
 - `docs/superpowers/plans/2026-04-18-infrastructure.md` — uv, pnpm, Redis, Celery (9 tasků)
 - `docs/superpowers/plans/2026-04-18-nuxt-migration-impl.md` — Nuxt migrace (12 tasků)
 
-**Status:** Fáze 1 hotová, Fáze 2 (Nuxt setup) — Task 7 + Task 8 hotové (2026-04-19)
+**Status:** Fáze 1 hotová, Fáze 2 (Nuxt setup) — Task 7 + Task 8 + Task 10 hotové (2026-04-19)
 
 #### Hotovo v Fázi 1
 - **Task 4** — Redis service v `docker-compose.yml` + `docker-compose.prod.yml` (volume `endurobuddy_redis`, `web` závisí na `redis`)
@@ -273,6 +273,12 @@ Spec: `docs/superpowers/specs/2026-04-18-nuxt-migration-design.md`
   - `frontend/i18n/locales/cs.json` + `en.json` — přidány klíče `error.*` a `kmRules.*`
   - `frontend/components/training/PlannedKmRulesModal.test.ts` — 3 testy zelené (TDD: failing test commitnut před implementací)
   - Celkem 189 testů zelených
+- **Task 10** — Docker: Nuxt jako standalone service + Nginx (2026-04-19):
+  - `frontend/Dockerfile` — multi-stage build (builder → runtime), pnpm, `.output/server/index.mjs`
+  - `nginx/nginx.conf` — upstream django + nuxt, routing: `/api/`, `/admin/`, `/static/`, `/i18n/`, `/accounts/` → Django; `/` → Nuxt; WebSocket upgrade header
+  - `nginx/Dockerfile` — nginx:1.25-alpine s kopií nginx.conf
+  - `docker-compose.yml` — přidány `nuxt` (port 3000, depends_on web) a `nginx` (port 80, depends_on web + nuxt) services
+  - `docker compose config --quiet` prošel bez chyb
 
 ---
 
