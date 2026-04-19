@@ -451,5 +451,24 @@
     "kicker": "Právní dokumenty",
     "title": "Zásady ochrany osobních údajů",
     "lead": "EnduroBuddy - účinné od 1. 4. 2026"
+  },
+  "error": {
+    "notFound": "Stránka nenalezena",
+    "forbidden": "Přístup zamítnut",
+    "generic": "Něco se pokazilo",
+    "goHome": "Zpět na úvod"
+  },
+  "kmRules": {
+    "title": "Pravidla zápisu km",
+    "basicTitle": "Základní zápis",
+    "basicKm": "15 km",
+    "basicTime": "1 hodina 30 minut",
+    "basicBoth": "15 km a 1:30",
+    "typeTitle": "Typy tréninku",
+    "typeZ": "základní",
+    "typeT": "tempo",
+    "typeTV": "tempo vytrvalost",
+    "intervalsTitle": "Intervaly",
+    "intervalsExample": "10 km base + 5 intervalů po 1 km Z"
   }
 }

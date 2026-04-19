@@ -34,6 +34,7 @@ const dayLabel = computed(() => {
   return props.row.is_second_phase ? "P2" : "?";
 });
 
+const showKmRules = ref(false);
 const metricsLabel = computed(() => props.row.planned_metrics?.planned_km_text || t("plannedRow.noKmHint"));
 const confidenceClass = computed(() => {
   const confidence = props.row.planned_metrics?.planned_km_confidence || "low";
@@ -223,7 +224,10 @@ async function deletePlanned() {
         </label>
 
         <label class="training-row__field training-row__field--wide">
-          <span class="training-row__field-label">{{ t("plannedRow.title") }}</span>
+          <span class="training-row__field-label">
+            {{ t("plannedRow.title") }}
+            <button class="planned-row-help" type="button" @click.stop="showKmRules = true" title="Pravidla zápisu">?</button>
+          </span>
           <textarea v-model="editor.draft.value.title" class="training-row__textarea" :disabled="!editor.canInteract.value" />
         </label>
 
@@ -290,6 +294,7 @@ async function deletePlanned() {
       </div>
     </div>
   </article>
+  <PlannedKmRulesModal :is-open="showKmRules" @close="showKmRules = false" />
 </template>
 
 <style scoped>
@@ -598,6 +603,29 @@ async function deletePlanned() {
   margin: 0;
   color: var(--eb-danger);
   font-size: 0.8125rem;
+}
+
+.planned-row-help {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1rem;
+  height: 1rem;
+  margin-left: 0.35rem;
+  border: 1px solid var(--eb-border);
+  border-radius: 999px;
+  background: none;
+  color: var(--eb-text-muted);
+  cursor: pointer;
+  font-size: 0.625rem;
+  font-weight: 700;
+  line-height: 1;
+  vertical-align: middle;
+}
+
+.planned-row-help:hover {
+  border-color: var(--eb-lime);
+  color: var(--eb-lime);
 }
 
 @media (max-width: 767px) {
