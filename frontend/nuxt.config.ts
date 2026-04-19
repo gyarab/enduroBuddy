@@ -53,7 +53,7 @@ export default defineNuxtConfig({
       proxy: {
         "/api": "http://localhost:8000",
         "/admin": "http://localhost:8000",
-        "/accounts": "http://localhost:8000",
+        "/accounts/google": "http://localhost:8000",
         "/i18n/set_language": "http://localhost:8000",
         "/static": "http://localhost:8000",
       },

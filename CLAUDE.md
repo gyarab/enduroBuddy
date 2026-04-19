@@ -275,7 +275,7 @@ Spec: `docs/superpowers/specs/2026-04-18-nuxt-migration-design.md`
   - Celkem 189 testů zelených
 - **Task 10** — Docker: Nuxt jako standalone service + Nginx (2026-04-19):
   - `frontend/Dockerfile` — multi-stage build (builder → runtime), pnpm, `.output/server/index.mjs`
-  - `nginx/nginx.conf` — upstream django + nuxt, routing: `/api/`, `/admin/`, `/static/`, `/i18n/`, `/accounts/` → Django; `/` → Nuxt; WebSocket upgrade header; přidány `X-Forwarded-Proto` + chybějící `X-Forwarded-For` do všech Django locations
+  - `nginx/nginx.conf` — upstream django + nuxt, routing: `/api/`, `/admin/`, `/static/`, `/i18n/`, `/accounts/google/` → Django; `/` → Nuxt; WebSocket upgrade header; přidány `X-Forwarded-Proto` + chybějící `X-Forwarded-For` do všech Django locations
   - `nginx/Dockerfile` — nginx:1.25-alpine s kopií nginx.conf
   - `docker-compose.yml` — přidán `nuxt` service (port 3000, depends_on web); odstraněn starý `frontend` service (pnpm dev na 5173)
   - `docker-compose.prod.yml` — `web` Traefik rule zúžen na path-prefix pro Django routes (priority 20); přidán `nuxt` service s catch-all Traefik rule (priority 10)
@@ -297,6 +297,12 @@ Spec: `docs/superpowers/specs/2026-04-18-nuxt-migration-design.md`
   - `dashboard/tests/_fit_import_rendering_cases.py` — odstraněn (`git rm`; obsahoval reference na `dashboard_home`)
   - `dashboard/tests/_coach_training_page_cases.py` — odstraněn (`git rm`; obsahoval reference na `dashboard_home` a `training_group_invite_accept`)
   - Django check: 0 issues; 141 testů zelených (1 skipped)
+- **Routing fix** — `/accounts/` nyní obsluhuje Nuxt (2026-04-19):
+  - Kořenová příčina: Vite proxy přeposílal `/accounts/*` na Django; Django `nuxt_redirect` přesměrovával zpět na `localhost:3000` (hardcoded) → nekonečná smyčka
+  - `frontend/nuxt.config.ts` — proxy `/accounts` nahrazen `/accounts/google` (jen OAuth)
+  - `nginx/nginx.conf` — blok `location /accounts/` změněn na `location /accounts/google/`; ostatní `/accounts/*` padají na catch-all `/` → Nuxt
+  - `docker-compose.prod.yml` — Traefik pravidla pro `web` zúžena z `PathPrefix('/accounts/')` na `PathPrefix('/accounts/google/')`
+  - Výsledek: uživatelsky viditelné stránky účtu (login, signup...) obsluhuje Nuxt, OAuth callback (`/accounts/google/`) jde na Django
 
 ---
 
