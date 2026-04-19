@@ -16,6 +16,8 @@ RUN pip install uv
 COPY backend/pyproject.toml backend/uv.lock ./
 RUN uv sync --frozen --no-dev
 
+ENV PATH="/app/.venv/bin:$PATH"
+
 COPY backend ./backend
 
 WORKDIR /app/backend
