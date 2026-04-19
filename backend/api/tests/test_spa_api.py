@@ -149,19 +149,6 @@ class SpaApiEndpointTests(TestCase):
         self.assertEqual(self.athlete.first_name, "Nova")
         self.assertEqual(self.athlete.last_name, "Runner")
 
-    def test_spa_routes_render_spa_template_for_authenticated_app_runtime(self):
-        self.client.force_login(self.athlete)
-
-        athlete_response = self.client.get("/app/dashboard")
-        coach_response = self.client.get("/coach/plans")
-
-        self.assertEqual(athlete_response.status_code, 200)
-        self.assertEqual(coach_response.status_code, 200)
-        self.assertTemplateUsed(athlete_response, "spa.html")
-        self.assertTemplateUsed(coach_response, "spa.html")
-        self.assertContains(athlete_response, 'id="app"')
-        self.assertContains(coach_response, 'id="app"')
-
     def test_athlete_can_patch_own_planned_and_completed_training(self):
         self.client.force_login(self.athlete)
 

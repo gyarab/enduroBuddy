@@ -22,6 +22,7 @@ from accounts.views import (
     spa_social_login_error,
 )
 from config import error_views
+from config.views_nuxt import nuxt_redirect
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -48,6 +49,7 @@ urlpatterns = [
     path("accounts/social/login/error/", spa_social_login_error, name="socialaccount_login_error"),
     path("accounts/social/login/cancelled/", spa_social_login_cancelled, name="socialaccount_login_cancelled"),
     path("accounts/social/connections/", spa_social_connections, name="socialaccount_connections"),
+    path("app/profile/complete", nuxt_redirect, name="account_complete_profile"),
     path("accounts/", include("allauth.urls")),
     path("__debug/ui/errors/", error_views.error_preview_index, name="error_preview_index"),
     path("__debug/ui/errors/<int:status_code>/", error_views.error_preview_status, name="error_preview_status"),

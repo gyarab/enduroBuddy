@@ -281,6 +281,15 @@ Spec: `docs/superpowers/specs/2026-04-18-nuxt-migration-design.md`
   - `docker-compose.prod.yml` — `web` Traefik rule zúžen na path-prefix pro Django routes (priority 20); přidán `nuxt` service s catch-all Traefik rule (priority 10)
   - `frontend/.dockerignore` — vyloučeny node_modules, .nuxt, .output, .env atd.
   - `docker compose config --quiet` prošel bez chyb (dev i prod)
+- **Task 11** — Cleanup Django templates a HTML views (2026-04-19):
+  - Odstraněny HTML-renderující views: `dashboard/views_home.py::home()`, `dashboard/views_coach.py::coach_training_plans()`, `dashboard/views_invites.py::accept_training_group_invite()`
+  - Odstraněny URL patterny: `app/` (dashboard_home), `coach/plans/` (coach_training_plans), `coach/invite/<token>/` (training_group_invite_accept)
+  - `config/urls.py` — přidán `account_complete_profile` URL (→ nuxt_redirect), import `nuxt_redirect` z `config.views_nuxt`
+  - `accounts/views.py` — nahrazen import `config.views_spa` (smazaný) za `config.views_nuxt.nuxt_redirect`; fallback redirecty z `dashboard_home` na `/app/`
+  - `dashboard/views_profile.py` — fallback redirect z `dashboard_home` na `/app/`
+  - `templates/includes/_top_nav.html` — nahrazeny `{% url 'public_home' %}`, `{% url 'dashboard_home' %}`, `{% url 'coach_training_plans' %}` přímými URL; odstraněny tlačítka legend/import (jsou v Nuxt SPA)
+  - Testy: odstraněny testy HTML views (`_fit_import_rendering_cases.py` vyřazen z test_fit_import.py, `_coach_training_page_cases.py` vyřazen z test_coach_training_plans.py); opraveny testy v `accounts/tests.py`, `test_profile_manage.py`, `test_spa_api.py`, `_coach_training_planned_cases.py`, `_coach_training_completed_cases.py`, `_fit_import_flow_cases.py`, `_fit_import_garmin_cases.py`
+  - Django check: 0 issues; 141 testů zelených (1 skipped)
 
 ---
 

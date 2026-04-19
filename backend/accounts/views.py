@@ -12,7 +12,7 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 from urllib.parse import urlencode
 
 from accounts.forms import GoogleProfileCompletionForm
-from config.views_spa import public_spa_entry, spa_entry
+from config.views_nuxt import nuxt_redirect
 
 
 @method_decorator(ensure_csrf_cookie, name="dispatch")
@@ -21,9 +21,7 @@ class EnduroLoginView(LoginView):
 
 
 def _spa_or_public(request, *, requires_auth: bool = False, path: str | None = None):
-    if requires_auth:
-        return spa_entry(request, path=path)
-    return public_spa_entry(request, path=path)
+    return nuxt_redirect(request, path=path or "")
 
 
 def spa_account_login(request, *args, **kwargs):
@@ -112,7 +110,7 @@ def spa_social_connections(request, *args, **kwargs):
 def complete_profile(request):
     next_url = _safe_next_url(request)
     if _google_profile_is_complete(request.user):
-        return redirect(next_url or reverse("dashboard_home"))
+        return redirect(next_url or "/app/")
 
     if request.method == "POST":
         form = GoogleProfileCompletionForm(request.POST, user=request.user)
@@ -122,7 +120,7 @@ def complete_profile(request):
             request.user.profile.google_role_confirmed = True
             request.user.profile.save(update_fields=["google_profile_completed", "google_role_confirmed"])
             messages.success(request, "Profil byl doplněn.")
-            return redirect(next_url or reverse("dashboard_home"))
+            return redirect(next_url or "/app/")
     else:
         form = GoogleProfileCompletionForm(user=request.user)
 
@@ -131,7 +129,7 @@ def complete_profile(request):
         "account/complete_profile.html",
         {
             "form": form,
-            "next_url": next_url or reverse("dashboard_home"),
+            "next_url": next_url or "/app/",
         },
     )
 
