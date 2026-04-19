@@ -249,7 +249,7 @@ Spec: `docs/superpowers/specs/2026-04-18-nuxt-migration-design.md`
 - `docs/superpowers/plans/2026-04-18-infrastructure.md` — uv, pnpm, Redis, Celery (9 tasků)
 - `docs/superpowers/plans/2026-04-18-nuxt-migration-impl.md` — Nuxt migrace (12 tasků)
 
-**Status:** Fáze 1 hotová, Fáze 2 (Nuxt setup) — Task 7 hotový (2026-04-18)
+**Status:** Fáze 1 hotová, Fáze 2 (Nuxt setup) — Task 7 + Task 8 hotové (2026-04-19)
 
 #### Hotovo v Fázi 1
 - **Task 4** — Redis service v `docker-compose.yml` + `docker-compose.prod.yml` (volume `endurobuddy_redis`, `web` závisí na `redis`)
@@ -266,6 +266,13 @@ Spec: `docs/superpowers/specs/2026-04-18-nuxt-migration-design.md`
   - `frontend/vite.config.ts` → `vite.config.ts.bak` — přejmenováno (Nuxt nepodporuje standalone vite.config)
   - `package.json` aktualizován: nuxt, @pinia/nuxt, @nuxtjs/i18n, axios, vue, vue-router
   - Všech 93 testů zelených, Nuxt dev server startuje na `:3000`
+- **Task 8** — Error stránka a PlannedKmRulesModal (2026-04-19):
+  - `frontend/error.vue` — Nuxt error page (statusCode 404/403/generic, i18n, design tokeny)
+  - `frontend/components/training/PlannedKmRulesModal.vue` — modal s pravidly zápisu tréninku (Teleport to body, isOpen prop, close emit)
+  - `frontend/components/training/PlannedRow.vue` — integrován help button `?` vedle labelu Title, modal mountován na konci template
+  - `frontend/i18n/locales/cs.json` + `en.json` — přidány klíče `error.*` a `kmRules.*`
+  - `frontend/components/training/PlannedKmRulesModal.test.ts` — 3 testy zelené (TDD: failing test commitnut před implementací)
+  - Celkem 189 testů zelených
 
 ---
 
