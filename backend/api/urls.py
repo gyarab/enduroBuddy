@@ -33,6 +33,7 @@ from .views.coach import (
     coach_update_completed_training,
     coach_update_planned_training,
 )
+from .views.config import site_config
 from .views.dashboard import athlete_dashboard
 from .views.imports import fit_upload, garmin_connect, garmin_revoke, garmin_sync_start, garmin_week_sync, import_job_status
 from .views.notifications import list_notifications, mark_notifications_read_view
@@ -94,4 +95,5 @@ urlpatterns = [
     path("legend/", legend, name="api_legend"),
     path("invites/<str:token>/", invite_detail, name="api_invite_detail"),
     path("invites/<str:token>/accept/", invite_accept, name="api_invite_accept"),
+    path("site-config/", site_config, name="api_site_config"),
 ]
