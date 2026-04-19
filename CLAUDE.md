@@ -275,10 +275,12 @@ Spec: `docs/superpowers/specs/2026-04-18-nuxt-migration-design.md`
   - Celkem 189 testů zelených
 - **Task 10** — Docker: Nuxt jako standalone service + Nginx (2026-04-19):
   - `frontend/Dockerfile` — multi-stage build (builder → runtime), pnpm, `.output/server/index.mjs`
-  - `nginx/nginx.conf` — upstream django + nuxt, routing: `/api/`, `/admin/`, `/static/`, `/i18n/`, `/accounts/` → Django; `/` → Nuxt; WebSocket upgrade header
+  - `nginx/nginx.conf` — upstream django + nuxt, routing: `/api/`, `/admin/`, `/static/`, `/i18n/`, `/accounts/` → Django; `/` → Nuxt; WebSocket upgrade header; přidány `X-Forwarded-Proto` + chybějící `X-Forwarded-For` do všech Django locations
   - `nginx/Dockerfile` — nginx:1.25-alpine s kopií nginx.conf
-  - `docker-compose.yml` — přidány `nuxt` (port 3000, depends_on web) a `nginx` (port 80, depends_on web + nuxt) services
-  - `docker compose config --quiet` prošel bez chyb
+  - `docker-compose.yml` — přidán `nuxt` service (port 3000, depends_on web); odstraněn starý `frontend` service (pnpm dev na 5173)
+  - `docker-compose.prod.yml` — `web` Traefik rule zúžen na path-prefix pro Django routes (priority 20); přidán `nuxt` service s catch-all Traefik rule (priority 10)
+  - `frontend/.dockerignore` — vyloučeny node_modules, .nuxt, .output, .env atd.
+  - `docker compose config --quiet` prošel bez chyb (dev i prod)
 
 ---
 
