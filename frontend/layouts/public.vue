@@ -3,8 +3,8 @@
     <header class="eb-topbar">
       <div class="eb-public-shell eb-topbar-inner">
         <NuxtLink to="/" class="eb-topbar-brand" aria-label="EnduroBuddy">
-          <img src="/static/brand/eb-logo-full.svg" alt="EnduroBuddy" class="eb-logo-full">
-          <img src="/static/brand/eb-logo-compact.svg" alt="EB" class="eb-logo-compact">
+          <img src="/brand/eb-logo-full.svg" alt="EnduroBuddy" class="eb-logo-full">
+          <img src="/brand/eb-logo-compact.svg" alt="EB" class="eb-logo-compact">
         </NuxtLink>
 
         <nav class="eb-topbar-nav" :aria-label="t('nav.mainNavLabel')">
@@ -31,7 +31,7 @@
       <div class="eb-public-shell">
         <div class="eb-footer-grid">
           <div class="eb-footer-brand">
-            <img src="/static/brand/eb-logo-full.svg" alt="EnduroBuddy" class="eb-footer-logo">
+            <img src="/brand/eb-logo-full.svg" alt="EnduroBuddy" class="eb-footer-logo">
             <p class="eb-footer-tagline">{{ t("footer.tagline") }}</p>
           </div>
 

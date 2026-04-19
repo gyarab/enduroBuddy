@@ -25,8 +25,8 @@ const isProfileSettingsOpen = ref(false);
 const isLegendOpen = ref(false);
 const isGarminOpen = ref(false);
 const profileRootRef = ref<HTMLElement | null>(null);
-const logoFullUrl = "/static/brand/eb-logo-full.svg";
-const logoMarkUrl = "/static/brand/eb-mark.svg";
+const logoFullUrl = "/brand/eb-logo-full.svg";
+const logoMarkUrl = "/brand/eb-mark.svg";
 const { t } = useI18n();
 
 const title = computed(() => {
