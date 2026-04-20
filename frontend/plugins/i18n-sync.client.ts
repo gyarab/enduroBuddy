@@ -1,8 +1,7 @@
-export default defineNuxtPlugin(() => {
-  const { locale } = useI18n()
+export default defineNuxtPlugin((nuxtApp) => {
+  const csrfToken = useCookie("endurobuddy_csrftoken")
 
   async function syncWithDjango(lang: string) {
-    const csrfToken = useCookie("endurobuddy_csrftoken")
     try {
       await $fetch("/i18n/set_language/", {
         method: "POST",
@@ -17,7 +16,11 @@ export default defineNuxtPlugin(() => {
     }
   }
 
-  watch(locale, (newLocale) => {
-    void syncWithDjango(newLocale)
-  })
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const locale = (nuxtApp.$i18n as any)?.locale
+  if (locale) {
+    watch(locale, (newLocale: string) => {
+      void syncWithDjango(newLocale)
+    })
+  }
 })
