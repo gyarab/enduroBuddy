@@ -13,7 +13,7 @@ import EbButton from "@/components/ui/EbButton.vue";
 import EbCard from "@/components/ui/EbCard.vue";
 import { useToastStore } from "@/stores/toasts";
 import { useCoachStore } from "@/stores/coach";
-import { addNextMonth } from "@/api/training";
+import { addNextMonth } from "~/utils/api/training";
 
 const router = useRouter();
 const coachStore = useCoachStore();

@@ -2,7 +2,7 @@
 import { computed, onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
-import { fetchProfileCompletion, saveProfileCompletion, type ProfileCompletionPayload } from "@/api/profile";
+import { fetchProfileCompletion, saveProfileCompletion, type ProfileCompletionPayload } from "~/utils/api/profile";
 import EbButton from "@/components/ui/EbButton.vue";
 import EbCard from "@/components/ui/EbCard.vue";
 import EbSpinner from "@/components/ui/EbSpinner.vue";

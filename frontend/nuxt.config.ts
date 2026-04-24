@@ -53,7 +53,7 @@ export default defineNuxtConfig({
   ],
 
   alias: {
-    "@": resolve(__dirname, "./src"),
+    "@": resolve(__dirname, "./"),
   },
 
   vite: {

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 
-import type { TrainingRow } from "@/api/training";
+import type { TrainingRow } from "~/utils/api/training";
 import CompletedEditor from "@/components/training/CompletedEditor.vue";
 import EbBadge from "@/components/ui/EbBadge.vue";
 

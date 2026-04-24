@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 
-import type { CoachAthlete, CoachJoinRequest } from "@/api/coach";
-import { fetchCoachCode, fetchJoinRequests, approveJoinRequest, rejectJoinRequest, removeAthlete } from "@/api/coach";
+import type { CoachAthlete, CoachJoinRequest } from "~/utils/api/coach";
+import { fetchCoachCode, fetchJoinRequests, approveJoinRequest, rejectJoinRequest, removeAthlete } from "~/utils/api/coach";
 import EbButton from "@/components/ui/EbButton.vue";
 import EbModal from "@/components/ui/EbModal.vue";
 import EbContextMenu from "@/components/ui/EbContextMenu.vue";

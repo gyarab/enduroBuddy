@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
-import type { TrainingRow } from "@/api/training";
+import type { TrainingRow } from "~/utils/api/training";
 import { useInlineEditor } from "@/composables/useInlineEditor";
 import { useTrainingStore } from "@/stores/training";
 import { useToastStore } from "@/stores/toasts";

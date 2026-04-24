@@ -2,7 +2,7 @@ import { createPinia, setActivePinia } from "pinia";
 import { mount } from "@vue/test-utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import AthleteView from "@/views/dashboard/AthleteView.vue";
+import AthleteView from "@/components/views/dashboard/AthleteView.vue";
 import { useTrainingStore } from "@/stores/training";
 
 const dashboardPayload = {

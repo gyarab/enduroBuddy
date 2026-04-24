@@ -131,7 +131,7 @@ describe("TopNav", () => {
       props: { variant: "coach" },
       global: { plugins: [router, pinia] },
     });
-    expect(wrapper.find(".top-nav__title").text()).toBe("topNav.coachWorkspace");
+    expect(wrapper.find(".top-nav__title").text()).toBe("Coach Workspace");
   });
 
   it("shows completeProfile title on /profile path", async () => {
@@ -141,7 +141,7 @@ describe("TopNav", () => {
       props: { variant: "athlete" },
       global: { plugins: [router, pinia] },
     });
-    expect(wrapper.find(".top-nav__title").text()).toBe("topNav.completeProfile");
+    expect(wrapper.find(".top-nav__title").text()).toBe("Complete Profile");
   });
 
   it("shows dashboard title on /app/dashboard path", async () => {
@@ -151,6 +151,6 @@ describe("TopNav", () => {
       props: { variant: "athlete" },
       global: { plugins: [router, pinia] },
     });
-    expect(wrapper.find(".top-nav__title").text()).toBe("topNav.dashboard");
+    expect(wrapper.find(".top-nav__title").text()).toBe("Dashboard");
   });
 });

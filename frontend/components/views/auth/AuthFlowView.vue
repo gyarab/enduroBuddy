@@ -23,7 +23,7 @@ import {
   submitReauthenticate,
   submitPasswordResetFromKey,
   signupWithPassword,
-} from "@/api/auth";
+} from "~/utils/api/auth";
 import { useAuthStore } from "@/stores/auth";
 
 type AuthScreen =

@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, reactive, ref } from "vue";
 
-import type { DashboardWeek, TrainingRow, PlannedTrainingDraft } from "@/api/training";
-import { garminWeekSync } from "@/api/imports";
+import type { DashboardWeek, TrainingRow, PlannedTrainingDraft } from "~/utils/api/training";
+import { garminWeekSync } from "~/utils/api/imports";
 import { useAuthStore } from "@/stores/auth";
 import { useCoachStore } from "@/stores/coach";
 import { useTrainingStore } from "@/stores/training";

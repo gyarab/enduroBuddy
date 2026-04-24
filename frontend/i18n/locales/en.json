@@ -436,7 +436,23 @@
     "navForWho": "For who"
   },
   "about": {
-    "seoTitle": "About | EnduroBuddy"
+    "seoTitle": "About | EnduroBuddy",
+    "seoDescription": "The story and mission behind EnduroBuddy — a training workspace for endurance athletes.",
+    "kicker": "About the project",
+    "h1": "Training as a system,\nnot a spreadsheet.",
+    "lead": "EnduroBuddy was born from the frustration of scattered data — the plan in one place, reality in another, analysis nowhere. The goal is to connect coach and athlete in one structured workspace.",
+    "storyTitle": "Why EnduroBuddy exists",
+    "storyP1": "It started simply: workouts in a notebook, plan in a spreadsheet, Garmin activities elsewhere. Manual transcription every week. The coach sent a PDF, the athlete ignored it because it wasn't editable on the go.",
+    "storyP2": "Professional tools like TrainingPeaks are powerful, but offer too many features for teams that need a simple workflow: coach plans, athlete executes, both see the same data.",
+    "storyP3": "EnduroBuddy is the answer to this gap. No subscription for features you'll never use. Just a structured workspace with exactly what you actually need.",
+    "missionStatement": "Training should be visible — planned, completed, analysed. In one place.",
+    "missionCoach1": "The coach prepares monthly plans with weekly structure and tracks completion across athletes.",
+    "missionCoach2": "Imports from Garmin Connect or FIT files are matched to planned sessions automatically.",
+    "missionAthlete1": "The athlete sees the plan, logs completion and imports real activities — no spreadsheets.",
+    "missionAthlete2": "Data stays consistent: plan vs. reality in the same interface, always available.",
+    "founderName": "Vojta Holcman",
+    "founderRole": "Founder & developer",
+    "founderQuote": "I train and I code. I built EnduroBuddy because I wanted a tool I'd actually use myself — simple, fast, no bloat."
   },
   "terms": {
     "seoTitle": "Terms of Use | EnduroBuddy",

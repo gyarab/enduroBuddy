@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 
-import { changePassword } from "@/api/auth";
-import { requestCoachByCode } from "@/api/coach";
-import { fetchProfileSettings, saveProfileSettings, type ProfileSettingsPayload } from "@/api/profile";
+import { changePassword } from "~/utils/api/auth";
+import { requestCoachByCode } from "~/utils/api/coach";
+import { fetchProfileSettings, saveProfileSettings, type ProfileSettingsPayload } from "~/utils/api/profile";
 import EbButton from "@/components/ui/EbButton.vue";
 import EbModal from "@/components/ui/EbModal.vue";
 import { useAuthStore } from "@/stores/auth";

@@ -11,7 +11,7 @@ import EbCard from "@/components/ui/EbCard.vue";
 import { useAuthStore } from "@/stores/auth";
 import { useToastStore } from "@/stores/toasts";
 import { useTrainingStore } from "@/stores/training";
-import { addNextMonth } from "@/api/training";
+import { addNextMonth } from "~/utils/api/training";
 
 const trainingStore = useTrainingStore();
 const toastStore = useToastStore();

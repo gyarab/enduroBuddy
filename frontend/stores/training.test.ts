@@ -168,13 +168,13 @@ describe("useTrainingStore", () => {
       expect(store.isLoading).toBe(false);
     });
 
-    it("uses fallback translation key when error is not an Error instance", async () => {
+    it("uses generic error message when error is not an Error instance", async () => {
       vi.mocked(fetchDashboard).mockRejectedValueOnce("something went wrong");
 
       const store = useTrainingStore();
       await store.loadDashboard();
 
-      expect(store.errorMessage).toBe("trainingStore.loadError");
+      expect(store.errorMessage).toBe("Nepodarilo se nacist dashboard.");
     });
   });
 

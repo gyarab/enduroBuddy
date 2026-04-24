@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 
-import type { CoachAthlete } from "@/api/coach";
+import type { CoachAthlete } from "~/utils/api/coach";
 import EbContextMenu from "@/components/ui/EbContextMenu.vue";
 import type { ContextMenuItem } from "@/components/ui/context-menu-types";
 

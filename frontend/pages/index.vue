@@ -250,7 +250,10 @@ definePageMeta({ layout: "public" })
 
 const { t } = useI18n()
 
-const registrationEnabled = true // Task 9 will add dynamic loading from API
+const { data: siteConfig } = await useFetch('/api/v1/site-config/', {
+  default: () => ({ registration_enabled: true }),
+})
+const registrationEnabled = computed(() => siteConfig.value?.registration_enabled ?? true)
 
 useSeoMeta({
   title: t("landing.seoTitle"),

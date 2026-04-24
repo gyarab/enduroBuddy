@@ -436,7 +436,23 @@
     "navForWho": "Pro koho"
   },
   "about": {
-    "seoTitle": "O aplikaci | EnduroBuddy"
+    "seoTitle": "O aplikaci | EnduroBuddy",
+    "seoDescription": "Příběh a mise za EnduroBuddy — tréninkovým workspacem pro vytrvalostní sporty.",
+    "kicker": "O projektu",
+    "h1": "Trénink jako systém,\nne tabulka.",
+    "lead": "EnduroBuddy vznikl z frustrace z rozptýlených dat — plán v jednom místě, realita jinde, analýza nikde. Cílem je propojit trenéra a sportovce v jednom strukturovaném workspacu.",
+    "storyTitle": "Proč EnduroBuddy existuje",
+    "storyP1": "Začalo to jednoduše: tréninky v zápisníku, plán v tabulce, Garmin aktivity jinde. Každý týden ruční přepisování. Trenér posílal PDF, sportovec ho ignoroval, protože byl nezpůsobilý k editaci v terénu.",
+    "storyP2": "Profesionální nástroje jako TrainingPeaks jsou výkonné, ale nabízejí příliš mnoho funkcí pro týmy, které potřebují jednoduché workflow: trenér plánuje, sportovec plní, oba vidí stejná data.",
+    "storyP3": "EnduroBuddy je odpověď na tuto mezeru. Žádné předplatné za funkce, které nikdy nepoužiješ. Jen strukturovaný workspace s tím, co skutečně potřebuješ.",
+    "missionStatement": "Trénink má být vidět — plánovaný, splněný, analyzovaný. V jednom místě.",
+    "missionCoach1": "Trenér připravuje měsíční plány s týdenní strukturou a sleduje plnění napříč svěřenci.",
+    "missionCoach2": "Import z Garmin Connect nebo FIT souborů se spáruje s plánovanými tréninky automaticky.",
+    "missionAthlete1": "Sportovec vidí plán, zapisuje splnění a importuje reálné aktivity — bez tabulek.",
+    "missionAthlete2": "Data zůstávají konzistentní: plán vs. realita ve stejném rozhraní, vždy dostupná.",
+    "founderName": "Vojta Holcman",
+    "founderRole": "Zakladatel & vývojář",
+    "founderQuote": "Trénuju a programuju. EnduroBuddy jsem napsal, protože jsem chtěl nástroj, který by sám používal — jednoduchý, rychlý, bez bloatware."
   },
   "terms": {
     "seoTitle": "Podmínky použití | EnduroBuddy",

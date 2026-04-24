@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { acceptInvite, fetchInvite } from "@/api/invites";
-import type { InviteDetail } from "@/api/invites";
+import { acceptInvite, fetchInvite } from "~/utils/api/invites";
+import type { InviteDetail } from "~/utils/api/invites";
 import EbButton from "@/components/ui/EbButton.vue";
 import EbCard from "@/components/ui/EbCard.vue";
 import EbSpinner from "@/components/ui/EbSpinner.vue";

@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 
-import type { LegendPR, LegendState } from "@/api/legend";
-import { PR_DISTANCES } from "@/api/legend";
+import type { LegendPR, LegendState } from "~/utils/api/legend";
+import { PR_DISTANCES } from "~/utils/api/legend";
 import { useAuthStore } from "@/stores/auth";
 import { useLegendStore } from "@/stores/legend";
 import EbButton from "@/components/ui/EbButton.vue";

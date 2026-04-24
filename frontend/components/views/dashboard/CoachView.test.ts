@@ -2,7 +2,7 @@ import { createPinia, setActivePinia } from "pinia";
 import { mount } from "@vue/test-utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import CoachView from "@/views/dashboard/CoachView.vue";
+import CoachView from "@/components/views/dashboard/CoachView.vue";
 import { useCoachStore } from "@/stores/coach";
 
 const dashboardPayload = {
