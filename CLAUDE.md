@@ -421,3 +421,29 @@ Kompletní průzkum repozitáře na větvi `main`.
 V `config/urls.py` jsou SPA routes `/app/*` definovány **před** `include("dashboard.urls")`, takže legacy Django dashboard na `/app/` je v produkci překrytý SPA a nedostupný. Django route pro dashboard existuje v kódu, ale není dosažitelná.
 
 **Status:** Analýza dokončena, implementace migrace veřejných stránek do Vue zatím neplánována.
+
+---
+
+### 2026-04-25 — WeekCard: zone switching (TDD)
+
+**Spec:** `docs/superpowers/specs/2026-04-25-weekcard-zone-switching.md`
+**Plán:** `docs/superpowers/plans/2026-04-25-weekcard-zone-switching.md`
+
+**Cíl:** Implementovat vzájemně se vylučující editační "zóny" v WeekCard — když je aktivní editace v planned zone (title), completed zone (km/čas/HR) je skrytá a naopak.
+
+**Motivace:** Aktuálně můžete kliknout na title a otevřít editaci planned tréninku a zároveň kliknout na km a otevřít editaci completed — obě zóny se zobrazují současně, což je matoucí UX.
+
+#### Fáze
+
+1. **Task 1 (TDD failing tests)** — `frontend/components/training/WeekCard.test.ts` — 5 failing testů pro zone switching
+2. **Task 2 (implement activeZone)** — ref pro sledování aktivní zóny, closures v openEdit()
+3. **Task 3 (add testid attributes)** — data-testid v template pro testy a debugging
+
+#### Status (2026-04-25)
+
+- **Task 1: ✅ Hotovo** — `frontend/components/training/WeekCard.test.ts` vytvořen a commitnut
+  - 4 testy pro mutual exclusion (planned → completed switch, completed → planned switch, jednotlivě)
+  - 1 test pro summary row (show planned_total_km_text)
+  - Všech 5 testů failuje jak se očekávalo: "Cannot call trigger on empty DOMWrapper" (chybí data-testid atributy)
+  - Commit: `660ec68 test(weekcard): add failing tests for zone mutual exclusion`
+  - Frontend: 96 testů zelených (unchanged)
