@@ -4,18 +4,24 @@ export interface ApiOptions {
   params?: Record<string, string | number | boolean>
 }
 
+function getCsrfToken(): string | null {
+  if (import.meta.server) return null
+  const match = document.cookie.match(/(?:^|; )endurobuddy_csrftoken=([^;]*)/)
+  return match ? decodeURIComponent(match[1]) : null
+}
+
 export async function apiFetch<T = unknown>(
   path: string,
   options: ApiOptions = {},
 ): Promise<T> {
-  const csrfToken = useCookie("endurobuddy_csrftoken")
+  const csrfToken = getCsrfToken()
 
   return $fetch<T>(path.startsWith("/api/") ? path : `/api/v1${path}`, {
     credentials: "include",
     headers: {
       Accept: "application/json",
       "X-Requested-With": "XMLHttpRequest",
-      ...(csrfToken.value ? { "X-CSRFToken": csrfToken.value } : {}),
+      ...(csrfToken ? { "X-CSRFToken": csrfToken } : {}),
     },
     method: options.method ?? "GET",
     ...(options.body ? { body: options.body } : {}),
