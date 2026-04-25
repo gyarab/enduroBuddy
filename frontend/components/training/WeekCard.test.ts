@@ -1,11 +1,11 @@
 import { createPinia, setActivePinia } from "pinia";
 import { mount } from "@vue/test-utils";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 
 import type { DashboardWeek } from "~/utils/api/training";
 import WeekCard from "./WeekCard.vue";
-import { useAuthStore } from "@/stores/auth";
-import { useTrainingStore } from "@/stores/training";
+import { useAuthStore } from "~/stores/auth";
+import { useTrainingStore } from "~/stores/training";
 
 const DATE = "2026-05-01";
 
@@ -43,10 +43,7 @@ function buildWeek(overrides: Partial<DashboardWeek> = {}): DashboardWeek {
 }
 
 function mountWeekCard(week: DashboardWeek = buildWeek()) {
-  const wrapper = mount(WeekCard, {
-    props: { week, editorContext: "athlete" },
-  });
-
+  // Set up stores BEFORE mounting
   const authStore = useAuthStore();
   authStore.user = {
     capabilities: { has_garmin_connection: false, garmin_sync_enabled: false },
@@ -56,9 +53,10 @@ function mountWeekCard(week: DashboardWeek = buildWeek()) {
   trainingStore.dashboard = {
     flags: { can_edit_completed: true, can_edit_planned: true, is_coach: false },
   } as any;
-  trainingStore.selectedMonthValue = "2026-05";
 
-  return wrapper;
+  return mount(WeekCard, {
+    props: { week, editorContext: "athlete" },
+  });
 }
 
 describe("WeekCard — zone editing mutual exclusion", () => {
