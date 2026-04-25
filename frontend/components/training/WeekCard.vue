@@ -113,6 +113,7 @@ const daySlots = computed<DaySlot[]>(() => {
 // ── Edit state ───────────────────────────────────────────────
 interface RowEdit {
   date: string;
+  activeZone: "planned" | "completed";   // ← NEW
   // planned
   plannedId: number | null;
   title: string;
@@ -143,27 +144,54 @@ function isEditing(date: string): boolean {
   return editingRows.has(date);
 }
 
-function openEdit(slot: DaySlot, focusField = "title") {
-  if (editingRows.has(slot.date)) return;
+function isEditingZone(date: string, zone: "planned" | "completed"): boolean {
+  const edit = editingRows.get(date);
+  return edit ? edit.activeZone === zone : false;
+}
+
+function openEdit(slot: DaySlot, focusField = "title", zone: "planned" | "completed" = "planned") {
+  const existing = editingRows.get(slot.date);
+
+  if (existing) {
+    if (existing.activeZone === zone) return;
+    // Zone switch: save dirty data fire-and-forget, then switch
+    if (existing.isDirty) {
+      if (existing.debounceTimer) {
+        clearTimeout(existing.debounceTimer);
+        existing.debounceTimer = null;
+      }
+      saveRow(slot, existing);
+    }
+    existing.activeZone = zone;
+    existing.focusField = focusField;
+    return;
+  }
+
   const planned = slot.planned.find((r) => !r.is_second_phase) ?? null;
   const completed = slot.completed[0] ?? null;
   const canEditPlanned = planned ? planned.editable : true;
   const completedEditable = completed
-    ? (completed.editable && !completed.has_linked_activity)
-    : (canEditCompletedGlobal.value && planned !== null);
+    ? completed.editable && !completed.has_linked_activity
+    : canEditCompletedGlobal.value && planned !== null;
+
+  if (zone === "planned" && !canEditPlanned) return;
+  if (zone === "completed" && !completedEditable) return;
+
   const completedId = completedEditable
     ? (completed?.id ?? planned?.id ?? null)
     : null;
+
   if (!canEditPlanned && !completedEditable) return;
 
   editingRows.set(slot.date, {
     date: slot.date,
+    activeZone: zone,
     plannedId: planned?.id ?? null,
     title: planned ? (planned.title === "-" ? "" : planned.title) : "",
     notes: planned?.notes ?? "",
     sessionType: (planned?.session_type as "RUN" | "WORKOUT") ?? "RUN",
     isCreating: !planned,
-    completedId: completedId,
+    completedId,
     km: completed?.completed_metrics?.km ?? "",
     minutes: completed?.completed_metrics?.minutes ?? "",
     details: completed?.completed_metrics?.details ?? "",
@@ -302,7 +330,7 @@ async function toggleSessionType(slot: DaySlot) {
       toastStore.push(err instanceof Error ? err.message : t("weekCard.createError"), "danger");
     }
   } else {
-    openEdit(slot, "title");
+    openEdit(slot, "title", "planned");
     const newEdit = editingRows.get(slot.date);
     if (newEdit) newEdit.sessionType = "WORKOUT";
   }
