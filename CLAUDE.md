@@ -18,7 +18,7 @@
 
 Django webová aplikace pro plánování vytrvalostního tréninku. Propojuje trenéra a sportovce: trenér připravuje měsíční plány, sportovec zapisuje splněné tréninky a importuje aktivity z Garmin Connect nebo FIT souborů.
 
-**Stack:** Python 3.12, Django 5.2, PostgreSQL, Vue 3 + TypeScript + Vite (SPA pro přihlášenou část), vlastní CSS bez frameworků, Docker Compose.
+**Stack:** Python 3.12, Django 5.2, PostgreSQL, Nuxt 3 + TypeScript (SSR veřejné stránky + SPA přihlášená část), vlastní CSS bez frameworků, Docker Compose, Celery + Redis.
 
 **Jazyky UI:** Česky + anglicky (django i18n, language switcher).
 
@@ -35,12 +35,13 @@ Django webová aplikace pro plánování vytrvalostního tréninku. Propojuje tr
 
 | URL | Popis |
 |-----|-------|
-| `/` | Veřejná landing page (Django template) |
-| `/app/*` | Athlete SPA (Vue Router — `AthleteView`) |
-| `/coach/*` | Coach SPA (Vue Router — `CoachView`) |
+| `/` | Veřejná landing page (Nuxt SSR) |
+| `/about`, `/terms`, `/privacy` | Veřejné stránky (Nuxt SSR) |
+| `/accounts/*` | Auth flow (Nuxt — GET; allauth OAuth callback — Django) |
+| `/app/*` | Athlete SPA (Nuxt) |
+| `/coach/*` | Coach SPA (Nuxt) |
 | `/api/v1/` | DRF API (session auth, CSRF) |
-| `/accounts/` | Autentizace (django-allauth) |
-| `/admin/` | Django admin |
+| `/admin/` | Django admin (jediný Django-rendered HTML) |
 
 ---
 
@@ -439,3 +440,27 @@ V `config/urls.py` jsou SPA routes `/app/*` definovány **před** `include("dash
 - Mobilní layout: planned nahoře (plná šířka), completed jako kompaktní řádek pod ním
 - Nový test soubor: `WeekCard.test.ts` (5 testů — 4 pro mutual exclusion, 1 pro summary)
 - Celkem: 101 testů zelených (15 souborů), TypeScript: 0 chyb
+
+---
+
+### 2026-04-26 — Django templates: pouze admin + email ✅ KOMPLETNÍ
+
+**Cíl:** Django renderuje HTML pouze pro `/admin/`. Vše ostatní obsluhuje Nuxt.
+
+**Co bylo uděláno:**
+
+1. **Smazány mrtvé dashboard/includes templates** — 19 souborů (dashboard/*, includes/*, _language_switcher.html)
+2. **Error views přepsány bez templates** — `config/error_views.py` nyní:
+   - `/api/*` requesty → JSON `{"error": "...", "status": N}`
+   - Browserové requesty → self-contained inline HTML (design tokens, bez Bootstrapu, bez template souboru)
+   - Smazány: `400.html`, `403.html`, `404.html`, `500.html`, `base.html`, `errors/_status_card.html`, `debug/error_preview.html`
+   - Smazán: `test_dashboard_frontend_regressions.py` (testoval smazané templates)
+3. **Smazán mrtvý `complete_profile` Django HTML view** — `accounts/views.py:complete_profile()` odstraněn, profil completion jde přes JSON API `/api/v1/profile/complete/` + Nuxt `CompleteProfileView.vue`
+4. **`spa_account_*` POST handlery převedeny na `nuxt_redirect`** — Nuxt používá `/api/v1/auth/*` (JSON), allauth HTML POST path je dead code. Logout POST zachován (allauth session teardown).
+5. **Smazány allauth HTML templates** — `account/*.html` (kromě `email/`) + `socialaccount/*.html`
+
+**Zbývající templates (legitimní):**
+- `templates/account/email/*.html` — transakční emaily (odesílání, ne web stránky)
+- Django admin templates (poskytuje Django framework)
+
+**Stav po dokončení:** 125 testů zelených (1 skipped), Django check: 0 issues.
