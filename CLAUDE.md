@@ -424,29 +424,18 @@ V `config/urls.py` jsou SPA routes `/app/*` definovány **před** `include("dash
 
 ---
 
-### 2026-04-25 — WeekCard: zone switching (TDD)
+### 2026-04-25/26 — WeekCard: split-zone editing + layout redesign ✅ KOMPLETNÍ
 
-**Spec:** `docs/superpowers/specs/2026-04-25-weekcard-zone-switching.md`
-**Plán:** `docs/superpowers/plans/2026-04-25-weekcard-zone-switching.md`
+**Spec:** `docs/superpowers/specs/2026-04-25-weekcard-zone-editing.md`
+**Plán:** `docs/superpowers/plans/2026-04-25-weekcard-zone-editing.md`
 
-**Cíl:** Implementovat vzájemně se vylučující editační "zóny" v WeekCard — když je aktivní editace v planned zone (title), completed zone (km/čas/HR) je skrytá a naopak.
-
-**Motivace:** Aktuálně můžete kliknout na title a otevřít editaci planned tréninku a zároveň kliknout na km a otevřít editaci completed — obě zóny se zobrazují současně, což je matoucí UX.
-
-#### Fáze
-
-1. **Task 1 (TDD failing tests)** — `frontend/components/training/WeekCard.test.ts` — 5 failing testů pro zone switching
-2. **Task 2 (implement activeZone)** — ref pro sledování aktivní zóny, closures v openEdit()
-3. **Task 3 (add testid attributes)** — data-testid v template pro testy a debugging
-
-#### Status (2026-04-26)
-
-- **Task 1: ✅ Hotovo** — `frontend/components/training/WeekCard.test.ts` vytvořen a commitnut
-  - 4 testy pro mutual exclusion (planned → completed switch, completed → planned switch, jednotlivě)
-  - 1 test pro summary row (show planned_total_km_text)
-  - Všech 5 testů failuje jak se očekávalo: "Cannot call trigger on empty DOMWrapper" (chybí data-testid atributy)
-  - Commit: `660ec68 test(weekcard): add failing tests for zone mutual exclusion`
-  - Frontend: 96 testů zelených (unchanged)
-- **Task 2: ✅ Hotovo** — `activeZone` field v `RowEdit`, `isEditingZone()`, `openEdit(slot, field, zone)` — commit: `a03d90c`
-- **Task 3: ✅ Hotovo** — Template aktualizován: data-testid atributy, zone-specific CSS třídy, `isEditingZone()` místo `isEditing()`, planned/completed zóny se vzájemně vylučují; `planned_total_km_text` zobrazeno v summary row — commit: `763aa57`
-  - Všech 5 testů zelených; celkem 101 testů zelených (15 souborů); TypeScript: 0 chyb
+**Co bylo implementováno:**
+- `WeekCard.vue`: planned (3/5) a completed (2/5) zóna se vzájemně vylučují při editování
+- Kliknutím na planned zónu se otevřou jen inputy pro trénink/poznámky (modré podbarvení `rgba(56,189,248,.07)`)
+- Kliknutím na completed zónu se otevřou jen inputy pro km/čas/HR (lime podbarvení `rgba(200,255,0,.07)`)
+- Neaktivní zóna se ztmaví (opacity 0.45) a zablokuje klikání (`pointer-events: none`)
+- Přepnutí zóny uloží dirty data fire-and-forget a okamžitě otevře novou zónu
+- Summary row zobrazuje `planned_total_km_text` (plánované km) v planned sekci modrou mono barvou
+- Mobilní layout: planned nahoře (plná šířka), completed jako kompaktní řádek pod ním
+- Nový test soubor: `WeekCard.test.ts` (5 testů — 4 pro mutual exclusion, 1 pro summary)
+- Celkem: 101 testů zelených (15 souborů), TypeScript: 0 chyb
