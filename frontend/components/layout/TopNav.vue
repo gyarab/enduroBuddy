@@ -46,7 +46,7 @@ const subtitle = computed(() => {
       }
       return coachStore.selectedAthlete.name;
     }
-    return authStore.user?.capabilities.coached_athlete_count
+    return authStore.user?.capabilities?.coached_athlete_count
       ? t("topNav.athletesReady", { count: authStore.user.capabilities.coached_athlete_count })
       : t("topNav.plansAndFocus");
   }

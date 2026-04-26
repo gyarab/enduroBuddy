@@ -21,7 +21,7 @@ const authStore = useAuthStore();
 const isGarminModalOpen = ref(false);
 
 const showGarminImportButton = computed(
-  () => !!authStore.user?.capabilities.garmin_connect_enabled,
+  () => !!authStore.user?.capabilities?.garmin_connect_enabled,
 );
 
 async function handleAddMonth() {

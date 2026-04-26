@@ -33,8 +33,8 @@ const showGarminSync = computed(
   () =>
     props.editorContext !== "coach" &&
     props.week.has_started &&
-    authStore.user?.capabilities.has_garmin_connection &&
-    authStore.user?.capabilities.garmin_sync_enabled,
+    authStore.user?.capabilities?.has_garmin_connection &&
+    authStore.user?.capabilities?.garmin_sync_enabled,
 );
 
 const canEditCompletedGlobal = computed(
