@@ -464,3 +464,28 @@ V `config/urls.py` jsou SPA routes `/app/*` definovány **před** `include("dash
 - Django admin templates (poskytuje Django framework)
 
 **Stav po dokončení:** 125 testů zelených (1 skipped), Django check: 0 issues.
+
+---
+
+### 2026-04-26 — Multi-domain architektura (připraveno k implementaci)
+
+**Spec:** `docs/superpowers/specs/2026-04-26-multi-domain.md`  
+**Plán:** `docs/superpowers/plans/2026-04-26-multi-domain.md`  
+**Status:** Plán napsán, implementace čeká
+
+**Cíl:** Rozdělit aplikaci na `endurobuddy.cz` (veřejná část) a `app.endurobuddy.cz` (přihlášená část). `www.endurobuddy.cz` → 301 redirect.
+
+**Klíčová rozhodnutí:**
+- Jedna Nuxt instance obsluhuje obě domény (ne dva kontejnery)
+- Session/CSRF cookies nastaveny s `domain=.endurobuddy.cz` (sdílené pro subdomény)
+- Backend vrátí absolutní URL po přihlášení pokud je `DJANGO_APP_HOST` nastaven
+- Dev workflow (dev.sh + nativní) se nemění — všechny nové proměnné mají prázdné výchozí hodnoty
+- Oba docker-compose soubory jsou živé: `docker-compose.yml` = dev Docker stack, `docker-compose.prod.yml` = produkce s Traefik
+
+**6 tasků v plánu:**
+1. `backend/config/settings.py` — `SESSION_COOKIE_DOMAIN`, `CSRF_COOKIE_DOMAIN`, `APP_HOST`, dynamický `LOGIN_REDIRECT_URL`
+2. `backend/api/views/auth.py` + `profile.py` — helper `_app_url()`, absolutní URL v `_default_route_for_user`, `auth_me`, `_default_app_route_for_role`
+3. ✅ **HOTOVO** — `frontend/nuxt.config.ts` + `frontend/middleware/domains.global.ts` — runtimeConfig `appHost`, cross-domain redirect middleware (commit: b0b925f)
+4. `docker-compose.prod.yml` — Traefik routery pro `app.endurobuddy.cz` (Django + Nuxt) + `www` redirect middleware
+5. `nginx/nginx.conf` — `www` redirect server block
+6. `.env.example` — nové proměnné (`TRAEFIK_APP_HOST`, `SESSION_COOKIE_DOMAIN`, `CSRF_COOKIE_DOMAIN`, `DJANGO_APP_HOST`)
