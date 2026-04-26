@@ -467,11 +467,11 @@ V `config/urls.py` jsou SPA routes `/app/*` definovány **před** `include("dash
 
 ---
 
-### 2026-04-26 — Multi-domain architektura (připraveno k implementaci)
+### 2026-04-26 — Multi-domain architektura ✅ KOMPLETNÍ
 
 **Spec:** `docs/superpowers/specs/2026-04-26-multi-domain.md`  
 **Plán:** `docs/superpowers/plans/2026-04-26-multi-domain.md`  
-**Status:** Plán napsán, implementace čeká
+**Status:** Implementováno a pushnuté na main
 
 **Cíl:** Rozdělit aplikaci na `endurobuddy.cz` (veřejná část) a `app.endurobuddy.cz` (přihlášená část). `www.endurobuddy.cz` → 301 redirect.
 
@@ -482,10 +482,12 @@ V `config/urls.py` jsou SPA routes `/app/*` definovány **před** `include("dash
 - Dev workflow (dev.sh + nativní) se nemění — všechny nové proměnné mají prázdné výchozí hodnoty
 - Oba docker-compose soubory jsou živé: `docker-compose.yml` = dev Docker stack, `docker-compose.prod.yml` = produkce s Traefik
 
-**6 tasků v plánu:**
-1. `backend/config/settings.py` — `SESSION_COOKIE_DOMAIN`, `CSRF_COOKIE_DOMAIN`, `APP_HOST`, dynamický `LOGIN_REDIRECT_URL`
-2. `backend/api/views/auth.py` + `profile.py` — helper `_app_url()`, absolutní URL v `_default_route_for_user`, `auth_me`, `_default_app_route_for_role`
-3. ✅ **HOTOVO** — `frontend/nuxt.config.ts` + `frontend/middleware/domains.global.ts` — runtimeConfig `appHost`, cross-domain redirect middleware (commit: b0b925f)
-4. `docker-compose.prod.yml` — Traefik routery pro `app.endurobuddy.cz` (Django + Nuxt) + `www` redirect middleware
-5. `nginx/nginx.conf` — `www` redirect server block
-6. `.env.example` — nové proměnné (`TRAEFIK_APP_HOST`, `SESSION_COOKIE_DOMAIN`, `CSRF_COOKIE_DOMAIN`, `DJANGO_APP_HOST`)
+**Hotovo (6 tasků):**
+1. ✅ `backend/config/settings.py` — `SESSION_COOKIE_DOMAIN`, `CSRF_COOKIE_DOMAIN`, `APP_HOST`, dynamický `LOGIN_REDIRECT_URL` (commit: 8cef3aa)
+2. ✅ `backend/api/views/auth.py` + `profile.py` — helper `_app_url()`, absolutní URL v `_default_route_for_user`, `auth_me`, `_default_app_route_for_role` (commit: 26461bc)
+3. ✅ `frontend/nuxt.config.ts` + `frontend/middleware/domains.global.ts` — runtimeConfig `appHost`, cross-domain redirect middleware (commit: b0b925f)
+4. ✅ `docker-compose.prod.yml` — Traefik routery pro `app.endurobuddy.cz` (Django + Nuxt) + `www` redirect middleware (commit: fef351c)
+5. ✅ `nginx/nginx.conf` — `www` redirect server block (commit: dd3075f)
+6. ✅ `.env.example` — nové proměnné: `TRAEFIK_APP_HOST`, `SESSION_COOKIE_DOMAIN`, `CSRF_COOKIE_DOMAIN`, `DJANGO_APP_HOST`, aktualizované `DJANGO_ALLOWED_HOSTS` + CORS/CSRF origins (commit: f3021db)
+
+**Pro nasazení nastavit v `.env`:** `TRAEFIK_APP_HOST`, `SESSION_COOKIE_DOMAIN=.endurobuddy.cz`, `CSRF_COOKIE_DOMAIN=.endurobuddy.cz`, `DJANGO_APP_HOST=app.endurobuddy.cz`, `NUXT_PUBLIC_APP_HOST` (automaticky z `TRAEFIK_APP_HOST` přes docker-compose).
