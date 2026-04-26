@@ -267,6 +267,13 @@ export const useTrainingStore = defineStore("training", () => {
     }
   }
 
+  function resetDashboard() {
+    dashboard.value = null;
+    errorMessage.value = "";
+    isLoading.value = false;
+    isRefreshing.value = false;
+  }
+
   async function goToPreviousMonth() {
     const target = navigation.value?.previous?.value;
     if (!target) {
@@ -376,6 +383,7 @@ export const useTrainingStore = defineStore("training", () => {
     loadDashboard,
     navigation,
     removeSecondPhase,
+    resetDashboard,
     saveCompletedDraft,
     savePlannedDraft,
     savePlannedField,

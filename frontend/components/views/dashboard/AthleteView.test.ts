@@ -75,6 +75,16 @@ describe("AthleteView", () => {
     expect(store.loadDashboard).toHaveBeenCalledOnce();
   });
 
+  it("reloads dashboard on mount even when store already has data", async () => {
+    const store = useTrainingStore();
+    store.dashboard = { ...dashboardPayload };
+    store.loadDashboard = vi.fn().mockResolvedValue(undefined);
+
+    mountAthleteView();
+
+    expect(store.loadDashboard).toHaveBeenCalledOnce();
+  });
+
   it("renders empty state when month has no data", () => {
     const store = useTrainingStore();
     store.loadDashboard = vi.fn().mockResolvedValue(undefined);

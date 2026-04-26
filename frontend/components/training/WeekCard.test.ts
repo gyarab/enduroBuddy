@@ -1,6 +1,6 @@
 import { createPinia, setActivePinia } from "pinia";
 import { mount } from "@vue/test-utils";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { DashboardWeek } from "~/utils/api/training";
 import WeekCard from "./WeekCard.vue";
@@ -59,6 +59,33 @@ function mountWeekCard(week: DashboardWeek = buildWeek()) {
   });
 }
 
+function buildWeekWithCompleted(): DashboardWeek {
+  return buildWeek({
+    completed_rows: [
+      {
+        id: 10,
+        kind: "completed",
+        status: "done",
+        date: DATE,
+        day_label: "Po",
+        title: "",
+        notes: "",
+        session_type: "RUN",
+        planned_metrics: null,
+        completed_metrics: {
+          km: "8.00",
+          minutes: "45",
+          details: "",
+          avg_hr: 145,
+          max_hr: 170,
+        },
+        editable: true,
+        has_linked_activity: false,
+      },
+    ],
+  });
+}
+
 describe("WeekCard — zone editing mutual exclusion", () => {
   beforeEach(() => {
     setActivePinia(createPinia());
@@ -109,5 +136,39 @@ describe("WeekCard — summary row", () => {
   it("shows planned_total_km_text in summary row", () => {
     const wrapper = mountWeekCard();
     expect(wrapper.text()).toContain("38 km");
+  });
+});
+
+describe("WeekCard — inline save", () => {
+  beforeEach(() => {
+    setActivePinia(createPinia());
+  });
+
+  it("saves planned title edits through the training store", async () => {
+    const wrapper = mountWeekCard();
+    const trainingStore = useTrainingStore();
+    trainingStore.savePlannedDraft = vi.fn().mockResolvedValue(undefined);
+
+    await wrapper.find(`[data-testid="cell-title-${DATE}"]`).trigger("click");
+    await wrapper.find(`[data-testid="input-title-${DATE}"]`).setValue("12 km steady");
+    await wrapper.find(".wt__row").trigger("focusout", { relatedTarget: document.body });
+
+    expect(trainingStore.savePlannedDraft).toHaveBeenCalledWith(10, [
+      { field: "title", value: "12 km steady" },
+    ]);
+  });
+
+  it("saves completed km edits through the training store", async () => {
+    const wrapper = mountWeekCard(buildWeekWithCompleted());
+    const trainingStore = useTrainingStore();
+    trainingStore.saveCompletedDraft = vi.fn().mockResolvedValue(undefined);
+
+    await wrapper.find(`[data-testid="cell-km-${DATE}"]`).trigger("click");
+    await wrapper.find(`[data-testid="input-km-${DATE}"]`).setValue("9.25");
+    await wrapper.find(".wt__row").trigger("focusout", { relatedTarget: document.body });
+
+    expect(trainingStore.saveCompletedDraft).toHaveBeenCalledWith(10, [
+      { field: "km", value: "9.25" },
+    ]);
   });
 });

@@ -202,6 +202,21 @@ describe("useTrainingStore", () => {
     });
   });
 
+  describe("resetDashboard", () => {
+    it("clears cached dashboard state", async () => {
+      const store = useTrainingStore();
+      await store.loadDashboard();
+
+      store.resetDashboard();
+
+      expect(store.dashboard).toBeNull();
+      expect(store.hasData).toBe(false);
+      expect(store.errorMessage).toBe("");
+      expect(store.isLoading).toBe(false);
+      expect(store.isRefreshing).toBe(false);
+    });
+  });
+
   // -------------------------------------------------------------------------
   // 4. Month navigation
   // -------------------------------------------------------------------------

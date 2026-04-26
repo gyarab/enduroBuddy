@@ -154,6 +154,19 @@ describe("useCoachStore", () => {
     expect(store.managedAthletes).toHaveLength(3);
   });
 
+  it("clears cached dashboard state", async () => {
+    const store = useCoachStore();
+    await store.loadDashboard();
+
+    store.resetDashboard();
+
+    expect(store.dashboard).toBeNull();
+    expect(store.managedAthletes).toHaveLength(0);
+    expect(store.errorMessage).toBe("");
+    expect(store.isLoading).toBe(false);
+    expect(store.isManagingAthletes).toBe(false);
+  });
+
   it("reorders athletes and keeps sidebar filtered to visible ones", async () => {
     const store = useCoachStore();
     await store.loadDashboard();

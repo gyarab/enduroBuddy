@@ -79,6 +79,26 @@ class SpaApiEndpointTests(TestCase):
         self.assertTrue(planned_row["editable"])
         self.assertTrue(payload["flags"]["can_edit_completed"])
 
+    def test_dashboard_completed_rows_include_dates_for_weekcard_grouping(self):
+        CompletedTraining.objects.create(
+            planned=self.planned,
+            distance_m=6400,
+            time_seconds=1800,
+            avg_hr=150,
+            feel="171",
+        )
+        self.client.force_login(self.athlete)
+
+        response = self.client.get(reverse("api_dashboard"), {"month": "2026-04"})
+
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()
+        completed_row = payload["weeks"][0]["completed_rows"][0]
+        self.assertEqual(completed_row["id"], self.planned.id)
+        self.assertEqual(completed_row["date"], "2026-04-06")
+        self.assertEqual(completed_row["completed_metrics"]["km"], "6.40")
+        self.assertEqual(completed_row["completed_metrics"]["minutes"], "30")
+
     def test_coach_dashboard_returns_selected_athlete_and_read_only_completed_flag(self):
         self.client.force_login(self.coach)
 

@@ -48,6 +48,14 @@ export const useCoachStore = defineStore("coach", () => {
     }
   }
 
+  function resetDashboard() {
+    dashboard.value = null;
+    managedAthletes.value = [];
+    errorMessage.value = "";
+    isLoading.value = false;
+    isManagingAthletes.value = false;
+  }
+
   async function selectAthlete(athleteId: number) {
     await loadDashboard(athleteId, selectedMonth.value?.value);
   }
@@ -312,6 +320,7 @@ export const useCoachStore = defineStore("coach", () => {
     managedAthletes,
     navigation,
     removeSecondPhase,
+    resetDashboard,
     saveFocus,
     saveAthleteOrder,
     savePlannedDraft,
