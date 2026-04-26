@@ -241,19 +241,21 @@ class GoogleProfileCompletionTests(TestCase):
         )
 
     def test_email_signup_persists_selected_role(self):
+        import json
         response = self.client.post(
-            reverse("account_signup"),
-            data={
+            "/api/v1/auth/signup/",
+            data=json.dumps({
                 "first_name": "Coach",
                 "last_name": "User",
                 "role": Role.COACH,
                 "email": "coach-signup@example.com",
-                "password1": "strong-pass-12345",
-                "password2": "strong-pass-12345",
-            },
+                "password": "strong-pass-12345",
+                "password_confirmation": "strong-pass-12345",
+            }),
+            content_type="application/json",
         )
 
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 200)
         user = self.User.objects.get(email="coach-signup@example.com")
         self.assertEqual(user.profile.role, Role.COACH)
         self.assertTrue(user.profile.coach_join_code)

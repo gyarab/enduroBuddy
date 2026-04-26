@@ -1,20 +1,11 @@
 from allauth.account import views as account_views
-from allauth.account.views import LoginView
-from allauth.socialaccount import views as socialaccount_views
 from django.conf import settings
 from django.shortcuts import redirect
 from django.urls import reverse
-from django.utils.decorators import method_decorator
 from django.utils.http import url_has_allowed_host_and_scheme
-from django.views.decorators.csrf import ensure_csrf_cookie
 from urllib.parse import urlencode
 
 from config.views_nuxt import nuxt_redirect
-
-
-@method_decorator(ensure_csrf_cookie, name="dispatch")
-class EnduroLoginView(LoginView):
-    """Ensure CSRF cookie is always present on GET /accounts/login/."""
 
 
 def _spa_or_public(request, *, requires_auth: bool = False, path: str | None = None):
@@ -22,31 +13,25 @@ def _spa_or_public(request, *, requires_auth: bool = False, path: str | None = N
 
 
 def spa_account_login(request, *args, **kwargs):
-    if request.method == "GET":
-        if getattr(request.user, "is_authenticated", False) and not _google_profile_is_complete(request.user):
-            return redirect(f"{reverse('account_complete_profile')}?{urlencode({'next': request.get_full_path()})}")
-        return _spa_or_public(request, path="accounts/login")
-    return EnduroLoginView.as_view()(request, *args, **kwargs)
+    if getattr(request.user, "is_authenticated", False) and not _google_profile_is_complete(request.user):
+        return redirect(f"{reverse('account_complete_profile')}?{urlencode({'next': request.get_full_path()})}")
+    return _spa_or_public(request, path="accounts/login")
 
 
 def spa_account_signup(request, *args, **kwargs):
-    if request.method == "GET":
-        if not settings.REGISTRATION_ENABLED:
-            return redirect(reverse("account_login"))
-        return _spa_or_public(request, path="accounts/signup")
-    return account_views.signup(request, *args, **kwargs)
+    if request.method == "GET" and not settings.REGISTRATION_ENABLED:
+        return redirect(reverse("account_login"))
+    return _spa_or_public(request, path="accounts/signup")
 
 
 def spa_account_logout(request, *args, **kwargs):
-    if request.method == "GET":
-        return _spa_or_public(request, path="accounts/logout")
-    return account_views.logout(request, *args, **kwargs)
+    if request.method == "POST":
+        return account_views.logout(request, *args, **kwargs)
+    return _spa_or_public(request, path="accounts/logout")
 
 
 def spa_account_password_reset(request, *args, **kwargs):
-    if request.method == "GET":
-        return _spa_or_public(request, path="accounts/password/reset")
-    return account_views.password_reset(request, *args, **kwargs)
+    return _spa_or_public(request, path="accounts/password/reset")
 
 
 def spa_account_password_reset_done(request, *args, **kwargs):
@@ -98,9 +83,7 @@ def spa_social_login_cancelled(request, *args, **kwargs):
 
 
 def spa_social_connections(request, *args, **kwargs):
-    if request.method == "GET":
-        return _spa_or_public(request, requires_auth=True, path="accounts/social/connections")
-    return socialaccount_views.connections(request, *args, **kwargs)
+    return _spa_or_public(request, requires_auth=True, path="accounts/social/connections")
 
 
 def _safe_next_url(request) -> str:
