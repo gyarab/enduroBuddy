@@ -393,7 +393,7 @@ async function toggleSessionType(slot: DaySlot) {
           <!-- Session type -->
           <div class="wt__cell wt__cell--type wt__cell-p" @click.stop>
             <button
-              v-if="isEditing(slot.date) && getEdit(slot.date)"
+              v-if="isEditingZone(slot.date, 'planned') && getEdit(slot.date)"
               class="wt__type-pill"
               :class="`wt__type-pill--${getEdit(slot.date)!.sessionType.toLowerCase()}`"
               type="button"
