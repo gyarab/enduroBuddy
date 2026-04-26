@@ -13,6 +13,12 @@ export default defineNuxtRouteMiddleware(async (to) => {
   const APP_PATHS = ["/app/", "/coach/"]
   const isAppPath = APP_PATHS.some((p) => to.path.startsWith(p))
 
+  // App domain + public path → redirect to public domain
+  if (isAppDomain && !isAppPath) {
+    const publicHost = appHost.replace(/^app\./, "")
+    return navigateTo(`https://${publicHost}${to.fullPath}`, { external: true })
+  }
+
   // Public domain + app path → redirect to app domain
   if (isPublicDomain && isAppPath) {
     return navigateTo(`https://${appHost}${to.fullPath}`, { external: true })
