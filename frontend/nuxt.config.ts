@@ -26,6 +26,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       apiBase: "/api/v1",
+      appHost: "",  // override via NUXT_PUBLIC_APP_HOST env var
     },
   },
 
