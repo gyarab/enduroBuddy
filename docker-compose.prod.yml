@@ -42,13 +42,13 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=traefik-public"
-      - "traefik.http.routers.endurobuddy-http.rule=Host(`${TRAEFIK_HOST}`) && (PathPrefix(`/api/`) || PathPrefix(`/admin/`) || PathPrefix(`/static/`) || PathPrefix(`/i18n/`) || PathPrefix(`/accounts/google/`))"
+      - "traefik.http.routers.endurobuddy-http.rule=(Host(`${TRAEFIK_HOST}`) || Host(`${TRAEFIK_APP_HOST}`)) && (PathPrefix(`/api/`) || PathPrefix(`/admin/`) || PathPrefix(`/static/`) || PathPrefix(`/i18n/`) || PathPrefix(`/accounts/google/`))"
       - "traefik.http.routers.endurobuddy-http.entrypoints=web"
       - "traefik.http.routers.endurobuddy-http.priority=20"
       - "traefik.http.routers.endurobuddy-http.middlewares=endurobuddy-https-redirect"
       - "traefik.http.middlewares.endurobuddy-https-redirect.redirectscheme.scheme=https"
       - "traefik.http.middlewares.endurobuddy-https-redirect.redirectscheme.permanent=true"
-      - "traefik.http.routers.endurobuddy.rule=Host(`${TRAEFIK_HOST}`) && (PathPrefix(`/api/`) || PathPrefix(`/admin/`) || PathPrefix(`/static/`) || PathPrefix(`/i18n/`) || PathPrefix(`/accounts/google/`))"
+      - "traefik.http.routers.endurobuddy.rule=(Host(`${TRAEFIK_HOST}`) || Host(`${TRAEFIK_APP_HOST}`)) && (PathPrefix(`/api/`) || PathPrefix(`/admin/`) || PathPrefix(`/static/`) || PathPrefix(`/i18n/`) || PathPrefix(`/accounts/google/`))"
       - "traefik.http.routers.endurobuddy.entrypoints=websecure"
       - "traefik.http.routers.endurobuddy.tls=true"
       - "traefik.http.routers.endurobuddy.tls.certresolver=${TRAEFIK_CERTRESOLVER}"
@@ -66,21 +66,40 @@ services:
     restart: unless-stopped
     environment:
       NUXT_PUBLIC_API_BASE: /api/v1
+      NUXT_PUBLIC_APP_HOST: ${TRAEFIK_APP_HOST}
     depends_on:
       - web
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=traefik-public"
-      - "traefik.http.routers.endurobuddy-nuxt-http.rule=Host(`${TRAEFIK_HOST}`)"
+      - "traefik.http.routers.endurobuddy-nuxt-http.rule=Host(`${TRAEFIK_HOST}`) || Host(`${TRAEFIK_APP_HOST}`)"
       - "traefik.http.routers.endurobuddy-nuxt-http.entrypoints=web"
       - "traefik.http.routers.endurobuddy-nuxt-http.priority=10"
       - "traefik.http.routers.endurobuddy-nuxt-http.middlewares=endurobuddy-https-redirect"
-      - "traefik.http.routers.endurobuddy-nuxt.rule=Host(`${TRAEFIK_HOST}`)"
+      - "traefik.http.routers.endurobuddy-nuxt.rule=Host(`${TRAEFIK_HOST}`) || Host(`${TRAEFIK_APP_HOST}`)"
       - "traefik.http.routers.endurobuddy-nuxt.entrypoints=websecure"
       - "traefik.http.routers.endurobuddy-nuxt.tls=true"
       - "traefik.http.routers.endurobuddy-nuxt.tls.certresolver=${TRAEFIK_CERTRESOLVER}"
       - "traefik.http.routers.endurobuddy-nuxt.priority=10"
       - "traefik.http.services.endurobuddy-nuxt.loadbalancer.server.port=3000"
+      # www redirect middleware (permanent 301)
+      - "traefik.http.middlewares.endurobuddy-www-redirect.redirectregex.regex=^https?://www\\.${TRAEFIK_HOST}/(.*)"
+      - "traefik.http.middlewares.endurobuddy-www-redirect.redirectregex.replacement=https://${TRAEFIK_HOST}/$${1}"
+      - "traefik.http.middlewares.endurobuddy-www-redirect.redirectregex.permanent=true"
+      # www HTTP router
+      - "traefik.http.routers.endurobuddy-www-http.rule=Host(`www.${TRAEFIK_HOST}`)"
+      - "traefik.http.routers.endurobuddy-www-http.entrypoints=web"
+      - "traefik.http.routers.endurobuddy-www-http.priority=30"
+      - "traefik.http.routers.endurobuddy-www-http.middlewares=endurobuddy-www-redirect"
+      - "traefik.http.routers.endurobuddy-www-http.service=endurobuddy-nuxt"
+      # www HTTPS router
+      - "traefik.http.routers.endurobuddy-www.rule=Host(`www.${TRAEFIK_HOST}`)"
+      - "traefik.http.routers.endurobuddy-www.entrypoints=websecure"
+      - "traefik.http.routers.endurobuddy-www.tls=true"
+      - "traefik.http.routers.endurobuddy-www.tls.certresolver=${TRAEFIK_CERTRESOLVER}"
+      - "traefik.http.routers.endurobuddy-www.priority=30"
+      - "traefik.http.routers.endurobuddy-www.middlewares=endurobuddy-www-redirect"
+      - "traefik.http.routers.endurobuddy-www.service=endurobuddy-nuxt"
     networks:
       - backend
       - traefik-public
