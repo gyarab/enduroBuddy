@@ -41,7 +41,7 @@ services:
     command: ["sh", "-c", "python manage.py migrate && python manage.py collectstatic --noinput && gunicorn config.wsgi:application --bind 0.0.0.0:8000"]
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=traefik-public"
+      - "traefik.docker.network=proxy"
       - "traefik.http.routers.endurobuddy-http.rule=(Host(`${TRAEFIK_HOST}`) || Host(`${TRAEFIK_APP_HOST}`)) && (PathPrefix(`/api/`) || PathPrefix(`/admin/`) || PathPrefix(`/static/`) || PathPrefix(`/i18n/`) || PathPrefix(`/accounts/google/`))"
       - "traefik.http.routers.endurobuddy-http.entrypoints=web"
       - "traefik.http.routers.endurobuddy-http.priority=20"
@@ -111,7 +111,7 @@ services:
       - web
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=traefik-public"
+      - "traefik.docker.network=proxy"
       - "traefik.http.routers.endurobuddy-nuxt-http.rule=Host(`${TRAEFIK_HOST}`) || Host(`${TRAEFIK_APP_HOST}`)"
       - "traefik.http.routers.endurobuddy-nuxt-http.entrypoints=web"
       - "traefik.http.routers.endurobuddy-nuxt-http.priority=10"
