@@ -4,6 +4,11 @@ import { useRoute, useRouter } from "vue-router";
 
 const props = withDefaults(defineProps<{ authScreen?: string }>(), { authScreen: undefined });
 
+function authNavigate(url: string) {
+  const isExternal = url.startsWith("http://") || url.startsWith("https://")
+  return navigateTo(url, isExternal ? { external: true } : undefined)
+}
+
 import AuthPreviewShell from "@/components/auth/AuthPreviewShell.vue";
 import {
   confirmEmailKey,
@@ -400,7 +405,7 @@ async function submitLogin() {
       remember: loginForm.remember,
     });
     await authStore.refresh();
-    navigateTo(response.redirect_to);
+    authNavigate(response.redirect_to);
   } catch (error: unknown) {
     const maybeError = error as { response?: { data?: { message?: string; errors?: Record<string, string[]> } } };
     formError.value = maybeError.response?.data?.message || "Prihlaseni se nepodarilo.";
@@ -422,7 +427,7 @@ async function submitSignup() {
       password: signupForm.password,
       password_confirmation: signupForm.passwordConfirmation,
     });
-    navigateTo(response.redirect_to);
+    authNavigate(response.redirect_to);
   } catch (error: unknown) {
     const maybeError = error as { response?: { data?: { message?: string; errors?: Record<string, string[]> } } };
     formError.value = maybeError.response?.data?.message || "Registraci se nepodarilo dokoncit.";
@@ -453,7 +458,7 @@ async function submitLogout() {
   try {
     const response = await logoutFromSession();
     authStore.user = null;
-    navigateTo(response.redirect_to);
+    authNavigate(response.redirect_to);
   } catch {
     formError.value = "Odhlaseni se nepodarilo dokoncit.";
   } finally {
@@ -489,7 +494,7 @@ async function submitEmailConfirm() {
   formError.value = "";
   try {
     const response = await confirmEmailKey(key);
-    navigateTo(response.redirect_to);
+    authNavigate(response.redirect_to);
   } catch (error: unknown) {
     const maybeError = error as { response?: { data?: { message?: string } } };
     formError.value = maybeError.response?.data?.message || "E-mail se nepodarilo potvrdit.";
@@ -562,7 +567,7 @@ async function submitPasswordChange() {
       passwordChangeForm.password,
       passwordChangeForm.passwordConfirmation,
     );
-    navigateTo(response.redirect_to);
+    authNavigate(response.redirect_to);
   } catch (error: unknown) {
     const maybeError = error as { response?: { data?: { message?: string; errors?: Record<string, string[]> } } };
     formError.value = maybeError.response?.data?.message || "Zmenu hesla se nepodarilo ulozit.";
@@ -632,7 +637,7 @@ async function submitReauthenticateAction() {
   clearErrors();
   try {
     const response = await submitReauthenticate(reauthenticateForm.password, reauthenticateState.value.next);
-    navigateTo(response.redirect_to);
+    authNavigate(response.redirect_to);
   } catch (error: unknown) {
     const maybeError = error as { response?: { data?: { message?: string; errors?: Record<string, string[]> } } };
     formError.value = maybeError.response?.data?.message || "Potvrzeni pristupu se nepodarilo.";
@@ -647,7 +652,7 @@ async function submitPasswordSet() {
   clearErrors();
   try {
     const response = await setPassword(passwordSetForm.password, passwordSetForm.passwordConfirmation);
-    navigateTo(response.redirect_to);
+    authNavigate(response.redirect_to);
   } catch (error: unknown) {
     const maybeError = error as { response?: { data?: { message?: string; errors?: Record<string, string[]> } } };
     formError.value = maybeError.response?.data?.message || "Nastaveni hesla se nepodarilo ulozit.";
