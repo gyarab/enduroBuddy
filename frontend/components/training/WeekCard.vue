@@ -154,6 +154,10 @@ function openEdit(slot: DaySlot, focusField = "title", zone: "planned" | "comple
 
   if (existing) {
     if (existing.activeZone === zone) return;
+    // Guard: don't switch into a non-editable zone
+    const planned = slot.planned.find((r) => !r.is_second_phase) ?? null;
+    if (zone === "planned" && !(planned ? planned.editable : true)) return;
+    if (zone === "completed" && !canEditCompleted(slot)) return;
     // Zone switch: save dirty data fire-and-forget, then switch
     if (existing.isDirty) {
       if (existing.debounceTimer) {
@@ -180,8 +184,6 @@ function openEdit(slot: DaySlot, focusField = "title", zone: "planned" | "comple
   const completedId = completedEditable
     ? (completed?.id ?? planned?.id ?? null)
     : null;
-
-  if (!canEditPlanned && !completedEditable) return;
 
   editingRows.set(slot.date, {
     date: slot.date,
