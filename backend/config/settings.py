@@ -287,13 +287,29 @@ SOCIALACCOUNT_PROVIDERS = {
     }
 }
 
-LOGIN_REDIRECT_URL = "/app/"
+_app_host = os.environ.get("DJANGO_APP_HOST", "")
+LOGIN_REDIRECT_URL = f"https://{_app_host}/app/" if _app_host else "/app/"
 LOGOUT_REDIRECT_URL = "/"
 LOGIN_URL = "/accounts/login/"
 
 # Avoid cookie collisions when multiple local Django projects run on localhost.
 CSRF_COOKIE_NAME = "endurobuddy_csrftoken"
 SESSION_COOKIE_NAME = "endurobuddy_sessionid"
+
+# Subdomain cookie sharing — empty string = same domain as request (dev default).
+# Leading dot (e.g. ".endurobuddy.cz") makes cookie valid for all subdomains.
+# We only assign if the env var is set — Django treats an empty string as a literal
+# domain value, which breaks things.
+_cookie_domain = os.environ.get("SESSION_COOKIE_DOMAIN", "")
+if _cookie_domain:
+    SESSION_COOKIE_DOMAIN = _cookie_domain
+
+_csrf_cookie_domain = os.environ.get("CSRF_COOKIE_DOMAIN", "")
+if _csrf_cookie_domain:
+    CSRF_COOKIE_DOMAIN = _csrf_cookie_domain
+
+# Hostname of the app subdomain (e.g. "app.endurobuddy.cz"). Empty in dev.
+APP_HOST = os.environ.get("DJANGO_APP_HOST", "")
 
 GOOGLE_AUTH_RATE_LIMIT_MAX_REQUESTS = int(
     os.environ.get("GOOGLE_AUTH_RATE_LIMIT_MAX_REQUESTS", "30")
