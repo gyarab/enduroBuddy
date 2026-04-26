@@ -593,7 +593,10 @@ async function toggleSessionType(slot: DaySlot) {
 /* ── Table grid ── */
 .wt__cols {
   display: grid;
-  grid-template-columns: 52px 40px 44px minmax(12rem, 2fr) minmax(6rem, 1fr) 2px 64px 56px max-content 52px 52px;
+  grid-template-columns:
+    44px 30px 42px minmax(11rem, 2.5fr) minmax(5rem, 1fr)
+    1px
+    60px 52px minmax(5rem, 1fr) 46px 46px;
   align-items: start;
   min-height: 2.5rem;
 }
@@ -640,10 +643,6 @@ async function toggleSessionType(slot: DaySlot) {
 .wt__row--clickable { cursor: pointer; }
 .wt__row--clickable:hover { background: rgba(255,255,255,.025); }
 
-.wt__row--editing {
-  background: rgba(200,255,0,.04);
-  cursor: default;
-}
 
 .wt__row--done { border-left: 2px solid var(--eb-lime); padding-left: calc(1rem - 2px); }
 .wt__row--missed { border-left: 2px solid rgba(244,63,94,.5); padding-left: calc(1rem - 2px); }
@@ -698,6 +697,57 @@ async function toggleSessionType(slot: DaySlot) {
 .wt__cell--readonly {
   cursor: default;
   user-select: none;
+}
+
+/* ── Zone classes ── */
+.wt__cell-p,
+.wt__cell-c {
+  border-radius: 4px;
+  transition: background 120ms;
+}
+
+/* Hover: planned zone — blue tint */
+.wt__row:has(.wt__cell-p:hover):not(.wt__row--editing-planned):not(.wt__row--editing-completed) .wt__cell-p {
+  background: rgba(56, 189, 248, .05);
+  cursor: pointer;
+}
+
+/* Hover: completed zone — lime tint */
+.wt__row:has(.wt__cell-c:hover):not(.wt__row--editing-planned):not(.wt__row--editing-completed) .wt__cell-c {
+  background: rgba(200, 255, 0, .05);
+  cursor: pointer;
+}
+
+/* Editing planned: planned cells blue tint */
+.wt__row--editing-planned .wt__cell-p {
+  background: rgba(56, 189, 248, .07);
+}
+
+/* Editing completed: completed cells lime tint */
+.wt__row--editing-completed .wt__cell-c {
+  background: rgba(200, 255, 0, .07);
+}
+
+/* Inactive zone while editing — dimmed */
+.wt__row--editing-planned .wt__cell-c {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.wt__row--editing-completed .wt__cell-p {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+/* Border-left for active editing zone */
+.wt__row--editing-planned {
+  border-left: 2px solid rgba(56, 189, 248, .45);
+  padding-left: calc(1rem - 2px);
+}
+
+.wt__row--editing-completed {
+  border-left: 2px solid rgba(200, 255, 0, .4);
+  padding-left: calc(1rem - 2px);
 }
 
 /* ── Type dot ── */
