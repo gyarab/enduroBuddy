@@ -909,21 +909,62 @@ async function toggleSessionType(slot: DaySlot) {
   font-weight: 600;
 }
 
-/* ── Responsive ── */
+/* ── Tablet ── */
 @media (max-width: 1023px) {
   .wt__cols {
-    grid-template-columns: 48px 36px 40px minmax(10rem, 2fr) minmax(5rem, 1fr) 2px 54px 48px 0 44px 44px;
+    grid-template-columns:
+      44px 30px 40px minmax(9rem, 2.5fr) minmax(4rem, 1fr)
+      1px
+      56px 48px 0 44px 44px;
   }
   .wt__cell--intervals { display: none; }
 }
 
+/* ── Mobile ── */
 @media (max-width: 767px) {
+  /* Column headers hidden — redundant in stacked layout */
+  .wt__head-row { display: none; }
+
+  /* Each row: 2 rows — planned on top, completed below */
   .wt__cols {
-    grid-template-columns: 44px 32px 38px minmax(8rem, 1fr) 2px 52px 46px 42px 42px;
+    grid-template-columns: 44px 32px 36px 1fr;
+    grid-template-rows: auto auto;
+    min-height: unset;
   }
-  .wt__h--type,
-  .wt__cell--type,
-  .wt__cell--notes,
-  .wt__h:nth-child(5) { display: none; }
+
+  /* Planned cells — row 1 */
+  .wt__cell--date  { grid-row: 1; grid-column: 1; padding-left: 0.9rem; }
+  .wt__cell--day   { grid-row: 1; grid-column: 2; }
+  .wt__cell--type  { grid-row: 1; grid-column: 3; }
+  .wt__cell--title { grid-row: 1; grid-column: 4; }
+  .wt__cell--notes { display: none; }
+
+  /* Separator — hidden on mobile */
+  .wt__sep-col { display: none; }
+
+  /* Completed cells — row 2 */
+  .wt__cell-km, .wt__cell-time, .wt__cell-avghr, .wt__cell-maxhr {
+    grid-row: 2;
+    text-align: left;
+    justify-content: flex-start;
+    padding-left: 0.9rem;
+  }
+
+  .wt__cell-km      { grid-column: 1 / 3; }
+  .wt__cell-time    { grid-column: 3 / 5; }
+  .wt__cell-avghr   { grid-column: 1 / 3; }
+  .wt__cell-maxhr   { grid-column: 3 / 5; }
+
+  /* intervals — hidden on mobile */
+  .wt__cell--intervals { display: none; }
+
+  /* Summary on mobile */
+  .wt__summary-row {
+    grid-template-columns: 44px 32px 36px 1fr;
+    grid-template-rows: auto auto;
+  }
+  .wt__summary-label      { grid-row: 1; grid-column: 1 / 3; padding-left: 0.9rem; }
+  .wt__summary-planned-km { grid-row: 1; grid-column: 3 / 5; }
+  .wt__summary-val        { grid-row: 2; text-align: left; padding-left: 0.9rem; }
 }
 </style>
