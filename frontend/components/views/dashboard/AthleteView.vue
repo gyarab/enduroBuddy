@@ -38,9 +38,7 @@ async function handleAddMonth() {
 }
 
 onMounted(() => {
-  if (!trainingStore.dashboard && !trainingStore.isLoading) {
-    void trainingStore.loadDashboard();
-  }
+  void trainingStore.loadDashboard();
 });
 </script>
 

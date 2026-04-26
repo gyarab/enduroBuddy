@@ -93,7 +93,7 @@ def _serialize_completed_row(row: dict) -> dict:
         "id": row.get("planned_id"),
         "kind": "completed",
         "status": status,
-        "date": None,
+        "date": row.get("date").isoformat() if row.get("date") else None,
         "day_label": "",
         "title": "",
         "notes": row.get("third") or "",
