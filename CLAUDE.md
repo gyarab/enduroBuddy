@@ -439,7 +439,7 @@ V `config/urls.py` jsou SPA routes `/app/*` definovány **před** `include("dash
 2. **Task 2 (implement activeZone)** — ref pro sledování aktivní zóny, closures v openEdit()
 3. **Task 3 (add testid attributes)** — data-testid v template pro testy a debugging
 
-#### Status (2026-04-25)
+#### Status (2026-04-26)
 
 - **Task 1: ✅ Hotovo** — `frontend/components/training/WeekCard.test.ts` vytvořen a commitnut
   - 4 testy pro mutual exclusion (planned → completed switch, completed → planned switch, jednotlivě)
@@ -447,3 +447,6 @@ V `config/urls.py` jsou SPA routes `/app/*` definovány **před** `include("dash
   - Všech 5 testů failuje jak se očekávalo: "Cannot call trigger on empty DOMWrapper" (chybí data-testid atributy)
   - Commit: `660ec68 test(weekcard): add failing tests for zone mutual exclusion`
   - Frontend: 96 testů zelených (unchanged)
+- **Task 2: ✅ Hotovo** — `activeZone` field v `RowEdit`, `isEditingZone()`, `openEdit(slot, field, zone)` — commit: `a03d90c`
+- **Task 3: ✅ Hotovo** — Template aktualizován: data-testid atributy, zone-specific CSS třídy, `isEditingZone()` místo `isEditing()`, planned/completed zóny se vzájemně vylučují; `planned_total_km_text` zobrazeno v summary row — commit: `763aa57`
+  - Všech 5 testů zelených; celkem 101 testů zelených (15 souborů); TypeScript: 0 chyb
