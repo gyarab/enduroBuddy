@@ -523,7 +523,8 @@ async function toggleSessionType(slot: DaySlot) {
 
       <!-- ── Summary row ── -->
       <div class="wt__cols wt__summary-row">
-        <div class="wt__summary-label" style="grid-column: 1 / 6">{{ t("weekCard.total") }}<span v-if="week.planned_total_km_text" class="wt__summary-planned"> / {{ week.planned_total_km_text }}</span></div>
+        <div class="wt__summary-label" style="grid-column: 1 / 4">{{ t("weekCard.total") }}</div>
+        <div class="wt__summary-planned-km" style="grid-column: 4 / 6">{{ week.planned_total_km_text }}</div>
         <div class="wt__sep-col" />
         <div class="wt__cell wt__cell--num wt__summary-val">{{ week.completed_total.km }}</div>
         <div class="wt__cell wt__cell--num wt__summary-val">{{ formatMinutes(week.completed_total.time) }}</div>
@@ -889,6 +890,16 @@ async function toggleSessionType(slot: DaySlot) {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   padding-left: 0;
+}
+
+.wt__summary-planned-km {
+  display: flex;
+  align-items: center;
+  padding: 0 0.35rem;
+  color: var(--eb-blue);
+  font-family: var(--eb-font-mono);
+  font-size: 0.8125rem;
+  font-weight: 600;
 }
 
 .wt__summary-val {
