@@ -407,9 +407,9 @@ async function submitLogin() {
     await authStore.refresh();
     authNavigate(response.redirect_to);
   } catch (error: unknown) {
-    const maybeError = error as { response?: { data?: { message?: string; errors?: Record<string, string[]> } } };
-    formError.value = maybeError.response?.data?.message || "Prihlaseni se nepodarilo.";
-    fieldErrors.value = maybeError.response?.data?.errors || {};
+    const maybeError = error as { data?: { message?: string; errors?: Record<string, string[]> } };
+    formError.value = maybeError.data?.message || "Prihlaseni se nepodarilo.";
+    fieldErrors.value = maybeError.data?.errors || {};
   } finally {
     isSubmitting.value = false;
   }
@@ -429,9 +429,9 @@ async function submitSignup() {
     });
     authNavigate(response.redirect_to);
   } catch (error: unknown) {
-    const maybeError = error as { response?: { data?: { message?: string; errors?: Record<string, string[]> } } };
-    formError.value = maybeError.response?.data?.message || "Registraci se nepodarilo dokoncit.";
-    fieldErrors.value = maybeError.response?.data?.errors || {};
+    const maybeError = error as { data?: { message?: string; errors?: Record<string, string[]> } };
+    formError.value = maybeError.data?.message || "Registraci se nepodarilo dokoncit.";
+    fieldErrors.value = maybeError.data?.errors || {};
   } finally {
     isSubmitting.value = false;
   }
@@ -444,9 +444,9 @@ async function submitPasswordReset() {
     const response = await requestPasswordReset(resetForm.email);
     await router.push(response.redirect_to);
   } catch (error: unknown) {
-    const maybeError = error as { response?: { data?: { message?: string; errors?: Record<string, string[]> } } };
-    formError.value = maybeError.response?.data?.message || "Obnovu hesla se nepodarilo zahajit.";
-    fieldErrors.value = maybeError.response?.data?.errors || {};
+    const maybeError = error as { data?: { message?: string; errors?: Record<string, string[]> } };
+    formError.value = maybeError.data?.message || "Obnovu hesla se nepodarilo zahajit.";
+    fieldErrors.value = maybeError.data?.errors || {};
   } finally {
     isSubmitting.value = false;
   }
@@ -480,7 +480,7 @@ async function loadEmailConfirmState() {
   } catch (error: unknown) {
     const maybeError = error as { response?: { data?: { message?: string } } };
     emailConfirmState.value.canConfirm = false;
-    emailConfirmState.value.message = maybeError.response?.data?.message || "Tento potvrzovaci odkaz vyprsel nebo je neplatny.";
+    emailConfirmState.value.message = maybeError.data?.message || "Tento potvrzovaci odkaz vyprsel nebo je neplatny.";
   } finally {
     emailConfirmState.value.isLoading = false;
   }
@@ -497,7 +497,7 @@ async function submitEmailConfirm() {
     authNavigate(response.redirect_to);
   } catch (error: unknown) {
     const maybeError = error as { response?: { data?: { message?: string } } };
-    formError.value = maybeError.response?.data?.message || "E-mail se nepodarilo potvrdit.";
+    formError.value = maybeError.data?.message || "E-mail se nepodarilo potvrdit.";
   } finally {
     isSubmitting.value = false;
   }
@@ -520,7 +520,7 @@ async function loadPasswordResetKeyState() {
   } catch (error: unknown) {
     const maybeError = error as { response?: { data?: { message?: string; token_valid?: boolean } } };
     passwordResetKeyState.value.tokenValid = false;
-    passwordResetKeyState.value.message = maybeError.response?.data?.message || "Tento odkaz pro obnovu hesla uz neni platny.";
+    passwordResetKeyState.value.message = maybeError.data?.message || "Tento odkaz pro obnovu hesla uz neni platny.";
   } finally {
     passwordResetKeyState.value.isLoading = false;
   }
@@ -550,9 +550,9 @@ async function runEmailAction(action: "add" | "primary" | "send" | "remove", pay
     }
     await loadEmailAddresses();
   } catch (error: unknown) {
-    const maybeError = error as { response?: { data?: { message?: string; errors?: Record<string, string[]> } } };
-    formError.value = maybeError.response?.data?.message || "Akci nad e-mailem se nepodarilo dokoncit.";
-    fieldErrors.value = maybeError.response?.data?.errors || {};
+    const maybeError = error as { data?: { message?: string; errors?: Record<string, string[]> } };
+    formError.value = maybeError.data?.message || "Akci nad e-mailem se nepodarilo dokoncit.";
+    fieldErrors.value = maybeError.data?.errors || {};
   } finally {
     isSubmitting.value = false;
   }
@@ -569,9 +569,9 @@ async function submitPasswordChange() {
     );
     authNavigate(response.redirect_to);
   } catch (error: unknown) {
-    const maybeError = error as { response?: { data?: { message?: string; errors?: Record<string, string[]> } } };
-    formError.value = maybeError.response?.data?.message || "Zmenu hesla se nepodarilo ulozit.";
-    fieldErrors.value = maybeError.response?.data?.errors || {};
+    const maybeError = error as { data?: { message?: string; errors?: Record<string, string[]> } };
+    formError.value = maybeError.data?.message || "Zmenu hesla se nepodarilo ulozit.";
+    fieldErrors.value = maybeError.data?.errors || {};
   } finally {
     isSubmitting.value = false;
   }
@@ -613,7 +613,7 @@ async function submitDisconnectSocialAccount(accountId: number) {
     await loadSocialConnections();
   } catch (error: unknown) {
     const maybeError = error as { response?: { data?: { message?: string } } };
-    formError.value = maybeError.response?.data?.message || "Externi ucet se nepodarilo odpojit.";
+    formError.value = maybeError.data?.message || "Externi ucet se nepodarilo odpojit.";
   } finally {
     isSubmitting.value = false;
   }
@@ -639,9 +639,9 @@ async function submitReauthenticateAction() {
     const response = await submitReauthenticate(reauthenticateForm.password, reauthenticateState.value.next);
     authNavigate(response.redirect_to);
   } catch (error: unknown) {
-    const maybeError = error as { response?: { data?: { message?: string; errors?: Record<string, string[]> } } };
-    formError.value = maybeError.response?.data?.message || "Potvrzeni pristupu se nepodarilo.";
-    fieldErrors.value = maybeError.response?.data?.errors || {};
+    const maybeError = error as { data?: { message?: string; errors?: Record<string, string[]> } };
+    formError.value = maybeError.data?.message || "Potvrzeni pristupu se nepodarilo.";
+    fieldErrors.value = maybeError.data?.errors || {};
   } finally {
     isSubmitting.value = false;
   }
@@ -654,9 +654,9 @@ async function submitPasswordSet() {
     const response = await setPassword(passwordSetForm.password, passwordSetForm.passwordConfirmation);
     authNavigate(response.redirect_to);
   } catch (error: unknown) {
-    const maybeError = error as { response?: { data?: { message?: string; errors?: Record<string, string[]> } } };
-    formError.value = maybeError.response?.data?.message || "Nastaveni hesla se nepodarilo ulozit.";
-    fieldErrors.value = maybeError.response?.data?.errors || {};
+    const maybeError = error as { data?: { message?: string; errors?: Record<string, string[]> } };
+    formError.value = maybeError.data?.message || "Nastaveni hesla se nepodarilo ulozit.";
+    fieldErrors.value = maybeError.data?.errors || {};
   } finally {
     isSubmitting.value = false;
   }
@@ -672,9 +672,9 @@ async function submitResetKeyPassword() {
     const response = await submitPasswordResetFromKey(uidb36, key, resetKeyForm.password, resetKeyForm.passwordConfirmation);
     await router.push(response.redirect_to);
   } catch (error: unknown) {
-    const maybeError = error as { response?: { data?: { message?: string; errors?: Record<string, string[]> } } };
-    formError.value = maybeError.response?.data?.message || "Zmenu hesla se nepodarilo dokoncit.";
-    fieldErrors.value = maybeError.response?.data?.errors || {};
+    const maybeError = error as { data?: { message?: string; errors?: Record<string, string[]> } };
+    formError.value = maybeError.data?.message || "Zmenu hesla se nepodarilo dokoncit.";
+    fieldErrors.value = maybeError.data?.errors || {};
   } finally {
     isSubmitting.value = false;
   }
