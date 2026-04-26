@@ -2,16 +2,13 @@ from allauth.account import views as account_views
 from allauth.account.views import LoginView
 from allauth.socialaccount import views as socialaccount_views
 from django.conf import settings
-from django.contrib import messages
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect
 from django.urls import reverse
 from django.utils.decorators import method_decorator
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.csrf import ensure_csrf_cookie
 from urllib.parse import urlencode
 
-from accounts.forms import GoogleProfileCompletionForm
 from config.views_nuxt import nuxt_redirect
 
 
@@ -104,34 +101,6 @@ def spa_social_connections(request, *args, **kwargs):
     if request.method == "GET":
         return _spa_or_public(request, requires_auth=True, path="accounts/social/connections")
     return socialaccount_views.connections(request, *args, **kwargs)
-
-
-@login_required
-def complete_profile(request):
-    next_url = _safe_next_url(request)
-    if _google_profile_is_complete(request.user):
-        return redirect(next_url or "/app/")
-
-    if request.method == "POST":
-        form = GoogleProfileCompletionForm(request.POST, user=request.user)
-        if form.is_valid():
-            form.save()
-            request.user.profile.google_profile_completed = True
-            request.user.profile.google_role_confirmed = True
-            request.user.profile.save(update_fields=["google_profile_completed", "google_role_confirmed"])
-            messages.success(request, "Profil byl doplněn.")
-            return redirect(next_url or "/app/")
-    else:
-        form = GoogleProfileCompletionForm(user=request.user)
-
-    return render(
-        request,
-        "account/complete_profile.html",
-        {
-            "form": form,
-            "next_url": next_url or "/app/",
-        },
-    )
 
 
 def _safe_next_url(request) -> str:
