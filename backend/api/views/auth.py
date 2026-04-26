@@ -32,6 +32,11 @@ from accounts.forms import EnduroSignupForm
 from accounts.models import CoachAthlete, Role
 
 
+def _app_url(path: str) -> str:
+    app_host = getattr(settings, "APP_HOST", "")
+    return f"https://{app_host}{path}" if app_host else path
+
+
 def _full_name(user) -> str:
     full_name = user.get_full_name().strip()
     if full_name:
@@ -72,8 +77,8 @@ def _default_route_for_user(user) -> str:
         )
     )
     if has_incomplete_google_profile:
-        return "/app/profile/complete"
-    return "/coach/plans" if role == Role.COACH else "/app/dashboard"
+        return _app_url("/app/profile/complete")
+    return _app_url("/coach/plans" if role == Role.COACH else "/app/dashboard")
 
 
 def _get_email_confirmation_or_none(key: str):
@@ -140,7 +145,7 @@ def auth_me(request):
     profile = getattr(user, "profile", None)
     role = getattr(profile, "role", Role.ATHLETE)
     full_name = _full_name(user)
-    default_app_route = "/coach/plans" if role == Role.COACH else "/app/dashboard"
+    default_app_route = _app_url("/coach/plans" if role == Role.COACH else "/app/dashboard")
     coached_athlete_count = 0
     garmin_connection = None
     try:

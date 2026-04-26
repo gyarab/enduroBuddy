@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.utils.http import url_has_allowed_host_and_scheme
@@ -13,8 +14,14 @@ from dashboard.api import json_error
 from dashboard.texts import ProfileText
 
 
+def _app_url(path: str) -> str:
+    app_host = getattr(settings, "APP_HOST", "")
+    return f"https://{app_host}{path}" if app_host else path
+
+
 def _default_app_route_for_role(role: str) -> str:
-    return "/coach/plans" if role == Role.COACH else "/app/dashboard"
+    path = "/coach/plans" if role == Role.COACH else "/app/dashboard"
+    return _app_url(path)
 
 
 def _serialize_profile_settings(request) -> dict:
