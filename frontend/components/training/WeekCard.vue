@@ -376,7 +376,8 @@ async function toggleSessionType(slot: DaySlot) {
         <div
           class="wt__cols wt__row"
           :class="{
-            'wt__row--editing': isEditing(slot.date),
+            'wt__row--editing-planned': isEditingZone(slot.date, 'planned'),
+            'wt__row--editing-completed': isEditingZone(slot.date, 'completed'),
             'wt__row--done': slot.completed[0]?.status === 'done',
             'wt__row--missed': slot.completed[0]?.status === 'missed',
             'wt__row--saved': flashingRows.has(slot.date),
@@ -390,7 +391,7 @@ async function toggleSessionType(slot: DaySlot) {
           <div class="wt__cell wt__cell--day wt__cell--readonly">{{ slot.dayLabel }}</div>
 
           <!-- Session type -->
-          <div class="wt__cell wt__cell--type" @click.stop>
+          <div class="wt__cell wt__cell--type wt__cell-p" @click.stop>
             <button
               v-if="isEditing(slot.date) && getEdit(slot.date)"
               class="wt__type-pill"
@@ -409,12 +410,13 @@ async function toggleSessionType(slot: DaySlot) {
           </div>
 
           <!-- Training title -->
-          <div class="wt__cell wt__cell--title" @click.stop="!isEditing(slot.date) && openEdit(slot, 'title')">
-            <template v-if="isEditing(slot.date) && getEdit(slot.date)">
+          <div class="wt__cell wt__cell--title wt__cell-p" :data-testid="`cell-title-${slot.date}`" @click.stop="openEdit(slot, 'title', 'planned')">
+            <template v-if="isEditingZone(slot.date, 'planned') && getEdit(slot.date)">
               <textarea
                 v-model="getEdit(slot.date)!.title"
                 v-autofocus="getEdit(slot.date)!.focusField === 'title'"
                 class="wt__textarea"
+                :data-testid="`input-title-${slot.date}`"
                 :disabled="getEdit(slot.date)!.isSaving"
                 :placeholder="t('weekCard.titlePlaceholder')"
                 rows="1"
@@ -429,8 +431,8 @@ async function toggleSessionType(slot: DaySlot) {
           </div>
 
           <!-- Coach notes -->
-          <div class="wt__cell wt__cell--notes" @click.stop="!isEditing(slot.date) && openEdit(slot, 'notes')">
-            <template v-if="isEditing(slot.date) && getEdit(slot.date)">
+          <div class="wt__cell wt__cell--notes wt__cell-p" @click.stop="openEdit(slot, 'notes', 'planned')">
+            <template v-if="isEditingZone(slot.date, 'planned') && getEdit(slot.date)">
               <input
                 v-model="getEdit(slot.date)!.notes"
                 v-autofocus="getEdit(slot.date)!.focusField === 'notes'"
@@ -450,9 +452,9 @@ async function toggleSessionType(slot: DaySlot) {
           <div class="wt__sep-col" />
 
           <!-- km -->
-          <div class="wt__cell wt__cell--num" @click.stop="!isEditing(slot.date) && canEditCompleted(slot) && openEdit(slot, 'km')">
-            <template v-if="isEditing(slot.date) && getEdit(slot.date) && getEdit(slot.date)!.completedId">
-              <input v-model="getEdit(slot.date)!.km" v-autofocus="getEdit(slot.date)!.focusField === 'km'" class="wt__input wt__input--num" :disabled="getEdit(slot.date)!.isSaving" @click.stop @input="onFieldInput(slot.date, slot)" />
+          <div class="wt__cell wt__cell--num wt__cell-c wt__cell-km" :data-testid="`cell-km-${slot.date}`" @click.stop="canEditCompleted(slot) && openEdit(slot, 'km', 'completed')">
+            <template v-if="isEditingZone(slot.date, 'completed') && getEdit(slot.date) && getEdit(slot.date)!.completedId">
+              <input v-model="getEdit(slot.date)!.km" v-autofocus="getEdit(slot.date)!.focusField === 'km'" class="wt__input wt__input--num" :data-testid="`input-km-${slot.date}`" :disabled="getEdit(slot.date)!.isSaving" @click.stop @input="onFieldInput(slot.date, slot)" />
             </template>
             <template v-else>
               <span class="wt__num-val wt__num-val--done">{{ slot.completed[0]?.completed_metrics?.km || "-" }}</span>
@@ -460,8 +462,8 @@ async function toggleSessionType(slot: DaySlot) {
           </div>
 
           <!-- Time (HH:MM) -->
-          <div class="wt__cell wt__cell--num" @click.stop="!isEditing(slot.date) && canEditCompleted(slot) && openEdit(slot, 'minutes')">
-            <template v-if="isEditing(slot.date) && getEdit(slot.date) && getEdit(slot.date)!.completedId">
+          <div class="wt__cell wt__cell--num wt__cell-c wt__cell-time" @click.stop="canEditCompleted(slot) && openEdit(slot, 'minutes', 'completed')">
+            <template v-if="isEditingZone(slot.date, 'completed') && getEdit(slot.date) && getEdit(slot.date)!.completedId">
               <input v-model="getEdit(slot.date)!.minutes" v-autofocus="getEdit(slot.date)!.focusField === 'minutes'" class="wt__input wt__input--num" :disabled="getEdit(slot.date)!.isSaving" placeholder="min" @click.stop @input="onFieldInput(slot.date, slot)" />
             </template>
             <template v-else>
@@ -470,8 +472,8 @@ async function toggleSessionType(slot: DaySlot) {
           </div>
 
           <!-- Intervals / details -->
-          <div class="wt__cell wt__cell--intervals" @click.stop="!isEditing(slot.date) && canEditCompleted(slot) && openEdit(slot, 'details')">
-            <template v-if="isEditing(slot.date) && getEdit(slot.date) && getEdit(slot.date)!.completedId">
+          <div class="wt__cell wt__cell--intervals wt__cell-c" @click.stop="canEditCompleted(slot) && openEdit(slot, 'details', 'completed')">
+            <template v-if="isEditingZone(slot.date, 'completed') && getEdit(slot.date) && getEdit(slot.date)!.completedId">
               <input v-model="getEdit(slot.date)!.details" v-autofocus="getEdit(slot.date)!.focusField === 'details'" class="wt__input" :disabled="getEdit(slot.date)!.isSaving" @click.stop @input="onFieldInput(slot.date, slot)" />
             </template>
             <template v-else>
@@ -480,8 +482,8 @@ async function toggleSessionType(slot: DaySlot) {
           </div>
 
           <!-- Avg HR -->
-          <div class="wt__cell wt__cell--num" @click.stop="!isEditing(slot.date) && canEditCompleted(slot) && openEdit(slot, 'avgHr')">
-            <template v-if="isEditing(slot.date) && getEdit(slot.date) && getEdit(slot.date)!.completedId">
+          <div class="wt__cell wt__cell--num wt__cell-c wt__cell-avghr" @click.stop="canEditCompleted(slot) && openEdit(slot, 'avgHr', 'completed')">
+            <template v-if="isEditingZone(slot.date, 'completed') && getEdit(slot.date) && getEdit(slot.date)!.completedId">
               <input v-model="getEdit(slot.date)!.avgHr" v-autofocus="getEdit(slot.date)!.focusField === 'avgHr'" class="wt__input wt__input--num" :disabled="getEdit(slot.date)!.isSaving" @click.stop @input="onFieldInput(slot.date, slot)" />
             </template>
             <template v-else>
@@ -490,8 +492,8 @@ async function toggleSessionType(slot: DaySlot) {
           </div>
 
           <!-- Max HR -->
-          <div class="wt__cell wt__cell--num" @click.stop="!isEditing(slot.date) && canEditCompleted(slot) && openEdit(slot, 'maxHr')">
-            <template v-if="isEditing(slot.date) && getEdit(slot.date) && getEdit(slot.date)!.completedId">
+          <div class="wt__cell wt__cell--num wt__cell-c wt__cell-maxhr" @click.stop="canEditCompleted(slot) && openEdit(slot, 'maxHr', 'completed')">
+            <template v-if="isEditingZone(slot.date, 'completed') && getEdit(slot.date) && getEdit(slot.date)!.completedId">
               <input v-model="getEdit(slot.date)!.maxHr" v-autofocus="getEdit(slot.date)!.focusField === 'maxHr'" class="wt__input wt__input--num" :disabled="getEdit(slot.date)!.isSaving" @click.stop @input="onFieldInput(slot.date, slot)" />
             </template>
             <template v-else>
@@ -521,7 +523,7 @@ async function toggleSessionType(slot: DaySlot) {
 
       <!-- ── Summary row ── -->
       <div class="wt__cols wt__summary-row">
-        <div class="wt__summary-label" style="grid-column: 1 / 6">{{ t("weekCard.total") }}</div>
+        <div class="wt__summary-label" style="grid-column: 1 / 6">{{ t("weekCard.total") }}<span v-if="week.planned_total_km_text" class="wt__summary-planned"> / {{ week.planned_total_km_text }}</span></div>
         <div class="wt__sep-col" />
         <div class="wt__cell wt__cell--num wt__summary-val">{{ week.completed_total.km }}</div>
         <div class="wt__cell wt__cell--num wt__summary-val">{{ formatMinutes(week.completed_total.time) }}</div>
