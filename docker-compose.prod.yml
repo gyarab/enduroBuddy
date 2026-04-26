@@ -12,6 +12,16 @@ services:
     networks:
       - backend
 
+  redis:
+    image: redis:7-alpine
+    container_name: endurobuddy-redis
+    restart: unless-stopped
+    volumes:
+      - endurobuddy_redis:/var/lib/redis/data
+    networks:
+      - backend
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+
   web:
     build:
       context: .
@@ -20,6 +30,7 @@ services:
     restart: unless-stopped
     depends_on:
       - db
+      - redis
     environment:
       POSTGRES_HOST: db
       POSTGRES_PORT: 5432
@@ -31,22 +42,52 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=traefik-public"
-      - "traefik.http.routers.endurobuddy-http.rule=Host(`${TRAEFIK_HOST}`)"
+      - "traefik.http.routers.endurobuddy-http.rule=Host(`${TRAEFIK_HOST}`) && (PathPrefix(`/api/`) || PathPrefix(`/admin/`) || PathPrefix(`/static/`) || PathPrefix(`/i18n/`) || PathPrefix(`/accounts/google/`))"
       - "traefik.http.routers.endurobuddy-http.entrypoints=web"
+      - "traefik.http.routers.endurobuddy-http.priority=20"
       - "traefik.http.routers.endurobuddy-http.middlewares=endurobuddy-https-redirect"
       - "traefik.http.middlewares.endurobuddy-https-redirect.redirectscheme.scheme=https"
       - "traefik.http.middlewares.endurobuddy-https-redirect.redirectscheme.permanent=true"
-      - "traefik.http.routers.endurobuddy.rule=Host(`${TRAEFIK_HOST}`)"
+      - "traefik.http.routers.endurobuddy.rule=Host(`${TRAEFIK_HOST}`) && (PathPrefix(`/api/`) || PathPrefix(`/admin/`) || PathPrefix(`/static/`) || PathPrefix(`/i18n/`) || PathPrefix(`/accounts/google/`))"
       - "traefik.http.routers.endurobuddy.entrypoints=websecure"
       - "traefik.http.routers.endurobuddy.tls=true"
       - "traefik.http.routers.endurobuddy.tls.certresolver=${TRAEFIK_CERTRESOLVER}"
+      - "traefik.http.routers.endurobuddy.priority=20"
       - "traefik.http.services.endurobuddy.loadbalancer.server.port=8000"
+    networks:
+      - backend
+      - traefik-public
+
+  nuxt:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: endurobuddy-nuxt
+    restart: unless-stopped
+    environment:
+      NUXT_PUBLIC_API_BASE: /api/v1
+    depends_on:
+      - web
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik-public"
+      - "traefik.http.routers.endurobuddy-nuxt-http.rule=Host(`${TRAEFIK_HOST}`)"
+      - "traefik.http.routers.endurobuddy-nuxt-http.entrypoints=web"
+      - "traefik.http.routers.endurobuddy-nuxt-http.priority=10"
+      - "traefik.http.routers.endurobuddy-nuxt-http.middlewares=endurobuddy-https-redirect"
+      - "traefik.http.routers.endurobuddy-nuxt.rule=Host(`${TRAEFIK_HOST}`)"
+      - "traefik.http.routers.endurobuddy-nuxt.entrypoints=websecure"
+      - "traefik.http.routers.endurobuddy-nuxt.tls=true"
+      - "traefik.http.routers.endurobuddy-nuxt.tls.certresolver=${TRAEFIK_CERTRESOLVER}"
+      - "traefik.http.routers.endurobuddy-nuxt.priority=10"
+      - "traefik.http.services.endurobuddy-nuxt.loadbalancer.server.port=3000"
     networks:
       - backend
       - traefik-public
 
 volumes:
   endurobuddy_pgdata:
+  endurobuddy_redis:
 
 networks:
   backend:

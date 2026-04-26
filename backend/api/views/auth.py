@@ -23,6 +23,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import Http404
 from django.http import JsonResponse
+from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.http import require_http_methods
 from django.utils.http import url_has_allowed_host_and_scheme
 
@@ -132,6 +133,7 @@ def _serialize_social_accounts(user) -> list[dict]:
     return serialized
 
 
+@ensure_csrf_cookie
 @login_required
 def auth_me(request):
     user = request.user

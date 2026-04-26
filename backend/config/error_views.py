@@ -1,130 +1,151 @@
 from __future__ import annotations
 
 from django.conf import settings
-from django.http import Http404
-from django.http import HttpRequest, HttpResponse
-from django.shortcuts import render
+from django.http import Http404, HttpRequest, HttpResponse, JsonResponse
 from django.views.decorators.http import require_GET
+
+_TITLES = {
+    400: ("Neplatný požadavek", "Požadavek se nepodařilo zpracovat. Zkus stránku obnovit nebo akci zopakovat."),
+    403: ("Přístup zamítnut", "Nemáš oprávnění zobrazit tuto stránku."),
+    404: ("Stránka nenalezena", "Tahle adresa už neexistuje, nebo nikdy neexistovala."),
+    500: ("Něco se pokazilo", "Na serveru nastala neočekávaná chyba. Zkus to znovu za chvíli."),
+}
+
+_HTML = """\
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{title} | EnduroBuddy</title>
+<style>
+*,*::before,*::after{{box-sizing:border-box;margin:0;padding:0}}
+body{{background:#09090b;color:#fafafa;font-family:Inter,system-ui,sans-serif;
+  min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1rem}}
+.card{{background:#18181b;border:1px solid #27272a;border-radius:16px;
+  padding:2.5rem 2rem;max-width:28rem;width:100%;text-align:center}}
+.code{{font-family:'JetBrains Mono',monospace;font-size:3rem;font-weight:700;
+  color:#c8ff00;line-height:1;margin-bottom:1rem}}
+h1{{font-size:1.25rem;font-weight:700;margin-bottom:.75rem}}
+p{{color:#71717a;font-size:.9rem;line-height:1.6;margin-bottom:1.5rem}}
+a{{display:inline-block;background:#c8ff00;color:#09090b;font-weight:600;
+  font-size:.875rem;padding:.6rem 1.4rem;border-radius:8px;text-decoration:none}}
+a:hover{{opacity:.9}}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="code">{code}</div>
+  <h1>{title}</h1>
+  <p>{message}</p>
+  <a href="/">Zpět na hlavní stránku</a>
+</div>
+</body>
+</html>"""
+
+
+def _is_api(request: HttpRequest) -> bool:
+    return request.path.startswith("/api/")
+
+
+def _html(code: int) -> HttpResponse:
+    title, message = _TITLES[code]
+    return HttpResponse(
+        _HTML.format(code=code, title=title, message=message),
+        status=code,
+        content_type="text/html; charset=utf-8",
+    )
+
+
+def _json(code: int) -> JsonResponse:
+    title, _ = _TITLES[code]
+    return JsonResponse({"error": title, "status": code}, status=code)
 
 
 def bad_request(request: HttpRequest, exception) -> HttpResponse:
-    return render(request, "400.html", status=400)
+    return _json(400) if _is_api(request) else _html(400)
 
 
 def permission_denied(request: HttpRequest, exception) -> HttpResponse:
-    return render(request, "403.html", status=403)
+    return _json(403) if _is_api(request) else _html(403)
 
 
 def page_not_found(request: HttpRequest, exception) -> HttpResponse:
-    return render(request, "404.html", status=404)
+    return _json(404) if _is_api(request) else _html(404)
 
 
 def server_error(request: HttpRequest) -> HttpResponse:
-    return render(request, "500.html", status=500)
+    return _json(500) if _is_api(request) else _html(500)
+
+
+# ── debug preview ─────────────────────────────────────────────────────────────
+
+_PREVIEW_HTML = """\
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<title>Error UI Preview | EnduroBuddy</title>
+<style>
+body{{font-family:Inter,system-ui,sans-serif;background:#09090b;color:#fafafa;
+  padding:2rem;max-width:56rem;margin:0 auto}}
+h1{{font-size:1.4rem;font-weight:700;margin-bottom:1.5rem;color:#c8ff00}}
+h2{{font-size:1rem;font-weight:600;margin:1.5rem 0 .75rem;color:#71717a;
+  text-transform:uppercase;letter-spacing:.08em}}
+ul{{list-style:none;display:grid;gap:.5rem}}
+a{{color:#38bdf8;text-decoration:none}}a:hover{{text-decoration:underline}}
+.desc{{color:#71717a;font-size:.85rem}}
+</style>
+</head>
+<body>
+<h1>UI fallback preview</h1>
+<h2>Error pages</h2>
+<ul>{preview_items}</ul>
+<h2>Account pages</h2>
+<ul>{account_items}</ul>
+</body>
+</html>"""
 
 
 @require_GET
 def error_preview_index(request: HttpRequest) -> HttpResponse:
     if not settings.DEBUG:
         raise Http404()
+
     previews = [
-        {
-            "label": "Preview 400",
-            "url": "/__debug/ui/errors/400/",
-            "description": "Bad request fallback page.",
-            "real_case": "Malformed request, invalid payload, or explicit 400 response outside AJAX.",
-        },
-        {
-            "label": "Preview 403",
-            "url": "/__debug/ui/errors/403/",
-            "description": "Permission denied fallback page.",
-            "real_case": "User opens a forbidden page or a view raises PermissionDenied.",
-        },
-        {
-            "label": "Preview 404",
-            "url": "/__debug/ui/errors/404/",
-            "description": "Not found fallback page.",
-            "real_case": "Bad URL or missing resource page.",
-        },
-        {
-            "label": "Preview 500",
-            "url": "/__debug/ui/errors/500/",
-            "description": "Internal server error fallback page.",
-            "real_case": "Unhandled exception in production with DEBUG=False.",
-        },
+        ("Preview 400", "/__debug/ui/errors/400/", "Malformed request or explicit 400 outside AJAX."),
+        ("Preview 403", "/__debug/ui/errors/403/", "User opens a forbidden page."),
+        ("Preview 404", "/__debug/ui/errors/404/", "Bad URL or missing resource."),
+        ("Preview 500", "/__debug/ui/errors/500/", "Unhandled exception in production."),
     ]
     account_pages = [
-        {
-            "label": "Account Inactive",
-            "url": "/accounts/inactive/",
-            "real_case": "Inactive or disabled account flow.",
-        },
-        {
-            "label": "Manage Email",
-            "url": "/accounts/email/",
-            "real_case": "Direct account email management page.",
-        },
-        {
-            "label": "Change Password",
-            "url": "/accounts/password/change/",
-            "real_case": "Direct password change route.",
-        },
-        {
-            "label": "Set Password",
-            "url": "/accounts/password/set/",
-            "real_case": "Account without local password sets one.",
-        },
-        {
-            "label": "Reauthenticate",
-            "url": "/accounts/reauthenticate/",
-            "real_case": "Sensitive action requires password confirmation.",
-        },
-        {
-            "label": "Social Login Error",
-            "url": "/accounts/social/login/error/",
-            "real_case": "Google or other provider login flow fails.",
-        },
-        {
-            "label": "Social Login Cancelled",
-            "url": "/accounts/social/login/cancelled/",
-            "real_case": "User cancels Google login/consent.",
-        },
-        {
-            "label": "Social Connections",
-            "url": "/accounts/social/connections/",
-            "real_case": "Direct page for connected third-party accounts.",
-        },
+        ("Account Inactive", "/accounts/inactive/"),
+        ("Manage Email", "/accounts/email/"),
+        ("Change Password", "/accounts/password/change/"),
+        ("Set Password", "/accounts/password/set/"),
+        ("Reauthenticate", "/accounts/reauthenticate/"),
+        ("Social Login Error", "/accounts/social/login/error/"),
+        ("Social Login Cancelled", "/accounts/social/login/cancelled/"),
+        ("Social Connections", "/accounts/social/connections/"),
     ]
-    return render(
-        request,
-        "debug/error_preview.html",
-        {
-            "previews": previews,
-            "account_pages": account_pages,
-            "debug_enabled": settings.DEBUG,
-        },
+
+    preview_items = "".join(
+        f'<li><a href="{url}">{label}</a> <span class="desc">— {desc}</span></li>'
+        for label, url, desc in previews
     )
+    account_items = "".join(
+        f'<li><a href="{url}">{label}</a></li>'
+        for label, url in account_pages
+    )
+
+    html = _PREVIEW_HTML.format(preview_items=preview_items, account_items=account_items)
+    return HttpResponse(html, content_type="text/html; charset=utf-8")
 
 
 @require_GET
 def error_preview_status(request: HttpRequest, status_code: int) -> HttpResponse:
     if not settings.DEBUG:
         raise Http404()
-    template_name = f"{status_code}.html"
-    titles = {
-        400: "Neplatný požadavek",
-        403: "Přístup zamítnut",
-        404: "Stránka nenalezena",
-        500: "Něco se pokazilo",
-    }
-    if status_code not in titles:
-        return render(request, "404.html", status=404)
-    return render(
-        request,
-        template_name,
-        {
-            "debug_preview": True,
-            "preview_status_code": status_code,
-        },
-        status=status_code,
-    )
+    if status_code not in _TITLES:
+        return _html(404)
+    return _html(status_code)

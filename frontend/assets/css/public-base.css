@@ -1,0 +1,212 @@
+/* ============================================================
+   EnduroBuddy – Public Base Styles (Nuxt version)
+   Shell · navbar · footer
+   NOTE: Fonts and design tokens are in fonts.css + design-tokens.css
+   ============================================================ */
+
+/* ── Shell Container ─────────────────────────────────────── */
+.eb-public-shell {
+  width: min(1280px, calc(100% - 48px));
+  margin-inline: auto;
+}
+
+/* ── Topbar ──────────────────────────────────────────────── */
+.eb-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(17,17,19,.92);
+  border-bottom: 1px solid var(--eb-border);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.eb-topbar-inner {
+  position: relative; /* required for centered nav absolute positioning */
+  display: flex;
+  align-items: center;
+  height: 64px;
+  gap: 0;
+}
+
+/* Brand / Logo */
+.eb-topbar-brand {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  margin-right: auto;
+}
+.eb-topbar-brand .eb-logo-full  { height: 26px; width: auto; }
+.eb-topbar-brand .eb-logo-compact { height: 26px; width: auto; display: none; }
+
+/* Nav links */
+.eb-topbar-nav {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.eb-topbar-nav a {
+  padding: 6px 14px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--eb-text-soft, #a1a1aa);
+  border-radius: var(--eb-radius-sm);
+  transition: color 120ms ease, background 120ms ease;
+  white-space: nowrap;
+}
+.eb-topbar-nav a:hover {
+  color: var(--eb-text);
+  background: rgba(255,255,255,.04);
+}
+.eb-topbar-nav a.is-active {
+  color: var(--eb-lime);
+}
+
+/* Login CTA */
+.eb-topbar-actions {
+  flex-shrink: 0;
+  margin-left: auto;
+}
+.eb-btn-nav {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 7px 16px;
+  font-family: var(--eb-font-body);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--eb-text);
+  background: transparent;
+  border: 1px solid var(--eb-border);
+  border-radius: var(--eb-radius-sm);
+  cursor: pointer;
+  transition: color 120ms ease, border-color 120ms ease, background 120ms ease;
+}
+.eb-btn-nav:hover {
+  color: var(--eb-lime);
+  border-color: rgba(200,255,0,.20);
+  background: rgba(200,255,0,.12);
+}
+.eb-btn-nav:focus-visible {
+  outline: 2px solid var(--eb-lime);
+  outline-offset: 2px;
+}
+
+.eb-btn-disabled {
+  opacity: 0.38;
+  pointer-events: none;
+  cursor: default;
+}
+
+/* ── Footer ──────────────────────────────────────────────── */
+.eb-footer {
+  background: var(--eb-bg);
+  border-top: 1px solid var(--eb-border);
+  padding: 48px 0 28px;
+  margin-top: 80px;
+}
+
+.eb-footer-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr;
+  gap: 40px;
+  align-items: start;
+  padding-bottom: 28px;
+  border-bottom: 1px solid rgba(39, 39, 42, 0.6);
+  margin-bottom: 20px;
+}
+
+/* Brand column */
+.eb-footer-brand .eb-footer-logo { height: 22px; width: auto; margin-bottom: 10px; }
+.eb-footer-tagline {
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  color: var(--eb-text-muted);
+  max-width: 28ch;
+}
+
+/* Nav column */
+.eb-footer-nav ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.eb-footer-nav a {
+  font-size: 0.8125rem;
+  color: var(--eb-text-muted);
+  transition: color 120ms ease;
+}
+.eb-footer-nav a:hover { color: var(--eb-text); }
+
+/* Language column */
+.eb-footer-lang-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--eb-text-muted);
+  margin-bottom: 10px;
+}
+.eb-footer-lang-pills {
+  display: flex;
+  gap: 6px;
+}
+.eb-lang-pill {
+  padding: 5px 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--eb-text-muted);
+  background: var(--eb-surface);
+  border: 1px solid var(--eb-border);
+  border-radius: var(--eb-radius-full, 9999px);
+  cursor: pointer;
+  font-family: var(--eb-font-body);
+  transition: color 120ms ease, border-color 120ms ease, background 120ms ease;
+}
+.eb-lang-pill:hover { color: var(--eb-text); }
+.eb-lang-pill.is-active {
+  color: var(--eb-lime);
+  border-color: rgba(200,255,0,.20);
+  background: rgba(200,255,0,.12);
+}
+.eb-lang-pill:focus-visible {
+  outline: 2px solid var(--eb-lime);
+  outline-offset: 2px;
+}
+
+/* Copyright strip */
+.eb-footer-copy {
+  font-size: 0.75rem;
+  color: var(--eb-text-muted);
+}
+
+/* ── Responsive ──────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .eb-topbar-brand .eb-logo-full    { display: none; }
+  .eb-topbar-brand .eb-logo-compact { display: block; }
+
+  .eb-topbar-nav {
+    position: static;
+    transform: none;
+    display: none; /* hidden on mobile — can add hamburger later */
+  }
+}
+
+@media (max-width: 640px) {
+  .eb-footer-grid {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+}

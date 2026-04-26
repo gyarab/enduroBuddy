@@ -18,7 +18,7 @@
 
 Django webová aplikace pro plánování vytrvalostního tréninku. Propojuje trenéra a sportovce: trenér připravuje měsíční plány, sportovec zapisuje splněné tréninky a importuje aktivity z Garmin Connect nebo FIT souborů.
 
-**Stack:** Python 3.12, Django 5.2, PostgreSQL, Vue 3 + TypeScript + Vite (SPA pro přihlášenou část), vlastní CSS bez frameworků, Docker Compose.
+**Stack:** Python 3.12, Django 5.2, PostgreSQL, Nuxt 3 + TypeScript (SSR veřejné stránky + SPA přihlášená část), vlastní CSS bez frameworků, Docker Compose, Celery + Redis.
 
 **Jazyky UI:** Česky + anglicky (django i18n, language switcher).
 
@@ -35,12 +35,13 @@ Django webová aplikace pro plánování vytrvalostního tréninku. Propojuje tr
 
 | URL | Popis |
 |-----|-------|
-| `/` | Veřejná landing page (Django template) |
-| `/app/*` | Athlete SPA (Vue Router — `AthleteView`) |
-| `/coach/*` | Coach SPA (Vue Router — `CoachView`) |
+| `/` | Veřejná landing page (Nuxt SSR) |
+| `/about`, `/terms`, `/privacy` | Veřejné stránky (Nuxt SSR) |
+| `/accounts/*` | Auth flow (Nuxt — GET; allauth OAuth callback — Django) |
+| `/app/*` | Athlete SPA (Nuxt) |
+| `/coach/*` | Coach SPA (Nuxt) |
 | `/api/v1/` | DRF API (session auth, CSRF) |
-| `/accounts/` | Autentizace (django-allauth) |
-| `/admin/` | Django admin |
+| `/admin/` | Django admin (jediný Django-rendered HTML) |
 
 ---
 
@@ -225,10 +226,10 @@ Spec: `docs/superpowers/specs/2026-04-18-nuxt-migration-design.md`
 
 | Oblast | Technologie | Stav |
 |--------|------------|------|
-| Python package manager | uv (nahrazuje pip) | plánováno |
-| Node package manager | pnpm (nahrazuje npm) | plánováno |
-| Task queue + broker | Celery + Redis | plánováno |
-| Frontend framework | Nuxt 3 (nahrazuje Vite SPA + Django templates) | plánováno |
+| Python package manager | uv (nahrazuje pip) | ✅ hotovo |
+| Node package manager | pnpm (nahrazuje npm) | ✅ hotovo |
+| Task queue + broker | Celery + Redis | ✅ hotovo |
+| Frontend framework | Nuxt 3 (nahrazuje Vite SPA + Django templates) | ✅ hotovo (about.vue je placeholder) |
 
 #### Fáze
 
@@ -249,7 +250,112 @@ Spec: `docs/superpowers/specs/2026-04-18-nuxt-migration-design.md`
 - `docs/superpowers/plans/2026-04-18-infrastructure.md` — uv, pnpm, Redis, Celery (9 tasků)
 - `docs/superpowers/plans/2026-04-18-nuxt-migration-impl.md` — Nuxt migrace (12 tasků)
 
-**Status:** Implementační plány napsány — připraveno k implementaci
+**Status (ověřeno 2026-04-24):** ✅ Kompletně hotovo. Backend: 125 passed, 1 skipped. Frontend: 96 passed (14 files). Django check: 0 issues.
+
+#### Hotovo ve Fázi 0
+- **Task 1 (uv)** — `backend/pyproject.toml` s 21 závislostmi (Django, Celery, Garmin, FIT, Postgres, gunicorn, whitenoise); `backend/uv.lock` vygenerován; `requirements.txt` smazán
+- **Task 2 (Dockerfile uv)** — `Dockerfile` aktualizován: `pip install uv && uv sync --frozen --no-dev`
+- **Task 3 (pnpm)** — `frontend/pnpm-lock.yaml` vygenerován; `frontend/.npmrc` (`shamefully-hoist=true`); `package-lock.json` smazán; docker-compose aktualizován
+
+#### Hotovo v Fázi 1
+- **Task 4** — Redis service v `docker-compose.yml` + `docker-compose.prod.yml` (volume `endurobuddy_redis`, `web` závisí na `redis`)
+- **Task 5** — `backend/config/celery.py`, `backend/config/__init__.py`, Celery konfigurace v `settings.py`, `django_celery_beat` + `django_celery_results` v `INSTALLED_APPS`, migrace aplikovány
+- **Task 6** — `celery-worker` + `celery-beat` services v `docker-compose.yml`
+- **Task 7 (infra)** — `backend/dashboard/tests/test_celery_tasks.py` — 3 testy pro Celery task dispatch (TDD failing test před implementací)
+- **Task 8 (infra)** — `backend/dashboard/services/tasks.py` — `ThreadPoolExecutor` nahrazen `@shared_task execute_garmin_sync_job`; `enqueue_garmin_sync_job` volá `.delay()`; `_execute_garmin_sync_job` čistá testovatelná funkce
+
+#### Hotovo ve Fázi 2
+- **Task 1 (nuxt)** — Nuxt 3 inicializace v `frontend/`:
+  - `frontend/nuxt.config.ts` — SSR pro `/`, `/about`, `/terms`, `/privacy`; SPA pro `/app/**`, `/coach/**`, `/accounts/**`; @pinia/nuxt + @nuxtjs/i18n moduly; Vite proxy pro Django API
+  - `frontend/app.vue` — minimální wrapper s `<NuxtLayout><NuxtPage />`
+  - `frontend/pages/index.vue` — placeholder index stránka
+  - `frontend/i18n/locales/cs.json` + `en.json` — prázdné locale soubory (i18n v9 je hledá v `i18n/locales/`)
+  - `frontend/assets/design-tokens.css` + `fonts.css` — kopie z `src/assets/` pro Nuxt CSS pipeline
+  - `frontend/vite.config.ts` → `vite.config.ts.bak` — přejmenováno (Nuxt nepodporuje standalone vite.config)
+  - `package.json` aktualizován: nuxt, @pinia/nuxt, @nuxtjs/i18n, axios, vue, vue-router
+  - Všech 93 testů zelených, Nuxt dev server startuje na `:3000`
+- **Task 2 (nuxt)** — Migrace `src/` do Nuxt struktury:
+  - `frontend/components/` — přesunuto z `src/components/`
+  - `frontend/stores/` — 8 Pinia stores (auth, coach, legend, notifications, toasts, training)
+  - `frontend/composables/` — useGarminImport, useInlineEditor, useTrainingParser
+  - `frontend/assets/` — design-tokens.css, fonts.css
+  - `frontend/i18n/` — locale soubory cs.json + en.json (přesunuto z `src/locales/`)
+  - `frontend/plugins/i18n-sync.client.ts` — synchronizace jazyka s Django session
+  - Starý `frontend/src/` adresář **zatím nebyl smazán** (viz "Zbývá")
+- **Task 3 (nuxt)** — `$fetch` API klient:
+  - `frontend/utils/apiFetch.ts` — wrapper s CSRF tokenem, credentials, X-Requested-With
+  - `frontend/utils/api/` — 8 modulů: auth, coach, imports, invites, legend, notifications, profile, training
+- **Task 4 (nuxt)** — Náhrada vlastního `useI18n` za `@nuxtjs/i18n`:
+  - `frontend/plugins/i18n-sync.client.ts` — watch na locale, POST `/i18n/set_language/`
+  - Importy `useI18n` z vlastního composable odstraněny; `@nuxtjs/i18n` auto-importuje
+- **Task 5 (nuxt)** — `app.vue` a layouts:
+  - `frontend/app.vue` — `<NuxtLayout><NuxtPage />`
+  - `frontend/layouts/default.vue` — AppShell s variant="athlete"|"coach" dle URL
+  - `frontend/layouts/public.vue` — topbar (logo, nav), footer (logo, nav, language switcher), copyright rok
+  - `frontend/layouts/auth.vue` — centrovaný auth wrapper
+- **Task 6 (nuxt)** — Pages pro přihlášenou část:
+  - `frontend/pages/app/dashboard.vue` → AthleteView
+  - `frontend/pages/app/index.vue` → redirect na /app/dashboard
+  - `frontend/pages/app/profile/complete.vue` → CompleteProfileView
+  - `frontend/pages/coach/plans.vue` → CoachView
+  - `frontend/pages/coach/index.vue` → redirect na /coach/plans
+  - `frontend/pages/coach/invite/[token].vue` → InviteView
+  - `frontend/pages/accounts/[...slug].vue` → AuthFlowView (slug → screenMap)
+- **Task 7 (nuxt)** — SSR veřejné stránky:
+  - `frontend/pages/index.vue` — kompletní landing page (Hero, Features, How It Works, Audience, CTA, fade-up animace)
+  - `frontend/pages/terms.vue` — kompletní Terms of Use (en/cs)
+  - `frontend/pages/privacy.vue` — kompletní Privacy Policy (en/cs)
+  - `frontend/pages/about.vue` — **PLACEHOLDER** ("Soon") — viz "Zbývá"
+  - CSS přesunuto: `frontend/assets/css/public-base.css`, `public-home.css`, `public-about.css`, `public-legal.css`
+- **Task 8 (nuxt)** — Error stránka a PlannedKmRulesModal (2026-04-19):
+  - `frontend/error.vue` — Nuxt error page (statusCode 404/403/generic, i18n, design tokeny)
+  - `frontend/components/training/PlannedKmRulesModal.vue` — modal s pravidly zápisu tréninku (Teleport to body, isOpen prop, close emit)
+  - `frontend/components/training/PlannedRow.vue` — integrován help button `?` vedle labelu Title, modal mountován na konci template
+  - `frontend/i18n/locales/cs.json` + `en.json` — přidány klíče `error.*` a `kmRules.*`
+  - `frontend/components/training/PlannedKmRulesModal.test.ts` — 3 testy zelené (TDD: failing test commitnut před implementací)
+  - Celkem 189 testů zelených
+- **Task 9 (nuxt)** — Backend `GET /api/v1/site-config/` endpoint:
+  - `backend/api/views/config.py` — vrací `{"registration_enabled": true/false}` dle `settings.REGISTRATION_ENABLED`
+  - URL registrována v `backend/api/urls.py`
+  - Testy: `backend/api/tests/test_site_config.py` zelené
+  - **Poznámka:** `frontend/pages/index.vue` má `registrationEnabled` zatím hardcoded na `true` — viz "Zbývá"
+- **Task 10 (nuxt)** — Docker: Nuxt jako standalone service + Nginx (2026-04-19):
+  - `frontend/Dockerfile` — multi-stage build (builder → runtime), pnpm, `.output/server/index.mjs`
+  - `nginx/nginx.conf` — upstream django + nuxt, routing: `/api/`, `/admin/`, `/static/`, `/i18n/`, `/accounts/google/` → Django; `/` → Nuxt; WebSocket upgrade header; přidány `X-Forwarded-Proto` + chybějící `X-Forwarded-For` do všech Django locations
+  - `nginx/Dockerfile` — nginx:1.25-alpine s kopií nginx.conf
+  - `docker-compose.yml` — přidán `nuxt` service (port 3000, depends_on web); odstraněn starý `frontend` service (pnpm dev na 5173)
+  - `docker-compose.prod.yml` — `web` Traefik rule zúžen na path-prefix pro Django routes (priority 20); přidán `nuxt` service s catch-all Traefik rule (priority 10)
+  - `frontend/.dockerignore` — vyloučeny node_modules, .nuxt, .output, .env atd.
+  - `docker compose config --quiet` prošel bez chyb (dev i prod)
+- **Task 11 (nuxt)** — Cleanup Django templates a HTML views (2026-04-19):
+  - Odstraněny HTML-renderující views: `dashboard/views_home.py::home()`, `dashboard/views_coach.py::coach_training_plans()`, `dashboard/views_invites.py::accept_training_group_invite()`
+  - Odstraněny URL patterny: `app/` (dashboard_home), `coach/plans/` (coach_training_plans), `coach/invite/<token>/` (training_group_invite_accept)
+  - `config/urls.py` — přidán `account_complete_profile` URL (→ nuxt_redirect), import `nuxt_redirect` z `config.views_nuxt`
+  - `accounts/views.py` — nahrazen import `config.views_spa` (smazaný) za `config.views_nuxt.nuxt_redirect`; fallback redirecty z `dashboard_home` na `/app/`
+  - `dashboard/views_profile.py` — fallback redirect z `dashboard_home` na `/app/`
+  - `templates/includes/_top_nav.html` — nahrazeny `{% url 'public_home' %}`, `{% url 'dashboard_home' %}`, `{% url 'coach_training_plans' %}` přímými URL; odstraněny tlačítka legend/import (jsou v Nuxt SPA)
+  - Testy: odstraněny testy HTML views (`_fit_import_rendering_cases.py` vyřazen z test_fit_import.py, `_coach_training_page_cases.py` vyřazen z test_coach_training_plans.py); opraveny testy v `accounts/tests.py`, `test_profile_manage.py`, `test_spa_api.py`, `_coach_training_planned_cases.py`, `_coach_training_completed_cases.py`, `_fit_import_flow_cases.py`, `_fit_import_garmin_cases.py`
+  - Django check: 0 issues; 141 testů zelených (1 skipped)
+- **Task 11 residual fix** — Odstranění mrtvého kódu po cleanup (2026-04-19):
+  - `dashboard/handlers/home_actions.py` — nahrazeny 4x `redirect("dashboard_home")` za `redirect("/app/dashboard")`
+  - `dashboard/views_invites.py` — odstraněna celá funkce `accept_training_group_invite()` (URL byla smazána v Task 11, view bylo nedosažitelné); soubor zredukován na prázdný stub
+  - `backend/templates/dashboard/accept_training_group_invite.html` — odstraněn (`git rm`)
+  - `dashboard/tests/_fit_import_rendering_cases.py` — odstraněn (`git rm`; obsahoval reference na `dashboard_home`)
+  - `dashboard/tests/_coach_training_page_cases.py` — odstraněn (`git rm`; obsahoval reference na `dashboard_home` a `training_group_invite_accept`)
+  - Django check: 0 issues; 141 testů zelených (1 skipped)
+- **Routing fix** — `/accounts/` nyní obsluhuje Nuxt (2026-04-19):
+  - Kořenová příčina: Vite proxy přeposílal `/accounts/*` na Django; Django `nuxt_redirect` přesměrovával zpět na `localhost:3000` (hardcoded) → nekonečná smyčka
+  - `frontend/nuxt.config.ts` — proxy `/accounts` nahrazen `/accounts/google` (jen OAuth)
+  - `nginx/nginx.conf` — blok `location /accounts/` změněn na `location /accounts/google/`; ostatní `/accounts/*` padají na catch-all `/` → Nuxt
+  - `docker-compose.prod.yml` — Traefik pravidla pro `web` zúžena z `PathPrefix('/accounts/')` na `PathPrefix('/accounts/google/')`
+  - Výsledek: uživatelsky viditelné stránky účtu (login, signup...) obsluhuje Nuxt, OAuth callback (`/accounts/google/`) jde na Django
+
+#### Dokončeno (2026-04-24)
+
+- **`frontend/pages/about.vue`** — kompletní stránka (intro, story, mission, founder) portovaná dle CSS v `public-about.css`; i18n klíče přidány do cs.json + en.json
+- **`frontend/pages/index.vue` — `registrationEnabled`** — nahrazeno `useFetch('/api/v1/site-config/')` + `computed`; již není hardcoded
+- **`frontend/src/` smazán** — starý Vite SPA adresář odstraněn via `git rm`; `vitest.config.ts` alias `@/` opraven na `./`; `nuxt.config.ts` alias `@/` opraven na `./`; `vitest.setup.ts` stub i18n načítá skutečné překlady z `cs.json` s interpolací params; všechny `@/api/` importy v 13 komponentách nahrazeny `~/utils/api/`; dotčené testy aktualizovány (import paths + literal key expectations); 14 test files, 96 testů zelených; Nuxt dev server startuje bez chyb
+- **`README.md` přepsán** — kompletní rewrite reflektující aktuální stack (Nuxt 3 + Django API + Celery + Redis + uv + pnpm)
 
 ---
 
@@ -316,3 +422,45 @@ Kompletní průzkum repozitáře na větvi `main`.
 V `config/urls.py` jsou SPA routes `/app/*` definovány **před** `include("dashboard.urls")`, takže legacy Django dashboard na `/app/` je v produkci překrytý SPA a nedostupný. Django route pro dashboard existuje v kódu, ale není dosažitelná.
 
 **Status:** Analýza dokončena, implementace migrace veřejných stránek do Vue zatím neplánována.
+
+---
+
+### 2026-04-25/26 — WeekCard: split-zone editing + layout redesign ✅ KOMPLETNÍ
+
+**Spec:** `docs/superpowers/specs/2026-04-25-weekcard-zone-editing.md`
+**Plán:** `docs/superpowers/plans/2026-04-25-weekcard-zone-editing.md`
+
+**Co bylo implementováno:**
+- `WeekCard.vue`: planned (3/5) a completed (2/5) zóna se vzájemně vylučují při editování
+- Kliknutím na planned zónu se otevřou jen inputy pro trénink/poznámky (modré podbarvení `rgba(56,189,248,.07)`)
+- Kliknutím na completed zónu se otevřou jen inputy pro km/čas/HR (lime podbarvení `rgba(200,255,0,.07)`)
+- Neaktivní zóna se ztmaví (opacity 0.45) a zablokuje klikání (`pointer-events: none`)
+- Přepnutí zóny uloží dirty data fire-and-forget a okamžitě otevře novou zónu
+- Summary row zobrazuje `planned_total_km_text` (plánované km) v planned sekci modrou mono barvou
+- Mobilní layout: planned nahoře (plná šířka), completed jako kompaktní řádek pod ním
+- Nový test soubor: `WeekCard.test.ts` (5 testů — 4 pro mutual exclusion, 1 pro summary)
+- Celkem: 101 testů zelených (15 souborů), TypeScript: 0 chyb
+
+---
+
+### 2026-04-26 — Django templates: pouze admin + email ✅ KOMPLETNÍ
+
+**Cíl:** Django renderuje HTML pouze pro `/admin/`. Vše ostatní obsluhuje Nuxt.
+
+**Co bylo uděláno:**
+
+1. **Smazány mrtvé dashboard/includes templates** — 19 souborů (dashboard/*, includes/*, _language_switcher.html)
+2. **Error views přepsány bez templates** — `config/error_views.py` nyní:
+   - `/api/*` requesty → JSON `{"error": "...", "status": N}`
+   - Browserové requesty → self-contained inline HTML (design tokens, bez Bootstrapu, bez template souboru)
+   - Smazány: `400.html`, `403.html`, `404.html`, `500.html`, `base.html`, `errors/_status_card.html`, `debug/error_preview.html`
+   - Smazán: `test_dashboard_frontend_regressions.py` (testoval smazané templates)
+3. **Smazán mrtvý `complete_profile` Django HTML view** — `accounts/views.py:complete_profile()` odstraněn, profil completion jde přes JSON API `/api/v1/profile/complete/` + Nuxt `CompleteProfileView.vue`
+4. **`spa_account_*` POST handlery převedeny na `nuxt_redirect`** — Nuxt používá `/api/v1/auth/*` (JSON), allauth HTML POST path je dead code. Logout POST zachován (allauth session teardown).
+5. **Smazány allauth HTML templates** — `account/*.html` (kromě `email/`) + `socialaccount/*.html`
+
+**Zbývající templates (legitimní):**
+- `templates/account/email/*.html` — transakční emaily (odesílání, ne web stránky)
+- Django admin templates (poskytuje Django framework)
+
+**Stav po dokončení:** 125 testů zelených (1 skipped), Django check: 0 issues.

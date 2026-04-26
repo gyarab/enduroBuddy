@@ -53,11 +53,15 @@ ALLOWED_HOSTS = [
     if host.strip()
 ]
 
-CSRF_TRUSTED_ORIGINS = [
-    origin.strip()
-    for origin in os.environ.get("DJANGO_CSRF_TRUSTED_ORIGINS", "").split(",")
-    if origin.strip()
-]
+def _parse_origin_list(raw_value: str) -> list[str]:
+    return [
+        origin.strip().rstrip("/")
+        for origin in raw_value.split(",")
+        if origin.strip()
+    ]
+
+
+CSRF_TRUSTED_ORIGINS = _parse_origin_list(os.environ.get("DJANGO_CSRF_TRUSTED_ORIGINS", ""))
 
 
 # Application definition
@@ -83,6 +87,8 @@ INSTALLED_APPS = [
     "allauth.socialaccount",
     "allauth.socialaccount.providers.google",
 
+    "django_celery_beat",
+    "django_celery_results",
 ]
 
 if importlib.util.find_spec("rest_framework") is not None:
@@ -260,6 +266,15 @@ DEFAULT_FROM_EMAIL = os.environ.get(
     EMAIL_HOST_USER or "noreply@endurobuddy.local",
 )
 
+# Celery
+CELERY_BROKER_URL = os.environ.get("REDIS_URL", "redis://redis:6379/0")
+CELERY_RESULT_BACKEND = os.environ.get("REDIS_URL", "redis://redis:6379/0")
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_TIMEZONE = TIME_ZONE
+CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
+
 SOCIALACCOUNT_PROVIDERS = {
     "google": {
         "SCOPE": ["profile", "email"],
@@ -300,11 +315,9 @@ REGISTRATION_ENABLED = os.environ.get("REGISTRATION_ENABLED", "true").lower() ==
 IMPORT_TASK_MODE = os.environ.get("IMPORT_TASK_MODE", "inline")
 DASHBOARD_ASSET_VERSION = os.environ.get("DASHBOARD_ASSET_VERSION", "76")
 SPA_VITE_DEV_SERVER_URL = os.environ.get("SPA_VITE_DEV_SERVER_URL", "http://localhost:5173")
-CORS_ALLOWED_ORIGINS = [
-    origin.strip()
-    for origin in os.environ.get("DJANGO_CORS_ALLOWED_ORIGINS", SPA_VITE_DEV_SERVER_URL).split(",")
-    if origin.strip()
-]
+CORS_ALLOWED_ORIGINS = _parse_origin_list(
+    os.environ.get("DJANGO_CORS_ALLOWED_ORIGINS", SPA_VITE_DEV_SERVER_URL)
+)
 
 USE_HTTPS = os.environ.get("DJANGO_USE_HTTPS", "false").lower() == "true"
 

@@ -1,317 +1,223 @@
 # EnduroBuddy
 
-EnduroBuddy je webová aplikace postavená na Django pro plánování tréninku a správu vytrvalostních aktivit. Projekt propojuje práci trenéra a sportovce v jednom rozhraní: trenér připravuje měsíční plán, sportovec zapisuje plnění a k jednotlivým tréninkům může párovat reálně absolvované aktivity importované z FIT souborů nebo ze služby Garmin Connect.
+Tréninkový workspace pro vytrvalostní sporty. Propojuje trenéra a sportovce: trenér připravuje měsíční plány s týdenní strukturou, sportovec zapisuje splněné tréninky a importuje aktivity z Garmin Connect nebo FIT souborů.
 
-Repozitář obsahuje funkční backend i server-rendered frontend, autentizaci přes email a Google, workflow pro role `Coach` a `Athlete`, plánovací dashboard, správu skupin a testy pro klíčové scénáře importu i editace tréninků.
+## Stack
 
-## Hlavní funkce
-
-- registrace, přihlášení, potvrzení emailu a reset hesla přes `django-allauth`
-- volitelný Google login
-- role `Coach` a `Athlete`
-- propojení trenéra a sportovce přes coach join code a join requesty
-- tréninkové skupiny a pozvánky přes token
-- měsíční plánovací dashboard s týdenní strukturou
-- editace plánovaných tréninků včetně dvoufázových dní
-- evidence dokončených tréninků
-- import aktivit z FIT souborů
-- synchronizace aktivit z Garmin Connect
-- deduplikace importu podle kontrolního součtu
-- ukládání intervalů a časové řady pro další analýzu
-- Django admin pro správu dat
-
-## Pro koho je projekt určený
-
-Projekt řeší dvě hlavní role:
-
-- `Athlete`: spravuje svůj plán, doplňuje splněné tréninky a importuje aktivity
-- `Coach`: připravuje plán pro sebe i svěřence, organizuje skupiny a sleduje jejich tréninkový přehled
+| Vrstva | Technologie |
+|--------|-------------|
+| Frontend | Nuxt 3 (SSR pro veřejné stránky, SPA pro přihlášenou část) |
+| Backend | Django 5.2 + Django REST Framework |
+| Databáze | PostgreSQL |
+| Task queue | Celery + Redis (async Garmin sync, FIT parsing) |
+| Auth | django-allauth (email + Google OAuth) |
+| Python deps | uv + pyproject.toml |
+| Node deps | pnpm |
+| Kontejnerizace | Docker Compose + Nginx (reverse proxy) |
 
 ## Architektura
 
-Projekt je rozdělený do několika Django aplikací:
+```
+Nginx :80
+├── /api/*        → Django :8000   (REST API)
+├── /admin/*      → Django :8000   (Django admin)
+├── /static/*     → Django :8000   (statické soubory)
+├── /i18n/*       → Django :8000   (language switcher)
+├── /accounts/google/* → Django :8000  (OAuth callback)
+└── /*            → Nuxt :3000     (vše ostatní)
+```
 
-- `backend/accounts`
-  správa profilů, rolí, vazeb mezi trenéry a sportovci, skupin, pozvánek a Garmin připojení
-- `backend/training`
-  modely pro měsíce, týdny, plánované tréninky a dokončené tréninky
-- `backend/activities`
-  import a ukládání aktivit, souborů, intervalů, vzorků a import ledgeru
-- `backend/dashboard`
-  hlavní dashboard, coach rozhraní, servisní logika a endpointy pro interaktivní úpravy
-- `backend/templates` a `backend/static`
-  UI postavené nad Django templates s vlastním JavaScriptem a CSS
+### Nuxt renderovací strategie
 
-### Důležité URL
+| URL | Režim |
+|-----|-------|
+| `/`, `/about`, `/terms`, `/privacy` | SSR (server-side rendering pro SEO) |
+| `/app/**` | SPA (athlete dashboard) |
+| `/coach/**` | SPA (coach workspace) |
+| `/accounts/**` | SPA (allauth auth flow) |
 
-- `/` veřejná produktová stránka
-- `/app/` dashboard sportovce
-- `/coach/plans/` dashboard trenéra
-- `/accounts/` autentizace
-- `/admin/` administrační rozhraní
+### Struktura repozitáře
 
-## Doménový model
-
-Nejdůležitější entity v projektu:
-
-- `Profile`
-  role uživatele, stav legendy a coach join code
-- `CoachAthlete`
-  vazba trenér -> sportovec, fokus a pořadí v přehledu
-- `TrainingGroup` a `TrainingGroupInvite`
-  skupiny a pozvánky do skupiny
-- `TrainingMonth`, `TrainingWeek`, `PlannedTraining`, `CompletedTraining`
-  plánovací vrstva a evidence splnění
-- `Activity`, `ActivityFile`, `ActivityInterval`, `ActivitySample`
-  importované aktivity a jejich analytická reprezentace
-- `GarminConnection`, `GarminSyncAudit`, `ImportJob`
-  napojení na Garmin, audit synchronizací a stav importních úloh
-
-## Technologie
-
-- Python 3.12
-- Django 5.2
-- PostgreSQL
-- `django-allauth`
-- `fitparse`
-- `garminconnect`
-- server-rendered frontend s vlastním JS/CSS
-- Docker a Docker Compose
-
-## Struktura repozitáře
-
-```text
+```
 .
-├── backend/
-│   ├── accounts/
-│   ├── activities/
-│   ├── config/
-│   ├── dashboard/
-│   ├── templates/
-│   ├── training/
-│   └── manage.py
-├── docs/
-├── docker-compose.yml
-├── Dockerfile
-├── requirements.txt
-└── README.md
+├── backend/                  # Django backend
+│   ├── accounts/             # profily, role, Garmin připojení, ImportJob
+│   ├── activities/           # import aktivit, FIT soubory, intervaly
+│   ├── api/                  # DRF views + URL patterns
+│   ├── config/               # settings, urls, celery, wsgi
+│   ├── dashboard/            # servisní logika (handlers, Celery tasks)
+│   ├── templates/            # Django admin šablony
+│   └── training/             # plánované + splněné tréninky
+├── frontend/                 # Nuxt 3 frontend
+│   ├── assets/               # CSS design tokeny, fonty, public page CSS
+│   ├── components/           # Vue komponenty (ui/, training/, coach/, layout/)
+│   ├── composables/          # useGarminImport, useInlineEditor, useTrainingParser
+│   ├── i18n/locales/         # cs.json + en.json
+│   ├── layouts/              # default (AppShell), public (topbar+footer), auth
+│   ├── pages/                # file-based routing (index, about, terms, privacy, app/*, coach/*, accounts/*)
+│   ├── plugins/              # i18n-sync.client.ts (sync jazyka s Django)
+│   ├── stores/               # Pinia stores (auth, training, coach, notifications…)
+│   └── utils/                # apiFetch wrapper + api/ moduly
+├── nginx/                    # Nginx konfigurace a Dockerfile
+├── docs/                     # specs, implementační plány, visual style guide
+├── docker-compose.yml        # lokální dev stack
+├── docker-compose.prod.yml   # produkční stack (Traefik)
+└── Dockerfile                # multi-stage build (Nuxt → Django)
 ```
 
-## Požadavky
+## Role uživatelů
 
-Pro lokální vývoj budeš potřebovat:
+**Coach** — připravuje měsíční plány, spravuje sportovce a skupiny, sleduje plnění.  
+**Athlete** — vidí plán, zapisuje splněné tréninky, importuje aktivity.
 
-- Python 3.12 nebo novější
-- PostgreSQL
-- `pip`
+## Klíčové funkce
 
-Alternativně můžeš použít Docker Compose, což je v tomto projektu nejjednodušší cesta.
-
-## Rychlý start přes Docker
-
-### 1. Připrav konfiguraci
-
-Zkopíruj vzorový konfigurační soubor:
-
-```bash
-copy .env.example .env
-```
-
-Pro local Docker/Compose obvykle nech `POSTGRES_HOST=db`.
-
-Do `.env` doplň minimálně tyto hodnoty:
-
-```env
-DJANGO_SECRET_KEY=replace-with-long-random-secret-key
-POSTGRES_DB=endurobuddy
-POSTGRES_USER=endurobuddy
-POSTGRES_PASSWORD=endurobuddy_password
-DJANGO_DEBUG=true
-```
-
-### 2. Spusť aplikaci
-
-```bash
-docker compose up --build
-```
-
-### 3. Otevři projekt v prohlížeči
-
-```text
-http://127.0.0.1:8000
-```
-
-Kontejner `web` při startu automaticky spouští migrace a následně Django development server.
+- Registrace, přihlášení, potvrzení e-mailu, reset hesla (django-allauth)
+- Volitelný Google OAuth login
+- Propojení trenér ↔ sportovec přes join code a join requesty
+- Tréninkové skupiny a pozvánky přes token
+- Měsíční plánovací dashboard s týdenní strukturou
+- Inline editace plánovaných i splněných tréninků
+- Import aktivit z FIT souborů
+- Synchronizace s Garmin Connect (asynchronně přes Celery)
+- Deduplikace importu podle kontrolního součtu
+- Ukládání intervalů a vzorků pro analytiku
+- Bilingvní UI (čeština + angličtina)
+- Django admin pro správu dat
 
 ## Lokální vývoj
 
-Doporučený postup pro běžný vývoj je spustit PostgreSQL přes Docker Compose a Django lokálně ve vlastním virtuálním prostředí.
+### Požadavky
 
-### 1. Naklonuj repozitář
+- Docker a Docker Compose
+- Node.js 20+ a pnpm (pro frontend dev server)
+- Python 3.12+ a uv (pro backend mimo Docker)
 
-```bash
-git clone <repo-url>
-cd endurobuddy-private
-```
+### Rychlý start přes Docker
 
-### 2. Vytvoř a aktivuj virtuální prostředí
-
-```bash
-py -3.12 -m venv .venv
-.venv\Scripts\activate
-```
-
-### 3. Nainstaluj závislosti
-
-```bash
-pip install -r requirements.txt
-```
-
-### 4. Připrav `.env`
-
-Zkopíruj vzorový soubor:
+**1. Připrav konfiguraci**
 
 ```bash
 cp .env.example .env
 ```
 
-Ve Windows PowerShell můžeš použít i:
-
-```powershell
-Copy-Item .env.example .env
-```
-
-Pak v `.env` nastav alespoň:
+Do `.env` doplň minimálně:
 
 ```env
 DJANGO_SECRET_KEY=replace-with-long-random-secret-key
-DJANGO_DEBUG=true
-DJANGO_ALLOWED_HOSTS=127.0.0.1,localhost
 POSTGRES_DB=endurobuddy
 POSTGRES_USER=endurobuddy
 POSTGRES_PASSWORD=endurobuddy_password
-POSTGRES_HOST=127.0.0.1
-POSTGRES_PORT=5432
+REDIS_URL=redis://redis:6379/0
 ```
 
-Poznámky:
-
-- `DJANGO_SECRET_KEY` je povinný, bez něj aplikace nenaběhne
-- `DJANGO_ALLOWED_HOSTS=127.0.0.1,localhost` stačí pro lokální vývoj
-- hodnoty `POSTGRES_DB`, `POSTGRES_USER` a `POSTGRES_PASSWORD` musí odpovídat databázi, kterou spustíš níže přes Docker Compose
-
-Pokud chceš používat Google login nebo odesílání emailů přes SMTP, doplň také příslušné proměnné z `.env.example`.
-
-### 5. Spusť databázi
+**2. Spusť celý stack**
 
 ```bash
-docker compose up db -d
+docker compose up --build
 ```
 
-`docker-compose.yml` ve výchozím stavu vytvoří PostgreSQL s těmito údaji:
+Spustí: PostgreSQL, Redis, Django (web), Celery worker, Celery beat, Nuxt, Nginx.
 
-```env
-POSTGRES_DB=endurobuddy
-POSTGRES_USER=endurobuddy
-POSTGRES_PASSWORD=endurobuddy_password
+**3. Otevři v prohlížeči**
+
+```
+http://localhost/
 ```
 
-### 6. Proveď migrace
+---
+
+### Dev workflow (doporučeno)
+
+Pro rychlý iterativní vývoj spusť databázi a Redis přes Docker, Django a Nuxt lokálně.
+
+**Backend:**
 
 ```bash
+# Spusť závislosti
+docker compose up db redis -d
+
+# Aktivuj virtualenv s uv
 cd backend
+uv sync
+source ../.venv/Scripts/activate  # Windows: ..\.venv\Scripts\activate
+
+# Migrace
 python manage.py migrate
-```
 
-### 7. Volitelně vytvoř administrátora
-
-```bash
-python manage.py createsuperuser
-```
-
-### 8. Spusť vývojový server
-
-```bash
+# Django dev server
 python manage.py runserver
 ```
 
-## Konfigurace prostředí
+**Frontend:**
 
-Projekt používá zejména tyto proměnné prostředí:
+```bash
+cd frontend
+pnpm install
+pnpm dev
+```
 
-- `DJANGO_SECRET_KEY`
-- `DJANGO_DEBUG`
-- `DJANGO_ALLOWED_HOSTS`
-- `POSTGRES_DB`
-- `POSTGRES_USER`
-- `POSTGRES_PASSWORD`
-- `POSTGRES_HOST`
-- `POSTGRES_PORT`
-- `DJANGO_EMAIL_BACKEND`
-- `DJANGO_EMAIL_HOST`
-- `DJANGO_EMAIL_PORT`
-- `DJANGO_EMAIL_HOST_USER`
-- `DJANGO_EMAIL_HOST_PASSWORD`
-- `DJANGO_DEFAULT_FROM_EMAIL`
-- `GOOGLE_CLIENT_ID`
-- `GOOGLE_CLIENT_SECRET`
-- `GARMIN_SYNC_LIMIT`
-- `GARMIN_KMS_KEY_ID`
-- `GARMIN_KMS_KEYS`
-- `GARMIN_CONNECT_ENABLED`
-- `GARMIN_SYNC_ENABLED`
-- `IMPORT_TASK_MODE`
+Nuxt dev server běží na `:3000`, proxuje `/api/*` na Django `:8000`.
 
-### Poznámky ke konfiguraci
+---
 
-- bez `DJANGO_SECRET_KEY` aplikace nenaběhne
-- databáze je v `settings.py` nastavena na PostgreSQL
-- výchozí `IMPORT_TASK_MODE=inline` spouští import v procesu aplikace
-- pro Garmin synchronizaci je potřeba mít nakonfigurované ukládání tokenů
-- `GARMIN_CONNECT_ENABLED=false` schová a zablokuje nové připojení Garmin účtu
-- `GARMIN_SYNC_ENABLED=false` schová a zablokuje Garmin synchronizaci, ale ponechá možnost účet odpojit
+### Proměnné prostředí
+
+| Proměnná | Popis | Výchozí |
+|----------|-------|---------|
+| `DJANGO_SECRET_KEY` | Povinný klíč (bez něj aplikace nenaběhne) | — |
+| `DJANGO_DEBUG` | Debug režim | `false` |
+| `DJANGO_ALLOWED_HOSTS` | Povolené hosty | `localhost,127.0.0.1` |
+| `POSTGRES_*` | Databázové připojení | — |
+| `REDIS_URL` | Redis broker + cache | `redis://redis:6379/0` |
+| `REGISTRATION_ENABLED` | Zapnutí registrace | `true` |
+| `GARMIN_CONNECT_ENABLED` | Zobrazí/skryje Garmin napojení | `false` |
+| `GARMIN_SYNC_ENABLED` | Povolí synchronizaci | `false` |
+| `GARMIN_KMS_KEY_ID` | AWS KMS klíč pro šifrování tokenů | — |
+| `GOOGLE_CLIENT_ID` | Google OAuth Client ID | — |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth Client Secret | — |
 
 ## Demo data
-
-Repozitář obsahuje připravený management command pro naplnění demo prostředí:
 
 ```bash
 cd backend
 python manage.py seed_coach_demo
+# coach_demo@endurobuddy.local / demo12345
 ```
 
-Command vytvoří:
-
-- demo trenéra `coach_demo@endurobuddy.local`
-- tři demo sportovce
-- skupinu `A-team`
-- několik měsíců ukázkových plánů
-
-Všechny demo účty mají heslo `demo12345`.
+Vytvoří demo trenéra, tři sportovce, skupinu A-team a ukázkové měsíční plány.
 
 ## Testování
 
-Spuštění celé testovací sady:
+**Backend:**
 
 ```bash
 cd backend
-python manage.py test
+python -m pytest          # 125 testů
+python manage.py check    # Django system check
 ```
 
-Testy v projektu pokrývají mimo jiné:
+**Frontend:**
 
-- FIT import flow
-- Garmin importer
-- rekonstrukci intervalů
-- coach plánování
-- bezpečnost vybraných profile/settings akcí
-- frontend regresní scénáře dashboardu
+```bash
+cd frontend
+pnpm test     # 95 testů (Vitest)
+```
 
-## Užitečné soubory
+Pokrytí: FIT import flow, Garmin importer, Celery task dispatch, coach plánování, inline editace, bezpečnost profile/settings akcí.
 
-- `backend/inspect_fit.py`
-  jednoduchý nástroj pro inspekci struktury `.fit` souborů
-- `docs/wireframes/`
-  wireframy a návrhy obrazovek
-- `docker-compose.yml`
-  lokální stack pro web a PostgreSQL
+## Vizuální identita
+
+Design systém „Neon Lab × Swiss Precision" — kreativní energie s racionální čistotou.
+
+| Token | Hodnota |
+|-------|---------|
+| Pozadí | `#09090b` |
+| Surface | `#18181b` |
+| Primární akcent | `#c8ff00` (electric lime) |
+| Sekundární akcent | `#38bdf8` (crisp blue) |
+| Display font | Syne 700–800 |
+| Body font | Inter 400–600 |
+| Mono font | JetBrains Mono 500 |
+
+Detaily: [`docs/visual-style-guide.md`](docs/visual-style-guide.md)

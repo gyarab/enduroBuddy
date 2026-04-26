@@ -1,16 +1,3 @@
-# Stage 1: Build Vue SPA
-FROM node:20-alpine AS frontend-build
-
-WORKDIR /app/frontend
-
-COPY frontend/package*.json ./
-RUN npm ci
-
-COPY frontend/ ./
-RUN npm run build
-# Output: /app/backend/static_build/spa (per vite.config.ts outDir)
-
-# Stage 2: Django runtime
 FROM python:3.12-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -24,15 +11,14 @@ RUN apt-get update && apt-get install -y \
     netcat-openbsd \
     && rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt .
+RUN pip install uv
 
-RUN pip install --upgrade pip
-RUN pip install -r requirements.txt
+COPY backend/pyproject.toml backend/uv.lock ./
+RUN uv sync --frozen --no-dev
+
+ENV PATH="/app/.venv/bin:$PATH"
 
 COPY backend ./backend
-
-# Copy Vue build output from frontend stage
-COPY --from=frontend-build /app/backend/static_build ./backend/static_build
 
 WORKDIR /app/backend
 

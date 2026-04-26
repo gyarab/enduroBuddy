@@ -9,7 +9,6 @@ from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.http import JsonResponse
 from django.shortcuts import redirect
-from django.urls import reverse
 
 from accounts.models import CoachAthlete, CoachJoinRequest
 from accounts.services.notifications import notify_new_coach_join_request
@@ -20,7 +19,7 @@ from .views_shared import _resolve_coach_from_code
 @login_required
 def profile_manage(request):
     if request.method != "POST":
-        return redirect("dashboard_home")
+        return redirect("/app/")
 
     action = request.POST.get("action", "")
 
@@ -104,7 +103,7 @@ def _redirect_back(request):
     next_url = (request.POST.get("next") or "").strip()
     if next_url:
         return redirect(next_url)
-    return redirect(reverse("dashboard_home"))
+    return redirect("/app/")
 
 
 def _is_ajax(request) -> bool:

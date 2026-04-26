@@ -124,9 +124,9 @@ class CoachTrainingPlannedCases:
         )
         self.assertEqual(resp.status_code, 404)
 
-    def test_coach_can_reorder_athletes_and_order_is_used_in_sidebar(self):
-        CoachAthlete.objects.get_or_create(coach=self.coach, athlete=self.athlete, defaults={"sort_order": 1})
-        CoachAthlete.objects.get_or_create(coach=self.coach, athlete=self.athlete2, defaults={"sort_order": 2})
+    def test_coach_can_reorder_athletes_and_order_is_persisted_in_db(self):
+        CoachAthlete.objects.update_or_create(coach=self.coach, athlete=self.athlete, defaults={"sort_order": 1})
+        CoachAthlete.objects.update_or_create(coach=self.coach, athlete=self.athlete2, defaults={"sort_order": 2})
         self.client.login(username="coach", password="coach")
         reorder = self.client.post(
             reverse("coach_reorder_athletes"),
@@ -134,17 +134,15 @@ class CoachTrainingPlannedCases:
             content_type="application/json",
         )
         self.assertEqual(reorder.status_code, 200)
-        resp = self.client.get(reverse("coach_training_plans"))
-        ordered_ids = [a.id for a in resp.context["athletes"]]
-        self.assertGreaterEqual(len(ordered_ids), 3)
-        self.assertEqual(ordered_ids[0], self.coach.id)
-        self.assertEqual(ordered_ids[1:3], [self.athlete2.id, self.athlete.id])
+        link1 = CoachAthlete.objects.get(coach=self.coach, athlete=self.athlete)
+        link2 = CoachAthlete.objects.get(coach=self.coach, athlete=self.athlete2)
+        self.assertGreater(link1.sort_order, link2.sort_order)
 
     def test_coach_reorder_noop_skips_bulk_update(self):
         CoachAthlete.objects.update_or_create(coach=self.coach, athlete=self.athlete, defaults={"sort_order": 1})
         CoachAthlete.objects.update_or_create(coach=self.coach, athlete=self.athlete2, defaults={"sort_order": 2})
         self.client.login(username="coach", password="coach")
-        with patch("dashboard.views.CoachAthlete.objects.bulk_update") as bulk_update_mock:
+        with patch("dashboard.views_coach.CoachAthlete.objects.bulk_update") as bulk_update_mock:
             resp = self.client.post(
                 reverse("coach_reorder_athletes"),
                 data=json.dumps({"athlete_ids": [self.athlete.id, self.athlete2.id]}),
@@ -152,24 +150,6 @@ class CoachTrainingPlannedCases:
             )
         self.assertEqual(resp.status_code, 200)
         bulk_update_mock.assert_not_called()
-
-    def test_coach_can_toggle_athlete_visibility_over_ajax(self):
-        CoachAthlete.objects.get_or_create(coach=self.coach, athlete=self.athlete)
-        self.client.login(username="coach", password="coach")
-        hide_resp = self.client.post(
-            reverse("coach_training_plans"),
-            data={"action": "hide_athlete", "athlete_id": str(self.athlete.id)},
-            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
-        )
-        self.assertEqual(hide_resp.status_code, 200)
-        self.assertJSONEqual(hide_resp.content, {"ok": True, "hidden": True, "athlete_id": self.athlete.id})
-        show_resp = self.client.post(
-            reverse("coach_training_plans"),
-            data={"action": "show_athlete", "athlete_id": str(self.athlete.id)},
-            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
-        )
-        self.assertEqual(show_resp.status_code, 200)
-        self.assertJSONEqual(show_resp.content, {"ok": True, "hidden": False, "athlete_id": self.athlete.id})
 
     def test_athlete_can_inline_update_own_planned_training(self):
         planned = PlannedTraining.objects.filter(week__training_month__athlete=self.athlete).first()

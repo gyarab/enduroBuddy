@@ -14,6 +14,18 @@ services:
     networks:
       - backend
 
+  redis:
+    image: redis:7-alpine
+    container_name: endurobuddy-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - endurobuddy_redis:/var/lib/redis/data
+    networks:
+      - backend
+    command: redis-server --appendonly yes
+
   web:
     build:
       context: .
@@ -22,6 +34,7 @@ services:
     restart: unless-stopped
     depends_on:
       - db
+      - redis
     environment:
       POSTGRES_HOST: db
       DJANGO_DEBUG: "true"
@@ -35,24 +48,77 @@ services:
     networks:
       - backend
 
-  frontend:
-    image: node:20-alpine
-    container_name: endurobuddy-frontend
-    working_dir: /app/frontend
-    command: sh -c "npm ci && npm run dev"
+  celery-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: endurobuddy-celery-worker
+    restart: unless-stopped
+    command: sh -c "cd /app/backend && celery -A config worker -l info"
+    depends_on:
+      - db
+      - redis
+    env_file:
+      - .env
     environment:
-      DJANGO_ORIGIN: "http://web:8000"
+      POSTGRES_HOST: db
+      DJANGO_DEBUG: "true"
     volumes:
-      - ./frontend:/app/frontend
+      - ./backend:/app/backend
+    networks:
+      - backend
+
+  celery-beat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: endurobuddy-celery-beat
+    restart: unless-stopped
+    command: sh -c "cd /app/backend && celery -A config beat -l info"
+    depends_on:
+      - db
+      - redis
+    env_file:
+      - .env
+    environment:
+      POSTGRES_HOST: db
+      DJANGO_DEBUG: "true"
+    volumes:
+      - ./backend:/app/backend
+    networks:
+      - backend
+
+  nuxt:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: endurobuddy-nuxt
+    restart: unless-stopped
     ports:
-      - "5173:5173"
+      - "3000:3000"
+    environment:
+      NUXT_PUBLIC_API_BASE: /api/v1
     depends_on:
       - web
     networks:
       - backend
 
+  nginx:
+    build:
+      context: ./nginx
+    container_name: endurobuddy-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - web
+      - nuxt
+    networks:
+      - backend
+
 volumes:
   endurobuddy_pgdata:
+  endurobuddy_redis:
 
 networks:
   backend:

@@ -182,6 +182,7 @@ def build_completed_rows_for_week(planned_items: list[PlannedTraining], *, extra
     rows: list[dict[str, Any]] = []
     all_keys = set(grouped.keys()) | {("dated", activity_day) for activity_day in extra_by_day.keys()}
     for key in sorted(all_keys, key=lambda x: (x[0] == "undated", x[1])):
+        row_date = key[1] if key[0] == "dated" else None
         items = sorted(grouped.get(key, []), key=lambda x: (x.order_in_day, x.id))
         is_two_phase = any(x.is_two_phase_day for x in items)
         if items and is_two_phase:
@@ -194,6 +195,7 @@ def build_completed_rows_for_week(planned_items: list[PlannedTraining], *, extra
             phase_1_session_types = {x.activity.id: (x.session_type or PlannedTraining.SessionType.RUN) for x in phase_1_items if getattr(x, "activity", None)}
             phase_2_session_types = {x.activity.id: (x.session_type or PlannedTraining.SessionType.RUN) for x in phase_2_items if getattr(x, "activity", None)}
             phase_1_row = build_completed_row_from_activities(phase_1_activities, show_intervals=show_intervals_for(phase_1_items, phase_1_activities), planned_titles_by_activity_id=phase_1_titles, planned_session_types_by_activity_id=phase_1_session_types)
+            phase_1_row["date"] = row_date
             phase_1_row["planned_id"] = phase_1_items[0].id if phase_1_items else None
             phase_1_row["item_count"] = len(phase_1_items)
             phase_1_row["has_linked_activity"] = items_have_linked_activity(phase_1_items)
@@ -201,6 +203,7 @@ def build_completed_rows_for_week(planned_items: list[PlannedTraining], *, extra
                 apply_manual_overrides(phase_1_row, getattr(phase_1_items[0], "completed", None))
             rows.append(phase_1_row)
             phase_2_row = build_completed_row_from_activities(phase_2_activities, show_intervals=show_intervals_for(phase_2_items, phase_2_activities), planned_titles_by_activity_id=phase_2_titles, planned_session_types_by_activity_id=phase_2_session_types)
+            phase_2_row["date"] = row_date
             phase_2_row["planned_id"] = phase_2_items[0].id if phase_2_items else None
             phase_2_row["item_count"] = len(phase_2_items)
             phase_2_row["has_linked_activity"] = items_have_linked_activity(phase_2_items)
@@ -216,6 +219,7 @@ def build_completed_rows_for_week(planned_items: list[PlannedTraining], *, extra
             planned_titles = {x.activity.id: x.title or "" for x in items if getattr(x, "activity", None)}
             planned_session_types = {x.activity.id: (x.session_type or PlannedTraining.SessionType.RUN) for x in items if getattr(x, "activity", None)}
             row = build_completed_row_from_activities(day_activities, show_intervals=show_intervals_for(items, day_activities), planned_titles_by_activity_id=planned_titles, planned_session_types_by_activity_id=planned_session_types)
+            row["date"] = row_date
             row["planned_id"] = items[0].id if items else None
             row["item_count"] = len(items)
             row["has_linked_activity"] = items_have_linked_activity(items)
@@ -224,7 +228,9 @@ def build_completed_rows_for_week(planned_items: list[PlannedTraining], *, extra
             rows.append(row)
         if key[0] == "dated":
             for activity in sorted(extra_by_day.get(key[1], []), key=lambda a: (a.started_at is None, a.started_at, a.id)):
-                rows.append(build_completed_row_for_unplanned_activity(activity))
+                activity_row = build_completed_row_for_unplanned_activity(activity)
+                activity_row["date"] = row_date
+                rows.append(activity_row)
     return rows
 
 
