@@ -38,6 +38,7 @@ services:
     environment:
       POSTGRES_HOST: db
       DJANGO_DEBUG: "true"
+      REDIS_URL: redis://redis:6379/0
     env_file:
       - .env
     ports:
@@ -63,6 +64,7 @@ services:
     environment:
       POSTGRES_HOST: db
       DJANGO_DEBUG: "true"
+      REDIS_URL: redis://redis:6379/0
     volumes:
       - ./backend:/app/backend
     networks:
@@ -83,6 +85,7 @@ services:
     environment:
       POSTGRES_HOST: db
       DJANGO_DEBUG: "true"
+      REDIS_URL: redis://redis:6379/0
     volumes:
       - ./backend:/app/backend
     networks:
@@ -98,6 +101,7 @@ services:
       - "3000:3000"
     environment:
       NUXT_PUBLIC_API_BASE: /api/v1
+      NUXT_PUBLIC_APP_HOST: app.lvh.me
     depends_on:
       - web
     networks:
