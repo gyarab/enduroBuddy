@@ -93,37 +93,29 @@ Nginx :80
 - Node.js 20+ a pnpm (pro frontend dev server)
 - Python 3.12+ a uv (pro backend mimo Docker)
 
-### Rychlý start přes Docker
-
-**1. Připrav konfiguraci**
+### Konfigurace
 
 ```bash
 cp .env.example .env
 ```
 
-Do `.env` doplň minimálně:
+Vyplň povinné hodnoty — ostatní mají rozumné výchozí hodnoty pro dev:
 
-```env
-DJANGO_SECRET_KEY=replace-with-long-random-secret-key
-POSTGRES_DB=endurobuddy
-POSTGRES_USER=endurobuddy
-POSTGRES_PASSWORD=endurobuddy_password
-REDIS_URL=redis://redis:6379/0
-```
+| Proměnná | Dev | Produkce |
+|----------|-----|---------|
+| `DJANGO_SECRET_KEY` | libovolný řetězec | dlouhý náhodný klíč |
+| `POSTGRES_*` | `endurobuddy` / `endurobuddy_password` | produkční DB credentials |
+| `REDIS_URL` | `redis://127.0.0.1:6379/0` (native) nebo `redis://redis:6379/0` (Docker) | s heslem |
+| `DJANGO_ALLOWED_HOSTS` | `localhost,127.0.0.1` | seznam domén |
+| `DJANGO_CSRF_TRUSTED_ORIGINS` | `http://localhost:3000,http://localhost:8000` | https:// domény |
+| `DJANGO_CORS_ALLOWED_ORIGINS` | `http://localhost:3000` | https:// domény |
+| `GARMIN_CONNECT_ENABLED` | `false` | `true` (vyžaduje KMS klíč) |
+| `GOOGLE_CLIENT_ID/SECRET` | prázdné (OAuth disabled) | Google Console credentials |
+| `TRAEFIK_*` | není potřeba | pro produkční Traefik routing |
+| `SESSION/CSRF_COOKIE_DOMAIN` | není potřeba | `.endurobuddy.cz` pro subdomény |
+| `DJANGO_APP_HOST` | není potřeba | `app.endurobuddy.cz` |
 
-**2. Spusť celý stack**
-
-```bash
-docker compose up --build
-```
-
-Spustí: PostgreSQL, Redis, Django (web), Celery worker, Celery beat, Nuxt, Nginx.
-
-**3. Otevři v prohlížeči**
-
-```
-http://localhost/
-```
+Kompletní šablona se všemi proměnnými je v [.env.example](.env.example).
 
 ---
 
@@ -131,25 +123,23 @@ http://localhost/
 
 Pro rychlý iterativní vývoj spusť databázi a Redis přes Docker, Django a Nuxt lokálně.
 
-**Backend:**
+**1. Spusť závislosti**
 
 ```bash
-# Spusť závislosti
 docker compose up db redis -d
+```
 
-# Aktivuj virtualenv s uv
+**2. Backend**
+
+```bash
 cd backend
 uv sync
 source ../.venv/Scripts/activate  # Windows: ..\.venv\Scripts\activate
-
-# Migrace
 python manage.py migrate
-
-# Django dev server
 python manage.py runserver
 ```
 
-**Frontend:**
+**3. Frontend**
 
 ```bash
 cd frontend
@@ -157,25 +147,43 @@ pnpm install
 pnpm dev
 ```
 
-Nuxt dev server běží na `:3000`, proxuje `/api/*` na Django `:8000`.
+Nuxt běží na `http://localhost:3000`, Django na `http://localhost:8000`. Nuxt automaticky proxuje `/api/*` na Django.
 
 ---
 
-### Proměnné prostředí
+### Subdoménové testování
 
-| Proměnná | Popis | Výchozí |
-|----------|-------|---------|
-| `DJANGO_SECRET_KEY` | Povinný klíč (bez něj aplikace nenaběhne) | — |
-| `DJANGO_DEBUG` | Debug režim | `false` |
-| `DJANGO_ALLOWED_HOSTS` | Povolené hosty | `localhost,127.0.0.1` |
-| `POSTGRES_*` | Databázové připojení | — |
-| `REDIS_URL` | Redis broker + cache | `redis://redis:6379/0` |
-| `REGISTRATION_ENABLED` | Zapnutí registrace | `true` |
-| `GARMIN_CONNECT_ENABLED` | Zobrazí/skryje Garmin napojení | `false` |
-| `GARMIN_SYNC_ENABLED` | Povolí synchronizaci | `false` |
-| `GARMIN_KMS_KEY_ID` | AWS KMS klíč pro šifrování tokenů | — |
-| `GOOGLE_CLIENT_ID` | Google OAuth Client ID | — |
-| `GOOGLE_CLIENT_SECRET` | Google OAuth Client Secret | — |
+Ve výchozím stavu aplikace běží na `localhost` bez subdoménové logiky (`NUXT_PUBLIC_APP_HOST` je prázdný → middleware se nespustí).
+
+Pro testování přesměrování mezi `endurobuddy.local` a `app.endurobuddy.local`:
+
+**1. Přidej záznamy do hosts souboru** (otevři Notepad jako správce → `C:\Windows\System32\drivers\etc\hosts`):
+
+```
+127.0.0.1 endurobuddy.local
+127.0.0.1 app.endurobuddy.local
+```
+
+**2. Uprav `.env`:**
+
+```env
+DJANGO_APP_HOST=app.endurobuddy.local
+SESSION_COOKIE_DOMAIN=.endurobuddy.local
+CSRF_COOKIE_DOMAIN=.endurobuddy.local
+DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1,endurobuddy.local,app.endurobuddy.local
+DJANGO_CSRF_TRUSTED_ORIGINS=http://endurobuddy.local:3000,http://app.endurobuddy.local:3000,http://endurobuddy.local:8000,http://app.endurobuddy.local:8000
+DJANGO_CORS_ALLOWED_ORIGINS=http://endurobuddy.local:3000,http://app.endurobuddy.local:3000
+```
+
+**3. Přidej `frontend/.env`** (čte ho Nuxt dev server, není v gitu):
+
+```bash
+echo "NUXT_PUBLIC_APP_HOST=app.endurobuddy.local" > frontend/.env
+```
+
+Pak: `http://endurobuddy.local:3000` → veřejná část, `http://app.endurobuddy.local:3000` → přihlášená část.
+
+> **Poznámka:** Cross-domain redirecty v middleware používají `https://`, takže na HTTP localhost selžou. Přímá navigace na správnou URL funguje normálně.
 
 ## Demo data
 

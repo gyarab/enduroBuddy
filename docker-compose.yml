@@ -101,7 +101,6 @@ services:
       - "3000:3000"
     environment:
       NUXT_PUBLIC_API_BASE: /api/v1
-      NUXT_PUBLIC_APP_HOST: app.lvh.me
     depends_on:
       - web
     networks:
