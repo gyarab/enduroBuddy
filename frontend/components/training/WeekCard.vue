@@ -130,6 +130,7 @@ interface RowEdit {
   // ui
   isSaving: boolean;
   isDirty: boolean;
+  closeAfterSave: boolean;
   debounceTimer: ReturnType<typeof setTimeout> | null;
   focusField: string;
 }
@@ -201,6 +202,7 @@ function openEdit(slot: DaySlot, focusField = "title", zone: "planned" | "comple
     maxHr: completed?.completed_metrics?.max_hr?.toString() ?? "",
     isSaving: false,
     isDirty: false,
+    closeAfterSave: false,
     debounceTimer: null,
     focusField,
   });
