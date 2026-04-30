@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, reactive, ref } from "vue";
+import { computed, nextTick, reactive, ref } from "vue";
 
 import type { DashboardWeek, TrainingRow, PlannedTrainingDraft } from "~/utils/api/training";
 import { garminWeekSync } from "~/utils/api/imports";
@@ -164,7 +164,7 @@ function openEdit(slot: DaySlot, focusField = "title", zone: "planned" | "comple
         clearTimeout(existing.debounceTimer);
         existing.debounceTimer = null;
       }
-      saveRow(slot, existing);
+      void autoSave(slot, existing);
     }
     existing.activeZone = zone;
     existing.focusField = focusField;
@@ -206,7 +206,94 @@ function openEdit(slot: DaySlot, focusField = "title", zone: "planned" | "comple
   });
 }
 
-async function saveRow(slot: DaySlot, edit: RowEdit) {
+// ── Flash feedback ────────────────────────────────────────────
+const flashingRows = reactive<Set<string>>(new Set())
+const flashingPlannedOk = reactive<Set<string>>(new Set())
+const flashingCompletedOk = reactive<Set<string>>(new Set())
+const flashingError = reactive<Set<string>>(new Set())
+
+function flashRow(date: string) {
+  flashingRows.add(date)
+  setTimeout(() => flashingRows.delete(date), 600)
+}
+
+function flashZoneOk(date: string, zone: "planned" | "completed") {
+  const set = zone === "planned" ? flashingPlannedOk : flashingCompletedOk
+  set.add(date)
+  setTimeout(() => set.delete(date), 700)
+}
+
+function flashZoneErr(date: string) {
+  flashingError.add(date)
+  setTimeout(() => flashingError.delete(date), 700)
+}
+
+// ── Shared API call logic ─────────────────────────────────────
+async function performSaveApiCalls(slot: DaySlot, edit: RowEdit): Promise<void> {
+  if (edit.isCreating && edit.title.trim()) {
+    const draft: PlannedTrainingDraft = {
+      date: slot.date,
+      title: edit.title.trim(),
+      notes: edit.notes.trim(),
+      session_type: edit.sessionType,
+    };
+    if (props.editorContext === "coach") {
+      await coachStore.addPlannedTraining(draft);
+    } else {
+      await trainingStore.addPlannedTraining(draft);
+    }
+  } else if (edit.plannedId) {
+    const planned = slot.planned.find((r) => r.id === edit.plannedId);
+    const updates: { field: "title" | "notes" | "session_type"; value: string }[] = [];
+    const origTitle = planned ? (planned.title === "-" ? "" : planned.title) : "";
+    if (edit.title.trim() !== origTitle) updates.push({ field: "title", value: edit.title.trim() });
+    if (edit.notes.trim() !== (planned?.notes ?? "")) updates.push({ field: "notes", value: edit.notes.trim() });
+    if (edit.sessionType !== planned?.session_type) updates.push({ field: "session_type", value: edit.sessionType });
+    if (updates.length > 0) {
+      if (props.editorContext === "coach") {
+        await coachStore.savePlannedDraft(edit.plannedId, updates);
+      } else {
+        await trainingStore.savePlannedDraft(edit.plannedId, updates);
+      }
+    }
+  }
+
+  if (edit.completedId) {
+    const completed = slot.completed[0];
+    const updates: { field: "km" | "min" | "third" | "avg_hr" | "max_hr"; value: string }[] = [];
+    if (edit.km.trim() !== (completed?.completed_metrics?.km ?? "")) updates.push({ field: "km", value: edit.km.trim() });
+    if (edit.minutes.trim() !== (completed?.completed_metrics?.minutes ?? "")) updates.push({ field: "min", value: edit.minutes.trim() });
+    if (edit.details.trim() !== (completed?.completed_metrics?.details ?? "")) updates.push({ field: "third", value: edit.details.trim() });
+    if (edit.avgHr.trim() !== (completed?.completed_metrics?.avg_hr?.toString() ?? "")) updates.push({ field: "avg_hr", value: edit.avgHr.trim() });
+    if (edit.maxHr.trim() !== (completed?.completed_metrics?.max_hr?.toString() ?? "")) updates.push({ field: "max_hr", value: edit.maxHr.trim() });
+    if (updates.length > 0) {
+      await trainingStore.saveCompletedDraft(edit.completedId, updates);
+    }
+  }
+}
+
+// ── Auto-save (keeps edit open) ───────────────────────────────
+async function autoSave(slot: DaySlot, edit: RowEdit) {
+  if (!edit.isDirty || edit.isSaving) return;
+  edit.isSaving = true;
+  const zone = edit.activeZone;
+  try {
+    await performSaveApiCalls(slot, edit);
+    edit.isDirty = false;
+    flashZoneOk(slot.date, zone);
+    if (edit.completedId && slot.completed.length === 0) {
+      await trainingStore.loadDashboard(trainingStore.selectedMonthValue, { silent: true });
+    }
+  } catch (err) {
+    flashZoneErr(slot.date);
+    toastStore.push(err instanceof Error ? err.message : t("weekCard.createError"), "danger");
+  } finally {
+    edit.isSaving = false;
+  }
+}
+
+// ── Close + save (used on focusout / keyboard nav away) ───────
+async function closeAndSave(slot: DaySlot, edit: RowEdit) {
   if (!edit.isDirty) {
     editingRows.delete(slot.date);
     return;
@@ -214,71 +301,22 @@ async function saveRow(slot: DaySlot, edit: RowEdit) {
   if (edit.isSaving) return;
   edit.isSaving = true;
   try {
-    // Save / create planned
-    if (edit.isCreating && edit.title.trim()) {
-      const draft: PlannedTrainingDraft = {
-        date: slot.date,
-        title: edit.title.trim(),
-        notes: edit.notes.trim(),
-        session_type: edit.sessionType,
-      };
-      if (props.editorContext === "coach") {
-        await coachStore.addPlannedTraining(draft);
-      } else {
-        await trainingStore.addPlannedTraining(draft);
-      }
-    } else if (edit.plannedId) {
-      const planned = slot.planned.find((r) => r.id === edit.plannedId);
-      const updates: { field: "title" | "notes" | "session_type"; value: string }[] = [];
-      const origTitle = planned ? (planned.title === "-" ? "" : planned.title) : "";
-      if (edit.title.trim() !== origTitle) updates.push({ field: "title", value: edit.title.trim() });
-      if (edit.notes.trim() !== (planned?.notes ?? "")) updates.push({ field: "notes", value: edit.notes.trim() });
-      if (edit.sessionType !== planned?.session_type) updates.push({ field: "session_type", value: edit.sessionType });
-      if (updates.length > 0) {
-        if (props.editorContext === "coach") {
-          await coachStore.savePlannedDraft(edit.plannedId, updates);
-        } else {
-          await trainingStore.savePlannedDraft(edit.plannedId, updates);
-        }
-      }
-    }
-
-    // Save completed
-    if (edit.completedId) {
-      const completed = slot.completed[0];
-      const updates: { field: "km" | "min" | "third" | "avg_hr" | "max_hr"; value: string }[] = [];
-      if (edit.km.trim() !== (completed?.completed_metrics?.km ?? "")) updates.push({ field: "km", value: edit.km.trim() });
-      if (edit.minutes.trim() !== (completed?.completed_metrics?.minutes ?? "")) updates.push({ field: "min", value: edit.minutes.trim() });
-      if (edit.details.trim() !== (completed?.completed_metrics?.details ?? "")) updates.push({ field: "third", value: edit.details.trim() });
-      if (edit.avgHr.trim() !== (completed?.completed_metrics?.avg_hr?.toString() ?? "")) updates.push({ field: "avg_hr", value: edit.avgHr.trim() });
-      if (edit.maxHr.trim() !== (completed?.completed_metrics?.max_hr?.toString() ?? "")) updates.push({ field: "max_hr", value: edit.maxHr.trim() });
-      if (updates.length > 0) {
-        await trainingStore.saveCompletedDraft(edit.completedId, updates);
-      }
-    }
-
+    await performSaveApiCalls(slot, edit);
     editingRows.delete(slot.date);
     flashRow(slot.date);
-    // If we just created a new completed record, reload to get server data
     if (edit.completedId && slot.completed.length === 0) {
       await trainingStore.loadDashboard(trainingStore.selectedMonthValue, { silent: true });
     }
   } catch (err) {
+    editingRows.delete(slot.date);
+    flashZoneErr(slot.date);
     toastStore.push(err instanceof Error ? err.message : t("weekCard.createError"), "danger");
   } finally {
     edit.isSaving = false;
   }
 }
 
-// ── Flash feedback ───────────────────────────────────────────
-const flashingRows = reactive<Set<string>>(new Set());
-
-function flashRow(date: string) {
-  flashingRows.add(date);
-  setTimeout(() => flashingRows.delete(date), 600);
-}
-
-// ── Auto-save helpers ────────────────────────────────────────
+// ── Auto-save helpers ─────────────────────────────────────────
 function onFieldInput(date: string, slot: DaySlot) {
   const edit = editingRows.get(date);
   if (!edit) return;
@@ -286,7 +324,7 @@ function onFieldInput(date: string, slot: DaySlot) {
   if (edit.debounceTimer) clearTimeout(edit.debounceTimer);
   edit.debounceTimer = setTimeout(() => {
     edit.debounceTimer = null;
-    saveRow(slot, edit);
+    void autoSave(slot, edit);
   }, 1000);
 }
 
@@ -299,7 +337,7 @@ function onRowFocusOut(slot: DaySlot, event: FocusEvent) {
     clearTimeout(edit.debounceTimer);
     edit.debounceTimer = null;
   }
-  saveRow(slot, edit);
+  void closeAndSave(slot, edit);
 }
 
 function canEditCompleted(slot: DaySlot): boolean {
@@ -381,6 +419,9 @@ async function toggleSessionType(slot: DaySlot) {
             'wt__row--done': slot.completed[0]?.status === 'done',
             'wt__row--missed': slot.completed[0]?.status === 'missed',
             'wt__row--saved': flashingRows.has(slot.date),
+            'wt__row--flash-planned-ok': flashingPlannedOk.has(slot.date),
+            'wt__row--flash-completed-ok': flashingCompletedOk.has(slot.date),
+            'wt__row--flash-err': flashingError.has(slot.date),
           }"
           @focusout="onRowFocusOut(slot, $event)"
         >
@@ -657,6 +698,29 @@ async function toggleSessionType(slot: DaySlot) {
 @keyframes row-saved-flash {
   0%   { background-color: rgba(200,255,0,.12); }
   100% { background-color: transparent; }
+}
+
+@keyframes zone-ok {
+  0%   { background-color: rgba(200, 255, 0, .22); }
+  100% { background-color: rgba(200, 255, 0, .07); }
+}
+
+@keyframes zone-err {
+  0%   { background-color: rgba(244, 63, 94, .20); }
+  100% { background-color: transparent; }
+}
+
+.wt__row--flash-planned-ok .wt__cell-p {
+  animation: zone-ok 700ms ease-out forwards;
+}
+
+.wt__row--flash-completed-ok .wt__cell-c {
+  animation: zone-ok 700ms ease-out forwards;
+}
+
+.wt__row--flash-err .wt__cell-p,
+.wt__row--flash-err .wt__cell-c {
+  animation: zone-err 700ms ease-out forwards;
 }
 
 /* ── Cells ── */

@@ -1,6 +1,7 @@
 import { createPinia, setActivePinia } from "pinia";
 import { mount } from "@vue/test-utils";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, afterEach, describe, expect, it, vi } from "vitest";
+import { nextTick } from "vue";
 
 import type { DashboardWeek } from "~/utils/api/training";
 import WeekCard from "./WeekCard.vue";
@@ -172,3 +173,70 @@ describe("WeekCard — inline save", () => {
     ]);
   });
 });
+
+describe("WeekCard — auto-save keeps edit open", () => {
+  beforeEach(() => {
+    setActivePinia(createPinia());
+    vi.useFakeTimers()
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  it("edit input is still visible after 1-second debounce save", async () => {
+    const wrapper = mountWeekCard()
+    const trainingStore = useTrainingStore()
+    trainingStore.savePlannedDraft = vi.fn().mockResolvedValue(undefined)
+
+    await wrapper.find(`[data-testid="cell-title-${DATE}"]`).trigger("click")
+    await wrapper.find(`[data-testid="input-title-${DATE}"]`).setValue("10 km easy")
+    await wrapper.find(`[data-testid="input-title-${DATE}"]`).trigger("input")
+    await vi.advanceTimersByTimeAsync(1100)
+    await nextTick()
+
+    expect(wrapper.find(`[data-testid="input-title-${DATE}"]`).exists()).toBe(true)
+  })
+
+  it("focusout still closes the edit", async () => {
+    const wrapper = mountWeekCard()
+    const trainingStore = useTrainingStore()
+    trainingStore.savePlannedDraft = vi.fn().mockResolvedValue(undefined)
+
+    await wrapper.find(`[data-testid="cell-title-${DATE}"]`).trigger("click")
+    await wrapper.find(`[data-testid="input-title-${DATE}"]`).setValue("10 km easy")
+    await wrapper.find(`[data-testid="input-title-${DATE}"]`).trigger("input")
+    await wrapper.find(".wt__row").trigger("focusout", { relatedTarget: document.body })
+    await nextTick()
+
+    expect(wrapper.find(`[data-testid="input-title-${DATE}"]`).exists()).toBe(false)
+  })
+
+  it("successful auto-save adds wt__row--flash-planned-ok class", async () => {
+    const wrapper = mountWeekCard()
+    const trainingStore = useTrainingStore()
+    trainingStore.savePlannedDraft = vi.fn().mockResolvedValue(undefined)
+
+    await wrapper.find(`[data-testid="cell-title-${DATE}"]`).trigger("click")
+    await wrapper.find(`[data-testid="input-title-${DATE}"]`).setValue("10 km easy")
+    await wrapper.find(`[data-testid="input-title-${DATE}"]`).trigger("input")
+    await vi.advanceTimersByTimeAsync(1100)
+    await nextTick()
+
+    expect(wrapper.find(".wt__row").classes()).toContain("wt__row--flash-planned-ok")
+  })
+
+  it("failed auto-save adds wt__row--flash-err class", async () => {
+    const wrapper = mountWeekCard()
+    const trainingStore = useTrainingStore()
+    trainingStore.savePlannedDraft = vi.fn().mockRejectedValue(new Error("Network error"))
+
+    await wrapper.find(`[data-testid="cell-title-${DATE}"]`).trigger("click")
+    await wrapper.find(`[data-testid="input-title-${DATE}"]`).setValue("10 km easy")
+    await wrapper.find(`[data-testid="input-title-${DATE}"]`).trigger("input")
+    await vi.advanceTimersByTimeAsync(1100)
+    await nextTick()
+
+    expect(wrapper.find(".wt__row").classes()).toContain("wt__row--flash-err")
+  })
+})
