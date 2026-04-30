@@ -18,6 +18,7 @@ export default defineNuxtConfig({
     "/about": { ssr: true },
     "/terms": { ssr: true },
     "/privacy": { ssr: true },
+    "/dashboard": { ssr: false },
     "/app/**": { ssr: false },
     "/coach/**": { ssr: false },
     "/accounts/**": { ssr: false },

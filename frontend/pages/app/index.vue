@@ -1,3 +1,3 @@
 <script setup lang="ts">
-navigateTo("/app/dashboard", { replace: true })
+navigateTo("/dashboard", { replace: true })
 </script>

@@ -1087,7 +1087,7 @@ watch(
           <button class="auth-flow-button auth-flow-button--primary" type="button" :disabled="isSubmitting" @click="submitLogout">
             {{ isSubmitting ? "Odhlasuji..." : "Odhlásit se" }}
           </button>
-          <RouterLink class="auth-flow-button auth-flow-button--secondary" to="/app/dashboard">Zpět</RouterLink>
+          <RouterLink class="auth-flow-button auth-flow-button--secondary" to="/dashboard">Zpět</RouterLink>
         </div>
 
         <div v-else-if="screen === 'inactive'" class="auth-flow-card auth-flow-card--status">
@@ -1144,7 +1144,7 @@ watch(
           <button class="auth-flow-button auth-flow-button--primary" type="button" @click="navigateTo(socialConnectionsState.connectGoogleUrl)">
             Připojit Google účet
           </button>
-          <RouterLink class="auth-flow-button auth-flow-button--secondary" to="/app/dashboard">Zpět do aplikace</RouterLink>
+          <RouterLink class="auth-flow-button auth-flow-button--secondary" to="/dashboard">Zpět do aplikace</RouterLink>
         </div>
 
         <div v-else-if="screen === 'reauthenticate'" class="auth-flow-card">

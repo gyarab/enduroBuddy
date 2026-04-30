@@ -24,11 +24,11 @@ vi.mock("@/stores/training", () => ({
   useTrainingStore: vi.fn(() => mockTrainingStore),
 }));
 
-function makeRouter(path = "/app/dashboard") {
+function makeRouter(path = "/dashboard") {
   const router = createRouter({
     history: createMemoryHistory(),
     routes: [
-      { path: "/app/dashboard", component: { template: "<div/>" } },
+      { path: "/dashboard", component: { template: "<div/>" } },
       { path: "/coach/plans", component: { template: "<div/>" } },
       { path: "/app/profile/complete", component: { template: "<div/>" } },
     ],
@@ -60,14 +60,14 @@ describe("TopNav", () => {
     expect(wrapper.find('img[alt="EnduroBuddy"]').exists()).toBe(true);
   });
 
-  it("athlete variant brand link points to /app/dashboard", async () => {
-    const router = makeRouter("/app/dashboard");
+  it("athlete variant brand link points to /dashboard", async () => {
+    const router = makeRouter("/dashboard");
     await router.isReady();
     const wrapper = mount(TopNav, {
       props: { variant: "athlete" },
       global: { plugins: [router, pinia] },
     });
-    expect(wrapper.find("a.top-nav__brand").attributes("href")).toBe("/app/dashboard");
+    expect(wrapper.find("a.top-nav__brand").attributes("href")).toBe("/dashboard");
   });
 
   it("coach variant brand link points to /coach/plans", async () => {
@@ -144,8 +144,8 @@ describe("TopNav", () => {
     expect(wrapper.find(".top-nav__title").text()).toBe("Complete Profile");
   });
 
-  it("shows dashboard title on /app/dashboard path", async () => {
-    const router = makeRouter("/app/dashboard");
+  it("shows dashboard title on /dashboard path", async () => {
+    const router = makeRouter("/dashboard");
     await router.isReady();
     const wrapper = mount(TopNav, {
       props: { variant: "athlete" },

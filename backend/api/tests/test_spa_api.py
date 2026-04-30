@@ -157,7 +157,7 @@ class SpaApiEndpointTests(TestCase):
         get_payload = get_response.json()
         self.assertTrue(get_payload["ok"])
         self.assertEqual(get_payload["profile"]["email"], "athlete@example.com")
-        self.assertEqual(get_payload["profile"]["default_app_route"], "/app/dashboard")
+        self.assertEqual(get_payload["profile"]["default_app_route"], "/dashboard")
         self.assertEqual(get_payload["profile"]["password_change_url"], "/accounts/password/change/")
 
         self.assertEqual(patch_response.status_code, 200)

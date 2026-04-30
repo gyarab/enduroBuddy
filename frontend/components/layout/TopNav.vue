@@ -86,7 +86,7 @@ onBeforeUnmount(() => {
 <template>
   <header class="top-nav">
     <div class="top-nav__inner">
-      <a class="top-nav__brand" :href="props.variant === 'coach' ? '/coach/plans' : '/app/dashboard'">
+      <a class="top-nav__brand" :href="props.variant === 'coach' ? '/coach/plans' : '/dashboard'">
         <img class="top-nav__logo-full" :src="logoFullUrl" alt="EnduroBuddy" />
         <img class="top-nav__logo-mark" :src="logoMarkUrl" alt="EB" />
       </a>

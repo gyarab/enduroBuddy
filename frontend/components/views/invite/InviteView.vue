@@ -34,7 +34,7 @@ async function accept() {
   try {
     await acceptInvite(token);
     accepted.value = true;
-    setTimeout(() => void router.push("/app/dashboard"), 2000);
+    setTimeout(() => void router.push("/dashboard"), 2000);
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : t("invite.error");
   } finally {

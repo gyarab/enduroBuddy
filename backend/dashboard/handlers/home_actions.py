@@ -56,7 +56,7 @@ def handle_home_post(request, *, logger, queue_garmin_sync_job_for_user):
             messages.success(request, HomeText.month_created(weeks_created=weeks_created, days_created=days_created))
         else:
             messages.info(request, HomeText.month_extended(weeks_created=weeks_created, days_created=days_created))
-        return redirect("/app/dashboard")
+        return redirect("/dashboard")
 
     source = request.POST.get("import_source", "fit_upload")
     if source == "garmin_connect":
@@ -138,7 +138,7 @@ def _handle_garmin_revoke(request):
 def _handle_garmin_sync(request, *, logger, queue_garmin_sync_job_for_user):
     if not settings.GARMIN_SYNC_ENABLED:
         messages.warning(request, HomeText.GARMIN_SYNC_DISABLED)
-        return redirect("/app/dashboard")
+        return redirect("/dashboard")
     selected_range = request.POST.get("garmin_range", "last_30_days")
     if selected_range not in GARMIN_RANGE_OPTIONS:
         selected_range = "last_30_days"
@@ -186,7 +186,7 @@ def _handle_garmin_sync(request, *, logger, queue_garmin_sync_job_for_user):
             message="Unexpected Garmin sync error.",
         )
         messages.error(request, HomeText.GARMIN_SYNC_FAILED)
-    return redirect("/app/dashboard")
+    return redirect("/dashboard")
 
 
 def _handle_fit_import(request, *, logger):
@@ -244,4 +244,4 @@ def _home_response(request, *, ok: bool, message: str, tone: str, status: int = 
         "secondary": "info",
     }.get(tone, "info")
     getattr(messages, level)(request, message)
-    return redirect("/app/dashboard")
+    return redirect("/dashboard")

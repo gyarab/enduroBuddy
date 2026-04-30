@@ -78,7 +78,7 @@ def _default_route_for_user(user) -> str:
     )
     if has_incomplete_google_profile:
         return _app_url("/app/profile/complete")
-    return _app_url("/coach/plans" if role == Role.COACH else "/app/dashboard")
+    return _app_url("/coach/plans" if role == Role.COACH else "/dashboard")
 
 
 def _get_email_confirmation_or_none(key: str):

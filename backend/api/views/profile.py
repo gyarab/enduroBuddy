@@ -20,7 +20,7 @@ def _app_url(path: str) -> str:
 
 
 def _default_app_route_for_role(role: str) -> str:
-    path = "/coach/plans" if role == Role.COACH else "/app/dashboard"
+    path = "/coach/plans" if role == Role.COACH else "/dashboard"
     return _app_url(path)
 
 

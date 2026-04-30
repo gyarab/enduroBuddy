@@ -10,7 +10,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
   const isAppDomain = currentHost === appHost
   const isPublicDomain = !isAppDomain
 
-  const APP_PATHS = ["/app/", "/coach/"]
+  const APP_PATHS = ["/dashboard", "/app/", "/coach/"]
   const isAppPath = APP_PATHS.some((p) => to.path.startsWith(p))
 
   // App domain + public path → redirect to public domain
@@ -34,7 +34,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
     // Public domain + authenticated + public page → redirect to app domain
     const PUBLIC_PAGES = ["/", "/about", "/terms", "/privacy"]
     if (isPublicDomain && PUBLIC_PAGES.includes(to.path) && auth.isAuthenticated) {
-      const target = auth.isCoach ? "/coach/plans" : "/app/dashboard"
+      const target = auth.isCoach ? "/coach/plans" : "/dashboard"
       return navigateTo(`https://${appHost}${target}`, { external: true })
     }
 
