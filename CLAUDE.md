@@ -443,6 +443,22 @@ V `config/urls.py` jsou SPA routes `/app/*` definovány **před** `include("dash
 
 ---
 
+### 2026-04-30 — WeekCard: editing UX + keyboard navigation ✅ KOMPLETNÍ
+
+**Spec:** `docs/superpowers/specs/2026-04-30-weekcard-editing-ux.md`
+**Plán:** `docs/superpowers/plans/2026-04-30-weekcard-editing-ux.md`
+
+- `autoSave` ponechá edit otevřený po debounce uložení; `closeAndSave` zavírá při focusout
+- `closeAfterSave` flag zajistí zavření i když focusout přijde během in-flight API callu
+- Zone flash: zelená animace na buňkách aktivní zóny při úspěchu, červená při chybě
+- Planned zóna animace končí na transparent (ne lime), aby nepřepisovala modré editační pozadí
+- Klávesnicová navigace: Tab/Shift+Tab (pole+řádky), Enter/Shift+Enter (sloupec), Arrow keys
+- Cross-week: WeekCard emituje `navigate-out-next/prev`, AthleteView + CoachView volají `focusCell`
+- `defineExpose({ focusCell })` umožňuje parent komponentám zaměřit konkrétní pole v libovolném týdnu
+- Celkem: 15 testů v `WeekCard.test.ts`, všechny zelené
+
+---
+
 ### 2026-04-26 — Django templates: pouze admin + email ✅ KOMPLETNÍ
 
 **Cíl:** Django renderuje HTML pouze pro `/admin/`. Vše ostatní obsluhuje Nuxt.
