@@ -240,3 +240,67 @@ describe("WeekCard — auto-save keeps edit open", () => {
     expect(wrapper.find(".wt__row").classes()).toContain("wt__row--flash-err")
   })
 })
+
+describe("WeekCard — keyboard navigation", () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+  })
+
+  it("Tab in title moves focus to notes in same row", async () => {
+    const wrapper = mountWeekCard()
+    await wrapper.find(`[data-testid="cell-title-${DATE}"]`).trigger("click")
+    await wrapper.find('[data-field="title"]').trigger("keydown", { key: "Tab", shiftKey: false })
+    await nextTick()
+
+    expect(wrapper.find('[data-field="notes"]').exists()).toBe(true)
+    expect(wrapper.find('[data-field="km"]').exists()).toBe(false)
+  })
+
+  it("Enter in title moves to title of next day", async () => {
+    const week = buildWeek({
+      planned_rows: [
+        { id: 10, kind: "planned", status: "planned", date: "2026-05-01", day_label: "Po",
+          title: "Run", notes: "", session_type: "RUN", planned_metrics: null,
+          completed_metrics: null, editable: true, is_second_phase: false,
+          can_add_second_phase: false, can_remove_second_phase: false, has_linked_activity: false },
+        { id: 11, kind: "planned", status: "planned", date: "2026-05-02", day_label: "Út",
+          title: "Rest", notes: "", session_type: "RUN", planned_metrics: null,
+          completed_metrics: null, editable: true, is_second_phase: false,
+          can_add_second_phase: false, can_remove_second_phase: false, has_linked_activity: false },
+      ],
+    })
+    const wrapper = mountWeekCard(week)
+
+    await wrapper.find('[data-testid="cell-title-2026-05-01"]').trigger("click")
+    await wrapper.find('[data-field="title"][data-date="2026-05-01"]').trigger("keydown", { key: "Enter", shiftKey: false })
+    await nextTick()
+
+    expect(wrapper.find('[data-field="title"][data-date="2026-05-02"]').exists()).toBe(true)
+  })
+
+  it("Tab on last planned field of last day emits navigate-out-next", async () => {
+    const singleDayWeek = buildWeek({ week_start: DATE, week_end: DATE })
+    const wrapper = mountWeekCard(singleDayWeek)
+
+    await wrapper.find(`[data-testid="cell-title-${DATE}"]`).trigger("click")
+    await wrapper.find('[data-field="title"]').trigger("keydown", { key: "Tab", shiftKey: false })
+    await nextTick()
+    await wrapper.find('[data-field="notes"]').trigger("keydown", { key: "Tab", shiftKey: false })
+    await nextTick()
+
+    expect(wrapper.emitted("navigate-out-next")).toBeTruthy()
+    expect(wrapper.emitted("navigate-out-next")![0][0]).toEqual({ field: "title", zone: "planned" })
+  })
+
+  it("Shift+Tab on first planned field of first day emits navigate-out-prev", async () => {
+    const singleDayWeek = buildWeek({ week_start: DATE, week_end: DATE })
+    const wrapper = mountWeekCard(singleDayWeek)
+
+    await wrapper.find(`[data-testid="cell-title-${DATE}"]`).trigger("click")
+    await wrapper.find('[data-field="title"]').trigger("keydown", { key: "Tab", shiftKey: true })
+    await nextTick()
+
+    expect(wrapper.emitted("navigate-out-prev")).toBeTruthy()
+    expect(wrapper.emitted("navigate-out-prev")![0][0]).toEqual({ field: "notes", zone: "planned" })
+  })
+})

@@ -14,6 +14,14 @@ const props = defineProps<{
   editorContext?: "athlete" | "coach";
 }>();
 
+const emit = defineEmits<{
+  "navigate-out-next": [payload: { field: string; zone: "planned" | "completed" }]
+  "navigate-out-prev": [payload: { field: string; zone: "planned" | "completed" }]
+}>()
+
+const PLANNED_FIELDS = ["title", "notes"] as const
+const COMPLETED_FIELDS = ["km", "minutes", "details", "avgHr", "maxHr"] as const
+
 const { t, locale } = useI18n();
 const authStore = useAuthStore();
 const trainingStore = useTrainingStore();
@@ -154,7 +162,10 @@ function openEdit(slot: DaySlot, focusField = "title", zone: "planned" | "comple
   const existing = editingRows.get(slot.date);
 
   if (existing) {
-    if (existing.activeZone === zone) return;
+    if (existing.activeZone === zone) {
+      existing.focusField = focusField;
+      return;
+    }
     // Guard: don't switch into a non-editable zone
     const planned = slot.planned.find((r) => !r.is_second_phase) ?? null;
     if (zone === "planned" && !(planned ? planned.editable : true)) return;
@@ -349,6 +360,77 @@ function onRowFocusOut(slot: DaySlot, event: FocusEvent) {
   void closeAndSave(slot, edit);
 }
 
+// ── Keyboard navigation ───────────────────────────────────────
+async function handleKeyNav(
+  event: KeyboardEvent,
+  field: string,
+  slot: DaySlot,
+  zone: "planned" | "completed",
+) {
+  const fields: readonly string[] = zone === "planned" ? PLANNED_FIELDS : COMPLETED_FIELDS
+  const isTextarea = field === "title"
+  const key = event.key
+  const shift = event.shiftKey
+  const fieldIdx = fields.indexOf(field)
+  let targetFieldIdx = fieldIdx
+  let targetSlotIdx = daySlots.value.indexOf(slot)
+
+  if (key === "Tab") {
+    event.preventDefault()
+    if (shift) {
+      if (fieldIdx > 0) { targetFieldIdx = fieldIdx - 1 }
+      else { targetSlotIdx -= 1; targetFieldIdx = fields.length - 1 }
+    } else {
+      if (fieldIdx < fields.length - 1) { targetFieldIdx = fieldIdx + 1 }
+      else { targetSlotIdx += 1; targetFieldIdx = 0 }
+    }
+  } else if (key === "Enter") {
+    event.preventDefault()
+    targetSlotIdx += shift ? -1 : 1
+  } else if (key === "ArrowDown") {
+    event.preventDefault()
+    targetSlotIdx += 1
+  } else if (key === "ArrowUp") {
+    event.preventDefault()
+    targetSlotIdx -= 1
+  } else if (key === "ArrowRight" && !isTextarea) {
+    event.preventDefault()
+    if (fieldIdx < fields.length - 1) { targetFieldIdx = fieldIdx + 1 }
+    else { targetSlotIdx += 1; targetFieldIdx = 0 }
+  } else if (key === "ArrowLeft" && !isTextarea) {
+    event.preventDefault()
+    if (fieldIdx > 0) { targetFieldIdx = fieldIdx - 1 }
+    else { targetSlotIdx -= 1; targetFieldIdx = fields.length - 1 }
+  } else {
+    return
+  }
+
+  const targetField = fields[targetFieldIdx]
+
+  if (targetSlotIdx < 0) {
+    emit("navigate-out-prev", { field: targetField, zone })
+    return
+  }
+  if (targetSlotIdx >= daySlots.value.length) {
+    emit("navigate-out-next", { field: targetField, zone })
+    return
+  }
+
+  const targetSlot = daySlots.value[targetSlotIdx]
+  const currentEdit = editingRows.get(slot.date)
+  if (currentEdit?.debounceTimer) {
+    clearTimeout(currentEdit.debounceTimer)
+    currentEdit.debounceTimer = null
+    void autoSave(slot, currentEdit)
+  }
+  openEdit(targetSlot, targetField, zone)
+
+  await nextTick()
+  document.querySelector<HTMLElement>(
+    `[data-field="${targetField}"][data-date="${targetSlot.date}"]`,
+  )?.focus()
+}
+
 function canEditCompleted(slot: DaySlot): boolean {
   if (!canEditCompletedGlobal.value) return false;
   const c = slot.completed[0];
@@ -467,11 +549,14 @@ async function toggleSessionType(slot: DaySlot) {
                 v-autofocus="getEdit(slot.date)!.focusField === 'title'"
                 class="wt__textarea"
                 :data-testid="`input-title-${slot.date}`"
+                data-field="title"
+                :data-date="slot.date"
                 :disabled="getEdit(slot.date)!.isSaving"
                 :placeholder="t('weekCard.titlePlaceholder')"
                 rows="1"
                 @click.stop
                 @input="onFieldInput(slot.date, slot)"
+                @keydown="handleKeyNav($event, 'title', slot, 'planned')"
               />
             </template>
             <template v-else>
@@ -487,10 +572,13 @@ async function toggleSessionType(slot: DaySlot) {
                 v-model="getEdit(slot.date)!.notes"
                 v-autofocus="getEdit(slot.date)!.focusField === 'notes'"
                 class="wt__input"
+                data-field="notes"
+                :data-date="slot.date"
                 :disabled="getEdit(slot.date)!.isSaving"
                 :placeholder="t('weekCard.notesPlaceholder')"
                 @click.stop
                 @input="onFieldInput(slot.date, slot)"
+                @keydown="handleKeyNav($event, 'notes', slot, 'planned')"
               />
             </template>
             <template v-else>
@@ -504,7 +592,18 @@ async function toggleSessionType(slot: DaySlot) {
           <!-- km -->
           <div class="wt__cell wt__cell--num wt__cell-c wt__cell-km" :data-testid="`cell-km-${slot.date}`" @click.stop="canEditCompleted(slot) && openEdit(slot, 'km', 'completed')">
             <template v-if="isEditingZone(slot.date, 'completed') && getEdit(slot.date) && getEdit(slot.date)!.completedId">
-              <input v-model="getEdit(slot.date)!.km" v-autofocus="getEdit(slot.date)!.focusField === 'km'" class="wt__input wt__input--num" :data-testid="`input-km-${slot.date}`" :disabled="getEdit(slot.date)!.isSaving" @click.stop @input="onFieldInput(slot.date, slot)" />
+              <input
+                v-model="getEdit(slot.date)!.km"
+                v-autofocus="getEdit(slot.date)!.focusField === 'km'"
+                class="wt__input wt__input--num"
+                :data-testid="`input-km-${slot.date}`"
+                data-field="km"
+                :data-date="slot.date"
+                :disabled="getEdit(slot.date)!.isSaving"
+                @click.stop
+                @input="onFieldInput(slot.date, slot)"
+                @keydown="handleKeyNav($event, 'km', slot, 'completed')"
+              />
             </template>
             <template v-else>
               <span class="wt__num-val wt__num-val--done">{{ slot.completed[0]?.completed_metrics?.km || "-" }}</span>
@@ -514,7 +613,18 @@ async function toggleSessionType(slot: DaySlot) {
           <!-- Time (HH:MM) -->
           <div class="wt__cell wt__cell--num wt__cell-c wt__cell-time" @click.stop="canEditCompleted(slot) && openEdit(slot, 'minutes', 'completed')">
             <template v-if="isEditingZone(slot.date, 'completed') && getEdit(slot.date) && getEdit(slot.date)!.completedId">
-              <input v-model="getEdit(slot.date)!.minutes" v-autofocus="getEdit(slot.date)!.focusField === 'minutes'" class="wt__input wt__input--num" :disabled="getEdit(slot.date)!.isSaving" placeholder="min" @click.stop @input="onFieldInput(slot.date, slot)" />
+              <input
+                v-model="getEdit(slot.date)!.minutes"
+                v-autofocus="getEdit(slot.date)!.focusField === 'minutes'"
+                class="wt__input wt__input--num"
+                data-field="minutes"
+                :data-date="slot.date"
+                :disabled="getEdit(slot.date)!.isSaving"
+                placeholder="min"
+                @click.stop
+                @input="onFieldInput(slot.date, slot)"
+                @keydown="handleKeyNav($event, 'minutes', slot, 'completed')"
+              />
             </template>
             <template v-else>
               <span class="wt__num-val wt__num-val--done">{{ formatMinutes(slot.completed[0]?.completed_metrics?.minutes) }}</span>
@@ -524,7 +634,17 @@ async function toggleSessionType(slot: DaySlot) {
           <!-- Intervals / details -->
           <div class="wt__cell wt__cell--intervals wt__cell-c" @click.stop="canEditCompleted(slot) && openEdit(slot, 'details', 'completed')">
             <template v-if="isEditingZone(slot.date, 'completed') && getEdit(slot.date) && getEdit(slot.date)!.completedId">
-              <input v-model="getEdit(slot.date)!.details" v-autofocus="getEdit(slot.date)!.focusField === 'details'" class="wt__input" :disabled="getEdit(slot.date)!.isSaving" @click.stop @input="onFieldInput(slot.date, slot)" />
+              <input
+                v-model="getEdit(slot.date)!.details"
+                v-autofocus="getEdit(slot.date)!.focusField === 'details'"
+                class="wt__input"
+                data-field="details"
+                :data-date="slot.date"
+                :disabled="getEdit(slot.date)!.isSaving"
+                @click.stop
+                @input="onFieldInput(slot.date, slot)"
+                @keydown="handleKeyNav($event, 'details', slot, 'completed')"
+              />
             </template>
             <template v-else>
               <span class="wt__intervals-text">{{ slot.completed[0]?.completed_metrics?.details }}</span>
@@ -534,7 +654,17 @@ async function toggleSessionType(slot: DaySlot) {
           <!-- Avg HR -->
           <div class="wt__cell wt__cell--num wt__cell-c wt__cell-avghr" @click.stop="canEditCompleted(slot) && openEdit(slot, 'avgHr', 'completed')">
             <template v-if="isEditingZone(slot.date, 'completed') && getEdit(slot.date) && getEdit(slot.date)!.completedId">
-              <input v-model="getEdit(slot.date)!.avgHr" v-autofocus="getEdit(slot.date)!.focusField === 'avgHr'" class="wt__input wt__input--num" :disabled="getEdit(slot.date)!.isSaving" @click.stop @input="onFieldInput(slot.date, slot)" />
+              <input
+                v-model="getEdit(slot.date)!.avgHr"
+                v-autofocus="getEdit(slot.date)!.focusField === 'avgHr'"
+                class="wt__input wt__input--num"
+                data-field="avgHr"
+                :data-date="slot.date"
+                :disabled="getEdit(slot.date)!.isSaving"
+                @click.stop
+                @input="onFieldInput(slot.date, slot)"
+                @keydown="handleKeyNav($event, 'avgHr', slot, 'completed')"
+              />
             </template>
             <template v-else>
               <span class="wt__num-val wt__num-val--hr">{{ slot.completed[0]?.completed_metrics?.avg_hr ?? "-" }}</span>
@@ -544,7 +674,17 @@ async function toggleSessionType(slot: DaySlot) {
           <!-- Max HR -->
           <div class="wt__cell wt__cell--num wt__cell-c wt__cell-maxhr" @click.stop="canEditCompleted(slot) && openEdit(slot, 'maxHr', 'completed')">
             <template v-if="isEditingZone(slot.date, 'completed') && getEdit(slot.date) && getEdit(slot.date)!.completedId">
-              <input v-model="getEdit(slot.date)!.maxHr" v-autofocus="getEdit(slot.date)!.focusField === 'maxHr'" class="wt__input wt__input--num" :disabled="getEdit(slot.date)!.isSaving" @click.stop @input="onFieldInput(slot.date, slot)" />
+              <input
+                v-model="getEdit(slot.date)!.maxHr"
+                v-autofocus="getEdit(slot.date)!.focusField === 'maxHr'"
+                class="wt__input wt__input--num"
+                data-field="maxHr"
+                :data-date="slot.date"
+                :disabled="getEdit(slot.date)!.isSaving"
+                @click.stop
+                @input="onFieldInput(slot.date, slot)"
+                @keydown="handleKeyNav($event, 'maxHr', slot, 'completed')"
+              />
             </template>
             <template v-else>
               <span class="wt__num-val wt__num-val--hr">{{ slot.completed[0]?.completed_metrics?.max_hr ?? "-" }}</span>
