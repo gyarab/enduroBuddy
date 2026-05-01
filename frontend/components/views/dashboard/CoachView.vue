@@ -23,6 +23,18 @@ const isSavingFocus = ref(false);
 const isManageOpen = ref(false);
 const isSidebarOpen = ref(false);
 const isAddingMonth = ref(false);
+
+const weekCardRefs = ref<InstanceType<typeof WeekCard>[]>([])
+
+function handleNavOut(
+  dir: "next" | "prev",
+  idx: number,
+  payload: { field: string; zone: "planned" | "completed" },
+) {
+  const targetIdx = dir === "next" ? idx + 1 : idx - 1
+  const card = weekCardRefs.value[targetIdx]
+  if (card) card.focusCell(payload.field, payload.zone, dir === "prev")
+}
 const startRemoveId = ref<number | null>(null);
 const { t } = useI18n();
 
@@ -205,7 +217,15 @@ async function handleAddMonth() {
         <MonthSummaryBar v-if="coachStore.summary" :summary="coachStore.summary" />
 
         <div class="coach-view__weeks">
-          <WeekCard v-for="week in coachStore.weeks" :key="week.id" :week="week" editor-context="coach" />
+          <WeekCard
+            v-for="(week, idx) in coachStore.weeks"
+            :key="week.id"
+            :ref="(el) => { if (el && weekCardRefs.value) weekCardRefs.value[idx] = el as InstanceType<typeof WeekCard> }"
+            :week="week"
+            editor-context="coach"
+            @navigate-out-next="(p) => handleNavOut('next', idx, p)"
+            @navigate-out-prev="(p) => handleNavOut('prev', idx, p)"
+          />
         </div>
       </template>
     </div>

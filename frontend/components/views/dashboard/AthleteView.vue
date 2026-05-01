@@ -20,6 +20,18 @@ const isAddingMonth = ref(false);
 const authStore = useAuthStore();
 const isGarminModalOpen = ref(false);
 
+const weekCardRefs = ref<InstanceType<typeof WeekCard>[]>([])
+
+function handleNavOut(
+  dir: "next" | "prev",
+  idx: number,
+  payload: { field: string; zone: "planned" | "completed" },
+) {
+  const targetIdx = dir === "next" ? idx + 1 : idx - 1
+  const card = weekCardRefs.value[targetIdx]
+  if (card) card.focusCell(payload.field, payload.zone, dir === "prev")
+}
+
 const showGarminImportButton = computed(
   () => !!authStore.user?.capabilities?.garmin_connect_enabled,
 );
@@ -76,7 +88,14 @@ onMounted(() => {
       <MonthSummaryBar v-if="trainingStore.summary" :summary="trainingStore.summary" />
 
       <div class="dashboard-view__weeks">
-        <WeekCard v-for="week in trainingStore.weeks" :key="week.id" :week="week" />
+        <WeekCard
+          v-for="(week, idx) in trainingStore.weeks"
+          :key="week.id"
+          :ref="(el) => { if (el && weekCardRefs.value) weekCardRefs.value[idx] = el as InstanceType<typeof WeekCard> }"
+          :week="week"
+          @navigate-out-next="(p) => handleNavOut('next', idx, p)"
+          @navigate-out-prev="(p) => handleNavOut('prev', idx, p)"
+        />
       </div>
     </template>
 

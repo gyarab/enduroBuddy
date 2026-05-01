@@ -466,6 +466,22 @@ async function toggleSessionType(slot: DaySlot) {
     if (newEdit) newEdit.sessionType = "WORKOUT";
   }
 }
+
+// ── Exposed API for cross-week navigation ─────────────────────
+defineExpose({
+  focusCell(field: string, zone: "planned" | "completed", atEnd = false) {
+    const slot = atEnd
+      ? daySlots.value[daySlots.value.length - 1]
+      : daySlots.value[0]
+    if (!slot) return
+    openEdit(slot, field, zone)
+    void nextTick(() => {
+      document.querySelector<HTMLElement>(
+        `[data-field="${field}"][data-date="${slot.date}"]`,
+      )?.focus()
+    })
+  },
+})
 </script>
 
 <template>
