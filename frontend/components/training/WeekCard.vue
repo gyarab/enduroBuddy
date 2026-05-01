@@ -291,6 +291,10 @@ async function autoSave(slot: DaySlot, edit: RowEdit) {
     toastStore.push(err instanceof Error ? err.message : t("weekCard.createError"), "danger");
   } finally {
     edit.isSaving = false;
+    if (edit.closeAfterSave) {
+      editingRows.delete(slot.date);
+      flashRow(slot.date);
+    }
   }
 }
 
@@ -300,7 +304,10 @@ async function closeAndSave(slot: DaySlot, edit: RowEdit) {
     editingRows.delete(slot.date);
     return;
   }
-  if (edit.isSaving) return;
+  if (edit.isSaving) {
+    edit.closeAfterSave = true;
+    return;
+  }
   edit.isSaving = true;
   try {
     await performSaveApiCalls(slot, edit);
@@ -702,7 +709,12 @@ async function toggleSessionType(slot: DaySlot) {
   100% { background-color: transparent; }
 }
 
-@keyframes zone-ok {
+@keyframes zone-ok-planned {
+  0%   { background-color: rgba(200, 255, 0, .22); }
+  100% { background-color: transparent; }
+}
+
+@keyframes zone-ok-completed {
   0%   { background-color: rgba(200, 255, 0, .22); }
   100% { background-color: rgba(200, 255, 0, .07); }
 }
@@ -713,16 +725,16 @@ async function toggleSessionType(slot: DaySlot) {
 }
 
 .wt__row--flash-planned-ok .wt__cell-p {
-  animation: zone-ok 700ms ease-out forwards;
+  animation: zone-ok-planned 700ms ease-out;
 }
 
 .wt__row--flash-completed-ok .wt__cell-c {
-  animation: zone-ok 700ms ease-out forwards;
+  animation: zone-ok-completed 700ms ease-out forwards;
 }
 
 .wt__row--flash-err .wt__cell-p,
 .wt__row--flash-err .wt__cell-c {
-  animation: zone-err 700ms ease-out forwards;
+  animation: zone-err 700ms ease-out;
 }
 
 /* ── Cells ── */
