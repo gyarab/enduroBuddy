@@ -319,7 +319,6 @@ export const useTrainingStore = defineStore("training", () => {
     }
     try {
       await Promise.all(updates.map((update) => updatePlannedTraining(plannedId, update)));
-      toastStore.push(t("trainingStore.plannedUpdated"), "success");
     } catch (error) {
       await loadDashboard(selectedMonthValue.value, { silent: true });
       throw error;
@@ -338,7 +337,6 @@ export const useTrainingStore = defineStore("training", () => {
     }
     try {
       await Promise.all(updates.map((update) => updateCompletedTraining(plannedId, update)));
-      toastStore.push(t("trainingStore.completedUpdated"), "success");
     } catch (error) {
       await loadDashboard(selectedMonthValue.value, { silent: true });
       throw error;
@@ -348,7 +346,6 @@ export const useTrainingStore = defineStore("training", () => {
   async function addPlannedTraining(payload: PlannedTrainingDraft) {
     await createPlannedTraining(payload);
     await loadDashboard(selectedMonthValue.value, { silent: true });
-    toastStore.push(t("trainingStore.plannedCreated"), "success");
   }
 
   async function deletePlannedTrainingRow(plannedId: number) {

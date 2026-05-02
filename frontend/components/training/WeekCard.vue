@@ -255,6 +255,13 @@ async function performSaveApiCalls(slot: DaySlot, edit: RowEdit): Promise<void> 
     } else {
       await trainingStore.addPlannedTraining(draft);
     }
+    // Find the newly created row and transition out of create mode to prevent duplicate creation
+    const storeWeeks = props.editorContext === "coach" ? coachStore.weeks : trainingStore.weeks;
+    const newRow = storeWeeks.flatMap(w => w.planned_rows).find(r => r.date === slot.date && !r.is_second_phase);
+    if (newRow?.id) {
+      edit.isCreating = false;
+      edit.plannedId = newRow.id;
+    }
   } else if (edit.plannedId) {
     const planned = slot.planned.find((r) => r.id === edit.plannedId);
     const updates: { field: "title" | "notes" | "session_type"; value: string }[] = [];
@@ -303,8 +310,14 @@ async function autoSave(slot: DaySlot, edit: RowEdit) {
   } finally {
     edit.isSaving = false;
     if (edit.closeAfterSave) {
-      editingRows.delete(slot.date);
-      flashRow(slot.date);
+      edit.closeAfterSave = false;
+      // Wait for DOM to settle, then only close if user genuinely left the row
+      await nextTick();
+      const rowEl = document.querySelector<HTMLElement>(`[data-row-date="${slot.date}"]`);
+      if (!rowEl || !rowEl.contains(document.activeElement)) {
+        editingRows.delete(slot.date);
+        flashRow(slot.date);
+      }
     }
   }
 }
@@ -407,6 +420,14 @@ async function handleKeyNav(
 
   const targetField = fields[targetFieldIdx]
 
+  // Flush any pending debounce before navigating away (whether within or cross-week)
+  const currentEdit = editingRows.get(slot.date)
+  if (currentEdit?.debounceTimer) {
+    clearTimeout(currentEdit.debounceTimer)
+    currentEdit.debounceTimer = null
+    void autoSave(slot, currentEdit)
+  }
+
   if (targetSlotIdx < 0) {
     emit("navigate-out-prev", { field: targetField, zone })
     return
@@ -417,12 +438,6 @@ async function handleKeyNav(
   }
 
   const targetSlot = daySlots.value[targetSlotIdx]
-  const currentEdit = editingRows.get(slot.date)
-  if (currentEdit?.debounceTimer) {
-    clearTimeout(currentEdit.debounceTimer)
-    currentEdit.debounceTimer = null
-    void autoSave(slot, currentEdit)
-  }
   openEdit(targetSlot, targetField, zone)
 
   await nextTick()
@@ -520,6 +535,7 @@ defineExpose({
         <!-- Main planned row -->
         <div
           class="wt__cols wt__row"
+          :data-row-date="slot.date"
           :class="{
             'wt__row--editing-planned': isEditingZone(slot.date, 'planned'),
             'wt__row--editing-completed': isEditingZone(slot.date, 'completed'),
@@ -866,12 +882,12 @@ defineExpose({
 }
 
 @keyframes zone-ok-planned {
-  0%   { background-color: rgba(200, 255, 0, .22); }
+  0%   { background-color: rgba(200, 255, 0, .10); }
   100% { background-color: transparent; }
 }
 
 @keyframes zone-ok-completed {
-  0%   { background-color: rgba(200, 255, 0, .22); }
+  0%   { background-color: rgba(200, 255, 0, .10); }
   100% { background-color: rgba(200, 255, 0, .07); }
 }
 

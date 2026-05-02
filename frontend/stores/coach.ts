@@ -274,7 +274,6 @@ export const useCoachStore = defineStore("coach", () => {
       await updateCoachPlannedTraining(plannedId, update);
       patchPlannedRow(plannedId, update);
     }
-    toastStore.push(t("coachStore.planUpdated"), "success");
   }
 
   async function addPlannedTraining(payload: PlannedTrainingDraft) {
@@ -283,7 +282,6 @@ export const useCoachStore = defineStore("coach", () => {
     }
     await createCoachPlannedTraining(selectedAthlete.value.id, payload);
     await loadDashboard(selectedAthlete.value.id, selectedMonth.value?.value);
-    toastStore.push(t("coachStore.planCreated"), "success");
   }
 
   async function deletePlannedTrainingRow(plannedId: number) {
