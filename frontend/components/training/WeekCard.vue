@@ -583,8 +583,7 @@ defineExpose({
                 :data-testid="`input-title-${slot.date}`"
                 data-field="title"
                 :data-date="slot.date"
-                :disabled="getEdit(slot.date)!.isSaving"
-                :placeholder="t('weekCard.titlePlaceholder')"
+                                :placeholder="t('weekCard.titlePlaceholder')"
                 rows="1"
                 @click.stop
                 @input="onFieldInput(slot.date, slot)"
@@ -606,8 +605,7 @@ defineExpose({
                 class="wt__input"
                 data-field="notes"
                 :data-date="slot.date"
-                :disabled="getEdit(slot.date)!.isSaving"
-                :placeholder="t('weekCard.notesPlaceholder')"
+                                :placeholder="t('weekCard.notesPlaceholder')"
                 @click.stop
                 @input="onFieldInput(slot.date, slot)"
                 @keydown="handleKeyNav($event, 'notes', slot, 'planned')"
@@ -631,8 +629,7 @@ defineExpose({
                 :data-testid="`input-km-${slot.date}`"
                 data-field="km"
                 :data-date="slot.date"
-                :disabled="getEdit(slot.date)!.isSaving"
-                @click.stop
+                                @click.stop
                 @input="onFieldInput(slot.date, slot)"
                 @keydown="handleKeyNav($event, 'km', slot, 'completed')"
               />
@@ -651,8 +648,7 @@ defineExpose({
                 class="wt__input wt__input--num"
                 data-field="minutes"
                 :data-date="slot.date"
-                :disabled="getEdit(slot.date)!.isSaving"
-                placeholder="min"
+                                placeholder="min"
                 @click.stop
                 @input="onFieldInput(slot.date, slot)"
                 @keydown="handleKeyNav($event, 'minutes', slot, 'completed')"
@@ -672,8 +668,7 @@ defineExpose({
                 class="wt__input"
                 data-field="details"
                 :data-date="slot.date"
-                :disabled="getEdit(slot.date)!.isSaving"
-                @click.stop
+                                @click.stop
                 @input="onFieldInput(slot.date, slot)"
                 @keydown="handleKeyNav($event, 'details', slot, 'completed')"
               />
@@ -692,8 +687,7 @@ defineExpose({
                 class="wt__input wt__input--num"
                 data-field="avgHr"
                 :data-date="slot.date"
-                :disabled="getEdit(slot.date)!.isSaving"
-                @click.stop
+                                @click.stop
                 @input="onFieldInput(slot.date, slot)"
                 @keydown="handleKeyNav($event, 'avgHr', slot, 'completed')"
               />
@@ -712,8 +706,7 @@ defineExpose({
                 class="wt__input wt__input--num"
                 data-field="maxHr"
                 :data-date="slot.date"
-                :disabled="getEdit(slot.date)!.isSaving"
-                @click.stop
+                                @click.stop
                 @input="onFieldInput(slot.date, slot)"
                 @keydown="handleKeyNav($event, 'maxHr', slot, 'completed')"
               />
