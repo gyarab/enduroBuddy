@@ -1,7 +1,7 @@
 /* ============================================================
    EnduroBuddy – Public Base Styles (Nuxt version)
    Shell · navbar · footer
-   NOTE: Fonts and design tokens are in fonts.css + design-tokens.css
+   NOTE: Fonts loaded via Google Fonts CDN (see nuxt.config.ts); design tokens in design-tokens.css
    ============================================================ */
 
 /* ── Shell Container ─────────────────────────────────────── */

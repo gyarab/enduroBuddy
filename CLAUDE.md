@@ -67,7 +67,7 @@ backend/
 
 ```
 frontend/src/
-  main.ts              # app init, importuje design-tokens.css + fonts.css
+  main.ts              # app init, importuje design-tokens.css (fonty přes CDN v nuxt.config.ts)
   App.vue              # RouterView wrapper
   router/index.ts      # /app/dashboard, /coach/plans, /app/profile/complete
   stores/              # Pinia — auth, training, coach, notifications, toasts
@@ -86,7 +86,7 @@ frontend/src/
     dashboard/         # AthleteView.vue, CoachView.vue
     profile/           # CompleteProfileView.vue
   locales/             # cs.json, en.json
-  assets/              # design-tokens.css, fonts.css
+  assets/              # design-tokens.css (fonts.css smazán — fonty přes Google Fonts CDN)
 ```
 
 **Vývoj:** `npm run dev` v `frontend/` (Vite na `:5173`, proxy `/api/*` → Django `:8000`)
@@ -115,9 +115,11 @@ frontend/src/
 - Warning: `#f59e0b`
 
 ### Typografie
-- Display: **Syne** 700–800 (headlines, brand, hero)
-- Body/UI: **Inter** 400–600 (vše funkční)
-- Data/Mono: **JetBrains Mono** 500 (pace, distance, HR, timestamps)
+- Display: **Outfit** 600–800 (headlines, brand, hero)
+- Body/UI: **Nunito** 400–700 (vše funkční)
+- Data/Mono: **JetBrains Mono** 400–500 (pace, distance, HR, timestamps)
+
+Fonty načítány z **Google Fonts CDN** (`nuxt.config.ts` → `app.head.link`). Žádné lokální WOFF2 soubory v pipeline.
 
 ### Logo — "Stride Mark"
 Tři horizontální pruhy rostoucí délky, nakloněné 6° dopředu.
