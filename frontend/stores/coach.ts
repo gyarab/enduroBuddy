@@ -35,14 +35,17 @@ export const useCoachStore = defineStore("coach", () => {
   const selectedMonth = computed(() => dashboard.value?.selected_month ?? null);
   const navigation = computed(() => dashboard.value?.navigation ?? null);
 
-  async function loadDashboard(athleteId?: number, month?: string) {
+  async function loadDashboard(athleteId?: number, month?: string, options?: { silent?: boolean }) {
+    const silent = options?.silent === true;
     isLoading.value = true;
-    errorMessage.value = "";
+    if (!silent) errorMessage.value = "";
     try {
       dashboard.value = await fetchCoachDashboard(athleteId, month);
       applyManagedAthletes(await fetchCoachAthletes(dashboard.value.selected_athlete?.id).then((payload) => payload.athletes));
     } catch (error) {
-      errorMessage.value = error instanceof Error ? error.message : t("coachStore.loadError");
+      if (!silent) {
+        errorMessage.value = error instanceof Error ? error.message : t("coachStore.loadError");
+      }
     } finally {
       isLoading.value = false;
     }
@@ -281,24 +284,24 @@ export const useCoachStore = defineStore("coach", () => {
       return;
     }
     await createCoachPlannedTraining(selectedAthlete.value.id, payload);
-    await loadDashboard(selectedAthlete.value.id, selectedMonth.value?.value);
+    await loadDashboard(selectedAthlete.value.id, selectedMonth.value?.value, { silent: true });
   }
 
   async function deletePlannedTrainingRow(plannedId: number) {
     await deleteCoachPlannedTraining(plannedId);
-    await loadDashboard(selectedAthlete.value?.id, selectedMonth.value?.value);
+    await loadDashboard(selectedAthlete.value?.id, selectedMonth.value?.value, { silent: true });
     toastStore.push(t("coachStore.planDeleted"), "success");
   }
 
   async function addSecondPhase(plannedId: number) {
     await addCoachSecondPhaseTraining(plannedId);
-    await loadDashboard(selectedAthlete.value?.id, selectedMonth.value?.value);
+    await loadDashboard(selectedAthlete.value?.id, selectedMonth.value?.value, { silent: true });
     toastStore.push(t("coachStore.secondPhaseAdded"), "success");
   }
 
   async function removeSecondPhase(plannedId: number) {
     await removeCoachSecondPhaseTraining(plannedId);
-    await loadDashboard(selectedAthlete.value?.id, selectedMonth.value?.value);
+    await loadDashboard(selectedAthlete.value?.id, selectedMonth.value?.value, { silent: true });
     toastStore.push(t("coachStore.secondPhaseRemoved"), "success");
   }
 

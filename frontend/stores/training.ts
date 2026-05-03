@@ -257,7 +257,10 @@ export const useTrainingStore = defineStore("training", () => {
     try {
       dashboard.value = await fetchDashboard(month);
     } catch (error) {
-      errorMessage.value = error instanceof Error ? error.message : t("trainingStore.loadError");
+      // Silent refreshes (post-save rollbacks) must not replace the visible dashboard with an error card
+      if (!silent) {
+        errorMessage.value = error instanceof Error ? error.message : t("trainingStore.loadError");
+      }
     } finally {
       if (silent) {
         isRefreshing.value = false;
