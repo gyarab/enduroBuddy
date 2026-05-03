@@ -13,6 +13,19 @@ export default defineNuxtConfig({
     "@nuxtjs/i18n",
   ],
 
+  app: {
+    head: {
+      link: [
+        { rel: "preconnect", href: "https://fonts.googleapis.com" },
+        { rel: "preconnect", href: "https://fonts.gstatic.com", crossorigin: "" },
+        {
+          rel: "stylesheet",
+          href: "https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800&family=Nunito:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap",
+        },
+      ],
+    },
+  },
+
   routeRules: {
     "/": { ssr: true },
     "/about": { ssr: true },
@@ -27,7 +40,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       apiBase: "/api/v1",
-      appHost: "",  // override via NUXT_PUBLIC_APP_HOST env var
+      appHost: "",
     },
   },
 
@@ -47,7 +60,6 @@ export default defineNuxtConfig({
 
   css: [
     "~/assets/design-tokens.css",
-    "~/assets/fonts.css",
     "~/assets/css/public-base.css",
     "~/assets/css/public-home.css",
     "~/assets/css/public-about.css",
