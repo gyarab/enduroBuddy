@@ -138,6 +138,7 @@ interface RowEdit {
   // ui
   isSaving: boolean;
   isDirty: boolean;
+  saveError: boolean;
   closeAfterSave: boolean;
   debounceTimer: ReturnType<typeof setTimeout> | null;
   focusField: string;
@@ -213,6 +214,7 @@ function openEdit(slot: DaySlot, focusField = "title", zone: "planned" | "comple
     maxHr: completed?.completed_metrics?.max_hr?.toString() ?? "",
     isSaving: false,
     isDirty: false,
+    saveError: false,
     closeAfterSave: false,
     debounceTimer: null,
     focusField,
@@ -300,11 +302,13 @@ async function autoSave(slot: DaySlot, edit: RowEdit) {
   try {
     await performSaveApiCalls(slot, edit);
     edit.isDirty = false;
+    edit.saveError = false;
     flashZoneOk(slot.date, zone);
     if (edit.completedId && slot.completed.length === 0) {
       await trainingStore.loadDashboard(trainingStore.selectedMonthValue, { silent: true });
     }
   } catch (err) {
+    edit.saveError = true;
     flashZoneErr(slot.date);
     toastStore.push(err instanceof Error ? err.message : t("weekCard.createError"), "danger");
   } finally {
@@ -354,6 +358,7 @@ function onFieldInput(date: string, slot: DaySlot) {
   const edit = editingRows.get(date);
   if (!edit) return;
   edit.isDirty = true;
+  edit.saveError = false;
   if (edit.debounceTimer) clearTimeout(edit.debounceTimer);
   edit.debounceTimer = setTimeout(() => {
     edit.debounceTimer = null;
@@ -545,6 +550,7 @@ defineExpose({
             'wt__row--flash-planned-ok': flashingPlannedOk.has(slot.date),
             'wt__row--flash-completed-ok': flashingCompletedOk.has(slot.date),
             'wt__row--flash-err': flashingError.has(slot.date),
+            'wt__row--save-error': getEdit(slot.date)?.saveError,
           }"
           @focusout="onRowFocusOut(slot, $event)"
         >
@@ -885,7 +891,7 @@ defineExpose({
 }
 
 @keyframes zone-err {
-  0%   { background-color: rgba(244, 63, 94, .20); }
+  0%   { background-color: rgba(244, 63, 94, .18); }
   100% { background-color: transparent; }
 }
 
@@ -899,7 +905,24 @@ defineExpose({
 
 .wt__row--flash-err .wt__cell-p,
 .wt__row--flash-err .wt__cell-c {
-  animation: zone-err 700ms ease-out;
+  animation: zone-err 1200ms ease-out;
+}
+
+/* ── Persistent save-error state ── */
+.wt__row--save-error.wt__row--editing-planned,
+.wt__row--save-error.wt__row--editing-completed {
+  border-left-color: rgba(244, 63, 94, .55);
+}
+
+.wt__row--save-error .wt__input,
+.wt__row--save-error .wt__textarea {
+  border-color: rgba(244, 63, 94, .4);
+}
+
+.wt__row--save-error .wt__input:focus,
+.wt__row--save-error .wt__textarea:focus {
+  border-color: rgba(244, 63, 94, .65);
+  box-shadow: 0 0 0 2px rgba(244, 63, 94, .10);
 }
 
 /* ── Cells ── */
