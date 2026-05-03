@@ -29,15 +29,23 @@ Cíl: finalizovat landing page před žádostí o oficiální Garmin Connect API
 
 ### Co se mění
 
-- `backend/static/fonts/` — přidat `outfit-600.woff2`, `outfit-700.woff2`, `outfit-800.woff2` (latin + latin-ext subset)
-- `backend/static/fonts/` — nahradit `nunito-*.woff2` verzemi s latin-ext subsetem
-- `frontend/assets/fonts.css` — nahradit `font-family: 'Syne'` za `font-family: 'Outfit'`
+Fonty se načítají z **Google Fonts CDN** — žádné lokální soubory, žádné WOFF2 v `backend/static/fonts/`.
+
+Google Fonts v2 (`fonts.googleapis.com/css2`) automaticky servíruje správné unicode-range subsets (latin + latin-ext) podle potřeby prohlížeče — czech diacritics jsou pokryty automaticky.
+
+**CDN URL:**
+```
+https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800&family=Nunito:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap
+```
+
+**Integrace v Nuxt:**
+- `nuxt.config.ts` — přidat `app.head.link` s `preconnect` pro `fonts.googleapis.com` + `fonts.gstatic.com` a `stylesheet` link na CDN URL výše
+- `frontend/assets/fonts.css` — **smazat celý soubor** (všechny `@font-face` deklarace nahrazuje CDN)
+- `nuxt.config.ts` `css` pole — odebrat `~/assets/fonts.css`
 - `frontend/assets/design-tokens.css` — `--eb-font-display: 'Outfit', sans-serif`
 - Všechny komponenty které používají `font-family: 'Syne'` nebo `var(--eb-font-display)` jsou pokryty přes token, žádné ruční změny v komponentách.
 
-### Stažení fontů
-
-Outfit a Nunito s latin-ext: Google Fonts API s parametrem `subset=latin,latin-ext` nebo stažení variable font verze (pokrývá vše). Doporučeno: `google-webfonts-helper.herokuapp.com` pro self-hosted WOFF2 s výběrem subsetů.
+**Existující lokální font soubory** (`backend/static/fonts/*.woff2`) zůstanou na disku — neodstraňujeme, mohly by být potřeba pro SPA offline nebo budoucí self-hosting. Prostě přestanou být referencované.
 
 ---
 
@@ -120,10 +128,9 @@ Zůstane pouze `founderName` + `founderRole`. Sekce se zobrazí jako jméno + ro
 
 | Soubor | Změna |
 |--------|-------|
-| `backend/static/fonts/outfit-{600,700,800}.woff2` | Přidat — stáhnout z Google Fonts s latin+latin-ext |
-| `backend/static/fonts/nunito-{400,500,600,700}.woff2` | Nahradit verzemi s latin-ext subsetem |
-| `frontend/assets/fonts.css` | Syne → Outfit font-face deklarace |
-| `frontend/assets/design-tokens.css` | `--eb-font-display` hodnota Syne → Outfit |
+| `nuxt.config.ts` | Přidat `app.head.link` — preconnect + Google Fonts CDN stylesheet; odebrat `~/assets/fonts.css` z `css` pole |
+| `frontend/assets/fonts.css` | **Smazat** — nahrazeno CDN |
+| `frontend/assets/design-tokens.css` | `--eb-font-display: 'Outfit', sans-serif` (bylo `'Syne'`) |
 | `frontend/i18n/locales/cs.json` | Klíče dle tabulek výše |
 | `frontend/i18n/locales/en.json` | Klíče dle tabulek výše |
 | `frontend/pages/about.vue` | Odstranit `founderQuote` blok z template |
