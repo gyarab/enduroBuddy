@@ -34,7 +34,6 @@
         <div>
           <div class="eb-about-founder-name">{{ t("about.founderName") }}</div>
           <div class="eb-about-founder-role">{{ t("about.founderRole") }}</div>
-          <p class="eb-about-founder-quote">"{{ t("about.founderQuote") }}"</p>
         </div>
       </div>
 
