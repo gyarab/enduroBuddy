@@ -727,11 +727,15 @@ def auth_profile_setup(request):
 
     first_name = payload.get("first_name", "").strip()
     last_name = payload.get("last_name", "").strip()
+    name_fields = []
     if first_name:
         user.first_name = first_name
+        name_fields.append("first_name")
     if last_name:
         user.last_name = last_name
-    user.save(update_fields=["first_name", "last_name"])
+        name_fields.append("last_name")
+    if name_fields:
+        user.save(update_fields=name_fields)
 
     profile.terms_accepted_at = timezone.now()
     profile.google_role_confirmed = True
