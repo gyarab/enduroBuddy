@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 
-from celery import shared_task
+from django_q.tasks import async_task
 from django.utils import timezone
 
 from .imports import import_fit_for_user, sync_garmin_for_user
@@ -21,14 +21,8 @@ def run_garmin_sync(user, *, window: str):
 
 
 def enqueue_garmin_sync_job(import_job_id: int) -> None:
-    """Odešle Garmin sync job do Celery fronty."""
-    execute_garmin_sync_job.delay(import_job_id)
-
-
-@shared_task(bind=True, max_retries=0, name="dashboard.tasks.execute_garmin_sync_job")
-def execute_garmin_sync_job(self, import_job_id: int) -> None:
-    """Celery task — vykoná Garmin sync pro daný ImportJob."""
-    _execute_garmin_sync_job(import_job_id)
+    """Odešle Garmin sync job do django-q2 fronty."""
+    async_task(_execute_garmin_sync_job, import_job_id)
 
 
 def _execute_garmin_sync_job(import_job_id: int) -> None:

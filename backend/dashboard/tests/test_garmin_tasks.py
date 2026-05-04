@@ -59,3 +59,34 @@ def test_reset_stale_import_jobs_ignores_non_running(garmin_user):
     call_command("reset_stale_import_jobs")
     job.refresh_from_db()
     assert job.status == ImportJob.Status.QUEUED
+
+
+def test_execute_garmin_sync_job_marks_success(import_job):
+    """Job musí skončit SUCCESS po úspěšném sync."""
+    from dashboard.services.tasks import _execute_garmin_sync_job
+
+    with patch("dashboard.services.tasks.sync_garmin_for_user") as mock_sync, \
+         patch("dashboard.services.imports.audit_garmin"):
+        mock_sync.return_value = (5, 2, MagicMock())
+        _execute_garmin_sync_job(import_job.id)
+
+    import_job.refresh_from_db()
+    assert import_job.status == ImportJob.Status.SUCCESS
+    assert import_job.imported_count == 5
+    assert import_job.skipped_count == 2
+
+
+@pytest.mark.django_db
+def test_execute_garmin_sync_job_nonexistent_id():
+    """Task s neexistujícím job ID musí tiše skončit bez výjimky."""
+    from dashboard.services.tasks import _execute_garmin_sync_job
+    _execute_garmin_sync_job(999999)
+
+
+def test_enqueue_garmin_sync_job_calls_async_task(import_job):
+    """enqueue_garmin_sync_job musí volat async_task s _execute_garmin_sync_job."""
+    from dashboard.services.tasks import enqueue_garmin_sync_job, _execute_garmin_sync_job
+
+    with patch("dashboard.services.tasks.async_task") as mock_async_task:
+        enqueue_garmin_sync_job(import_job.id)
+        mock_async_task.assert_called_once_with(_execute_garmin_sync_job, import_job.id)
