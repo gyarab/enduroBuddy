@@ -219,6 +219,15 @@ def auth_signup(request):
     if not getattr(settings, "REGISTRATION_ENABLED", True):
         return JsonResponse({"ok": False, "message": "Registrace je momentálně uzavřena."}, status=403)
     payload = _json_body(request)
+    if not payload.get("terms_accepted"):
+        return JsonResponse(
+            {
+                "ok": False,
+                "message": "Souhlas s podmínkami je povinný.",
+                "errors": {"terms_accepted": ["Souhlas s podmínkami použití je povinný."]},
+            },
+            status=400,
+        )
     form = EnduroSignupForm(
         data={
             "first_name": payload.get("first_name", ""),
@@ -241,6 +250,9 @@ def auth_signup(request):
 
     user, _ = form.try_save(request)
     if user is not None:
+        from django.utils import timezone
+        user.profile.terms_accepted_at = timezone.now()
+        user.profile.save(update_fields=["terms_accepted_at"])
         complete_signup(
             request,
             user,

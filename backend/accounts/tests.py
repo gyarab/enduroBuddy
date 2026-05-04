@@ -249,6 +249,7 @@ class GoogleProfileCompletionTests(TestCase):
                 "email": "coach-signup@example.com",
                 "password": "strong-pass-12345",
                 "password_confirmation": "strong-pass-12345",
+                "terms_accepted": True,
             }),
             content_type="application/json",
         )
