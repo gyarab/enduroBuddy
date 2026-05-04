@@ -25,6 +25,7 @@ from django.http import Http404
 from django.http import JsonResponse
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.http import require_http_methods
+from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
 
 from accounts.forms import EnduroSignupForm
@@ -250,7 +251,6 @@ def auth_signup(request):
 
     user, _ = form.try_save(request)
     if user is not None:
-        from django.utils import timezone
         user.profile.terms_accepted_at = timezone.now()
         user.profile.save(update_fields=["terms_accepted_at"])
         complete_signup(
