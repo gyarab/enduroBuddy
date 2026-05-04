@@ -154,6 +154,8 @@ def auth_me(request):
     payload = {
         "id": user.id,
         "full_name": full_name,
+        "first_name": user.first_name,
+        "last_name": user.last_name,
         "email": user.email,
         "role": role,
         "initials": _initials(full_name, user.email or ""),
