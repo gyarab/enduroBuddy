@@ -216,6 +216,8 @@ def auth_login(request):
 
 @require_http_methods(["POST"])
 def auth_signup(request):
+    if not getattr(settings, "REGISTRATION_ENABLED", True):
+        return JsonResponse({"ok": False, "message": "Registrace je momentálně uzavřena."}, status=403)
     payload = _json_body(request)
     form = EnduroSignupForm(
         data={

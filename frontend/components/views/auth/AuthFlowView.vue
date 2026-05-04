@@ -53,13 +53,11 @@ type AuthScreen =
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
-const registrationEnabled = Boolean(
-  (
-    window as typeof window & {
-      ENDUROBUDDY_CONFIG?: { registrationEnabled?: boolean };
-    }
-  ).ENDUROBUDDY_CONFIG?.registrationEnabled ?? true,
-);
+
+const { data: siteConfig } = await useFetch('/api/v1/site-config/', {
+  default: () => ({ registration_enabled: true }),
+})
+const registrationEnabled = computed(() => siteConfig.value?.registration_enabled ?? true)
 
 const isSubmitting = ref(false);
 const formError = ref("");

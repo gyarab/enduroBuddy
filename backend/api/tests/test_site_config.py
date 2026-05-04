@@ -1,5 +1,29 @@
+import json
+
 from django.test import TestCase, override_settings
 from django.urls import reverse
+
+
+class SignupClosedTest(TestCase):
+    @override_settings(REGISTRATION_ENABLED=False)
+    def test_signup_returns_403_when_disabled(self):
+        response = self.client.post(
+            reverse("api_auth_signup"),
+            data=json.dumps({"email": "x@x.com", "password": "pass", "password_confirmation": "pass"}),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertIs(response.json()["ok"], False)
+
+    @override_settings(REGISTRATION_ENABLED=True)
+    def test_signup_proceeds_to_validation_when_enabled(self):
+        response = self.client.post(
+            reverse("api_auth_signup"),
+            data=json.dumps({}),
+            content_type="application/json",
+        )
+        # form validation kicks in (not 403)
+        self.assertEqual(response.status_code, 400)
 
 
 class SiteConfigViewTest(TestCase):
