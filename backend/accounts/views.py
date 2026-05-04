@@ -3,7 +3,6 @@ from django.conf import settings
 from django.shortcuts import redirect
 from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
-from urllib.parse import urlencode
 
 from config.views_nuxt import nuxt_redirect
 
@@ -13,8 +12,10 @@ def _spa_or_public(request, *, requires_auth: bool = False, path: str | None = N
 
 
 def spa_account_login(request, *args, **kwargs):
-    if getattr(request.user, "is_authenticated", False) and not _google_profile_is_complete(request.user):
-        return redirect(f"{reverse('account_complete_profile')}?{urlencode({'next': request.get_full_path()})}")
+    if getattr(request.user, "is_authenticated", False):
+        profile = getattr(request.user, "profile", None)
+        if profile and profile.needs_profile_setup:
+            return redirect("/accounts/profile-setup/")
     return _spa_or_public(request, path="accounts/login")
 
 
@@ -97,9 +98,3 @@ def _safe_next_url(request) -> str:
     return ""
 
 
-def _google_profile_is_complete(user) -> bool:
-    profile = user.profile
-    return bool(
-        getattr(profile, "google_profile_completed", False)
-        and getattr(profile, "google_role_confirmed", False)
-    )

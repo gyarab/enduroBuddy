@@ -7,8 +7,6 @@ from django.contrib.sessions.middleware import SessionMiddleware
 from django.test import RequestFactory
 from django.test import TestCase
 from django.urls import reverse
-from urllib.parse import urlencode
-
 from allauth.socialaccount.adapter import get_adapter as get_social_adapter
 from allauth.account.models import EmailAddress
 from allauth.core import context
@@ -38,7 +36,7 @@ class GoogleProfileCompletionTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(
             response.url,
-            f"{reverse('account_complete_profile')}?{urlencode({'next': '/app/'})}",
+            "/accounts/profile-setup/",
         )
 
     def test_regular_user_without_names_is_not_redirected(self):
@@ -74,7 +72,7 @@ class GoogleProfileCompletionTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(
             response.url,
-            f"{reverse('account_complete_profile')}?{urlencode({'next': '/app/'})}",
+            "/accounts/profile-setup/",
         )
 
     def test_completion_form_saves_names_and_redirects_back(self):
@@ -143,7 +141,7 @@ class GoogleProfileCompletionTests(TestCase):
         self.assertNotEqual(response.status_code, 302)
         # Specifically should NOT redirect to profile completion
         if response.status_code == 302:
-            self.assertNotIn("account_complete_profile", response.url)
+            self.assertNotIn("/accounts/profile-setup/", response.url)
 
     def test_allauth_complete_login_creates_user_and_followup_request_requires_completion(self):
         sociallogin = self._build_sociallogin(
@@ -174,7 +172,7 @@ class GoogleProfileCompletionTests(TestCase):
         self.assertEqual(dashboard_response.status_code, 302)
         self.assertEqual(
             dashboard_response.url,
-            f"{reverse('account_complete_profile')}?{urlencode({'next': '/app/'})}",
+            "/accounts/profile-setup/",
         )
 
     def test_authenticated_unconfirmed_google_user_can_logout(self):
@@ -209,7 +207,7 @@ class GoogleProfileCompletionTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(
             response.url,
-            f"{reverse('account_complete_profile')}?{urlencode({'next': reverse('account_login')})}",
+            "/accounts/profile-setup/",
         )
 
     def test_anonymous_user_can_open_login_page(self):
@@ -237,7 +235,7 @@ class GoogleProfileCompletionTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(
             response.url,
-            f"{reverse('account_complete_profile')}?{urlencode({'next': '/app/'})}",
+            "/accounts/profile-setup/",
         )
 
     def test_email_signup_persists_selected_role(self):
