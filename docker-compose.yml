@@ -44,6 +44,7 @@ services:
     command: sh -c "cd /app/backend && python manage.py reset_stale_import_jobs && python manage.py qcluster"
     depends_on:
       - db
+      - web
     env_file:
       - .env
     environment:
