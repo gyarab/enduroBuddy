@@ -4,9 +4,9 @@ services:
     container_name: endurobuddy-db
     restart: unless-stopped
     environment:
-      POSTGRES_DB: endurobuddy
-      POSTGRES_USER: endurobuddy
-      POSTGRES_PASSWORD: endurobuddy_password
+      POSTGRES_DB: ${POSTGRES_DB:-endurobuddy}
+      POSTGRES_USER: ${POSTGRES_USER:-endurobuddy}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-endurobuddy_password}
     ports:
       - "5432:5432"
     volumes:
@@ -24,14 +24,10 @@ services:
       - db
     environment:
       POSTGRES_HOST: db
-      DJANGO_DEBUG: "true"
+      DJANGO_DEBUG: "false"
     env_file:
       - .env
-    ports:
-      - "8000:8000"
-    command: ["sh", "-c", "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"]
-    volumes:
-      - ./backend:/app/backend
+    command: ["sh", "-c", "python manage.py migrate && python manage.py collectstatic --noinput && gunicorn config.wsgi:application --bind 0.0.0.0:8000"]
     networks:
       - backend
 
@@ -49,9 +45,7 @@ services:
       - .env
     environment:
       POSTGRES_HOST: db
-      DJANGO_DEBUG: "true"
-    volumes:
-      - ./backend:/app/backend
+      DJANGO_DEBUG: "false"
     networks:
       - backend
 
@@ -61,8 +55,6 @@ services:
       dockerfile: Dockerfile
     container_name: endurobuddy-nuxt
     restart: unless-stopped
-    ports:
-      - "3000:3000"
     environment:
       NUXT_PUBLIC_API_BASE: /api/v1
     depends_on:
