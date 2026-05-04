@@ -14,10 +14,7 @@ dependencies = [
     "PyJWT==2.10.1",
     "requests==2.32.4",
     "whitenoise==6.9.0",
-    "celery[redis]==5.4.0",
-    "django-celery-beat==2.9.0",
-    "django-celery-results==2.5.1",
-    "redis==5.2.1",
+    "django-q2==1.10.0",
 ]
 
 [dependency-groups]

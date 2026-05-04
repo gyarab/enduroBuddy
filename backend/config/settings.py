@@ -87,8 +87,7 @@ INSTALLED_APPS = [
     "allauth.socialaccount",
     "allauth.socialaccount.providers.google",
 
-    "django_celery_beat",
-    "django_celery_results",
+    "django_q",
 ]
 
 if importlib.util.find_spec("rest_framework") is not None:
@@ -266,14 +265,15 @@ DEFAULT_FROM_EMAIL = os.environ.get(
     EMAIL_HOST_USER or "noreply@endurobuddy.local",
 )
 
-# Celery
-CELERY_BROKER_URL = os.environ.get("REDIS_URL", "redis://redis:6379/0")
-CELERY_RESULT_BACKEND = os.environ.get("REDIS_URL", "redis://redis:6379/0")
-CELERY_ACCEPT_CONTENT = ["json"]
-CELERY_TASK_SERIALIZER = "json"
-CELERY_RESULT_SERIALIZER = "json"
-CELERY_TIMEZONE = TIME_ZONE
-CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
+# Django Q2
+Q_CLUSTER = {
+    "name": "endurobuddy",
+    "workers": 1,
+    "timeout": 300,
+    "retry": 360,
+    "save_limit": 0,
+    "orm": "default",
+}
 
 SOCIALACCOUNT_PROVIDERS = {
     "google": {
