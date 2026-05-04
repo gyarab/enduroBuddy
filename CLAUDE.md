@@ -12,6 +12,8 @@
 
 5. **Commity bez Co-Authored-By** — autor je vždy jen uživatel, nikdy nepřidávej `Co-Authored-By: Claude` do commit message.
 
+6. **Každá nová feature = vlastní větev + push na remote** — před implementací vytvořit `feat/<tema>` větev a pushnout ji na `origin` (`git push -u origin feat/<tema>`). Commitovat průběžně a pushovat tak, aby byl remote vždy aktuální. Uživatel pracuje na více počítačích.
+
 ---
 
 ## Co je EnduroBuddy
