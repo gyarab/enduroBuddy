@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 from django.core.management.base import BaseCommand
+from django.utils import timezone
 
 from accounts.models import ImportJob
 
@@ -12,5 +15,6 @@ class Command(BaseCommand):
         ).update(
             status=ImportJob.Status.ERROR,
             message="Worker restarted",
+            finished_at=timezone.now(),
         )
         self.stdout.write(f"Reset {updated} stale import job(s).")
