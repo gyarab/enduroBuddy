@@ -270,7 +270,7 @@ Q_CLUSTER = {
     "name": "endurobuddy",
     "workers": 1,
     "timeout": 300,
-    "retry": 360,
+    "retry": 0,
     "save_limit": 0,
     "orm": "default",
 }
