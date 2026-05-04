@@ -216,6 +216,28 @@ Spec: `docs/superpowers/specs/2026-04-18-nuxt-migration-design.md`
 
 ## Aktivní plány a změny
 
+### 2026-05-04 — Migrace Celery + Redis → django-q2 ✅ KOMPLETNÍ
+
+**Spec:** `docs/superpowers/specs/2026-05-04-django-q2-migration-design.md`
+**Plán:** `docs/superpowers/plans/2026-05-04-django-q2-migration.md`
+
+**Motivace:** Celery + Redis byl přehnaně složitý pro jediný user-triggered task (Garmin sync). Django-q2 používá PostgreSQL jako broker — žádná nová infrastruktura.
+
+**Co bylo uděláno:**
+- Odstraněny balíčky: `celery[redis]`, `django-celery-beat`, `django-celery-results`, `redis`
+- Přidán `django-q2==1.10.0`, aplikovány DB migrace (19 django_q tabulek)
+- `backend/config/celery.py` smazán, `config/__init__.py` vyprázdněn
+- `Q_CLUSTER` konfigurace v `settings.py` (`orm: "default"`, `workers: 1`, `timeout: 300`, `max_attempts: 1`)
+- Nový management command `reset_stale_import_jobs` — cleanup RUNNING ImportJobů při startu workeru (nastavuje `status=ERROR`, `finished_at=now()`)
+- `dashboard/services/tasks.py`: `@shared_task` + `.delay()` → `async_task(_execute_garmin_sync_job, import_job_id)`
+- `test_celery_tasks.py` smazán, nahrazen `test_garmin_tasks.py` (5 testů, TDD)
+- docker-compose: odstraněny `redis`, `celery-worker`, `celery-beat` services; přidán `qcluster` service (depends_on: db + web; spouští reset_stale_import_jobs před qcluster)
+- `.env.example` vyčištěn od REDIS_* proměnných
+
+**Stav po migraci:** 111 testů zelených, 1 skipped. Django check: 0 issues.
+
+---
+
 ### 2026-04-18 — Nuxt migrace + infrastrukturní základ
 
 **Větev:** `feat/nuxt-migration`
