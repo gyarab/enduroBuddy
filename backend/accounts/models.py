@@ -18,9 +18,17 @@ class Profile(models.Model):
         legend_state = models.JSONField(default=dict, blank=True)
         google_profile_completed = models.BooleanField(default=False)
         google_role_confirmed = models.BooleanField(default=False)
+        terms_accepted_at = models.DateTimeField(null=True, blank=True)
 
         def __str__(self):
             return f"{self.user.username} ({self.role})"
+
+        @property
+        def needs_profile_setup(self) -> bool:
+            return (
+                self.user.socialaccount_set.filter(provider="google").exists()
+                and not self.google_role_confirmed
+            )
 
         def ensure_coach_join_code(self) -> str:
             if self.coach_join_code and len(self.coach_join_code) >= 12:
