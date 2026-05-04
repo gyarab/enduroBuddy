@@ -69,17 +69,9 @@ def _form_errors(form) -> dict[str, list[str]]:
 def _default_route_for_user(user) -> str:
     profile = getattr(user, "profile", None)
     role = getattr(profile, "role", Role.ATHLETE)
-    has_incomplete_google_profile = bool(
-        profile
-        and SocialAccount.objects.filter(user=user, provider="google").exists()
-        and not (
-            getattr(profile, "google_profile_completed", False)
-            and getattr(profile, "google_role_confirmed", False)
-        )
-    )
-    if has_incomplete_google_profile:
-        return _app_url("/app/profile/complete")
-    return _app_url("/coach/plans" if role == Role.COACH else "/dashboard")
+    if profile and profile.needs_profile_setup:
+        return _app_url("/accounts/profile-setup/")
+    return _app_url("/coach/plans" if role == Role.COACH else "/app/dashboard")
 
 
 def _get_email_confirmation_or_none(key: str):
@@ -165,6 +157,7 @@ def auth_me(request):
         "email": user.email,
         "role": role,
         "initials": _initials(full_name, user.email or ""),
+        "needs_profile_setup": bool(profile and profile.needs_profile_setup),
         "capabilities": {
             "can_view_coach": role == Role.COACH,
             "can_view_athlete": True,
@@ -703,3 +696,46 @@ def auth_reauthenticate(request):
             "redirect_to": _safe_redirect_target(request, _default_route_for_user(request.user)),
         }
     )
+
+
+@require_http_methods(["POST"])
+def auth_profile_setup(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({"ok": False, "message": "Authentication required."}, status=401)
+    user = request.user
+    profile = getattr(user, "profile", None)
+
+    if not profile or not profile.needs_profile_setup:
+        return JsonResponse({"ok": False, "message": "Profile setup not required."}, status=400)
+
+    payload = _json_body(request)
+
+    role = payload.get("role", "")
+    if role not in Role.values:
+        return JsonResponse(
+            {"ok": False, "errors": {"role": ["Zvolte roli sportovce nebo trenéra."]}},
+            status=400,
+        )
+
+    if not payload.get("terms_accepted"):
+        return JsonResponse(
+            {"ok": False, "errors": {"terms_accepted": ["Souhlas s podmínkami použití je povinný."]}},
+            status=400,
+        )
+
+    first_name = payload.get("first_name", "").strip()
+    last_name = payload.get("last_name", "").strip()
+    if first_name:
+        user.first_name = first_name
+    if last_name:
+        user.last_name = last_name
+    user.save(update_fields=["first_name", "last_name"])
+
+    profile.terms_accepted_at = timezone.now()
+    profile.google_role_confirmed = True
+    profile.google_profile_completed = True
+    profile.save(update_fields=["terms_accepted_at", "google_role_confirmed", "google_profile_completed"])
+    profile.apply_role(role)
+
+    redirect_to = _app_url("/coach/plans" if role == Role.COACH else "/app/dashboard")
+    return JsonResponse({"ok": True, "redirect_to": redirect_to})
