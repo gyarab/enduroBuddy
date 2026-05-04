@@ -89,12 +89,6 @@ services:
       - "traefik.http.middlewares.www-to-root.redirectregex.regex=^https://www\\.endurobuddy\\.cz/(.*)"
       - "traefik.http.middlewares.www-to-root.redirectregex.replacement=https://endurobuddy.cz/$${1}"
       - "traefik.http.middlewares.www-to-root.redirectregex.permanent=true"
-      # HTTP → HTTPS redirect
-      - "traefik.http.routers.endurobuddy-http.rule=Host(`endurobuddy.cz`) || Host(`www.endurobuddy.cz`)"
-      - "traefik.http.routers.endurobuddy-http.entrypoints=web"
-      - "traefik.http.routers.endurobuddy-http.middlewares=https-redirect"
-      - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
-      - "traefik.http.middlewares.https-redirect.redirectscheme.permanent=true"
 
 volumes:
   endurobuddy_pgdata:
