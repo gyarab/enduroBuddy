@@ -12,16 +12,6 @@ services:
     networks:
       - backend
 
-  redis:
-    image: redis:7-alpine
-    container_name: endurobuddy-redis
-    restart: unless-stopped
-    volumes:
-      - endurobuddy_redis:/var/lib/redis/data
-    networks:
-      - backend
-    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
-
   web:
     build:
       context: .
@@ -30,7 +20,6 @@ services:
     restart: unless-stopped
     depends_on:
       - db
-      - redis
     environment:
       POSTGRES_HOST: db
       POSTGRES_PORT: 5432
@@ -58,36 +47,15 @@ services:
       - backend
       - traefik-public
 
-  celery-worker:
+  qcluster:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: endurobuddy-celery-worker
+    container_name: endurobuddy-qcluster
     restart: unless-stopped
-    command: sh -c "cd /app/backend && celery -A config worker -l info"
+    command: sh -c "cd /app/backend && python manage.py reset_stale_import_jobs && python manage.py qcluster"
     depends_on:
       - db
-      - redis
-    env_file:
-      - .env
-    environment:
-      POSTGRES_HOST: db
-      POSTGRES_PORT: 5432
-      DJANGO_DEBUG: "false"
-      DJANGO_USE_HTTPS: "true"
-    networks:
-      - backend
-
-  celery-beat:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: endurobuddy-celery-beat
-    restart: unless-stopped
-    command: sh -c "cd /app/backend && celery -A config beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler"
-    depends_on:
-      - db
-      - redis
     env_file:
       - .env
     environment:
@@ -146,7 +114,6 @@ services:
 
 volumes:
   endurobuddy_pgdata:
-  endurobuddy_redis:
 
 networks:
   backend:

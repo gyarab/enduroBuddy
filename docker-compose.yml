@@ -14,18 +14,6 @@ services:
     networks:
       - backend
 
-  redis:
-    image: redis:7-alpine
-    container_name: endurobuddy-redis
-    restart: unless-stopped
-    ports:
-      - "6379:6379"
-    volumes:
-      - endurobuddy_redis:/var/lib/redis/data
-    networks:
-      - backend
-    command: redis-server --appendonly yes
-
   web:
     build:
       context: .
@@ -34,11 +22,9 @@ services:
     restart: unless-stopped
     depends_on:
       - db
-      - redis
     environment:
       POSTGRES_HOST: db
       DJANGO_DEBUG: "true"
-      REDIS_URL: redis://redis:6379/0
     env_file:
       - .env
     ports:
@@ -49,43 +35,20 @@ services:
     networks:
       - backend
 
-  celery-worker:
+  qcluster:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: endurobuddy-celery-worker
+    container_name: endurobuddy-qcluster
     restart: unless-stopped
-    command: sh -c "cd /app/backend && celery -A config worker -l info"
+    command: sh -c "cd /app/backend && python manage.py reset_stale_import_jobs && python manage.py qcluster"
     depends_on:
       - db
-      - redis
     env_file:
       - .env
     environment:
       POSTGRES_HOST: db
       DJANGO_DEBUG: "true"
-      REDIS_URL: redis://redis:6379/0
-    volumes:
-      - ./backend:/app/backend
-    networks:
-      - backend
-
-  celery-beat:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: endurobuddy-celery-beat
-    restart: unless-stopped
-    command: sh -c "cd /app/backend && celery -A config beat -l info"
-    depends_on:
-      - db
-      - redis
-    env_file:
-      - .env
-    environment:
-      POSTGRES_HOST: db
-      DJANGO_DEBUG: "true"
-      REDIS_URL: redis://redis:6379/0
     volumes:
       - ./backend:/app/backend
     networks:
@@ -121,7 +84,6 @@ services:
 
 volumes:
   endurobuddy_pgdata:
-  endurobuddy_redis:
 
 networks:
   backend:
