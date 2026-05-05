@@ -4,6 +4,7 @@ defineProps<{
   brandTitle: string;
   brandDescription: string;
   stats?: Array<{ icon: string; label: string; value: string; blue?: boolean }>;
+  cardAccent?: string;
 }>();
 </script>
 
@@ -47,7 +48,10 @@ defineProps<{
     </aside>
 
     <div class="auth-shell__content">
-      <div class="auth-shell__card">
+      <div
+        class="auth-shell__card"
+        :style="cardAccent ? { borderTop: `2px solid ${cardAccent}` } : {}"
+      >
         <slot />
       </div>
     </div>

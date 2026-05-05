@@ -179,6 +179,12 @@ const screen = computed<AuthScreen>(() => {
   return value as AuthScreen;
 });
 
+const cardAccent = computed(() => {
+  if (screen.value === "login") return "var(--eb-blue)"
+  if (screen.value === "signup") return "var(--eb-lime)"
+  return undefined
+});
+
 watch(
   screen,
   (currentScreen) => {
@@ -714,9 +720,10 @@ watch(
         :brand-title="shellConfig.title"
         :brand-description="shellConfig.description"
         :stats="shellConfig.stats"
+        :card-accent="cardAccent"
       >
         <div v-if="screen === 'login'" class="auth-flow-card">
-          <div class="auth-flow-card__eyebrow">Authentication</div>
+          <div class="auth-flow-card__eyebrow" style="color: var(--eb-blue);">Sign In</div>
           <h1>Vítej zpět</h1>
           <p>Pokračuj do svého tréninkového přehledu.</p>
 
@@ -762,7 +769,7 @@ watch(
         </div>
 
         <div v-else-if="screen === 'signup'" class="auth-flow-card">
-          <div class="auth-flow-card__eyebrow">Authentication</div>
+          <div class="auth-flow-card__eyebrow" style="color: var(--eb-lime);">New Account</div>
           <h1>Vytvoř si účet</h1>
           <p>Založ si účet a začni plánovat trénink.</p>
 
