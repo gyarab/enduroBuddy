@@ -239,6 +239,11 @@ Spec: `docs/superpowers/specs/2026-04-18-nuxt-migration-design.md`
 - Email šablony: tmavý design (`#09090b` + lime header) + `@media (prefers-color-scheme: light)` fallback
 - Testy: 29 backend testů, 120 frontend testů — vše zelené
 
+**Bugfixy (2026-05-05):**
+- `AuthPreviewShell.vue`: změněn `flex-direction: column` + `margin-block: auto` na `.auth-shell__card` — formulář signup přestal být ořezán `overflow: hidden` shellu
+- `AuthPreviewShell.vue`: `overflow: hidden` → `overflow-x: hidden; overflow-y: auto` — obranné scrollování kdyby grid row nevyrostl správně
+- `[...slug].vue`: `filter(Boolean)` na slug segmentech — trailing slash v URL dával `"signup/"` místo `"signup"`, screenMap nenašel klíč a fallbackoval na `"login"` → signup formulář se vůbec nezobrazoval
+
 ---
 
 ### 2026-05-04 — Migrace Celery + Redis → django-q2 ✅ KOMPLETNÍ
