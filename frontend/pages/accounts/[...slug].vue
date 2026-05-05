@@ -9,7 +9,8 @@ const route = useRoute()
 
 const slug = computed(() => {
   const parts = route.params.slug as string[]
-  return Array.isArray(parts) ? parts.join("/") : String(parts)
+  const filtered = Array.isArray(parts) ? parts.filter(Boolean) : [String(parts)].filter(Boolean)
+  return filtered.join("/")
 })
 
 const screenMap: Record<string, string> = {
