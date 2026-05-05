@@ -220,6 +220,27 @@ Spec: `docs/superpowers/specs/2026-04-18-nuxt-migration-design.md`
 
 ## Aktivní plány a změny
 
+### 2026-05-04 — Registration Flow Redesign ✅ KOMPLETNÍ (feat/registration-flow)
+
+**Spec:** `docs/superpowers/specs/2026-05-04-registration-flow-redesign.md`
+**Plán:** `docs/superpowers/plans/2026-05-04-registration-flow-redesign.md`
+
+**Co bylo implementováno:**
+- `Profile.terms_accepted_at` pole + `needs_profile_setup` @property (migrace 0018)
+- `GoogleProfileCompletionMiddleware` přepsán — redirect na `/accounts/profile-setup/`
+- `auth_signup`: validace `terms_accepted`, ukládá `terms_accepted_at`
+- `auth_me`: přidáno `first_name`, `last_name`, `needs_profile_setup` do response
+- `_default_route_for_user`: redirect na `/accounts/profile-setup/` pro Google uživatele bez dokončeného onboardingu
+- `POST /api/v1/auth/profile-setup/`: nový endpoint pro Google onboarding (role + terms + jméno)
+- Frontend: `AuthMeResponse` rozšířeno o `first_name`, `last_name`, `needs_profile_setup`; `SignupPayload` + `terms_accepted`; `profileSetup()` API util
+- Nuxt middleware `profile-setup.global.ts` — guard přesměrovávající Google uživatele bez onboardingu
+- Signup formulář: terms+privacy checkbox, disabled submit bez souhlasu
+- Nová stránka `/accounts/profile-setup/` — auth shell, jméno/role/terms, pre-filled z Google účtu
+- Email šablony: tmavý design (`#09090b` + lime header) + `@media (prefers-color-scheme: light)` fallback
+- Testy: 29 backend testů, 120 frontend testů — vše zelené
+
+---
+
 ### 2026-05-04 — Migrace Celery + Redis → django-q2 ✅ KOMPLETNÍ
 
 **Spec:** `docs/superpowers/specs/2026-05-04-django-q2-migration-design.md`
