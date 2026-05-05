@@ -5,53 +5,72 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="supported-color-schemes" content="light dark">
   <title>EnduroBuddy</title>
+  <style>
+    @media (prefers-color-scheme: light) {
+      .eb-body    { background: #f4f4f5 !important; }
+      .eb-card    { background: #ffffff !important; border-color: #e4e4e7 !important; }
+      .eb-content { background: #ffffff !important; }
+      .eb-text    { color: #09090b !important; }
+      .eb-soft    { color: #52525b !important; }
+      .eb-muted   { color: #71717a !important; }
+      .eb-footer  { background: #e4e4e7 !important; border-color: #d4d4d8 !important; }
+      .eb-foot-t  { color: #71717a !important; }
+      .eb-link    { color: #2563eb !important; }
+    }
+  </style>
 </head>
-<body style="margin:0;padding:0;background:#f4f4f5;font-family:'Inter',ui-sans-serif,'Segoe UI',Arial,sans-serif;-webkit-font-smoothing:antialiased;">
+<body class="eb-body" style="margin:0;padding:0;background:#09090b;font-family:'Inter',ui-sans-serif,'Segoe UI',Arial,sans-serif;-webkit-font-smoothing:antialiased;">
 
-<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f4f4f5;padding:32px 0 48px;">
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" class="eb-body" style="background:#09090b;padding:32px 0 48px;">
   <tr>
     <td align="center" style="padding:0 16px;">
 
       <!-- Card -->
-      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:600px;background:#ffffff;border:1px solid #e4e4e7;border-radius:14px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.07);">
+      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" class="eb-card" style="max-width:600px;background:#111113;border:1px solid #27272a;border-radius:14px;overflow:hidden;">
 
-        <!-- Header -->
+        <!-- Header: always dark, lime bottom border -->
         <tr>
-          <td style="padding:0;">
-            <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
-              <tr>
-                <td style="padding:3px 0 0;background:#c8ff00;font-size:0;line-height:0;">&nbsp;</td>
-              </tr>
-              <tr>
-                <td style="padding:20px 28px 18px;border-bottom:1px solid #f0f0f1;">
-                  <span style="font-family:'Inter',ui-sans-serif,'Segoe UI',Arial,sans-serif;font-size:18px;font-weight:700;color:#09090b;letter-spacing:-.03em;">EnduroBuddy</span>
+          <td style="padding:20px 28px;background:#09090b;border-bottom:2px solid #c8ff00;">
+            <table cellspacing="0" cellpadding="0" role="presentation">
+              <tr valign="bottom">
+                <td style="width:5px;height:10px;background:#c8ff00;border-radius:2px;padding:0;"></td>
+                <td style="width:3px;padding:0;"></td>
+                <td style="width:5px;height:16px;background:#c8ff00;border-radius:2px;padding:0;"></td>
+                <td style="width:3px;padding:0;"></td>
+                <td style="width:5px;height:22px;background:#c8ff00;border-radius:2px;padding:0;"></td>
+                <td style="width:10px;padding:0;"></td>
+                <td style="padding:0;vertical-align:middle;">
+                  <span style="font-size:16px;font-weight:700;color:#fafafa;letter-spacing:-.02em;">EnduroBuddy</span>
                 </td>
               </tr>
             </table>
           </td>
         </tr>
 
-        <!-- Body -->
+        <!-- Content -->
         <tr>
-          <td style="padding:28px 28px 24px;font-family:'Inter',ui-sans-serif,'Segoe UI',Arial,sans-serif;font-size:15px;line-height:1.65;color:#18181b;">
+          <td class="eb-content" style="padding:32px 28px 28px;background:#111113;">
             {% block content %}{% endblock content %}
           </td>
         </tr>
 
         <!-- Footer -->
         <tr>
-          <td style="padding:18px 28px 22px;border-top:1px solid #f0f0f1;font-family:'Inter',ui-sans-serif,'Segoe UI',Arial,sans-serif;font-size:12px;line-height:1.5;color:#71717a;">
-            {% if CURRENT_LANGUAGE == 'en' %}
-              You're receiving this email because of your account at {{ current_site.domain }}.
-            {% else %}
-              Tento e-mail obdržíš v souvislosti se svým účtem na {{ current_site.domain }}.
-            {% endif %}
+          <td class="eb-footer" style="padding:16px 28px 20px;background:#0a0a0d;border-top:1px solid #27272a;">
+            <p class="eb-foot-t" style="margin:0;font-size:12px;line-height:1.55;color:#3f3f46;">
+              {% if CURRENT_LANGUAGE == 'en' %}
+                You're receiving this email because of your account at {{ current_site.domain }}.
+              {% else %}
+                Tento e-mail obdržíš v souvislosti se svým účtem na {{ current_site.domain }}.
+              {% endif %}
+            </p>
           </td>
         </tr>
 
       </table>
-      <!-- /Card -->
 
     </td>
   </tr>

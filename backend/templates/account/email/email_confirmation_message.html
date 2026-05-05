@@ -6,50 +6,54 @@
 {% block content %}
 {% user_display user as user_display %}
 
-<p style="margin:0 0 16px 0;color:#52525b;font-size:14px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;">
+<p class="eb-muted" style="margin:0 0 14px;color:#71717a;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;">
   {% if CURRENT_LANGUAGE == 'en' %}Email Verification{% else %}Ověření e-mailu{% endif %}
 </p>
 
-<p style="margin:0 0 14px 0;">
+<p class="eb-text" style="margin:0 0 8px;color:#fafafa;font-size:22px;font-weight:700;line-height:1.2;letter-spacing:-.02em;font-family:'Inter',ui-sans-serif,'Segoe UI',Arial,sans-serif;">
+  {% if CURRENT_LANGUAGE == 'en' %}Confirm your email{% else %}Potvrď svůj e-mail{% endif %}
+</p>
+
+<p class="eb-soft" style="margin:0 0 6px;color:#a1a1aa;font-size:15px;line-height:1.6;">
   {% if CURRENT_LANGUAGE == 'en' %}Hi {{ user_display }},{% else %}Ahoj {{ user_display }},{% endif %}
 </p>
 
-<p style="margin:0 0 22px 0;">
+<p class="eb-soft" style="margin:0 0 28px;color:#a1a1aa;font-size:15px;line-height:1.65;">
   {% if CURRENT_LANGUAGE == 'en' %}
-    An account was created on EnduroBuddy. Please confirm your email address to activate it.
+    An account was created on EnduroBuddy. Click the button below to confirm your email address and activate it.
   {% else %}
-    Na EnduroBuddy byl vytvořen účet. Potvrď svou e-mailovou adresu kliknutím na tlačítko níže.
+    Na EnduroBuddy byl vytvořen účet. Klikni na tlačítko níže a e-mailová adresa bude ověřena.
   {% endif %}
 </p>
 
 {% if code %}
 
-<p style="margin:0 0 10px 0;font-size:14px;color:#52525b;">
+<p class="eb-muted" style="margin:0 0 8px;font-size:13px;color:#71717a;">
   {% if CURRENT_LANGUAGE == 'en' %}Verification code:{% else %}Ověřovací kód:{% endif %}
 </p>
 
-<p style="margin:0 0 22px 0;font-size:28px;font-weight:700;letter-spacing:.12em;color:#09090b;font-family:'JetBrains Mono',ui-monospace,'Cascadia Code',monospace;">{{ code }}</p>
+<p style="margin:0 0 28px;font-size:28px;font-weight:700;letter-spacing:.12em;color:#c8ff00;font-family:'JetBrains Mono',ui-monospace,'Cascadia Code',monospace;">{{ code }}</p>
 
 {% else %}
 
-<table role="presentation" cellspacing="0" cellpadding="0" style="margin:0 0 20px 0;">
+<table role="presentation" cellspacing="0" cellpadding="0" style="margin:0 0 22px;">
   <tr>
     <td style="border-radius:8px;background:#c8ff00;">
-      <a href="{{ activate_url }}" style="display:inline-block;padding:13px 22px;font-family:'Inter',ui-sans-serif,'Segoe UI',Arial,sans-serif;font-size:14px;font-weight:700;color:#09090b;text-decoration:none;border-radius:8px;letter-spacing:.01em;">
+      <a href="{{ activate_url }}" style="display:inline-block;padding:14px 24px;font-family:'Inter',ui-sans-serif,'Segoe UI',Arial,sans-serif;font-size:14px;font-weight:700;color:#09090b;text-decoration:none;border-radius:8px;letter-spacing:.01em;">
         {% if CURRENT_LANGUAGE == 'en' %}Confirm email address{% else %}Potvrdit e-mailovou adresu{% endif %}
       </a>
     </td>
   </tr>
 </table>
 
-<p style="margin:0 0 18px 0;font-size:12px;color:#71717a;">
+<p class="eb-muted" style="margin:0 0 20px;font-size:12px;color:#3f3f46;line-height:1.6;">
   {% if CURRENT_LANGUAGE == 'en' %}If the button doesn't work, open this link:{% else %}Pokud tlačítko nefunguje, otevři tento odkaz:{% endif %}<br>
-  <a href="{{ activate_url }}" style="color:#2563eb;word-break:break-all;">{{ activate_url }}</a>
+  <a href="{{ activate_url }}" class="eb-link" style="color:#38bdf8;word-break:break-all;">{{ activate_url }}</a>
 </p>
 
 {% endif %}
 
-<p style="margin:0;font-size:13px;color:#71717a;">
+<p class="eb-muted" style="margin:0;font-size:13px;color:#3f3f46;line-height:1.6;">
   {% if CURRENT_LANGUAGE == 'en' %}
     If you didn't create this account, you can safely ignore this email.
   {% else %}
