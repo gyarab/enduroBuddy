@@ -3,9 +3,12 @@ import { apiFetch } from "~/utils/apiFetch"
 export type AuthMeResponse = {
   id: number
   full_name: string
+  first_name: string
+  last_name: string
   email: string
   role: "COACH" | "ATHLETE"
   initials: string
+  needs_profile_setup: boolean
   capabilities: {
     can_view_coach: boolean
     can_view_athlete: boolean
@@ -35,6 +38,7 @@ export type SignupPayload = {
   role: "COACH" | "ATHLETE"
   password: string
   password_confirmation: string
+  terms_accepted: boolean
 }
 
 export type AuthActionResponse = {
@@ -50,6 +54,17 @@ export async function loginWithPassword(payload: LoginPayload) {
 
 export async function signupWithPassword(payload: SignupPayload) {
   return apiFetch<AuthActionResponse>("/auth/signup/", { method: "POST", body: payload })
+}
+
+export type ProfileSetupPayload = {
+  first_name: string
+  last_name: string
+  role: "COACH" | "ATHLETE"
+  terms_accepted: boolean
+}
+
+export async function profileSetup(payload: ProfileSetupPayload) {
+  return apiFetch<AuthActionResponse>("/auth/profile-setup/", { method: "POST", body: payload })
 }
 
 export async function requestPasswordReset(email: string) {
