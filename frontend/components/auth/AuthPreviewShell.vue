@@ -63,7 +63,8 @@ defineProps<{
   display: grid;
   grid-template-columns: minmax(19rem, 1.02fr) minmax(0, 1fr);
   min-height: 41rem;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
   border: 1px solid var(--eb-border);
   border-radius: 1.5rem;
   background: linear-gradient(180deg, rgba(24, 24, 27, 0.98) 0%, rgba(14, 14, 16, 0.98) 100%);
