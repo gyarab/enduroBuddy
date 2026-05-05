@@ -209,8 +209,8 @@ defineProps<{
 
 .auth-shell__content {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
   padding: 1.75rem;
 }
 
@@ -221,6 +221,7 @@ defineProps<{
   border-radius: 1.25rem;
   background: linear-gradient(180deg, rgba(24, 24, 27, 0.98) 0%, rgba(16, 16, 18, 0.98) 100%);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  margin-block: auto;
 }
 
 @media (max-width: 960px) {
