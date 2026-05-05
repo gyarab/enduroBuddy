@@ -76,6 +76,7 @@ const signupForm = reactive({
   role: "ATHLETE" as "COACH" | "ATHLETE",
   password: "",
   passwordConfirmation: "",
+  termsAccepted: false,
 });
 
 const resetForm = reactive({
@@ -424,6 +425,7 @@ async function submitSignup() {
       role: signupForm.role,
       password: signupForm.password,
       password_confirmation: signupForm.passwordConfirmation,
+      terms_accepted: signupForm.termsAccepted,
     });
     authNavigate(response.redirect_to);
   } catch (error: unknown) {
@@ -832,9 +834,20 @@ watch(
             </label>
           </div>
 
+          <label class="auth-flow-check auth-flow-check--terms">
+            <input v-model="signupForm.termsAccepted" type="checkbox" />
+            <span>
+              Souhlasím s
+              <a href="/terms" target="_blank" rel="noopener">Podmínkami použití</a>
+              a
+              <a href="/privacy" target="_blank" rel="noopener">Ochranou osobních údajů</a>
+            </span>
+          </label>
+          <small v-if="firstError('terms_accepted')" class="is-danger">{{ firstError("terms_accepted") }}</small>
+
           <p v-if="formError" class="auth-flow-error">{{ formError }}</p>
 
-          <button class="auth-flow-button auth-flow-button--primary" type="button" :disabled="isSubmitting" @click="submitSignup">
+          <button class="auth-flow-button auth-flow-button--primary" type="button" :disabled="isSubmitting || !signupForm.termsAccepted" @click="submitSignup">
             {{ isSubmitting ? "Registruji..." : "Registrovat se" }}
           </button>
 
@@ -1369,6 +1382,16 @@ watch(
   gap: 0.55rem;
   color: var(--eb-text-soft);
   font-size: var(--eb-type-small-size);
+}
+
+.auth-flow-check--terms a {
+  color: var(--eb-lime);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.auth-flow-check--terms a:hover {
+  text-decoration: underline;
 }
 
 .auth-flow-footer {
