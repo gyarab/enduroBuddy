@@ -86,7 +86,6 @@ onBeforeUnmount(() => {
     <div class="top-nav__inner">
       <a class="top-nav__brand" :href="props.variant === 'coach' ? '/coach/plans' : '/dashboard'">
         <EbLogo class="top-nav__logo-full" size="lg" />
-        <EbLogo class="top-nav__logo-mark" variant="mark" size="lg" />
       </a>
 
       <div class="top-nav__headline">
@@ -144,9 +143,6 @@ onBeforeUnmount(() => {
   padding: 0 1.5rem;
 }
 
-.top-nav__logo-mark {
-  display: none;
-}
 
 .top-nav__headline {
   display: flex;
@@ -255,14 +251,6 @@ onBeforeUnmount(() => {
 
   .top-nav__subtitle {
     display: none;
-  }
-
-  .top-nav__logo-full {
-    display: none;
-  }
-
-  .top-nav__logo-mark {
-    display: inline-flex;
   }
 
   .top-nav__actions {

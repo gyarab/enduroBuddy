@@ -36,8 +36,7 @@
   flex-shrink: 0;
   margin-right: auto;
 }
-.eb-topbar-brand .eb-logo-full  { font-size: 1.125rem; }
-.eb-topbar-brand .eb-logo-compact { display: none; font-size: 1.125rem; }
+.eb-topbar-brand .eb-logo { font-size: 1.125rem; }
 
 /* Nav links */
 .eb-topbar-nav {
@@ -194,9 +193,6 @@
 
 /* ── Responsive ──────────────────────────────────────────── */
 @media (max-width: 768px) {
-  .eb-topbar-brand .eb-logo-full    { display: none; }
-  .eb-topbar-brand .eb-logo-compact { display: inline-flex; }
-
   .eb-topbar-nav {
     position: static;
     transform: none;

@@ -3,8 +3,7 @@
     <header class="eb-topbar">
       <div class="eb-public-shell eb-topbar-inner">
         <NuxtLink to="/" class="eb-topbar-brand" aria-label="EnduroBuddy">
-          <EbLogo class="eb-logo-full" size="lg" />
-          <EbLogo class="eb-logo-compact" variant="compact" size="lg" />
+          <EbLogo size="lg" />
         </NuxtLink>
 
         <nav class="eb-topbar-nav" :aria-label="t('nav.mainNavLabel')">
