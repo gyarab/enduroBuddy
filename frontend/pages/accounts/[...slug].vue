@@ -16,7 +16,6 @@ const slug = computed(() => {
 const screenMap: Record<string, string> = {
   "login": "login",
   "signup": "signup",
-  "logout": "logout",
   "password/reset": "password-reset",
   "password/reset/done": "password-reset-done",
   "confirm-email": "verification-sent",

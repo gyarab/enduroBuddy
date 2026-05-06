@@ -17,7 +17,6 @@ import {
   fetchEmailAddresses,
   fetchEmailConfirmState,
   loginWithPassword,
-  logoutFromSession,
   fetchPasswordSetState,
   fetchPasswordResetKeyState,
   fetchReauthenticateState,
@@ -44,7 +43,6 @@ type AuthScreen =
   | "password-change"
   | "password-set"
   | "reauthenticate"
-  | "logout"
   | "inactive"
   | "social-error"
   | "social-cancelled"
@@ -307,16 +305,6 @@ const shellConfig = computed(() => {
           { icon: "✓", label: "Po potvrzení", value: "Akce povolena", blue: true },
         ],
       };
-    case "logout":
-      return {
-        eyebrow: "Session",
-        title: "Odhlásit se?",
-        description: "Přihlásit se zpátky trvá pár sekund.",
-        stats: [
-          { icon: "👋", label: "Session", value: "Aktivní" },
-          { icon: "→", label: "Po odhlášení", value: "Přihlašovací stránka", blue: true },
-        ],
-      };
     case "inactive":
       return {
         eyebrow: "Account",
@@ -453,20 +441,6 @@ async function submitPasswordReset() {
     const maybeError = error as { data?: { message?: string; errors?: Record<string, string[]> } };
     formError.value = maybeError.data?.message || "Obnovu hesla se nepodarilo zahajit.";
     fieldErrors.value = maybeError.data?.errors || {};
-  } finally {
-    isSubmitting.value = false;
-  }
-}
-
-async function submitLogout() {
-  isSubmitting.value = true;
-  clearErrors();
-  try {
-    const response = await logoutFromSession();
-    authStore.user = null;
-    authNavigate(response.redirect_to);
-  } catch {
-    formError.value = "Odhlaseni se nepodarilo dokoncit.";
   } finally {
     isSubmitting.value = false;
   }
@@ -1095,17 +1069,6 @@ watch(
               {{ isSubmitting ? "Ukladam..." : "Nastavit heslo" }}
             </button>
           </template>
-        </div>
-
-        <div v-else-if="screen === 'logout'" class="auth-flow-card auth-flow-card--status">
-          <span class="auth-flow-chip">Session</span>
-          <h1>Opravdu se chceš odhlásit?</h1>
-          <p>Po potvrzení tě vrátíme na přihlášení.</p>
-          <p v-if="formError" class="auth-flow-error">{{ formError }}</p>
-          <button class="auth-flow-button auth-flow-button--primary" type="button" :disabled="isSubmitting" @click="submitLogout">
-            {{ isSubmitting ? "Odhlasuji..." : "Odhlásit se" }}
-          </button>
-          <RouterLink class="auth-flow-button auth-flow-button--secondary" to="/dashboard">Zpět</RouterLink>
         </div>
 
         <div v-else-if="screen === 'inactive'" class="auth-flow-card auth-flow-card--status">

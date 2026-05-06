@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref } from "vue";
 
 import { useAuthStore } from "@/stores/auth";
+import { logoutFromSession } from "@/utils/api/auth";
 
 const emit = defineEmits<{
   openSettings: [];
@@ -9,8 +10,22 @@ const emit = defineEmits<{
 }>();
 
 const authStore = useAuthStore();
+const router = useRouter();
 const { t } = useI18n();
 const displayName = computed(() => authStore.user?.full_name || "EnduroBuddy User");
+const isLoggingOut = ref(false);
+
+async function handleLogout() {
+  if (isLoggingOut.value) return;
+  isLoggingOut.value = true;
+  try {
+    const response = await logoutFromSession();
+    authStore.user = null;
+    await router.push(response.redirect_to || "/accounts/login/");
+  } catch {
+    await router.push("/accounts/login/");
+  }
+}
 </script>
 
 <template>
@@ -19,7 +34,7 @@ const displayName = computed(() => authStore.user?.full_name || "EnduroBuddy Use
     <button class="profile-dropdown__item" type="button" @click="emit('openSettings')">{{ t("profileDropdown.profile") }}</button>
     <button class="profile-dropdown__item" type="button" @click="emit('openGarmin')">{{ t("profileDropdown.garmin") }}</button>
     <div class="profile-dropdown__divider" />
-    <a class="profile-dropdown__item profile-dropdown__item--danger" href="/accounts/logout/">{{ t("profileDropdown.logout") }}</a>
+    <button class="profile-dropdown__item profile-dropdown__item--danger" type="button" :disabled="isLoggingOut" @click="handleLogout">{{ t("profileDropdown.logout") }}</button>
   </div>
 </template>
 
