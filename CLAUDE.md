@@ -220,6 +220,21 @@ Spec: `docs/superpowers/specs/2026-04-18-nuxt-migration-design.md`
 
 ## Aktivní plány a změny
 
+### 2026-05-06 — Security fix: auth guard pro protected routes ✅ KOMPLETNÍ
+
+**Branch:** `feat/registration-flow` (commit e141ef5)
+
+**Bug:** `domains.global.ts` obsahoval `if (!appHost) return` na řádku 4, což způsobilo že celá auth ochrana byla podmíněna nastavením `NUXT_PUBLIC_APP_HOST`. V dev a single-domain deploymentu middleware odpadl hned, takže `/app/**`, `/coach/**` a `/dashboard` byly dostupné bez přihlášení.
+
+**Fix:**
+- Nový `frontend/middleware/auth.global.ts` — funguje nezávisle na multi-domain konfiguraci, vždy ověří session přes `/auth/me/` a redirectuje na login pokud user není přihlášen
+- `domains.global.ts` nyní obsahuje jen redirect přihlášeného uživatele z public domain na app domain (odstraněn "app domain → login" redirect, ten přebírá auth.global.ts)
+- `vitest.config.ts` rozšířen o `define: { "import.meta.client": "true", "import.meta.server": "false" }` pro testování middlewarů
+- `vitest.setup.ts` rozšířen o globální stuby `navigateTo`, `defineNuxtRouteMiddleware`, `useRuntimeConfig`
+- 9 nových testů v `frontend/middleware/auth.test.ts`, celkem 129 testů zelených
+
+---
+
 ### 2026-05-04 — Registration Flow Redesign ✅ KOMPLETNÍ (feat/registration-flow)
 
 **Spec:** `docs/superpowers/specs/2026-05-04-registration-flow-redesign.md`
