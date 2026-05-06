@@ -57,6 +57,7 @@ services:
     restart: unless-stopped
     environment:
       NUXT_PUBLIC_API_BASE: /api/v1
+      NUXT_PUBLIC_APP_HOST: ${TRAEFIK_APP_HOST:-}
     depends_on:
       - web
     networks:
@@ -89,6 +90,11 @@ services:
       - "traefik.http.middlewares.www-to-root.redirectregex.regex=^https://www\\.endurobuddy\\.cz/(.*)"
       - "traefik.http.middlewares.www-to-root.redirectregex.replacement=https://endurobuddy.cz/$${1}"
       - "traefik.http.middlewares.www-to-root.redirectregex.permanent=true"
+      # HTTPS — app subdoména (přihlášená část)
+      - "traefik.http.routers.endurobuddy-app.rule=Host(`app.endurobuddy.cz`)"
+      - "traefik.http.routers.endurobuddy-app.entrypoints=websecure"
+      - "traefik.http.routers.endurobuddy-app.tls.certresolver=letsencrypt"
+      - "traefik.http.services.endurobuddy-app.loadbalancer.server.port=80"
 
 volumes:
   endurobuddy_pgdata:
