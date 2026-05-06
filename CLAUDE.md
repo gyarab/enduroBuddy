@@ -220,6 +220,25 @@ Spec: `docs/superpowers/specs/2026-04-18-nuxt-migration-design.md`
 
 ## Aktivní plány a změny
 
+### 2026-05-06 — Production routing + auth bugs ✅ KOMPLETNÍ (feat/registration-flow, commit 062a3dd)
+
+**Spec:** `docs/superpowers/specs/2026-05-06-production-routing-auth-bugs.md`
+**Plán:** `docs/superpowers/plans/2026-05-06-production-routing-auth-bugs.md`
+
+**Bug 1 — `app.endurobuddy.cz` → 404:**  
+`docker-compose.yml` nginx service neměl Traefik router pro `app.endurobuddy.cz` — Traefik tu doménu neznal. Přidány 4 řádky labels.
+
+**Bug 2 — `endurobuddy.cz/admin/` → 400:**  
+nginx a urls.py jsou správné. Pravděpodobná příčina je `DJANGO_ALLOWED_HOSTS` v produkčním `.env` — nutno ověřit na serveru. `.env.example` již obsahuje správnou hodnotu (`endurobuddy.cz,app.endurobuddy.cz,...`).
+
+**Bug 3 — "EnduroBuddy User" místo jména:**  
+Nuxt service v docker-compose neměl `NUXT_PUBLIC_APP_HOST` → `domains.global.ts` vrátil hned → auth nikdy neinicializován → `user = null`. Přidáno `NUXT_PUBLIC_APP_HOST: ${TRAEFIK_APP_HOST:-}`.
+
+**Zbývá na serveru:**  
+Ověřit/aktualizovat produkční `.env` a spustit `docker compose up -d --build`. Checklist viz spec.
+
+---
+
 ### 2026-05-06 — Security fix: auth guard pro protected routes ✅ KOMPLETNÍ
 
 **Branch:** `feat/registration-flow` (commit e141ef5)
