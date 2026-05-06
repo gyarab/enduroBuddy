@@ -26,3 +26,6 @@ vi.stubGlobal("$fetch", vi.fn())
 vi.stubGlobal("useNuxtApp", () => ({
   $i18n: { t },
 }))
+vi.stubGlobal("navigateTo", vi.fn())
+vi.stubGlobal("defineNuxtRouteMiddleware", (fn: Function) => fn)
+vi.stubGlobal("useRuntimeConfig", () => ({ public: { appHost: "" } }))

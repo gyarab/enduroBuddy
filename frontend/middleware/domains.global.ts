@@ -24,24 +24,17 @@ export default defineNuxtRouteMiddleware(async (to) => {
     return navigateTo(`https://${appHost}${to.fullPath}`, { external: true })
   }
 
-  // Auth checks: client-side only to avoid SSR waterfall
+  // Redirect authenticated users from public pages to app domain
   if (import.meta.client) {
     const auth = useAuthStore()
     if (!auth.hasBootstrapped) {
       await auth.initialize()
     }
 
-    // Public domain + authenticated + public page → redirect to app domain
     const PUBLIC_PAGES = ["/", "/about", "/terms", "/privacy"]
     if (isPublicDomain && PUBLIC_PAGES.includes(to.path) && auth.isAuthenticated) {
       const target = auth.isCoach ? "/coach/plans" : "/dashboard"
       return navigateTo(`https://${appHost}${target}`, { external: true })
-    }
-
-    // App domain + not authenticated + app path → redirect to login on public domain
-    if (isAppDomain && isAppPath && !auth.isAuthenticated) {
-      const publicHost = appHost.replace(/^app\./, "")
-      return navigateTo(`https://${publicHost}/accounts/login/`, { external: true })
     }
   }
 })
