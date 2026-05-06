@@ -1,6 +1,6 @@
 <script setup lang="ts">
 withDefaults(defineProps<{
-  variant?: "full" | "mark"
+  variant?: "full" | "compact" | "mark"
   size?: "sm" | "md" | "lg"
 }>(), {
   variant: "full",
@@ -16,6 +16,7 @@ withDefaults(defineProps<{
       <span></span>
     </span>
     <span v-if="variant === 'full'" class="eb-logo__wordmark">EnduroBuddy</span>
+    <span v-else-if="variant === 'compact'" class="eb-logo__wordmark">EB</span>
   </span>
 </template>
 

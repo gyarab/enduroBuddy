@@ -24,8 +24,6 @@ const isProfileSettingsOpen = ref(false);
 const isLegendOpen = ref(false);
 const isGarminOpen = ref(false);
 const profileRootRef = ref<HTMLElement | null>(null);
-const logoFullUrl = "/brand/eb-logo-full.svg";
-const logoMarkUrl = "/brand/eb-mark.svg";
 const { t } = useI18n();
 
 const title = computed(() => {
@@ -87,8 +85,8 @@ onBeforeUnmount(() => {
   <header class="top-nav">
     <div class="top-nav__inner">
       <a class="top-nav__brand" :href="props.variant === 'coach' ? '/coach/plans' : '/dashboard'">
-        <img class="top-nav__logo-full" :src="logoFullUrl" alt="EnduroBuddy" />
-        <img class="top-nav__logo-mark" :src="logoMarkUrl" alt="EB" />
+        <EbLogo class="top-nav__logo-full" size="lg" />
+        <EbLogo class="top-nav__logo-mark" variant="mark" size="lg" />
       </a>
 
       <div class="top-nav__headline">
@@ -146,13 +144,8 @@ onBeforeUnmount(() => {
   padding: 0 1.5rem;
 }
 
-.top-nav__logo-full {
-  height: 1.75rem;
-}
-
 .top-nav__logo-mark {
   display: none;
-  height: 1.75rem;
 }
 
 .top-nav__headline {
@@ -269,8 +262,7 @@ onBeforeUnmount(() => {
   }
 
   .top-nav__logo-mark {
-    display: block;
-    height: 1.5rem;
+    display: inline-flex;
   }
 
   .top-nav__actions {

@@ -13,14 +13,7 @@ defineProps<{
     <aside class="auth-shell__brand">
       <div class="auth-shell__grid-overlay" aria-hidden="true"></div>
 
-      <div class="auth-shell__logo">
-        <span class="auth-shell__mark" aria-hidden="true">
-          <span></span>
-          <span></span>
-          <span></span>
-        </span>
-        <span>EnduroBuddy</span>
-      </div>
+      <EbLogo class="auth-shell__logo" />
 
       <div class="auth-shell__copy">
         <div class="auth-shell__eyebrow">{{ brandEyebrow }}</div>
@@ -99,33 +92,7 @@ defineProps<{
 .auth-shell__logo {
   position: relative;
   z-index: 1;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.75rem;
-  font-family: var(--eb-font-display);
-  font-size: var(--eb-type-h3-size);
-  font-weight: 700;
-  letter-spacing: var(--eb-type-h3-tracking);
 }
-
-.auth-shell__mark {
-  display: inline-flex;
-  align-items: flex-end;
-  gap: 0.2rem;
-  height: 1.15rem;
-  transform: skewX(-6deg);
-}
-
-.auth-shell__mark span {
-  width: 0.3125rem;
-  border-radius: 0.15rem;
-  background: var(--eb-lime);
-  box-shadow: 0 0 10px rgba(200, 255, 0, 0.20);
-}
-
-.auth-shell__mark span:nth-child(1) { height: 0.44rem; opacity: 0.35; }
-.auth-shell__mark span:nth-child(2) { height: 0.75rem; opacity: 0.65; }
-.auth-shell__mark span:nth-child(3) { height: 1.15rem; }
 
 .auth-shell__copy {
   position: relative;

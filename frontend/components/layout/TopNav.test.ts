@@ -57,7 +57,7 @@ describe("TopNav", () => {
       props: { variant: "athlete" },
       global: { plugins: [router, pinia] },
     });
-    expect(wrapper.find('img[alt="EnduroBuddy"]').exists()).toBe(true);
+    expect(wrapper.find("a.top-nav__brand").exists()).toBe(true);
   });
 
   it("athlete variant brand link points to /dashboard", async () => {

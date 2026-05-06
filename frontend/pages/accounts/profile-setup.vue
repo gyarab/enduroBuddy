@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import AuthPreviewShell from "@/components/auth/AuthPreviewShell.vue"
 import { profileSetup } from "~/utils/api/auth"
 import { useAuthStore } from "@/stores/auth"
 
@@ -54,17 +53,8 @@ async function submit() {
 
 <template>
   <main class="auth-flow-page">
-    <div class="auth-flow-page__wrap">
-      <AuthPreviewShell
-        brand-eyebrow="Onboarding"
-        brand-title="Jeden krok před vstupem do aplikace."
-        brand-description="Nastav svou roli a potvrď souhlas s podmínkami. Zabere to méně než minutu."
-        :stats="[
-          { icon: '🏃', label: 'Pro sportovce', value: 'Plán · Trénink · Analýza' },
-          { icon: '🎯', label: 'Pro trenéry', value: 'Skupiny · Plány · Přehled', blue: true },
-        ]"
-      >
-        <div class="auth-flow-card">
+    <EbLogo class="auth-flow-logo" />
+    <div class="auth-flow-card auth-flow-card--lime">
           <div class="auth-flow-card__eyebrow">Profile Setup</div>
           <h1>Nastav svůj profil</h1>
           <p>Přihlásil(a) ses přes Google. Dokonči nastavení účtu.</p>
@@ -111,6 +101,7 @@ async function submit() {
 
           <label class="auth-flow-check auth-flow-check--terms">
             <input v-model="form.termsAccepted" type="checkbox" />
+            <span class="auth-check-box"></span>
             <span>
               Souhlasím s
               <a href="/terms" target="_blank" rel="noopener">Podmínkami použití</a>
@@ -130,8 +121,6 @@ async function submit() {
           >
             {{ isSubmitting ? "Ukládám..." : "Pokračovat do aplikace" }}
           </button>
-        </div>
-      </AuthPreviewShell>
     </div>
   </main>
 </template>
@@ -139,22 +128,33 @@ async function submit() {
 <style scoped>
 .auth-flow-page {
   min-height: 100vh;
-  padding: 1.5rem 1rem 2.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem 3rem;
   background:
     radial-gradient(circle at top right, rgba(200, 255, 0, 0.12), transparent 20rem),
     radial-gradient(circle at bottom left, rgba(56, 189, 248, 0.1), transparent 22rem),
     linear-gradient(180deg, #0c0c10 0%, var(--eb-bg) 100%);
 }
 
-.auth-flow-page__wrap {
-  width: min(100%, 88rem);
-  margin: 0 auto;
+.auth-flow-logo {
+  margin-bottom: 1.75rem;
 }
 
 .auth-flow-card {
+  width: min(100%, 38rem);
+  padding: 2rem;
+  border: 1px solid var(--eb-border);
+  border-radius: 1.25rem;
+  background: linear-gradient(180deg, rgba(24, 24, 27, 0.98) 0%, rgba(16, 16, 18, 0.98) 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03), 0 24px 64px rgba(0, 0, 0, 0.38);
   display: grid;
   gap: 1rem;
 }
+
+.auth-flow-card--lime { border-top: 2px solid var(--eb-lime); }
 
 .auth-flow-card__eyebrow {
   color: var(--eb-text-muted);
@@ -162,6 +162,7 @@ async function submit() {
   font-weight: 700;
   letter-spacing: var(--eb-type-label-tracking);
   text-transform: uppercase;
+  font-family: var(--eb-font-body);
 }
 
 .auth-flow-card h1 {
@@ -178,6 +179,7 @@ async function submit() {
   color: var(--eb-text-soft);
   font-size: 0.875rem;
   line-height: 1.55;
+  font-family: var(--eb-font-body);
 }
 
 .auth-flow-button {
@@ -193,6 +195,7 @@ async function submit() {
   font-size: var(--eb-type-small-size);
   font-weight: 700;
   letter-spacing: 0.02em;
+  font-family: var(--eb-font-body);
   transition: transform 160ms ease, background 160ms ease;
 }
 
@@ -205,7 +208,7 @@ async function submit() {
 }
 
 .auth-flow-button--primary:disabled {
-  opacity: 0.45;
+  opacity: 0.35;
   cursor: not-allowed;
   transform: none;
 }
@@ -221,13 +224,13 @@ async function submit() {
   gap: 0.45rem;
 }
 
-.auth-flow-field span,
-.auth-flow-field > span:first-child {
+.auth-flow-field > span {
   color: var(--eb-text-muted);
   font-size: var(--eb-type-label-size);
   font-weight: 700;
   letter-spacing: var(--eb-type-label-tracking);
   text-transform: uppercase;
+  font-family: var(--eb-font-body);
 }
 
 .auth-flow-field input {
@@ -238,6 +241,7 @@ async function submit() {
   padding: 0.8rem 0.9rem;
   background: #09090b;
   color: var(--eb-text);
+  font-family: var(--eb-font-body);
 }
 
 .auth-flow-field input:focus {
@@ -246,19 +250,56 @@ async function submit() {
   box-shadow: var(--eb-glow-lime);
 }
 
-.auth-flow-field small.is-danger,
-.auth-flow-error {
+.auth-flow-field small.is-danger {
   color: #fda4af;
   font-size: var(--eb-type-small-size);
-  margin: 0;
 }
 
 .auth-flow-check {
   display: inline-flex;
-  align-items: center;
-  gap: 0.55rem;
+  align-items: flex-start;
+  gap: 0.6rem;
   color: var(--eb-text-soft);
   font-size: var(--eb-type-small-size);
+  cursor: pointer;
+  line-height: 1.5;
+  font-family: var(--eb-font-body);
+}
+
+.auth-flow-check input[type="checkbox"] {
+  display: none;
+}
+
+.auth-check-box {
+  flex-shrink: 0;
+  width: 1.1rem;
+  height: 1.1rem;
+  margin-top: 0.1rem;
+  border: 1.5px solid rgba(255, 255, 255, 0.15);
+  border-radius: 0.3rem;
+  background: #000;
+  display: grid;
+  place-items: center;
+  transition: border-color 160ms ease;
+}
+
+.auth-flow-check:has(input:checked) .auth-check-box {
+  border-color: rgba(200, 255, 0, 0.5);
+}
+
+.auth-check-box::after {
+  content: "";
+  width: 0.35rem;
+  height: 0.55rem;
+  border-right: 2px solid var(--eb-lime);
+  border-bottom: 2px solid var(--eb-lime);
+  transform: rotate(45deg) translateY(-1px);
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+.auth-flow-check:has(input:checked) .auth-check-box::after {
+  opacity: 1;
 }
 
 .auth-flow-check--terms a {
@@ -287,6 +328,7 @@ async function submit() {
   background: var(--eb-bg);
   cursor: pointer;
   text-align: left;
+  font-family: var(--eb-font-body);
   transition: border-color 0.15s, background 0.15s;
 }
 

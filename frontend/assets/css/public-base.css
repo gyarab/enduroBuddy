@@ -36,8 +36,8 @@
   flex-shrink: 0;
   margin-right: auto;
 }
-.eb-topbar-brand .eb-logo-full  { height: 26px; width: auto; }
-.eb-topbar-brand .eb-logo-compact { height: 26px; width: auto; display: none; }
+.eb-topbar-brand .eb-logo-full  { font-size: 1.125rem; }
+.eb-topbar-brand .eb-logo-compact { display: none; font-size: 1.125rem; }
 
 /* Nav links */
 .eb-topbar-nav {
@@ -124,7 +124,7 @@
 }
 
 /* Brand column */
-.eb-footer-brand .eb-footer-logo { height: 22px; width: auto; margin-bottom: 10px; }
+.eb-footer-brand .eb-footer-logo { font-size: 1rem; margin-bottom: 10px; }
 .eb-footer-tagline {
   font-size: 0.8125rem;
   line-height: 1.55;
@@ -195,7 +195,7 @@
 /* ── Responsive ──────────────────────────────────────────── */
 @media (max-width: 768px) {
   .eb-topbar-brand .eb-logo-full    { display: none; }
-  .eb-topbar-brand .eb-logo-compact { display: block; }
+  .eb-topbar-brand .eb-logo-compact { display: inline-flex; }
 
   .eb-topbar-nav {
     position: static;

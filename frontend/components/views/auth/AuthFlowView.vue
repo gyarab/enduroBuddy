@@ -9,7 +9,6 @@ function authNavigate(url: string) {
   return navigateTo(url, isExternal ? { external: true } : undefined)
 }
 
-import AuthPreviewShell from "@/components/auth/AuthPreviewShell.vue";
 import {
   confirmEmailKey,
   changePassword,
@@ -177,10 +176,10 @@ const screen = computed<AuthScreen>(() => {
   return value as AuthScreen;
 });
 
-const cardAccent = computed(() => {
-  if (screen.value === "login") return "var(--eb-blue)"
-  if (screen.value === "signup") return "var(--eb-lime)"
-  return undefined
+const cardAccentClass = computed(() => {
+  if (screen.value === "login") return "auth-flow-card--blue"
+  if (screen.value === "signup") return "auth-flow-card--lime"
+  return ""
 });
 
 watch(
@@ -192,173 +191,6 @@ watch(
   },
   { immediate: true },
 );
-
-const shellConfig = computed(() => {
-  switch (screen.value) {
-    case "signup":
-      return {
-        eyebrow: "New Account",
-        title: "Sportovec nebo trenér — za minutu jsi uvnitř.",
-        description: "Zvol svou roli, zadej e-mail a heslo. To je vše.",
-        stats: [
-          { icon: "🏃", label: "Pro sportovce", value: "Plán · Trénink · Analýza" },
-          { icon: "🎯", label: "Pro trenéry", value: "Skupiny · Plány · Přehled", blue: true },
-        ],
-      };
-    case "password-reset":
-      return {
-        eyebrow: "Recovery",
-        title: "Zapomenuté heslo vyřešíš za dvě minuty.",
-        description: "Zadej svůj e-mail a pošleme ti odkaz pro nastavení nového hesla.",
-        stats: [
-          { icon: "🔒", label: "Bezpečný reset", value: "Odkaz na e-mail" },
-          { icon: "✓", label: "Po obnově", value: "Přímý vstup do app", blue: true },
-        ],
-      };
-    case "password-reset-done":
-      return {
-        eyebrow: "Recovery",
-        title: "Odkaz je na cestě.",
-        description: "Zkontroluj e-mail a klikni na odkaz. Pak si nastavíš nové heslo.",
-        stats: [
-          { icon: "✉️", label: "E-mail odeslán", value: "Zkontroluj schránku" },
-          { icon: "✓", label: "Platnost odkazu", value: "Časově omezeno", blue: true },
-        ],
-      };
-    case "password-reset-key":
-      return {
-        eyebrow: "Recovery",
-        title: "Nastav nové heslo a vrať se k tréninku.",
-        description: "Heslo musí mít alespoň 8 znaků. Po změně se budeš moct přihlásit.",
-        stats: [
-          { icon: "🔑", label: "Reset klíč", value: "Ověřený odkaz" },
-          { icon: "✓", label: "Po změně", value: "Heslo aktualizováno", blue: true },
-        ],
-      };
-    case "password-reset-key-done":
-      return {
-        eyebrow: "Recovery",
-        title: "Heslo je změněno.",
-        description: "Přihlas se svým novým heslem a pokračuj tam, kde jsi skončil.",
-        stats: [
-          { icon: "🔑", label: "Nové heslo", value: "Aktivní" },
-          { icon: "✓", label: "Stav účtu", value: "Připraven k přihlášení", blue: true },
-        ],
-      };
-    case "verification-sent":
-      return {
-        eyebrow: "Email Verification",
-        title: "Jeden krok zbývá.",
-        description: "Poslali jsme ti ověřovací e-mail. Klikni na odkaz a účet bude aktivní.",
-        stats: [
-          { icon: "✉️", label: "Ověřovací e-mail", value: "Odesláno" },
-          { icon: "✓", label: "Po potvrzení", value: "Účet aktivní", blue: true },
-        ],
-      };
-    case "email-confirm-key":
-      return {
-        eyebrow: "Email Verification",
-        title: "Potvrzení e-mailové adresy.",
-        description: "Klikni na tlačítko níže a adresa bude ověřena. Pak tě pustíme dál.",
-        stats: [
-          { icon: "✉️", label: "E-mailová adresa", value: "Čeká na potvrzení" },
-          { icon: "✓", label: "Po potvrzení", value: "Účet aktivní", blue: true },
-        ],
-      };
-    case "email-management":
-      return {
-        eyebrow: "Account",
-        title: "Správa e-mailových adres.",
-        description: "Přidej záložní adresu, změň primární nebo odeber nepoužívané.",
-        stats: [
-          { icon: "@", label: "Primární adresa", value: "Ověřená" },
-          { icon: "✓", label: "Záložní adresa", value: "Volitelná ochrana", blue: true },
-        ],
-      };
-    case "password-change":
-      return {
-        eyebrow: "Security",
-        title: "Změna hesla.",
-        description: "Zadej aktuální heslo a pak dvakrát nové. Změna se projeví okamžitě.",
-        stats: [
-          { icon: "🔐", label: "Aktuální heslo", value: "Vyžadováno" },
-          { icon: "✓", label: "Po změně", value: "Okamžitě aktivní", blue: true },
-        ],
-      };
-    case "password-set":
-      return {
-        eyebrow: "Security",
-        title: "Přidej heslo k účtu.",
-        description: "Přihlašuješ se přes Google, ale heslo ti dá zálohu i přímý přístup.",
-        stats: [
-          { icon: "🔐", label: "Google účet", value: "Propojeno" },
-          { icon: "✓", label: "Po nastavení", value: "Dvojí přihlášení", blue: true },
-        ],
-      };
-    case "reauthenticate":
-      return {
-        eyebrow: "Security",
-        title: "Potvrď, že jsi to ty.",
-        description: "Před citlivou akcí vyžadujeme ověření heslem. Trvá to pět sekund.",
-        stats: [
-          { icon: "🔐", label: "Ověření identity", value: "Jednorázové" },
-          { icon: "✓", label: "Po potvrzení", value: "Akce povolena", blue: true },
-        ],
-      };
-    case "inactive":
-      return {
-        eyebrow: "Account",
-        title: "Tento účet není aktivní.",
-        description: "Pokus o přihlášení selhal. Zkus obnovit heslo nebo nás kontaktuj.",
-        stats: [
-          { icon: "⚠", label: "Stav účtu", value: "Neaktivní" },
-          { icon: "→", label: "Možnosti", value: "Reset hesla · Podpora", blue: true },
-        ],
-      };
-    case "social-error":
-      return {
-        eyebrow: "Social Login",
-        title: "Přihlášení přes Google se nezdařilo.",
-        description: "Zkus to znovu nebo se přihlas e-mailem a heslem.",
-        stats: [
-          { icon: "⚠", label: "Chyba", value: "Google OAuth" },
-          { icon: "→", label: "Záloha", value: "E-mail a heslo", blue: true },
-        ],
-      };
-    case "social-cancelled":
-      return {
-        eyebrow: "Social Login",
-        title: "Přihlášení bylo zrušeno.",
-        description: "Nic se nestalo. Zkus to znovu nebo použij e-mail a heslo.",
-        stats: [
-          { icon: "→", label: "Možnosti", value: "Google · E-mail" },
-          registrationEnabled
-            ? { icon: "✓", label: "Registrace", value: "Zdarma, bez závazků", blue: true }
-            : { icon: "✓", label: "Přístup", value: "Pouze pro existující účty", blue: true },
-        ],
-      };
-    case "connections":
-      return {
-        eyebrow: "Account",
-        title: "Propojené účty.",
-        description: "Připoj Google pro rychlé přihlášení jedním kliknutím.",
-        stats: [
-          { icon: "🔗", label: "Google", value: "OAuth 2.0" },
-          { icon: "✓", label: "Správa", value: "Připojit · Odpojit", blue: true },
-        ],
-      };
-    default:
-      return {
-        eyebrow: "Training Workspace",
-        title: "Vrať se do plánu, ne do chaosu.",
-        description: "Všechny měsíční plány, splněné aktivity i spolupráce se sportovci zůstávají v jednom čistém workspace.",
-        stats: [
-          { icon: "📅", label: "Aktivní plán", value: "Duben 2026 · 4. týden" },
-          { icon: "⚡", label: "Poslední trénink", value: "Dlouhý výběh · 28.4 km", blue: true },
-        ],
-      };
-  }
-});
 
 function clearErrors() {
   formError.value = "";
@@ -688,15 +520,9 @@ watch(
 
 <template>
   <main class="auth-flow-page">
-    <div class="auth-flow-page__wrap">
-      <AuthPreviewShell
-        :brand-eyebrow="shellConfig.eyebrow"
-        :brand-title="shellConfig.title"
-        :brand-description="shellConfig.description"
-        :stats="shellConfig.stats"
-        :card-accent="cardAccent"
-      >
-        <div v-if="screen === 'login'" class="auth-flow-card">
+    <EbLogo class="auth-flow-logo" />
+
+    <div v-if="screen === 'login'" class="auth-flow-card auth-flow-card--blue">
           <div class="auth-flow-card__eyebrow" style="color: var(--eb-blue);">Sign In</div>
           <h1>Vítej zpět</h1>
           <p>Pokračuj do svého tréninkového přehledu.</p>
@@ -725,6 +551,7 @@ watch(
 
           <label class="auth-flow-check">
             <input v-model="loginForm.remember" type="checkbox" />
+            <span class="auth-check-box"></span>
             <span>Zapamatovat si mě</span>
           </label>
 
@@ -742,7 +569,7 @@ watch(
           </div>
         </div>
 
-        <div v-else-if="screen === 'signup'" class="auth-flow-card">
+        <div v-else-if="screen === 'signup'" class="auth-flow-card auth-flow-card--lime">
           <div class="auth-flow-card__eyebrow" style="color: var(--eb-lime);">New Account</div>
           <h1>Vytvoř si účet</h1>
           <p>Založ si účet a začni plánovat trénink.</p>
@@ -774,6 +601,18 @@ watch(
             <small v-if="firstError('email')" class="is-danger">{{ firstError("email") }}</small>
           </label>
 
+          <label class="auth-flow-field">
+            <span>Heslo</span>
+            <input v-model="signupForm.password" type="password" autocomplete="new-password" />
+            <small v-if="firstError('password1')" class="is-danger">{{ firstError("password1") }}</small>
+          </label>
+
+          <label class="auth-flow-field">
+            <span>Heslo znovu</span>
+            <input v-model="signupForm.passwordConfirmation" type="password" autocomplete="new-password" />
+            <small v-if="firstError('password2')" class="is-danger">{{ firstError("password2") }}</small>
+          </label>
+
           <div class="auth-flow-field">
             <span>Jsem</span>
             <div class="auth-role-grid">
@@ -801,22 +640,9 @@ watch(
             <small v-if="firstError('role')" class="is-danger">{{ firstError("role") }}</small>
           </div>
 
-          <div class="auth-flow-grid">
-            <label class="auth-flow-field">
-              <span>Heslo</span>
-              <input v-model="signupForm.password" type="password" autocomplete="new-password" />
-              <small v-if="firstError('password1')" class="is-danger">{{ firstError("password1") }}</small>
-            </label>
-
-            <label class="auth-flow-field">
-              <span>Heslo znovu</span>
-              <input v-model="signupForm.passwordConfirmation" type="password" autocomplete="new-password" />
-              <small v-if="firstError('password2')" class="is-danger">{{ firstError("password2") }}</small>
-            </label>
-          </div>
-
           <label class="auth-flow-check auth-flow-check--terms">
             <input v-model="signupForm.termsAccepted" type="checkbox" />
+            <span class="auth-check-box"></span>
             <span>
               Souhlasím s
               <a href="/terms" target="_blank" rel="noopener">Podmínkami použití</a>
@@ -1149,30 +975,40 @@ watch(
             </button>
           </template>
         </div>
-      </AuthPreviewShell>
-    </div>
   </main>
 </template>
 
 <style scoped>
 .auth-flow-page {
   min-height: 100vh;
-  padding: 1.5rem 1rem 2.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem 3rem;
   background:
     radial-gradient(circle at top right, rgba(200, 255, 0, 0.12), transparent 20rem),
     radial-gradient(circle at bottom left, rgba(56, 189, 248, 0.1), transparent 22rem),
     linear-gradient(180deg, #0c0c10 0%, var(--eb-bg) 100%);
 }
 
-.auth-flow-page__wrap {
-  width: min(100%, 88rem);
-  margin: 0 auto;
+.auth-flow-logo {
+  margin-bottom: 1.75rem;
 }
 
 .auth-flow-card {
+  width: min(100%, 38rem);
+  padding: 2rem;
+  border: 1px solid var(--eb-border);
+  border-radius: 1.25rem;
+  background: linear-gradient(180deg, rgba(24, 24, 27, 0.98) 0%, rgba(16, 16, 18, 0.98) 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03), 0 24px 64px rgba(0, 0, 0, 0.38);
   display: grid;
   gap: 1rem;
 }
+
+.auth-flow-card--lime { border-top: 2px solid var(--eb-lime); }
+.auth-flow-card--blue { border-top: 2px solid var(--eb-blue); }
 
 .auth-flow-card--status {
   align-content: start;
@@ -1348,10 +1184,48 @@ watch(
 
 .auth-flow-check {
   display: inline-flex;
-  align-items: center;
-  gap: 0.55rem;
+  align-items: flex-start;
+  gap: 0.6rem;
   color: var(--eb-text-soft);
   font-size: var(--eb-type-small-size);
+  cursor: pointer;
+  line-height: 1.5;
+}
+
+.auth-flow-check input[type="checkbox"] {
+  display: none;
+}
+
+.auth-check-box {
+  flex-shrink: 0;
+  width: 1.1rem;
+  height: 1.1rem;
+  margin-top: 0.1rem;
+  border: 1.5px solid rgba(255, 255, 255, 0.15);
+  border-radius: 0.3rem;
+  background: #000;
+  display: grid;
+  place-items: center;
+  transition: border-color 160ms ease;
+}
+
+.auth-flow-check:has(input:checked) .auth-check-box {
+  border-color: rgba(200, 255, 0, 0.5);
+}
+
+.auth-check-box::after {
+  content: "";
+  width: 0.35rem;
+  height: 0.55rem;
+  border-right: 2px solid var(--eb-lime);
+  border-bottom: 2px solid var(--eb-lime);
+  transform: rotate(45deg) translateY(-1px);
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+.auth-flow-check:has(input:checked) .auth-check-box::after {
+  opacity: 1;
 }
 
 .auth-flow-check--terms a {
