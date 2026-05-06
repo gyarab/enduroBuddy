@@ -10,7 +10,6 @@ const emit = defineEmits<{
 }>();
 
 const authStore = useAuthStore();
-const router = useRouter();
 const { t } = useI18n();
 const displayName = computed(() => authStore.user?.full_name || "EnduroBuddy User");
 const isLoggingOut = ref(false);
@@ -19,11 +18,21 @@ async function handleLogout() {
   if (isLoggingOut.value) return;
   isLoggingOut.value = true;
   try {
-    const response = await logoutFromSession();
-    authStore.user = null;
-    await router.push(response.redirect_to || "/accounts/login/");
+    await logoutFromSession();
   } catch {
-    await router.push("/accounts/login/");
+    // session clear failed — still navigate to login
+  } finally {
+    authStore.user = null;
+    const config = useRuntimeConfig();
+    const appHost = config.public.appHost as string;
+    const loginUrl = appHost
+      ? `https://${appHost.replace(/^app\./, "")}/accounts/login/`
+      : "/accounts/login/";
+    if (import.meta.client) {
+      window.location.href = loginUrl;
+    } else {
+      await navigateTo(loginUrl, { external: true });
+    }
   }
 }
 </script>

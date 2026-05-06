@@ -11,7 +11,7 @@ from allauth.account.forms import (
     SetPasswordForm,
     UserTokenForm,
 )
-from allauth.account.internal.flows import email_verification, manage_email, password_change, password_reset, reauthentication
+from allauth.account.internal.flows import email_verification, logout as allauth_logout, manage_email, password_change, password_reset, reauthentication
 from allauth.account.models import EmailAddress, EmailConfirmationHMAC
 from allauth.account.utils import complete_signup
 from allauth.socialaccount.forms import DisconnectForm
@@ -23,7 +23,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import Http404
 from django.http import JsonResponse
-from django.views.decorators.csrf import ensure_csrf_cookie
+from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from django.views.decorators.http import require_http_methods
 from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
@@ -287,9 +287,10 @@ def auth_password_reset(request):
     )
 
 
+@csrf_exempt
 @require_http_methods(["POST"])
 def auth_logout_view(request):
-    auth_logout(request)
+    allauth_logout.logout(request, show_message=False)
     return JsonResponse(
         {
             "ok": True,
