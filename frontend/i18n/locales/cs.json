@@ -487,5 +487,18 @@
     "typeTV": "tempo vytrvalost",
     "intervalsTitle": "Intervaly",
     "intervalsExample": "10 km base + 5 intervalů po 1 km Z"
+  },
+  "page": {
+    "about": "O aplikaci",
+    "terms": "Podmínky použití",
+    "privacy": "Ochrana soukromí",
+    "dashboard": "Přehled tréninku",
+    "completeProfile": "Dokončení profilu",
+    "coachPlans": "Plány tréninků",
+    "invite": "Pozvánka",
+    "profileSetup": "Nastavení profilu",
+    "login": "Přihlášení",
+    "signup": "Registrace",
+    "passwordReset": "Zapomenuté heslo"
   }
 }

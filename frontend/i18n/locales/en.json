@@ -487,5 +487,18 @@
     "typeTV": "tempo endurance",
     "intervalsTitle": "Intervals",
     "intervalsExample": "10 km base + 5 intervals of 1 km Z"
+  },
+  "page": {
+    "about": "About",
+    "terms": "Terms of Use",
+    "privacy": "Privacy Policy",
+    "dashboard": "Training Dashboard",
+    "completeProfile": "Complete Profile",
+    "coachPlans": "Training Plans",
+    "invite": "Invitation",
+    "profileSetup": "Profile Setup",
+    "login": "Log in",
+    "signup": "Sign up",
+    "passwordReset": "Forgot Password"
   }
 }
