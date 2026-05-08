@@ -259,6 +259,7 @@ useSeoMeta({
   title: t("landing.seoTitle"),
   description: t("landing.seoDescription"),
 })
+useHead({ titleTemplate: 'EnduroBuddy' })
 
 // Intersection Observer for fade-up animations
 onMounted(() => {

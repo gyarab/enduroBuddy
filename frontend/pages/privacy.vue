@@ -194,4 +194,5 @@ const { t, locale } = useI18n()
 useSeoMeta({
   title: locale.value === "en" ? "Privacy Policy | EnduroBuddy" : "Zásady ochrany osobních údajů | EnduroBuddy",
 })
+useHead({ title: computed(() => t('page.privacy')) })
 </script>

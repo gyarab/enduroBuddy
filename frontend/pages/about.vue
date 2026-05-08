@@ -50,4 +50,5 @@ useSeoMeta({
   title: t("about.seoTitle"),
   description: t("about.seoDescription"),
 })
+useHead({ title: computed(() => t('page.about')) })
 </script>

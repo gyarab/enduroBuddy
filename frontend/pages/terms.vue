@@ -214,4 +214,5 @@ const { t, locale } = useI18n()
 useSeoMeta({
   title: t("terms.seoTitle"),
 })
+useHead({ title: computed(() => t('page.terms')) })
 </script>
