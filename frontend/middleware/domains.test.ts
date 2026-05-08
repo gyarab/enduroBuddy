@@ -1,19 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
-const mockInitialize = vi.fn()
-let mockIsAuthenticated = false
-let mockIsCoach = false
-let mockHasBootstrapped = true
 let mockAppHost = "app.endurobuddy.cz"
-
-vi.mock("~/stores/auth", () => ({
-  useAuthStore: vi.fn(() => ({
-    hasBootstrapped: mockHasBootstrapped,
-    isAuthenticated: mockIsAuthenticated,
-    isCoach: mockIsCoach,
-    initialize: mockInitialize,
-  })),
-}))
 
 vi.stubGlobal("useRuntimeConfig", () => ({ public: { appHost: mockAppHost } }))
 vi.stubGlobal("useRequestHeaders", () => ({ host: "endurobuddy.cz" }))
@@ -37,9 +24,6 @@ function route(path: string) {
 describe("domains.global middleware", () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    mockIsAuthenticated = false
-    mockIsCoach = false
-    mockHasBootstrapped = true
     mockAppHost = "app.endurobuddy.cz"
     vi.stubGlobal("useRuntimeConfig", () => ({ public: { appHost: mockAppHost } }))
     setHostname("endurobuddy.cz")
@@ -70,15 +54,13 @@ describe("domains.global middleware", () => {
     )
   })
 
-  it("does NOT redirect authenticated user from public domain landing page", async () => {
-    mockIsAuthenticated = true
+  it("does NOT redirect from public domain landing page", async () => {
     setHostname("endurobuddy.cz")
     await domainsMiddleware(route("/"), {} as any)
     expect(mockNavigateTo).not.toHaveBeenCalled()
   })
 
-  it("does NOT redirect unauthenticated user from public domain about page", async () => {
-    mockIsAuthenticated = false
+  it("does NOT redirect from public domain about page", async () => {
     setHostname("endurobuddy.cz")
     await domainsMiddleware(route("/about"), {} as any)
     expect(mockNavigateTo).not.toHaveBeenCalled()
