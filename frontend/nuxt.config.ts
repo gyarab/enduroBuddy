@@ -15,7 +15,10 @@ export default defineNuxtConfig({
 
   app: {
     head: {
+      titleTemplate: '%s | EnduroBuddy',
+      title: 'EnduroBuddy',
       link: [
+        { rel: 'icon', type: 'image/svg+xml', href: '/brand/eb-mark.svg' },
         { rel: "preconnect", href: "https://fonts.googleapis.com" },
         { rel: "preconnect", href: "https://fonts.gstatic.com", crossorigin: "" },
         {
