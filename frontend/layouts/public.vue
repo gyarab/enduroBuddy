@@ -16,7 +16,10 @@
 
         <div class="eb-topbar-actions">
           <slot name="actions">
-            <NuxtLink to="/accounts/login/" class="eb-btn-nav">
+            <NuxtLink v-if="auth.isAuthenticated" to="/dashboard" class="eb-btn-nav">
+              {{ t("nav.dashboard") }} →
+            </NuxtLink>
+            <NuxtLink v-else to="/accounts/login/" class="eb-btn-nav">
               {{ t("nav.login") }} →
             </NuxtLink>
           </slot>
@@ -67,7 +70,14 @@
 </template>
 
 <script setup lang="ts">
-const { t, locale, setLocale } = useI18n()
+import { onMounted } from "vue"
+import { useAuthStore } from "~/stores/auth"
 
+const { t, locale, setLocale } = useI18n()
+const auth = useAuthStore()
 const currentYear = new Date().getFullYear()
+
+onMounted(async () => {
+  if (!auth.hasBootstrapped) await auth.initialize()
+})
 </script>
