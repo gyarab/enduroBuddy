@@ -41,4 +41,17 @@ const screen = computed(() => {
   }
   return screenMap[path] ?? "login"
 })
+
+const { t } = useI18n()
+
+const screenTitleKeys: Partial<Record<string, string>> = {
+  'login': 'page.login',
+  'signup': 'page.signup',
+  'password-reset': 'page.passwordReset',
+}
+
+useHead(computed(() => {
+  const key = screenTitleKeys[screen.value]
+  return key ? { title: t(key) } : { titleTemplate: 'EnduroBuddy' }
+}))
 </script>
