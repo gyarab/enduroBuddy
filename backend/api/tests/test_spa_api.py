@@ -50,6 +50,13 @@ class SpaApiEndpointTests(TestCase):
             order_in_day=1,
         )
 
+    def test_auth_me_returns_401_when_unauthenticated(self):
+        response = self.client.get(reverse("api_auth_me"))
+
+        self.assertEqual(response.status_code, 401)
+        data = response.json()
+        self.assertFalse(data["ok"])
+
     def test_auth_me_returns_role_capabilities_and_default_route(self):
         self.client.force_login(self.coach)
 

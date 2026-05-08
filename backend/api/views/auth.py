@@ -132,8 +132,9 @@ def _serialize_social_accounts(user) -> list[dict]:
 
 
 @ensure_csrf_cookie
-@login_required
 def auth_me(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({"ok": False, "message": "Not authenticated."}, status=401)
     user = request.user
     profile = getattr(user, "profile", None)
     role = getattr(profile, "role", Role.ATHLETE)
