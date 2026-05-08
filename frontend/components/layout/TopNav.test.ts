@@ -10,7 +10,7 @@ vi.mock("@/composables/useI18n", () => ({
   useI18n: () => ({ t: (k: string, p?: Record<string, string | number>) => k }),
 }));
 
-const mockAuthStore = { user: { initials: "AB", capabilities: { coached_athlete_count: 2 } } };
+const mockAuthStore = { user: { initials: "AB", capabilities: { coached_athlete_count: 2 } }, isAuthenticated: true };
 const mockCoachStore = { selectedAthlete: null, selectedMonth: null };
 const mockTrainingStore = { selectedMonth: null };
 
@@ -45,6 +45,7 @@ describe("TopNav", () => {
     setActivePinia(pinia);
     // Reset shared mock state to safe defaults
     mockAuthStore.user = { initials: "AB", capabilities: { coached_athlete_count: 2 } };
+    mockAuthStore.isAuthenticated = true;
     mockCoachStore.selectedAthlete = null;
     mockCoachStore.selectedMonth = null;
     mockTrainingStore.selectedMonth = null;
@@ -90,10 +91,10 @@ describe("TopNav", () => {
     expect(wrapper.find("button.top-nav__avatar").text()).toBe("AB");
   });
 
-  it("shows fallback initials when user is null", async () => {
-    // Override auth store to return null user
+  it("hides avatar when user is not authenticated", async () => {
+    // Override auth store to simulate unauthenticated state
     const { useAuthStore } = await import("@/stores/auth");
-    vi.mocked(useAuthStore).mockReturnValueOnce({ user: null } as any);
+    vi.mocked(useAuthStore).mockReturnValueOnce({ user: null, isAuthenticated: false } as any);
 
     const router = makeRouter();
     await router.isReady();
@@ -101,7 +102,7 @@ describe("TopNav", () => {
       props: { variant: "athlete" },
       global: { plugins: [router, pinia] },
     });
-    expect(wrapper.find("button.top-nav__avatar").text()).toBe("EB");
+    expect(wrapper.find("button.top-nav__avatar").exists()).toBe(false);
   });
 
   it("toggles ProfileDropdown visibility when avatar button is clicked", async () => {

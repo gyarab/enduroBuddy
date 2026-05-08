@@ -11,7 +11,7 @@ const emit = defineEmits<{
 
 const authStore = useAuthStore();
 const { t } = useI18n();
-const displayName = computed(() => authStore.user?.full_name || "EnduroBuddy User");
+const displayName = computed(() => authStore.user?.full_name || authStore.user?.email || "—");
 const isLoggingOut = ref(false);
 
 async function handleLogout() {

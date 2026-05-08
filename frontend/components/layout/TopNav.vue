@@ -106,9 +106,9 @@ onBeforeUnmount(() => {
         </button>
         <NotificationBell />
 
-        <div ref="profileRootRef" class="top-nav__profile">
+        <div v-if="authStore.isAuthenticated" ref="profileRootRef" class="top-nav__profile">
           <button class="top-nav__avatar" type="button" @click.stop="isProfileOpen = !isProfileOpen">
-            {{ authStore.user?.initials || "EB" }}
+            {{ authStore.user?.initials || "?" }}
           </button>
           <ProfileDropdown v-if="isProfileOpen" @open-settings="openProfileSettings" @open-garmin="openGarmin" />
         </div>
