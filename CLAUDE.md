@@ -220,6 +220,19 @@ Spec: `docs/superpowers/specs/2026-04-18-nuxt-migration-design.md`
 
 ## Aktivní plány a změny
 
+### 2026-05-08 — Favicon + dynamické titulky záložek ✅ KOMPLETNÍ (feat/favicon-page-titles)
+
+**Spec:** `docs/superpowers/specs/2026-05-08-favicon-page-titles.md`
+**Plán:** `docs/superpowers/plans/2026-05-08-favicon-page-titles.md`
+
+- `nuxt.config.ts`: SVG favicon (`/brand/eb-mark.svg`), globální `titleTemplate: '%s | EnduroBuddy'`
+- `i18n/locales/cs.json` + `en.json`: přidána sekce `page.*` (11 klíčů)
+- Všechny stránky: `useHead` s `computed(() => t('page.xxx'))` — reaktivní na změnu jazyka
+- `index.vue`: `titleTemplate: 'EnduroBuddy'` (bez suffixu)
+- `accounts/[...slug].vue`: computed mapa screen → i18n klíč (login, signup, passwordReset)
+
+---
+
 ### 2026-05-08 — Bugfix: auth_me returns 401 for unauthenticated users ✅ KOMPLETNÍ (main, commit b9720f4)
 
 **Problém:** `auth_me` používal `@login_required`, který vrátil 302 redirect na login stránku pro nepřihlášené uživatele. `$fetch` (ofetch) redirect sledoval, dostal 200 HTML odpověď, která není null → `auth.isAuthenticated = true` i pro odhlášené uživatele → "Dashboard →" button se zobrazoval i po odhlášení.
