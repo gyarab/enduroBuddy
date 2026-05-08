@@ -4,6 +4,9 @@ import { useAuthStore } from "@/stores/auth"
 
 definePageMeta({ layout: "auth" })
 
+const { t } = useI18n()
+useHead({ title: computed(() => t('page.profileSetup')) })
+
 const authStore = useAuthStore()
 
 if (!authStore.user) {
