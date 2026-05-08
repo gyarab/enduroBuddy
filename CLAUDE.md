@@ -220,17 +220,16 @@ Spec: `docs/superpowers/specs/2026-04-18-nuxt-migration-design.md`
 
 ## Aktivní plány a změny
 
-### 2026-05-08 — Remove auth redirect from domains.global.ts ✅ KOMPLETNÍ (feat/public-auth-header, commit d16886b)
+### 2026-05-08 — Public header: auth-aware CTA ✅ KOMPLETNÍ (feat/public-auth-header)
 
-**Branch:** `feat/public-auth-header`
+**Spec:** `docs/superpowers/specs/2026-05-08-public-auth-header.md`
+**Plán:** `docs/superpowers/plans/2026-05-08-public-auth-header.md`
 
-**Co bylo uděláno:**
-- Odstraněn blok (lines 27–39) z `frontend/middleware/domains.global.ts`, který automaticky přesměrovával přihlášené uživatele z veřejných stránek (/, /about, /terms, /privacy) na `https://app.endurobuddy.cz/dashboard`
-- Middleware nyní zajišťuje pouze přesměrování mezi doménami (app path → app domain, public path → public domain), bez zásahu do auth stavu
-- Přidán test soubor `frontend/middleware/domains.test.ts` s 5 testy pokrývajícími všechny scénáře
-- 134 testů zelených, 0 regresí
-
-**Poznámka k TDD:** Původně zamýšlený "failing test" (autentifikovaný uživatel na veřejné stránce) neprocházel selháním, protože `useAuthStore` v middlewaru je Nuxt auto-import — `vi.mock("~/stores/auth")` ho neinterceptoval. Kód byl i tak správně odebrán a testy správně dokumentují nové chování.
+**Co bylo implementováno:**
+- `domains.global.ts`: odstraněn blok který přesměrovával přihlášené uživatele z veřejných stránek na app doménu; middleware je nyní synchronní bez závislosti na auth store
+- `public.vue`: přidán `useAuthStore()` + `onMounted` inicializace; header zobrazuje "Dashboard →" (`/dashboard`) pro přihlášené, "Login →" pro nepřihlášené
+- i18n: přidán klíč `nav.dashboard` do cs.json + en.json
+- Testy: `frontend/middleware/domains.test.ts` (5 testů), `frontend/layouts/public.test.ts` (3 testy); celkem 137 testů zelených
 
 ---
 
