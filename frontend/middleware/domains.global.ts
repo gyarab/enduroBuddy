@@ -1,4 +1,4 @@
-export default defineNuxtRouteMiddleware(async (to) => {
+export default defineNuxtRouteMiddleware((to) => {
   const config = useRuntimeConfig()
   const appHost = config.public.appHost as string
   if (!appHost) return
@@ -22,19 +22,5 @@ export default defineNuxtRouteMiddleware(async (to) => {
   // Public domain + app path → redirect to app domain
   if (isPublicDomain && isAppPath) {
     return navigateTo(`https://${appHost}${to.fullPath}`, { external: true })
-  }
-
-  // Redirect authenticated users from public pages to app domain
-  if (import.meta.client) {
-    const auth = useAuthStore()
-    if (!auth.hasBootstrapped) {
-      await auth.initialize()
-    }
-
-    const PUBLIC_PAGES = ["/", "/about", "/terms", "/privacy"]
-    if (isPublicDomain && PUBLIC_PAGES.includes(to.path) && auth.isAuthenticated) {
-      const target = auth.isCoach ? "/coach/plans" : "/dashboard"
-      return navigateTo(`https://${appHost}${target}`, { external: true })
-    }
   }
 })
