@@ -220,6 +220,16 @@ Spec: `docs/superpowers/specs/2026-04-18-nuxt-migration-design.md`
 
 ## Aktivní plány a změny
 
+### 2026-05-08 — Bugfix: auth_me returns 401 for unauthenticated users ✅ KOMPLETNÍ (main, commit b9720f4)
+
+**Problém:** `auth_me` používal `@login_required`, který vrátil 302 redirect na login stránku pro nepřihlášené uživatele. `$fetch` (ofetch) redirect sledoval, dostal 200 HTML odpověď, která není null → `auth.isAuthenticated = true` i pro odhlášené uživatele → "Dashboard →" button se zobrazoval i po odhlášení.
+
+**Fix:** Odstraněn `@login_required` z `auth_me`, přidána explicitní kontrola `if not request.user.is_authenticated: return JsonResponse(..., status=401)`. `$fetch` nyní vyhodí chybu na 401 (non-2xx), `initialize()` catch nastaví `user = null`, "Login →" se zobrazí správně.
+
+**Soubory:** `backend/api/views/auth.py`, `backend/api/tests/test_spa_api.py` (přidán test `test_auth_me_returns_401_when_unauthenticated`)
+
+---
+
 ### 2026-05-08 — Public header: auth-aware CTA ✅ KOMPLETNÍ (feat/public-auth-header)
 
 **Spec:** `docs/superpowers/specs/2026-05-08-public-auth-header.md`
