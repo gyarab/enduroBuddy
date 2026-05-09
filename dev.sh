@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PROJECT="$(cygpath -u "$USERPROFILE")/projects/endurobuddy-private"
+PROJECT="$(cygpath -u "$USERPROFILE")/projects/enduroBuddy"
 
 GIT_BASH="/c/Program Files/Git/git-bash.exe"
 DOCKER_DESKTOP="/c/Program Files/Docker/Docker/Docker Desktop.exe"
