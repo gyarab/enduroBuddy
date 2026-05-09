@@ -902,9 +902,8 @@ defineExpose({
 }
 
 .wt__table {
-  min-width: 100%;
-  width: max-content;
-  overflow-x: auto;
+  min-width: 720px;
+  width: 100%;
 }
 
 /* ── Header ── */

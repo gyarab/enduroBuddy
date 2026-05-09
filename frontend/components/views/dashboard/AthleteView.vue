@@ -108,10 +108,10 @@ onUnmounted(() => {
   window.removeEventListener('keydown', handleKeyDown)
 })
 
-// Re-init cursor when month changes (user navigates to different month)
-watch(() => trainingStore.weeks, (weeks) => {
+// Re-init cursor only when the user navigates to a different month (not on silent reloads after saves)
+watch(() => trainingStore.selectedMonthValue, () => {
   weekCardRefs.value = []
-  if (weeks.length) gridNav.initCursor(weeks)
+  if (trainingStore.weeks.length) gridNav.initCursor(trainingStore.weeks)
 })
 
 // ── Cross-week navigation (legacy compatible) ──────────────

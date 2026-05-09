@@ -125,10 +125,14 @@ watch(
   { immediate: true },
 );
 
-watch(() => coachStore.weeks, (weeks) => {
-  weekCardRefs.value = []
-  if (weeks.length) gridNav.initCursor(weeks)
-})
+// Re-init cursor only on month or athlete change, not on silent reloads after saves
+watch(
+  () => [coachStore.selectedMonth?.value, coachStore.selectedAthlete?.id] as const,
+  () => {
+    weekCardRefs.value = []
+    if (coachStore.weeks.length) gridNav.initCursor(coachStore.weeks)
+  },
+)
 
 async function saveFocus() {
   isSavingFocus.value = true;
