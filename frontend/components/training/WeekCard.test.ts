@@ -338,3 +338,19 @@ describe("WeekCard — activeCursor nav highlight", () => {
     expect(selected).toHaveLength(0)
   })
 })
+
+describe('WeekCard — cell-level flash', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+  })
+
+  it('flashCellOk adds wt__cell--flash-ok class to title cell', async () => {
+    const week = buildWeek()
+    const wrapper = mountWeekCard(week)
+    // Access exposed method
+    ;(wrapper.vm as any).flashCellOk(DATE, 1)
+    await nextTick()
+    const cell = wrapper.find('[data-testid="cell-title-' + DATE + '"]')
+    expect(cell.classes()).toContain('wt__cell--flash-ok')
+  })
+})

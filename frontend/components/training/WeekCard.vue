@@ -244,6 +244,22 @@ function flashZoneErr(date: string) {
   setTimeout(() => flashingError.delete(date), 700)
 }
 
+// ── Cell-level flash: key = `${date}:${fieldIdx}` ────────────
+const flashingCellsOk = reactive<Set<string>>(new Set())
+const flashingCellsErr = reactive<Set<string>>(new Set())
+
+function flashCellOk(date: string, fieldIdx: number) {
+  const key = `${date}:${fieldIdx}`
+  flashingCellsOk.add(key)
+  setTimeout(() => flashingCellsOk.delete(key), 900)
+}
+
+function flashCellErr(date: string, fieldIdx: number) {
+  const key = `${date}:${fieldIdx}`
+  flashingCellsErr.add(key)
+  setTimeout(() => flashingCellsErr.delete(key), 900)
+}
+
 // ── Shared API call logic ─────────────────────────────────────
 async function performSaveApiCalls(slot: DaySlot, edit: RowEdit): Promise<void> {
   if (edit.isCreating && edit.title.trim()) {
@@ -304,12 +320,25 @@ async function autoSave(slot: DaySlot, edit: RowEdit) {
     await performSaveApiCalls(slot, edit);
     edit.isDirty = false;
     edit.saveError = false;
+    // Cell-level flash
+    if (zone === "planned") {
+      flashCellOk(slot.date, 1); flashCellOk(slot.date, 2);
+    } else {
+      for (let fi = 3; fi <= 7; fi++) flashCellOk(slot.date, fi);
+    }
+    // Keep row-level flash for backwards compatibility with existing tests
     flashZoneOk(slot.date, zone);
     if (edit.completedId && slot.completed.length === 0) {
       await trainingStore.loadDashboard(trainingStore.selectedMonthValue, { silent: true });
     }
   } catch (err) {
     edit.saveError = true;
+    // Cell-level flash error
+    if (zone === "planned") {
+      flashCellErr(slot.date, 1); flashCellErr(slot.date, 2);
+    } else {
+      for (let fi = 3; fi <= 7; fi++) flashCellErr(slot.date, fi);
+    }
     flashZoneErr(slot.date);
     toastStore.push(err instanceof Error ? err.message : t("weekCard.createError"), "danger");
   } finally {
@@ -338,6 +367,7 @@ async function closeAndSave(slot: DaySlot, edit: RowEdit) {
     return;
   }
   edit.isSaving = true;
+  const zone = edit.activeZone;
   try {
     await performSaveApiCalls(slot, edit);
     editingRows.delete(slot.date);
@@ -347,6 +377,12 @@ async function closeAndSave(slot: DaySlot, edit: RowEdit) {
     }
   } catch (err) {
     editingRows.delete(slot.date);
+    // Cell-level flash error
+    if (zone === "planned") {
+      flashCellErr(slot.date, 1); flashCellErr(slot.date, 2);
+    } else {
+      for (let fi = 3; fi <= 7; fi++) flashCellErr(slot.date, fi);
+    }
     flashZoneErr(slot.date);
     toastStore.push(err instanceof Error ? err.message : t("weekCard.createError"), "danger");
   } finally {
@@ -514,6 +550,7 @@ defineExpose({
       )?.focus()
     })
   },
+  flashCellOk,
 })
 </script>
 
@@ -577,7 +614,11 @@ defineExpose({
           <div
             class="wt__cell wt__cell--type wt__cell-p"
             :data-testid="`nav-cell-type-${slot.date}`"
-            :class="{ 'wt__cell--nav-selected': isNavSelected(slot.date, 0) }"
+            :class="{
+              'wt__cell--nav-selected': isNavSelected(slot.date, 0),
+              'wt__cell--flash-ok': flashingCellsOk.has(`${slot.date}:0`),
+              'wt__cell--flash-err': flashingCellsErr.has(`${slot.date}:0`),
+            }"
             @click.stop
           >
             <button
@@ -601,7 +642,11 @@ defineExpose({
           <div
             class="wt__cell wt__cell--title wt__cell-p"
             :data-testid="`cell-title-${slot.date}`"
-            :class="{ 'wt__cell--nav-selected': isNavSelected(slot.date, 1) }"
+            :class="{
+              'wt__cell--nav-selected': isNavSelected(slot.date, 1),
+              'wt__cell--flash-ok': flashingCellsOk.has(`${slot.date}:1`),
+              'wt__cell--flash-err': flashingCellsErr.has(`${slot.date}:1`),
+            }"
             @click.stop="openEdit(slot, 'title', 'planned')"
           >
             <template v-if="isEditingZone(slot.date, 'planned') && getEdit(slot.date)">
@@ -628,7 +673,11 @@ defineExpose({
           <!-- Coach notes -->
           <div
             class="wt__cell wt__cell--notes wt__cell-p"
-            :class="{ 'wt__cell--nav-selected': isNavSelected(slot.date, 2) }"
+            :class="{
+              'wt__cell--nav-selected': isNavSelected(slot.date, 2),
+              'wt__cell--flash-ok': flashingCellsOk.has(`${slot.date}:2`),
+              'wt__cell--flash-err': flashingCellsErr.has(`${slot.date}:2`),
+            }"
             @click.stop="openEdit(slot, 'notes', 'planned')"
           >
             <template v-if="isEditingZone(slot.date, 'planned') && getEdit(slot.date)">
@@ -656,7 +705,11 @@ defineExpose({
           <div
             class="wt__cell wt__cell--num wt__cell-c wt__cell-km"
             :data-testid="`cell-km-${slot.date}`"
-            :class="{ 'wt__cell--nav-selected': isNavSelected(slot.date, 3) }"
+            :class="{
+              'wt__cell--nav-selected': isNavSelected(slot.date, 3),
+              'wt__cell--flash-ok': flashingCellsOk.has(`${slot.date}:3`),
+              'wt__cell--flash-err': flashingCellsErr.has(`${slot.date}:3`),
+            }"
             @click.stop="canEditCompleted(slot) && openEdit(slot, 'km', 'completed')"
           >
             <template v-if="isEditingZone(slot.date, 'completed') && getEdit(slot.date) && getEdit(slot.date)!.completedId">
@@ -680,7 +733,11 @@ defineExpose({
           <!-- Time (HH:MM) -->
           <div
             class="wt__cell wt__cell--num wt__cell-c wt__cell-time"
-            :class="{ 'wt__cell--nav-selected': isNavSelected(slot.date, 4) }"
+            :class="{
+              'wt__cell--nav-selected': isNavSelected(slot.date, 4),
+              'wt__cell--flash-ok': flashingCellsOk.has(`${slot.date}:4`),
+              'wt__cell--flash-err': flashingCellsErr.has(`${slot.date}:4`),
+            }"
             @click.stop="canEditCompleted(slot) && openEdit(slot, 'minutes', 'completed')"
           >
             <template v-if="isEditingZone(slot.date, 'completed') && getEdit(slot.date) && getEdit(slot.date)!.completedId">
@@ -704,7 +761,11 @@ defineExpose({
           <!-- Intervals / details -->
           <div
             class="wt__cell wt__cell--intervals wt__cell-c"
-            :class="{ 'wt__cell--nav-selected': isNavSelected(slot.date, 5) }"
+            :class="{
+              'wt__cell--nav-selected': isNavSelected(slot.date, 5),
+              'wt__cell--flash-ok': flashingCellsOk.has(`${slot.date}:5`),
+              'wt__cell--flash-err': flashingCellsErr.has(`${slot.date}:5`),
+            }"
             @click.stop="canEditCompleted(slot) && openEdit(slot, 'details', 'completed')"
           >
             <template v-if="isEditingZone(slot.date, 'completed') && getEdit(slot.date) && getEdit(slot.date)!.completedId">
@@ -727,7 +788,11 @@ defineExpose({
           <!-- Avg HR -->
           <div
             class="wt__cell wt__cell--num wt__cell-c wt__cell-avghr"
-            :class="{ 'wt__cell--nav-selected': isNavSelected(slot.date, 6) }"
+            :class="{
+              'wt__cell--nav-selected': isNavSelected(slot.date, 6),
+              'wt__cell--flash-ok': flashingCellsOk.has(`${slot.date}:6`),
+              'wt__cell--flash-err': flashingCellsErr.has(`${slot.date}:6`),
+            }"
             @click.stop="canEditCompleted(slot) && openEdit(slot, 'avgHr', 'completed')"
           >
             <template v-if="isEditingZone(slot.date, 'completed') && getEdit(slot.date) && getEdit(slot.date)!.completedId">
@@ -750,7 +815,11 @@ defineExpose({
           <!-- Max HR -->
           <div
             class="wt__cell wt__cell--num wt__cell-c wt__cell-maxhr"
-            :class="{ 'wt__cell--nav-selected': isNavSelected(slot.date, 7) }"
+            :class="{
+              'wt__cell--nav-selected': isNavSelected(slot.date, 7),
+              'wt__cell--flash-ok': flashingCellsOk.has(`${slot.date}:7`),
+              'wt__cell--flash-err': flashingCellsErr.has(`${slot.date}:7`),
+            }"
             @click.stop="canEditCompleted(slot) && openEdit(slot, 'maxHr', 'completed')"
           >
             <template v-if="isEditingZone(slot.date, 'completed') && getEdit(slot.date) && getEdit(slot.date)!.completedId">
@@ -1196,6 +1265,20 @@ defineExpose({
   background: rgba(200, 255, 0, 0.06);
   border-radius: 4px;
 }
+
+/* ── Cell-level flash ── */
+@keyframes cell-flash-ok {
+  0%   { background-color: rgba(200, 255, 0, 0.22); }
+  100% { background-color: transparent; }
+}
+
+@keyframes cell-flash-err {
+  0%   { background-color: rgba(244, 63, 94, 0.22); }
+  100% { background-color: transparent; }
+}
+
+.wt__cell--flash-ok  { animation: cell-flash-ok  0.8s ease-out forwards; }
+.wt__cell--flash-err { animation: cell-flash-err 0.8s ease-out forwards; }
 
 /* ── Nav mode display spans ── */
 .wt__nav-cell {
