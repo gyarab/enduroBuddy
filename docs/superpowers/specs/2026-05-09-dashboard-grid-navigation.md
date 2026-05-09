@@ -161,21 +161,48 @@ WeekCard dostane `tabindex="0"` na wrapping elementu aby mohl browser focus při
 
 ---
 
-## Dynamická výška řádků
+## Layout sloupců
 
-- `<textarea>` pro `title` a `notes`: `rows="1"`, `resize: none`, `overflow: hidden`
-- Při každém `input` eventu na textarea: `el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'`
-- Max výška: `120px` — nad tím `overflow-y: auto` (scrollovatelná textarea)
-- Všechny `<input>` (km, min, hr, details) jsou jednořádkové, nerostou
-- Řádky (dny) nemají fixní výšku — `align-items: start` místo `center` na grid kontejneru
+Zachovává stejné šířky jako stávající WeekCard — flexibilní `fr` sloupce vyplní dostupnou šířku viewportu:
+
+```css
+.wt__cols {
+  grid-template-columns:
+    44px 30px 42px minmax(11rem, 2.5fr) minmax(5rem, 1fr)
+    1px
+    60px 52px minmax(5rem, 1fr) 46px 46px;
+  align-items: start;  /* změna z center — umožní růst řádků do výšky */
+}
+```
+
+Text v navigačním módu (`nav-cell` span):
+```css
+.wt__nav-cell {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;  /* dlouhý text ořezán tečkami */
+}
+```
+
+V editačním módu je vidět celý obsah v textarea/input — ořez platí jen pro zobrazení v nav módu.
 
 ---
 
-## Jeden scrollbar
+## Textarea auto-grow v editačním módu
 
-- WeekCard kontejner: `overflow: visible` — žádné per-week scrollbary
-- Horizontální scroll (pokud tabulka přeteče viewport): jeden `overflow-x: auto` na `.wt` wrapperu (celá tabulka sdílí jeden horizontal scrollbar)
-- Vertikální scroll: `<body>` / root layout, jeden scrollbar pro celou stránku
+- `<textarea>` pro `title` (`fieldIdx=1`): `rows="1"`, `resize: none`, `overflow: hidden`
+- Při každém `input` eventu: `el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'`
+- Max výška: `120px` — nad tím `overflow-y: auto`
+- Ostatní pole jsou `<input>` (jednořádkové) — výška se nemění
+- Řádky (dny) nemají fixní výšku díky `align-items: start` — přirozeně se přizpůsobí obsahu
+
+---
+
+## Scrollbar
+
+- Každý WeekCard wrapper: `overflow-x: auto` — jeden horizontální scrollbar per week pokud obsah přeteče viewport (min-width gridu ~720px)
+- Žádný interní per-week vertikální scroll — řádky rostou volně
+- Vertikální scroll celé stránky: `<body>` / root layout
 
 ---
 
