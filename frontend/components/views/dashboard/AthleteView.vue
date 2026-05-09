@@ -110,6 +110,7 @@ onUnmounted(() => {
 
 // Re-init cursor when month changes (user navigates to different month)
 watch(() => trainingStore.weeks, (weeks) => {
+  weekCardRefs.value = []
   if (weeks.length) gridNav.initCursor(weeks)
 })
 

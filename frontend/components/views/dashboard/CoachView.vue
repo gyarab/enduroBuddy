@@ -126,6 +126,7 @@ watch(
 );
 
 watch(() => coachStore.weeks, (weeks) => {
+  weekCardRefs.value = []
   if (weeks.length) gridNav.initCursor(weeks)
 })
 
