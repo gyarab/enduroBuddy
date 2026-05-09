@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref, watch } from "vue";
+import { onMounted, onUnmounted, ref, watch } from "vue";
 
 import { RouterLink, useRouter } from "vue-router";
 
@@ -14,6 +14,7 @@ import EbCard from "@/components/ui/EbCard.vue";
 import { useToastStore } from "@/stores/toasts";
 import { useCoachStore } from "@/stores/coach";
 import { addNextMonth } from "~/utils/api/training";
+import { useGridNav } from "~/composables/useGridNav";
 
 const router = useRouter();
 const coachStore = useCoachStore();
@@ -25,6 +26,69 @@ const isSidebarOpen = ref(false);
 const isAddingMonth = ref(false);
 
 const weekCardRefs = ref<InstanceType<typeof WeekCard>[]>([])
+
+// ── Grid navigation ──────────────────────────────────────────
+const gridNav = useGridNav()
+const { cursor, editMode } = gridNav
+
+function cursorForWeek(idx: number): { dayIdx: number; fieldIdx: number } | null {
+  if (!cursor.value || cursor.value.weekIdx !== idx) return null
+  return { dayIdx: cursor.value.dayIdx, fieldIdx: cursor.value.fieldIdx }
+}
+
+watch([editMode, cursor], ([active]) => {
+  if (!active || !cursor.value) return
+  const { weekIdx, dayIdx, fieldIdx } = cursor.value
+  if (fieldIdx === 0) return
+  weekCardRefs.value[weekIdx]?.focusCellByIdx(dayIdx, fieldIdx, gridNav.pendingReplace.value)
+})
+
+const PRINTABLE = /^[a-zA-Z0-9\-.,;:!?@#%&*()/\\'"= ]$/
+
+function handleKeyDown(e: KeyboardEvent) {
+  if (editMode.value) return
+  const weekCount = coachStore.weeks.length
+  if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+    e.preventDefault()
+    const dir = e.key.replace('Arrow', '').toLowerCase() as 'up' | 'down' | 'left' | 'right'
+    gridNav.moveCursor(dir, weekCount)
+    return
+  }
+  if (e.key === 'Tab') {
+    e.preventDefault()
+    gridNav.moveCursor(e.shiftKey ? 'left' : 'right', weekCount)
+    return
+  }
+  if (!cursor.value) return
+  if (e.key === 'Enter') {
+    e.preventDefault()
+    if (cursor.value.fieldIdx === 0) weekCardRefs.value[cursor.value.weekIdx]?.toggleTypeByDayIdx(cursor.value.dayIdx)
+    else gridNav.enterEdit()
+    return
+  }
+  if (e.key === ' ' && cursor.value.fieldIdx === 0) {
+    e.preventDefault()
+    weekCardRefs.value[cursor.value.weekIdx]?.toggleTypeByDayIdx(cursor.value.dayIdx)
+    return
+  }
+  if ((e.key === 'Backspace' || e.key === 'Delete') && cursor.value.fieldIdx !== 0) {
+    e.preventDefault()
+    gridNav.enterEdit('')
+    return
+  }
+  if (e.key === 'Escape') {
+    e.preventDefault()
+    cursor.value = null
+    return
+  }
+  if (PRINTABLE.test(e.key) && !e.ctrlKey && !e.metaKey && cursor.value.fieldIdx !== 0) {
+    gridNav.enterEdit(e.key)
+  }
+}
+
+function handleExitEdit() {
+  gridNav.exitEdit()
+}
 
 function handleNavOut(
   dir: "next" | "prev",
@@ -40,9 +104,18 @@ const { t } = useI18n();
 
 onMounted(() => {
   if (!coachStore.dashboard && !coachStore.isLoading) {
-    void coachStore.loadDashboard();
+    void coachStore.loadDashboard().then(() => {
+      gridNav.initCursor(coachStore.weeks)
+    })
+  } else if (coachStore.weeks.length) {
+    gridNav.initCursor(coachStore.weeks)
   }
-});
+  window.addEventListener('keydown', handleKeyDown)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleKeyDown)
+})
 
 watch(
   () => coachStore.selectedAthlete?.focus,
@@ -51,6 +124,10 @@ watch(
   },
   { immediate: true },
 );
+
+watch(() => coachStore.weeks, (weeks) => {
+  if (weeks.length) gridNav.initCursor(weeks)
+})
 
 async function saveFocus() {
   isSavingFocus.value = true;
@@ -223,8 +300,10 @@ async function handleAddMonth() {
             :ref="(el) => { if (el && weekCardRefs.value) weekCardRefs.value[idx] = el as InstanceType<typeof WeekCard> }"
             :week="week"
             editor-context="coach"
+            :active-cursor="cursorForWeek(idx)"
             @navigate-out-next="(p) => handleNavOut('next', idx, p)"
             @navigate-out-prev="(p) => handleNavOut('prev', idx, p)"
+            @exit-edit="handleExitEdit"
           />
         </div>
       </template>
