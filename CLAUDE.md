@@ -220,6 +220,18 @@ Spec: `docs/superpowers/specs/2026-04-18-nuxt-migration-design.md`
 
 ## Aktivní plány a změny
 
+### 2026-05-09 — GitHub Actions auto-deploy + UptimeRobot monitoring ✅ KOMPLETNÍ
+
+**Spec:** `docs/superpowers/specs/2026-05-09-github-actions-deploy-monitoring.md`
+**Plán:** `docs/superpowers/plans/2026-05-09-github-actions-deploy-monitoring.md`
+
+- Deploy workflow: push do `main` → SSH deploy na `holcman@gawt.dtcloud.cz`
+- Server: deploy klíč `~/.ssh/id_rsa_deploy` pro `git pull` z private repa (`git@github.com:vojtecholcman/enduroBuddy.git`)
+- GitHub Secrets: `SERVER_SSH_KEY`, `SERVER_HOST` (`gawt.dtcloud.cz`), `SERVER_USER` (`holcman`)
+- Monitoring: UptimeRobot free, HTTP(S) monitoring `endurobuddy.cz` + `app.endurobuddy.cz`, email notifikace na `vojta.holcman@outlook.cz`
+
+---
+
 ### 2026-05-08 — Favicon + dynamické titulky záložek ✅ KOMPLETNÍ (feat/favicon-page-titles)
 
 **Spec:** `docs/superpowers/specs/2026-05-08-favicon-page-titles.md`
