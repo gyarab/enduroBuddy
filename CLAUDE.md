@@ -220,6 +220,20 @@ Spec: `docs/superpowers/specs/2026-04-18-nuxt-migration-design.md`
 
 ## Aktivní plány a změny
 
+### 2026-05-09 — Dashboard: Google Sheets grid navigation ✅ KOMPLETNÍ (feat/dashboard-grid-nav)
+
+**Spec:** `docs/superpowers/specs/2026-05-09-dashboard-grid-navigation.md`
+**Plán:** `docs/superpowers/plans/2026-05-09-dashboard-grid-navigation.md`
+
+- `useGridNav` composable: cursor stav, moveCursor (cross-week), enterEdit/exitEdit, initCursor
+- WeekCard: `activeCursor` prop + `.wt__cell--nav-selected`, `focusCellByIdx`, `toggleTypeByDayIdx`, `closeCurrentEdit`, `exit-edit` event, cell-level flash, textarea auto-grow, ellipsis na nav spanech, `overflow-x: auto`, `align-items: start`
+- AthleteView + CoachView: window keydown handler, editMode watcher, auto-focus na dnešní týden, re-init při změně měsíce
+- Nav mód: šipky pohybují kurzorem, psaní nahradí obsah, Enter zachová obsah, Space/Enter na type pill = toggle
+- Edit mód: ESC/Enter(input)/Tab = uložit + nav mód; ↑↓ blokováno; ←→ nativní v textu
+- 160 testů zelených, TypeScript: 0 chyb
+
+---
+
 ### 2026-05-09 — GitHub Actions auto-deploy + UptimeRobot monitoring ✅ KOMPLETNÍ
 
 **Spec:** `docs/superpowers/specs/2026-05-09-github-actions-deploy-monitoring.md`
