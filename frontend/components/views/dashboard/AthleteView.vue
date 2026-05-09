@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 
 import MonthBar from "@/components/training/MonthBar.vue";
 import MonthSummaryBar from "@/components/training/MonthSummaryBar.vue";
@@ -11,6 +11,7 @@ import EbCard from "@/components/ui/EbCard.vue";
 import { useAuthStore } from "@/stores/auth";
 import { useToastStore } from "@/stores/toasts";
 import { useTrainingStore } from "@/stores/training";
+import { useGridNav } from "~/composables/useGridNav";
 import { addNextMonth } from "~/utils/api/training";
 
 const trainingStore = useTrainingStore();
@@ -22,6 +23,97 @@ const isGarminModalOpen = ref(false);
 
 const weekCardRefs = ref<InstanceType<typeof WeekCard>[]>([])
 
+// ── Grid navigation ──────────────────────────────────────────
+const gridNav = useGridNav()
+const { cursor, editMode } = gridNav
+
+function cursorForWeek(idx: number): { dayIdx: number; fieldIdx: number } | null {
+  if (!cursor.value || cursor.value.weekIdx !== idx) return null
+  return { dayIdx: cursor.value.dayIdx, fieldIdx: cursor.value.fieldIdx }
+}
+
+// When editMode turns true: tell the right WeekCard to open the cell
+watch([editMode, cursor], ([active]) => {
+  if (!active || !cursor.value) return
+  const { weekIdx, dayIdx, fieldIdx } = cursor.value
+  if (fieldIdx === 0) return  // type pill — handled directly in keydown
+  weekCardRefs.value[weekIdx]?.focusCellByIdx(dayIdx, fieldIdx, gridNav.pendingReplace.value)
+})
+
+const PRINTABLE = /^[a-zA-Z0-9\-.,;:!?@#%&*()/\\'"= ]$/
+
+function handleKeyDown(e: KeyboardEvent) {
+  // Let edit mode inputs handle their own keys
+  if (editMode.value) return
+
+  const weekCount = trainingStore.weeks.length
+
+  if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+    e.preventDefault()
+    const dir = e.key.replace('Arrow', '').toLowerCase() as 'up' | 'down' | 'left' | 'right'
+    gridNav.moveCursor(dir, weekCount)
+    return
+  }
+
+  if (e.key === 'Tab') {
+    e.preventDefault()
+    gridNav.moveCursor(e.shiftKey ? 'left' : 'right', weekCount)
+    return
+  }
+
+  if (!cursor.value) return
+
+  if (e.key === 'Enter') {
+    e.preventDefault()
+    if (cursor.value.fieldIdx === 0) {
+      weekCardRefs.value[cursor.value.weekIdx]?.toggleTypeByDayIdx(cursor.value.dayIdx)
+    } else {
+      gridNav.enterEdit()
+    }
+    return
+  }
+
+  if (e.key === ' ' && cursor.value.fieldIdx === 0) {
+    e.preventDefault()
+    weekCardRefs.value[cursor.value.weekIdx]?.toggleTypeByDayIdx(cursor.value.dayIdx)
+    return
+  }
+
+  if ((e.key === 'Backspace' || e.key === 'Delete') && cursor.value.fieldIdx !== 0) {
+    e.preventDefault()
+    gridNav.enterEdit('')
+    return
+  }
+
+  if (e.key === 'Escape') {
+    e.preventDefault()
+    cursor.value = null
+    return
+  }
+
+  if (PRINTABLE.test(e.key) && !e.ctrlKey && !e.metaKey && cursor.value.fieldIdx !== 0) {
+    gridNav.enterEdit(e.key)
+  }
+}
+
+// ── Lifecycle ────────────────────────────────────────────────
+onMounted(() => {
+  void trainingStore.loadDashboard().then(() => {
+    gridNav.initCursor(trainingStore.weeks)
+  })
+  window.addEventListener('keydown', handleKeyDown)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleKeyDown)
+})
+
+// Re-init cursor when month changes (user navigates to different month)
+watch(() => trainingStore.weeks, (weeks) => {
+  if (weeks.length) gridNav.initCursor(weeks)
+})
+
+// ── Cross-week navigation (legacy compatible) ──────────────
 function handleNavOut(
   dir: "next" | "prev",
   idx: number,
@@ -32,6 +124,12 @@ function handleNavOut(
   if (card) card.focusCell(payload.field, payload.zone, dir === "prev")
 }
 
+// ── Exit edit (WeekCard emits when ESC/Enter/Tab in input) ──
+function handleExitEdit() {
+  gridNav.exitEdit()
+}
+
+// ── Other ───────────────────────────────────────────────────
 const showGarminImportButton = computed(
   () => !!authStore.user?.capabilities?.garmin_connect_enabled,
 );
@@ -48,10 +146,6 @@ async function handleAddMonth() {
     isAddingMonth.value = false;
   }
 }
-
-onMounted(() => {
-  void trainingStore.loadDashboard();
-});
 </script>
 
 <template>
@@ -93,8 +187,10 @@ onMounted(() => {
           :key="week.id"
           :ref="(el) => { if (el && weekCardRefs.value) weekCardRefs.value[idx] = el as InstanceType<typeof WeekCard> }"
           :week="week"
+          :active-cursor="cursorForWeek(idx)"
           @navigate-out-next="(p) => handleNavOut('next', idx, p)"
           @navigate-out-prev="(p) => handleNavOut('prev', idx, p)"
+          @exit-edit="handleExitEdit"
         />
       </div>
     </template>
