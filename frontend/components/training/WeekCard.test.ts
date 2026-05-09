@@ -304,3 +304,37 @@ describe("WeekCard — keyboard navigation", () => {
     expect(wrapper.emitted("navigate-out-prev")![0][0]).toEqual({ field: "notes", zone: "planned" })
   })
 })
+
+describe("WeekCard — activeCursor nav highlight", () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+  })
+
+  it("applies nav-selected class to type cell when activeCursor.fieldIdx=0", async () => {
+    const week = buildWeek()
+    const wrapper = mountWeekCard(week)
+    await wrapper.setProps({ activeCursor: { dayIdx: 0, fieldIdx: 0 } })
+    await nextTick()
+    const typeCell = wrapper.find('[data-testid="nav-cell-type-' + DATE + '"]')
+    expect(typeCell.exists()).toBe(true)
+    expect(typeCell.classes()).toContain('wt__cell--nav-selected')
+  })
+
+  it("applies nav-selected class to title cell when activeCursor.fieldIdx=1", async () => {
+    const week = buildWeek()
+    const wrapper = mountWeekCard(week)
+    await wrapper.setProps({ activeCursor: { dayIdx: 0, fieldIdx: 1 } })
+    await nextTick()
+    const titleCell = wrapper.find('[data-testid="cell-title-' + DATE + '"]')
+    expect(titleCell.classes()).toContain('wt__cell--nav-selected')
+  })
+
+  it("no nav-selected class when activeCursor is null", async () => {
+    const week = buildWeek()
+    const wrapper = mountWeekCard(week)
+    await wrapper.setProps({ activeCursor: null })
+    await nextTick()
+    const selected = wrapper.findAll('.wt__cell--nav-selected')
+    expect(selected).toHaveLength(0)
+  })
+})

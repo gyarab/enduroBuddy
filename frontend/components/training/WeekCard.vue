@@ -12,6 +12,7 @@ import EbCard from "@/components/ui/EbCard.vue";
 const props = defineProps<{
   week: DashboardWeek;
   editorContext?: "athlete" | "coach";
+  activeCursor?: { dayIdx: number; fieldIdx: number } | null;
 }>();
 
 const emit = defineEmits<{
@@ -451,6 +452,12 @@ async function handleKeyNav(
   )?.focus()
 }
 
+function isNavSelected(slotDate: string, fieldIdx: number): boolean {
+  if (!props.activeCursor) return false
+  const slotIdx = daySlots.value.findIndex(s => s.date === slotDate)
+  return slotIdx === props.activeCursor.dayIdx && fieldIdx === props.activeCursor.fieldIdx
+}
+
 function canEditCompleted(slot: DaySlot): boolean {
   if (!canEditCompletedGlobal.value) return false;
   const c = slot.completed[0];
@@ -561,7 +568,12 @@ defineExpose({
           <div class="wt__cell wt__cell--day wt__cell--readonly">{{ slot.dayLabel }}</div>
 
           <!-- Session type -->
-          <div class="wt__cell wt__cell--type wt__cell-p" @click.stop>
+          <div
+            class="wt__cell wt__cell--type wt__cell-p"
+            :data-testid="`nav-cell-type-${slot.date}`"
+            :class="{ 'wt__cell--nav-selected': isNavSelected(slot.date, 0) }"
+            @click.stop
+          >
             <button
               v-if="isEditingZone(slot.date, 'planned') && getEdit(slot.date)"
               class="wt__type-pill"
@@ -580,7 +592,12 @@ defineExpose({
           </div>
 
           <!-- Training title -->
-          <div class="wt__cell wt__cell--title wt__cell-p" :data-testid="`cell-title-${slot.date}`" @click.stop="openEdit(slot, 'title', 'planned')">
+          <div
+            class="wt__cell wt__cell--title wt__cell-p"
+            :data-testid="`cell-title-${slot.date}`"
+            :class="{ 'wt__cell--nav-selected': isNavSelected(slot.date, 1) }"
+            @click.stop="openEdit(slot, 'title', 'planned')"
+          >
             <template v-if="isEditingZone(slot.date, 'planned') && getEdit(slot.date)">
               <textarea
                 v-model="getEdit(slot.date)!.title"
@@ -603,7 +620,11 @@ defineExpose({
           </div>
 
           <!-- Coach notes -->
-          <div class="wt__cell wt__cell--notes wt__cell-p" @click.stop="openEdit(slot, 'notes', 'planned')">
+          <div
+            class="wt__cell wt__cell--notes wt__cell-p"
+            :class="{ 'wt__cell--nav-selected': isNavSelected(slot.date, 2) }"
+            @click.stop="openEdit(slot, 'notes', 'planned')"
+          >
             <template v-if="isEditingZone(slot.date, 'planned') && getEdit(slot.date)">
               <input
                 v-model="getEdit(slot.date)!.notes"
@@ -626,7 +647,12 @@ defineExpose({
           <div class="wt__sep-col" />
 
           <!-- km -->
-          <div class="wt__cell wt__cell--num wt__cell-c wt__cell-km" :data-testid="`cell-km-${slot.date}`" @click.stop="canEditCompleted(slot) && openEdit(slot, 'km', 'completed')">
+          <div
+            class="wt__cell wt__cell--num wt__cell-c wt__cell-km"
+            :data-testid="`cell-km-${slot.date}`"
+            :class="{ 'wt__cell--nav-selected': isNavSelected(slot.date, 3) }"
+            @click.stop="canEditCompleted(slot) && openEdit(slot, 'km', 'completed')"
+          >
             <template v-if="isEditingZone(slot.date, 'completed') && getEdit(slot.date) && getEdit(slot.date)!.completedId">
               <input
                 v-model="getEdit(slot.date)!.km"
@@ -646,7 +672,11 @@ defineExpose({
           </div>
 
           <!-- Time (HH:MM) -->
-          <div class="wt__cell wt__cell--num wt__cell-c wt__cell-time" @click.stop="canEditCompleted(slot) && openEdit(slot, 'minutes', 'completed')">
+          <div
+            class="wt__cell wt__cell--num wt__cell-c wt__cell-time"
+            :class="{ 'wt__cell--nav-selected': isNavSelected(slot.date, 4) }"
+            @click.stop="canEditCompleted(slot) && openEdit(slot, 'minutes', 'completed')"
+          >
             <template v-if="isEditingZone(slot.date, 'completed') && getEdit(slot.date) && getEdit(slot.date)!.completedId">
               <input
                 v-model="getEdit(slot.date)!.minutes"
@@ -666,7 +696,11 @@ defineExpose({
           </div>
 
           <!-- Intervals / details -->
-          <div class="wt__cell wt__cell--intervals wt__cell-c" @click.stop="canEditCompleted(slot) && openEdit(slot, 'details', 'completed')">
+          <div
+            class="wt__cell wt__cell--intervals wt__cell-c"
+            :class="{ 'wt__cell--nav-selected': isNavSelected(slot.date, 5) }"
+            @click.stop="canEditCompleted(slot) && openEdit(slot, 'details', 'completed')"
+          >
             <template v-if="isEditingZone(slot.date, 'completed') && getEdit(slot.date) && getEdit(slot.date)!.completedId">
               <input
                 v-model="getEdit(slot.date)!.details"
@@ -685,7 +719,11 @@ defineExpose({
           </div>
 
           <!-- Avg HR -->
-          <div class="wt__cell wt__cell--num wt__cell-c wt__cell-avghr" @click.stop="canEditCompleted(slot) && openEdit(slot, 'avgHr', 'completed')">
+          <div
+            class="wt__cell wt__cell--num wt__cell-c wt__cell-avghr"
+            :class="{ 'wt__cell--nav-selected': isNavSelected(slot.date, 6) }"
+            @click.stop="canEditCompleted(slot) && openEdit(slot, 'avgHr', 'completed')"
+          >
             <template v-if="isEditingZone(slot.date, 'completed') && getEdit(slot.date) && getEdit(slot.date)!.completedId">
               <input
                 v-model="getEdit(slot.date)!.avgHr"
@@ -704,7 +742,11 @@ defineExpose({
           </div>
 
           <!-- Max HR -->
-          <div class="wt__cell wt__cell--num wt__cell-c wt__cell-maxhr" @click.stop="canEditCompleted(slot) && openEdit(slot, 'maxHr', 'completed')">
+          <div
+            class="wt__cell wt__cell--num wt__cell-c wt__cell-maxhr"
+            :class="{ 'wt__cell--nav-selected': isNavSelected(slot.date, 7) }"
+            @click.stop="canEditCompleted(slot) && openEdit(slot, 'maxHr', 'completed')"
+          >
             <template v-if="isEditingZone(slot.date, 'completed') && getEdit(slot.date) && getEdit(slot.date)!.completedId">
               <input
                 v-model="getEdit(slot.date)!.maxHr"
@@ -1139,6 +1181,14 @@ defineExpose({
   white-space: nowrap;
 }
 
+
+/* ── Nav cursor highlight ── */
+.wt__cell--nav-selected {
+  outline: 2px solid var(--eb-lime);
+  outline-offset: -1px;
+  background: rgba(200, 255, 0, 0.06);
+  border-radius: 4px;
+}
 
 /* ── Summary row ── */
 .wt__summary-row {
