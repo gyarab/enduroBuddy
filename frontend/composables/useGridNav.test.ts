@@ -72,3 +72,60 @@ describe('useGridNav — moveCursor', () => {
     expect(cursor.value).toBeNull()
   })
 })
+
+describe('useGridNav — enterEdit / exitEdit', () => {
+  it('enterEdit sets editMode true and stores replace content', () => {
+    const { cursor, editMode, enterEdit, pendingReplace } = useGridNav()
+    cursor.value = { weekIdx: 0, dayIdx: 0, fieldIdx: 1 }
+    enterEdit('x')
+    expect(editMode.value).toBe(true)
+    expect(pendingReplace.value).toBe('x')
+  })
+
+  it('enterEdit without arg stores undefined replace', () => {
+    const { cursor, editMode, enterEdit, pendingReplace } = useGridNav()
+    cursor.value = { weekIdx: 0, dayIdx: 0, fieldIdx: 1 }
+    enterEdit()
+    expect(editMode.value).toBe(true)
+    expect(pendingReplace.value).toBeUndefined()
+  })
+
+  it('exitEdit clears editMode and pendingReplace', () => {
+    const { cursor, editMode, pendingReplace, enterEdit, exitEdit } = useGridNav()
+    cursor.value = { weekIdx: 0, dayIdx: 0, fieldIdx: 1 }
+    enterEdit('a')
+    exitEdit()
+    expect(editMode.value).toBe(false)
+    expect(pendingReplace.value).toBeUndefined()
+  })
+})
+
+describe('useGridNav — initCursor', () => {
+  it('sets cursor to week containing today', () => {
+    const { cursor, initCursor } = useGridNav()
+    const today = new Date().toISOString().slice(0, 10)
+    const weeks = [
+      { week_start: '2020-01-01', week_end: '2020-01-07' },
+      { week_start: today, week_end: today },
+    ]
+    initCursor(weeks)
+    expect(cursor.value?.weekIdx).toBe(1)
+    expect(cursor.value?.dayIdx).toBe(0)
+    expect(cursor.value?.fieldIdx).toBe(0)
+  })
+
+  it('falls back to week 0 when today not found', () => {
+    const { cursor, initCursor } = useGridNav()
+    const weeks = [
+      { week_start: '2020-01-01', week_end: '2020-01-07' },
+    ]
+    initCursor(weeks)
+    expect(cursor.value?.weekIdx).toBe(0)
+  })
+
+  it('does nothing for empty weeks array', () => {
+    const { cursor, initCursor } = useGridNav()
+    initCursor([])
+    expect(cursor.value).toBeNull()
+  })
+})
