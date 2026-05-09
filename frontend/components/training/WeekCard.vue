@@ -367,6 +367,12 @@ function onFieldInput(date: string, slot: DaySlot) {
   }, 1000);
 }
 
+function autoResizeTextarea(el: HTMLTextAreaElement) {
+  el.style.height = 'auto'
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px'
+  el.style.overflowY = el.scrollHeight > 120 ? 'auto' : 'hidden'
+}
+
 function onRowFocusOut(slot: DaySlot, event: FocusEvent) {
   const edit = editingRows.get(slot.date);
   if (!edit) return;
@@ -606,10 +612,11 @@ defineExpose({
                 :data-testid="`input-title-${slot.date}`"
                 data-field="title"
                 :data-date="slot.date"
-                                :placeholder="t('weekCard.titlePlaceholder')"
+                :placeholder="t('weekCard.titlePlaceholder')"
                 rows="1"
+                style="overflow: hidden; resize: none;"
                 @click.stop
-                @input="onFieldInput(slot.date, slot)"
+                @input="onFieldInput(slot.date, slot); autoResizeTextarea($event.target as HTMLTextAreaElement)"
                 @keydown="handleKeyNav($event, 'title', slot, 'planned')"
               />
             </template>
