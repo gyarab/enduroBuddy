@@ -614,8 +614,7 @@ defineExpose({
               />
             </template>
             <template v-else>
-              <span v-if="slot.planned[0]" class="wt__title-text">{{ slot.planned[0].title }}</span>
-              <span v-else class="wt__empty-hint">{{ t("weekCard.clickToAdd") }}</span>
+              <span class="wt__nav-cell">{{ slot.planned[0]?.title || '' }}</span>
             </template>
           </div>
 
@@ -639,7 +638,7 @@ defineExpose({
               />
             </template>
             <template v-else>
-              <span class="wt__notes-text">{{ slot.planned[0]?.notes }}</span>
+              <span class="wt__nav-cell">{{ slot.planned[0]?.notes || '' }}</span>
             </template>
           </div>
 
@@ -667,7 +666,7 @@ defineExpose({
               />
             </template>
             <template v-else>
-              <span class="wt__num-val wt__num-val--done">{{ slot.completed[0]?.completed_metrics?.km || "-" }}</span>
+              <span class="wt__nav-cell wt__nav-cell--num">{{ slot.completed[0]?.completed_metrics?.km || '-' }}</span>
             </template>
           </div>
 
@@ -691,7 +690,7 @@ defineExpose({
               />
             </template>
             <template v-else>
-              <span class="wt__num-val wt__num-val--done">{{ formatMinutes(slot.completed[0]?.completed_metrics?.minutes) }}</span>
+              <span class="wt__nav-cell wt__nav-cell--num">{{ formatMinutes(slot.completed[0]?.completed_metrics?.minutes) }}</span>
             </template>
           </div>
 
@@ -714,7 +713,7 @@ defineExpose({
               />
             </template>
             <template v-else>
-              <span class="wt__intervals-text">{{ slot.completed[0]?.completed_metrics?.details }}</span>
+              <span class="wt__nav-cell">{{ slot.completed[0]?.completed_metrics?.details || '' }}</span>
             </template>
           </div>
 
@@ -737,7 +736,7 @@ defineExpose({
               />
             </template>
             <template v-else>
-              <span class="wt__num-val wt__num-val--hr">{{ slot.completed[0]?.completed_metrics?.avg_hr ?? "-" }}</span>
+              <span class="wt__nav-cell wt__nav-cell--num">{{ slot.completed[0]?.completed_metrics?.avg_hr ?? '-' }}</span>
             </template>
           </div>
 
@@ -760,7 +759,7 @@ defineExpose({
               />
             </template>
             <template v-else>
-              <span class="wt__num-val wt__num-val--hr">{{ slot.completed[0]?.completed_metrics?.max_hr ?? "-" }}</span>
+              <span class="wt__nav-cell wt__nav-cell--num">{{ slot.completed[0]?.completed_metrics?.max_hr ?? '-' }}</span>
             </template>
           </div>
         </div>
@@ -808,6 +807,7 @@ defineExpose({
 .wt__table {
   min-width: 100%;
   width: max-content;
+  overflow-x: auto;
 }
 
 /* ── Header ── */
@@ -895,10 +895,10 @@ defineExpose({
 
 /* ── Day row ── */
 .wt__row {
-  padding: 0 1rem;
+  padding: 0.4rem 1rem;
   border-bottom: 1px solid var(--eb-border-soft);
   min-height: 2.75rem;
-  align-items: center;
+  align-items: start;
   transition: background-color 100ms;
 }
 
@@ -1188,6 +1188,25 @@ defineExpose({
   outline-offset: -1px;
   background: rgba(200, 255, 0, 0.06);
   border-radius: 4px;
+}
+
+/* ── Nav mode display spans ── */
+.wt__nav-cell {
+  display: block;
+  width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--eb-text-muted);
+  font-size: 0.8125rem;
+  min-height: 1.25rem;
+  line-height: 1.5;
+}
+
+.wt__nav-cell--num {
+  font-family: var(--eb-font-mono);
+  font-size: 0.75rem;
+  text-align: right;
 }
 
 /* ── Summary row ── */
