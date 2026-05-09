@@ -246,53 +246,38 @@ describe("WeekCard — keyboard navigation", () => {
     setActivePinia(createPinia())
   })
 
-  it("Tab in title moves focus to notes in same row", async () => {
+  it("Tab in title emits exit-edit (navigation delegated to grid)", async () => {
     const wrapper = mountWeekCard()
     await wrapper.find(`[data-testid="cell-title-${DATE}"]`).trigger("click")
     await wrapper.find('[data-field="title"]').trigger("keydown", { key: "Tab", shiftKey: false })
     await nextTick()
 
-    expect(wrapper.find('[data-field="notes"]').exists()).toBe(true)
-    expect(wrapper.find('[data-field="km"]').exists()).toBe(false)
+    expect(wrapper.emitted("exit-edit")).toBeTruthy()
   })
 
-  it("Enter in title moves to title of next day", async () => {
-    const week = buildWeek({
-      planned_rows: [
-        { id: 10, kind: "planned", status: "planned", date: "2026-05-01", day_label: "Po",
-          title: "Run", notes: "", session_type: "RUN", planned_metrics: null,
-          completed_metrics: null, editable: true, is_second_phase: false,
-          can_add_second_phase: false, can_remove_second_phase: false, has_linked_activity: false },
-        { id: 11, kind: "planned", status: "planned", date: "2026-05-02", day_label: "Út",
-          title: "Rest", notes: "", session_type: "RUN", planned_metrics: null,
-          completed_metrics: null, editable: true, is_second_phase: false,
-          can_add_second_phase: false, can_remove_second_phase: false, has_linked_activity: false },
-      ],
-    })
-    const wrapper = mountWeekCard(week)
-
-    await wrapper.find('[data-testid="cell-title-2026-05-01"]').trigger("click")
-    await wrapper.find('[data-field="title"][data-date="2026-05-01"]').trigger("keydown", { key: "Enter", shiftKey: false })
+  it("Enter in notes emits exit-edit", async () => {
+    const wrapper = mountWeekCard()
+    await wrapper.find(`[data-testid="cell-title-${DATE}"]`).trigger("click")
+    await nextTick()
+    // notes field is now visible because we opened planned zone
+    await wrapper.find('[data-field="notes"]').trigger("keydown", { key: "Enter", shiftKey: false })
     await nextTick()
 
-    expect(wrapper.find('[data-field="title"][data-date="2026-05-02"]').exists()).toBe(true)
+    expect(wrapper.emitted("exit-edit")).toBeTruthy()
   })
 
-  it("Tab on last planned field of last day emits navigate-out-next", async () => {
+  it("Tab emits exit-edit (grid handles cross-week and cross-field navigation)", async () => {
     const singleDayWeek = buildWeek({ week_start: DATE, week_end: DATE })
     const wrapper = mountWeekCard(singleDayWeek)
 
     await wrapper.find(`[data-testid="cell-title-${DATE}"]`).trigger("click")
     await wrapper.find('[data-field="title"]').trigger("keydown", { key: "Tab", shiftKey: false })
     await nextTick()
-    await wrapper.find('[data-field="notes"]').trigger("keydown", { key: "Tab", shiftKey: false })
-    await nextTick()
 
-    expect(wrapper.emitted("navigate-out-next")).toBeTruthy()
-    expect(wrapper.emitted("navigate-out-next")![0][0]).toEqual({ field: "title", zone: "planned" })
+    expect(wrapper.emitted("exit-edit")).toBeTruthy()
   })
 
-  it("Shift+Tab on first planned field of first day emits navigate-out-prev", async () => {
+  it("Shift+Tab emits exit-edit", async () => {
     const singleDayWeek = buildWeek({ week_start: DATE, week_end: DATE })
     const wrapper = mountWeekCard(singleDayWeek)
 
@@ -300,8 +285,7 @@ describe("WeekCard — keyboard navigation", () => {
     await wrapper.find('[data-field="title"]').trigger("keydown", { key: "Tab", shiftKey: true })
     await nextTick()
 
-    expect(wrapper.emitted("navigate-out-prev")).toBeTruthy()
-    expect(wrapper.emitted("navigate-out-prev")![0][0]).toEqual({ field: "notes", zone: "planned" })
+    expect(wrapper.emitted("exit-edit")).toBeTruthy()
   })
 })
 
@@ -352,5 +336,37 @@ describe('WeekCard — cell-level flash', () => {
     await nextTick()
     const cell = wrapper.find('[data-testid="cell-title-' + DATE + '"]')
     expect(cell.classes()).toContain('wt__cell--flash-ok')
+  })
+})
+
+describe('WeekCard — focusCellByIdx', () => {
+  it('opens edit for title (fieldIdx=1) on dayIdx=0', async () => {
+    const week = buildWeek()
+    const wrapper = mountWeekCard(week)
+    ;(wrapper.vm as any).focusCellByIdx(0, 1)
+    await nextTick()
+    const input = wrapper.find('[data-testid="input-title-' + DATE + '"]')
+    expect(input.exists()).toBe(true)
+  })
+
+  it('replaces content when replaceContent is provided', async () => {
+    const week = buildWeek()
+    const wrapper = mountWeekCard(week)
+    ;(wrapper.vm as any).focusCellByIdx(0, 1, 'x')
+    await nextTick()
+    const input = wrapper.find<HTMLTextAreaElement>('[data-testid="input-title-' + DATE + '"]')
+    expect((input.element as HTMLTextAreaElement).value).toBe('x')
+  })
+})
+
+describe('WeekCard — exit-edit event on ESC', () => {
+  it('emits exit-edit when ESC is pressed in title input', async () => {
+    const week = buildWeek()
+    const wrapper = mountWeekCard(week)
+    ;(wrapper.vm as any).focusCellByIdx(0, 1)
+    await nextTick()
+    const input = wrapper.find('[data-testid="input-title-' + DATE + '"]')
+    await input.trigger('keydown', { key: 'Escape' })
+    expect(wrapper.emitted('exit-edit')).toBeTruthy()
   })
 })

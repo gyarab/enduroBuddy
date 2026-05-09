@@ -18,10 +18,15 @@ const props = defineProps<{
 const emit = defineEmits<{
   "navigate-out-next": [payload: { field: string; zone: "planned" | "completed" }]
   "navigate-out-prev": [payload: { field: string; zone: "planned" | "completed" }]
+  "exit-edit": []
 }>()
 
 const PLANNED_FIELDS = ["title", "notes"] as const
 const COMPLETED_FIELDS = ["km", "minutes", "details", "avgHr", "maxHr"] as const
+
+// Maps fieldIdx (0–7 from useGridNav) to WeekCard field names
+// index 0 = type pill (handled separately via toggleTypeByDayIdx)
+const FIELD_BY_IDX = ['', 'title', 'notes', 'km', 'minutes', 'details', 'avgHr', 'maxHr'] as const
 
 const { t, locale } = useI18n();
 const authStore = useAuthStore();
@@ -494,6 +499,46 @@ async function handleKeyNav(
   )?.focus()
 }
 
+function handleEditKeydown(event: KeyboardEvent, field: string, slot: DaySlot) {
+  const key = event.key
+  if (key === 'Escape') {
+    event.preventDefault()
+    const edit = editingRows.get(slot.date)
+    if (edit) {
+      if (edit.debounceTimer) { clearTimeout(edit.debounceTimer); edit.debounceTimer = null }
+      if (edit.isDirty) { edit.closeAfterSave = true; void autoSave(slot, edit) }
+      else { editingRows.delete(slot.date) }
+    }
+    emit('exit-edit')
+    return
+  }
+  if (key === 'ArrowUp' || key === 'ArrowDown') {
+    event.preventDefault()
+    return
+  }
+  if (key === 'Enter' && field !== 'title') {
+    event.preventDefault()
+    const edit = editingRows.get(slot.date)
+    if (edit) {
+      if (edit.debounceTimer) { clearTimeout(edit.debounceTimer); edit.debounceTimer = null }
+      if (edit.isDirty) { edit.closeAfterSave = true; void autoSave(slot, edit) }
+      else { editingRows.delete(slot.date) }
+    }
+    emit('exit-edit')
+    return
+  }
+  if (key === 'Tab') {
+    event.preventDefault()
+    const edit = editingRows.get(slot.date)
+    if (edit) {
+      if (edit.debounceTimer) { clearTimeout(edit.debounceTimer); edit.debounceTimer = null }
+      if (edit.isDirty) { edit.closeAfterSave = true; void autoSave(slot, edit) }
+      else { editingRows.delete(slot.date) }
+    }
+    emit('exit-edit')
+  }
+}
+
 function isNavSelected(slotDate: string, fieldIdx: number): boolean {
   if (!props.activeCursor) return false
   const slotIdx = daySlots.value.findIndex(s => s.date === slotDate)
@@ -550,6 +595,55 @@ defineExpose({
       )?.focus()
     })
   },
+
+  focusCellByIdx(dayIdx: number, fieldIdx: number, replaceContent?: string) {
+    if (fieldIdx === 0) return  // type pill — use toggleTypeByDayIdx
+    const field = FIELD_BY_IDX[fieldIdx]
+    if (!field) return
+    const zone: "planned" | "completed" = fieldIdx <= 2 ? 'planned' : 'completed'
+    const slot = daySlots.value[dayIdx]
+    if (!slot) return
+    openEdit(slot, field, zone)
+    if (replaceContent !== undefined) {
+      const edit = editingRows.get(slot.date)
+      if (edit) {
+        if (field === 'title')        edit.title   = replaceContent
+        else if (field === 'notes')   edit.notes   = replaceContent
+        else if (field === 'km')      edit.km      = replaceContent
+        else if (field === 'minutes') edit.minutes = replaceContent
+        else if (field === 'details') edit.details = replaceContent
+        else if (field === 'avgHr')   edit.avgHr   = replaceContent
+        else if (field === 'maxHr')   edit.maxHr   = replaceContent
+      }
+    }
+    void nextTick(() => {
+      document.querySelector<HTMLElement>(
+        `[data-field="${field}"][data-date="${slot.date}"]`,
+      )?.focus()
+    })
+  },
+
+  toggleTypeByDayIdx(dayIdx: number) {
+    const slot = daySlots.value[dayIdx]
+    if (slot) void toggleSessionType(slot)
+  },
+
+  closeCurrentEdit() {
+    for (const [date, edit] of [...editingRows]) {
+      if (edit.debounceTimer) {
+        clearTimeout(edit.debounceTimer)
+        edit.debounceTimer = null
+      }
+      const slot = daySlots.value.find((s) => s.date === date)
+      if (slot && edit.isDirty) {
+        edit.closeAfterSave = true
+        void autoSave(slot, edit)
+      } else {
+        editingRows.delete(date)
+      }
+    }
+  },
+
   flashCellOk,
 })
 </script>
@@ -662,7 +756,7 @@ defineExpose({
                 style="overflow: hidden; resize: none;"
                 @click.stop
                 @input="onFieldInput(slot.date, slot); autoResizeTextarea($event.target as HTMLTextAreaElement)"
-                @keydown="handleKeyNav($event, 'title', slot, 'planned')"
+                @keydown="handleEditKeydown($event, 'title', slot)"
               />
             </template>
             <template v-else>
@@ -690,7 +784,7 @@ defineExpose({
                                 :placeholder="t('weekCard.notesPlaceholder')"
                 @click.stop
                 @input="onFieldInput(slot.date, slot)"
-                @keydown="handleKeyNav($event, 'notes', slot, 'planned')"
+                @keydown="handleEditKeydown($event, 'notes', slot)"
               />
             </template>
             <template v-else>
@@ -722,7 +816,7 @@ defineExpose({
                 :data-date="slot.date"
                                 @click.stop
                 @input="onFieldInput(slot.date, slot)"
-                @keydown="handleKeyNav($event, 'km', slot, 'completed')"
+                @keydown="handleEditKeydown($event, 'km', slot)"
               />
             </template>
             <template v-else>
@@ -750,7 +844,7 @@ defineExpose({
                                 placeholder="min"
                 @click.stop
                 @input="onFieldInput(slot.date, slot)"
-                @keydown="handleKeyNav($event, 'minutes', slot, 'completed')"
+                @keydown="handleEditKeydown($event, 'minutes', slot)"
               />
             </template>
             <template v-else>
@@ -777,7 +871,7 @@ defineExpose({
                 :data-date="slot.date"
                                 @click.stop
                 @input="onFieldInput(slot.date, slot)"
-                @keydown="handleKeyNav($event, 'details', slot, 'completed')"
+                @keydown="handleEditKeydown($event, 'details', slot)"
               />
             </template>
             <template v-else>
@@ -804,7 +898,7 @@ defineExpose({
                 :data-date="slot.date"
                                 @click.stop
                 @input="onFieldInput(slot.date, slot)"
-                @keydown="handleKeyNav($event, 'avgHr', slot, 'completed')"
+                @keydown="handleEditKeydown($event, 'avgHr', slot)"
               />
             </template>
             <template v-else>
@@ -831,7 +925,7 @@ defineExpose({
                 :data-date="slot.date"
                                 @click.stop
                 @input="onFieldInput(slot.date, slot)"
-                @keydown="handleKeyNav($event, 'maxHr', slot, 'completed')"
+                @keydown="handleEditKeydown($event, 'maxHr', slot)"
               />
             </template>
             <template v-else>
