@@ -119,13 +119,33 @@ A pro numeric value spany:
 }
 ```
 
+### 7. Inline row expansion — celý řádek se otevře najednou
+
+**Trigger:** klik kdekoliv na řádek nebo Enter z nav kurzoru.
+
+**Chování:**
+- Všechna planned pole (title + notes) se otevřou najednou jako textarea
+- Každá textarea se auto-resize na plný obsah s zalomením řádků (žádné `white-space: nowrap`)
+- Fokus jde na buňku, na kterou uživatel klikl (nebo na title při Enter z nav)
+- Completed buňky zůstanou dimmed + neaktivní (stejné jako dnes při editaci)
+- Border-left modrý + planned zone tint zůstávají
+
+**Zavření:**
+- Esc, Tab z posledního pole, nebo klik mimo řádek → uloží všechna pole najednou a zavře
+
+**Nav span v closed stavu:** text oříznut s `…` (beze změny)
+
+**CSS:** `.wt__row--open` třída na řádku spustí přepnutí nav spanů → textarea
+
+**Týká se pouze planned zóny.** Completed zóna (km, čas, HR) se otevírá samostatně jako dnes — klik na completed buňku otevře completed editaci (oddělená zóna).
+
 ---
 
 ## Dopad na soubory
 
 | Soubor | Změna |
 |--------|-------|
-| `frontend/components/training/WeekCard.vue` | emit `cursor-set`, zone-aware CSS třídy, pill cursor, hover cell-level, flash zone-aware, min-height fix |
+| `frontend/components/training/WeekCard.vue` | emit `cursor-set`, zone-aware CSS třídy, pill cursor, hover cell-level, flash zone-aware, min-height fix, inline row expansion |
 | `frontend/composables/useGridNav.ts` | beze změny |
 | `frontend/components/views/dashboard/AthleteView.vue` | naslouchání `cursor-set` → `cursor.value` sync |
 | `frontend/components/views/dashboard/CoachView.vue` | totéž jako AthleteView |
@@ -150,3 +170,6 @@ A pro numeric value spany:
 4. Hover na prázdnou buňku → stejně velký ghost jako na plnou
 5. Enter na planned buňce → modrý flash při uložení (ne lime)
 6. Enter na completed buňce → lime flash při uložení
+7. Klik na planned buňku → celý řádek se otevře, title + notes jako textarea, fokus na kliknutou buňku
+8. Otevřený řádek s dlouhým textem → obě textarea se auto-roztáhnou na plný obsah
+9. Esc nebo klik mimo → uloží obě pole a zavře
