@@ -19,6 +19,7 @@ const emit = defineEmits<{
   "navigate-out-next": [payload: { field: string; zone: "planned" | "completed" }]
   "navigate-out-prev": [payload: { field: string; zone: "planned" | "completed" }]
   "exit-edit": []
+  "cursor-set": [payload: { dayIdx: number; fieldIdx: number }]
 }>()
 
 const PLANNED_FIELDS = ["title", "notes"] as const
@@ -166,11 +167,16 @@ function isEditingZone(date: string, zone: "planned" | "completed"): boolean {
 }
 
 function openEdit(slot: DaySlot, focusField = "title", zone: "planned" | "completed" = "planned") {
+  const dayIdx = daySlots.value.findIndex(s => s.date === slot.date)
+  const fieldIdx = FIELD_BY_IDX.indexOf(focusField as typeof FIELD_BY_IDX[number])
+
   const existing = editingRows.get(slot.date);
 
   if (existing) {
     if (existing.activeZone === zone) {
       existing.focusField = focusField;
+      emit('cursor-set', { dayIdx, fieldIdx })
+      if (zone === 'planned') resizePlannedTextareas(slot.date)
       return;
     }
     // Guard: don't switch into a non-editable zone
@@ -187,6 +193,7 @@ function openEdit(slot: DaySlot, focusField = "title", zone: "planned" | "comple
     }
     existing.activeZone = zone;
     existing.focusField = focusField;
+    emit('cursor-set', { dayIdx, fieldIdx })
     return;
   }
 
@@ -225,6 +232,8 @@ function openEdit(slot: DaySlot, focusField = "title", zone: "planned" | "comple
     debounceTimer: null,
     focusField,
   });
+  emit('cursor-set', { dayIdx, fieldIdx })
+  if (zone === 'planned') resizePlannedTextareas(slot.date)
 }
 
 // ── Flash feedback ────────────────────────────────────────────
@@ -410,8 +419,17 @@ function onFieldInput(date: string, slot: DaySlot) {
 
 function autoResizeTextarea(el: HTMLTextAreaElement) {
   el.style.height = 'auto'
-  el.style.height = Math.min(el.scrollHeight, 120) + 'px'
-  el.style.overflowY = el.scrollHeight > 120 ? 'auto' : 'hidden'
+  el.style.height = el.scrollHeight + 'px'
+  el.style.overflowY = 'hidden'
+}
+
+function resizePlannedTextareas(date: string) {
+  void nextTick(() => {
+    const titleEl = document.querySelector<HTMLTextAreaElement>(`[data-field="title"][data-date="${date}"]`)
+    const notesEl = document.querySelector<HTMLTextAreaElement>(`[data-field="notes"][data-date="${date}"]`)
+    if (titleEl) autoResizeTextarea(titleEl)
+    if (notesEl) autoResizeTextarea(notesEl)
+  })
 }
 
 function onRowFocusOut(slot: DaySlot, event: FocusEvent) {
@@ -470,6 +488,11 @@ function isNavSelected(slotDate: string, fieldIdx: number): boolean {
   if (!props.activeCursor) return false
   const slotIdx = daySlots.value.findIndex(s => s.date === slotDate)
   return slotIdx === props.activeCursor.dayIdx && fieldIdx === props.activeCursor.fieldIdx
+}
+
+function navSelectedClass(slotDate: string, fieldIdx: number): string {
+  if (!isNavSelected(slotDate, fieldIdx)) return ''
+  return fieldIdx <= 2 ? 'wt__cell--nav-selected-p' : 'wt__cell--nav-selected-c'
 }
 
 function canEditCompleted(slot: DaySlot): boolean {
@@ -635,39 +658,49 @@ defineExpose({
           <div
             class="wt__cell wt__cell--type wt__cell-p"
             :data-testid="`nav-cell-type-${slot.date}`"
-            :class="{
-              'wt__cell--nav-selected': isNavSelected(slot.date, 0),
-              'wt__cell--flash-ok': flashingCellsOk.has(`${slot.date}:0`),
-              'wt__cell--flash-err': flashingCellsErr.has(`${slot.date}:0`),
-            }"
+            :class="[
+              navSelectedClass(slot.date, 0),
+              { 'wt__cell--flash-ok-p': flashingCellsOk.has(`${slot.date}:0`) },
+              { 'wt__cell--flash-err': flashingCellsErr.has(`${slot.date}:0`) },
+            ]"
             @click.stop
           >
             <button
               v-if="isEditingZone(slot.date, 'planned') && getEdit(slot.date)"
               class="wt__type-pill"
-              :class="`wt__type-pill--${getEdit(slot.date)!.sessionType.toLowerCase()}`"
+              :class="[
+                `wt__type-pill--${getEdit(slot.date)!.sessionType.toLowerCase()}`,
+                { 'wt__type-pill--cursor': isNavSelected(slot.date, 0) },
+              ]"
               type="button"
               @click.stop="toggleSessionType(slot)"
             >{{ getEdit(slot.date)!.sessionType === 'RUN' ? 'RUN' : 'WKT' }}</button>
             <button
               v-else-if="slot.planned[0]"
               class="wt__type-pill"
-              :class="`wt__type-pill--${slot.planned[0].session_type.toLowerCase()}`"
+              :class="[
+                `wt__type-pill--${slot.planned[0].session_type.toLowerCase()}`,
+                { 'wt__type-pill--cursor': isNavSelected(slot.date, 0) },
+              ]"
               type="button"
               @click.stop="toggleSessionType(slot)"
             >{{ slot.planned[0].session_type === 'RUN' ? 'RUN' : 'WKT' }}</button>
-            <span v-else class="wt__type-dot wt__type-dot--empty" />
+            <span
+              v-else
+              class="wt__type-dot wt__type-dot--empty"
+              :class="{ 'wt__type-dot--cursor': isNavSelected(slot.date, 0) }"
+            />
           </div>
 
           <!-- Training title -->
           <div
             class="wt__cell wt__cell--title wt__cell-p"
             :data-testid="`cell-title-${slot.date}`"
-            :class="{
-              'wt__cell--nav-selected': isNavSelected(slot.date, 1),
-              'wt__cell--flash-ok': flashingCellsOk.has(`${slot.date}:1`),
-              'wt__cell--flash-err': flashingCellsErr.has(`${slot.date}:1`),
-            }"
+            :class="[
+              navSelectedClass(slot.date, 1),
+              { 'wt__cell--flash-ok-p': flashingCellsOk.has(`${slot.date}:1`) },
+              { 'wt__cell--flash-err': flashingCellsErr.has(`${slot.date}:1`) },
+            ]"
             @click.stop="openEdit(slot, 'title', 'planned')"
           >
             <template v-if="isEditingZone(slot.date, 'planned') && getEdit(slot.date)">
@@ -694,23 +727,25 @@ defineExpose({
           <!-- Coach notes -->
           <div
             class="wt__cell wt__cell--notes wt__cell-p"
-            :class="{
-              'wt__cell--nav-selected': isNavSelected(slot.date, 2),
-              'wt__cell--flash-ok': flashingCellsOk.has(`${slot.date}:2`),
-              'wt__cell--flash-err': flashingCellsErr.has(`${slot.date}:2`),
-            }"
+            :class="[
+              navSelectedClass(slot.date, 2),
+              { 'wt__cell--flash-ok-p': flashingCellsOk.has(`${slot.date}:2`) },
+              { 'wt__cell--flash-err': flashingCellsErr.has(`${slot.date}:2`) },
+            ]"
             @click.stop="openEdit(slot, 'notes', 'planned')"
           >
             <template v-if="isEditingZone(slot.date, 'planned') && getEdit(slot.date)">
-              <input
+              <textarea
                 v-model="getEdit(slot.date)!.notes"
                 v-autofocus="getEdit(slot.date)!.focusField === 'notes'"
-                class="wt__input"
+                class="wt__textarea"
                 data-field="notes"
                 :data-date="slot.date"
-                                :placeholder="t('weekCard.notesPlaceholder')"
+                :placeholder="t('weekCard.notesPlaceholder')"
+                rows="1"
+                style="overflow: hidden; resize: none;"
                 @click.stop
-                @input="onFieldInput(slot.date, slot)"
+                @input="onFieldInput(slot.date, slot); autoResizeTextarea($event.target as HTMLTextAreaElement)"
                 @keydown="handleEditKeydown($event, 'notes', slot)"
               />
             </template>
@@ -726,11 +761,11 @@ defineExpose({
           <div
             class="wt__cell wt__cell--num wt__cell-c wt__cell-km"
             :data-testid="`cell-km-${slot.date}`"
-            :class="{
-              'wt__cell--nav-selected': isNavSelected(slot.date, 3),
-              'wt__cell--flash-ok': flashingCellsOk.has(`${slot.date}:3`),
-              'wt__cell--flash-err': flashingCellsErr.has(`${slot.date}:3`),
-            }"
+            :class="[
+              navSelectedClass(slot.date, 3),
+              { 'wt__cell--flash-ok-c': flashingCellsOk.has(`${slot.date}:3`) },
+              { 'wt__cell--flash-err': flashingCellsErr.has(`${slot.date}:3`) },
+            ]"
             @click.stop="canEditCompleted(slot) && openEdit(slot, 'km', 'completed')"
           >
             <template v-if="isEditingZone(slot.date, 'completed') && getEdit(slot.date) && getEdit(slot.date)!.completedId">
@@ -754,11 +789,11 @@ defineExpose({
           <!-- Time (HH:MM) -->
           <div
             class="wt__cell wt__cell--num wt__cell-c wt__cell-time"
-            :class="{
-              'wt__cell--nav-selected': isNavSelected(slot.date, 4),
-              'wt__cell--flash-ok': flashingCellsOk.has(`${slot.date}:4`),
-              'wt__cell--flash-err': flashingCellsErr.has(`${slot.date}:4`),
-            }"
+            :class="[
+              navSelectedClass(slot.date, 4),
+              { 'wt__cell--flash-ok-c': flashingCellsOk.has(`${slot.date}:4`) },
+              { 'wt__cell--flash-err': flashingCellsErr.has(`${slot.date}:4`) },
+            ]"
             @click.stop="canEditCompleted(slot) && openEdit(slot, 'minutes', 'completed')"
           >
             <template v-if="isEditingZone(slot.date, 'completed') && getEdit(slot.date) && getEdit(slot.date)!.completedId">
@@ -782,11 +817,11 @@ defineExpose({
           <!-- Intervals / details -->
           <div
             class="wt__cell wt__cell--intervals wt__cell-c"
-            :class="{
-              'wt__cell--nav-selected': isNavSelected(slot.date, 5),
-              'wt__cell--flash-ok': flashingCellsOk.has(`${slot.date}:5`),
-              'wt__cell--flash-err': flashingCellsErr.has(`${slot.date}:5`),
-            }"
+            :class="[
+              navSelectedClass(slot.date, 5),
+              { 'wt__cell--flash-ok-c': flashingCellsOk.has(`${slot.date}:5`) },
+              { 'wt__cell--flash-err': flashingCellsErr.has(`${slot.date}:5`) },
+            ]"
             @click.stop="canEditCompleted(slot) && openEdit(slot, 'details', 'completed')"
           >
             <template v-if="isEditingZone(slot.date, 'completed') && getEdit(slot.date) && getEdit(slot.date)!.completedId">
@@ -809,11 +844,11 @@ defineExpose({
           <!-- Avg HR -->
           <div
             class="wt__cell wt__cell--num wt__cell-c wt__cell-avghr"
-            :class="{
-              'wt__cell--nav-selected': isNavSelected(slot.date, 6),
-              'wt__cell--flash-ok': flashingCellsOk.has(`${slot.date}:6`),
-              'wt__cell--flash-err': flashingCellsErr.has(`${slot.date}:6`),
-            }"
+            :class="[
+              navSelectedClass(slot.date, 6),
+              { 'wt__cell--flash-ok-c': flashingCellsOk.has(`${slot.date}:6`) },
+              { 'wt__cell--flash-err': flashingCellsErr.has(`${slot.date}:6`) },
+            ]"
             @click.stop="canEditCompleted(slot) && openEdit(slot, 'avgHr', 'completed')"
           >
             <template v-if="isEditingZone(slot.date, 'completed') && getEdit(slot.date) && getEdit(slot.date)!.completedId">
@@ -836,11 +871,11 @@ defineExpose({
           <!-- Max HR -->
           <div
             class="wt__cell wt__cell--num wt__cell-c wt__cell-maxhr"
-            :class="{
-              'wt__cell--nav-selected': isNavSelected(slot.date, 7),
-              'wt__cell--flash-ok': flashingCellsOk.has(`${slot.date}:7`),
-              'wt__cell--flash-err': flashingCellsErr.has(`${slot.date}:7`),
-            }"
+            :class="[
+              navSelectedClass(slot.date, 7),
+              { 'wt__cell--flash-ok-c': flashingCellsOk.has(`${slot.date}:7`) },
+              { 'wt__cell--flash-err': flashingCellsErr.has(`${slot.date}:7`) },
+            ]"
             @click.stop="canEditCompleted(slot) && openEdit(slot, 'maxHr', 'completed')"
           >
             <template v-if="isEditingZone(slot.date, 'completed') && getEdit(slot.date) && getEdit(slot.date)!.completedId">
@@ -1109,18 +1144,32 @@ defineExpose({
 .wt__cell-c {
   border-radius: 4px;
   transition: background 120ms;
+  min-height: 1.75rem;
+  display: flex;
+  align-items: center;
 }
 
-/* Hover: planned zone — blue tint */
-.wt__row:has(.wt__cell-p:hover):not(.wt__row--editing-planned):not(.wt__row--editing-completed) .wt__cell-p {
+/* Hover: planned cell — blue ghost (cell-level) */
+.wt__row:not(.wt__row--editing-planned):not(.wt__row--editing-completed)
+  .wt__cell-p:hover {
+  outline: 1px solid rgba(56, 189, 248, .38);
   background: rgba(56, 189, 248, .05);
   cursor: pointer;
 }
 
-/* Hover: completed zone — lime tint */
-.wt__row:has(.wt__cell-c:hover):not(.wt__row--editing-planned):not(.wt__row--editing-completed) .wt__cell-c {
+/* Hover: completed cell — lime ghost (cell-level) */
+.wt__row:not(.wt__row--editing-planned):not(.wt__row--editing-completed)
+  .wt__cell-c:hover {
+  outline: 1px solid rgba(200, 255, 0, .38);
   background: rgba(200, 255, 0, .05);
   cursor: pointer;
+}
+
+/* Type cell: no outline on hover — pill handles it */
+.wt__row:not(.wt__row--editing-planned):not(.wt__row--editing-completed)
+  .wt__cell--type:hover {
+  outline: none;
+  background: transparent;
 }
 
 /* Editing planned: planned cells blue tint */
@@ -1192,6 +1241,27 @@ defineExpose({
   border: 1px solid rgba(200,255,0,.35);
 }
 
+/* ── Pill/dot cursor (fi=0 nav selection) ── */
+.wt__type-pill--run.wt__type-pill--cursor {
+  border: 1.5px solid #38bdf8;
+  background: rgba(56, 189, 248, .12);
+  box-shadow: 0 0 0 2px rgba(56, 189, 248, .15);
+}
+
+.wt__type-pill--workout.wt__type-pill--cursor {
+  border: 1.5px solid #c8ff00;
+  background: rgba(200, 255, 0, .10);
+  box-shadow: 0 0 0 2px rgba(200, 255, 0, .12);
+}
+
+.wt__type-dot--cursor {
+  border: 1.5px solid #38bdf8 !important;
+  background: rgba(56, 189, 248, .12) !important;
+  box-shadow: 0 0 0 2px rgba(56, 189, 248, .15);
+}
+
+.wt__type-pill--cursor:hover { opacity: 1; }
+
 /* ── Text content ── */
 .wt__title-text {
   display: block;
@@ -1222,6 +1292,9 @@ defineExpose({
 }
 
 .wt__num-val {
+  display: block;
+  min-height: 1.1em;
+  line-height: 1.4;
   color: var(--eb-text-muted);
   font-family: var(--eb-font-mono);
   font-size: 0.8125rem;
@@ -1274,22 +1347,43 @@ defineExpose({
   height: 1.75rem;
   box-sizing: border-box;
   overflow-x: hidden;
-  white-space: nowrap;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 
-/* ── Nav cursor highlight ── */
-.wt__cell--nav-selected {
-  outline: 2px solid var(--eb-lime);
+/* ── Nav cursor highlight — zone-aware ── */
+.wt__cell--nav-selected-p {
+  outline: 2px solid #38bdf8;
   outline-offset: -1px;
-  background: rgba(200, 255, 0, 0.06);
+  background: rgba(56, 189, 248, .08);
   border-radius: 4px;
 }
 
-/* ── Cell-level flash ── */
-@keyframes cell-flash-ok {
-  0%   { background-color: rgba(200, 255, 0, 0.22); }
+.wt__cell--nav-selected-c {
+  outline: 2px solid #c8ff00;
+  outline-offset: -1px;
+  background: rgba(200, 255, 0, .08);
+  border-radius: 4px;
+}
+
+/* Type cell (fi=0): container has no outline, pill handles cursor */
+.wt__cell--type.wt__cell--nav-selected-p {
+  outline: none;
+  background: transparent;
+}
+
+/* ── Cell-level flash — zone-aware ── */
+@keyframes cell-flash-ok-planned {
+  0%   { background-color: rgba(56, 189, 248, .22); }
+  60%  { background-color: rgba(56, 189, 248, .08); }
   100% { background-color: transparent; }
+}
+
+@keyframes cell-flash-ok-completed {
+  0%   { background-color: rgba(200, 255, 0, .22); }
+  60%  { background-color: rgba(200, 255, 0, .10); }
+  100% { background-color: rgba(200, 255, 0, .05); }
 }
 
 @keyframes cell-flash-err {
@@ -1297,8 +1391,9 @@ defineExpose({
   100% { background-color: transparent; }
 }
 
-.wt__cell--flash-ok  { animation: cell-flash-ok  0.8s ease-out forwards; }
-.wt__cell--flash-err { animation: cell-flash-err 0.8s ease-out forwards; }
+.wt__cell--flash-ok-p { animation: cell-flash-ok-planned   0.8s ease-out forwards; }
+.wt__cell--flash-ok-c { animation: cell-flash-ok-completed 0.8s ease-out forwards; }
+.wt__cell--flash-err  { animation: cell-flash-err           0.8s ease-out forwards; }
 
 /* ── Nav mode display spans ── */
 .wt__nav-cell {

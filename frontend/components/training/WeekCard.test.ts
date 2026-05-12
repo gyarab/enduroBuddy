@@ -301,7 +301,7 @@ describe("WeekCard — activeCursor nav highlight", () => {
     await nextTick()
     const typeCell = wrapper.find('[data-testid="nav-cell-type-' + DATE + '"]')
     expect(typeCell.exists()).toBe(true)
-    expect(typeCell.classes()).toContain('wt__cell--nav-selected')
+    expect(typeCell.classes()).toContain('wt__cell--nav-selected-p')
   })
 
   it("applies nav-selected class to title cell when activeCursor.fieldIdx=1", async () => {
@@ -310,7 +310,7 @@ describe("WeekCard — activeCursor nav highlight", () => {
     await wrapper.setProps({ activeCursor: { dayIdx: 0, fieldIdx: 1 } })
     await nextTick()
     const titleCell = wrapper.find('[data-testid="cell-title-' + DATE + '"]')
-    expect(titleCell.classes()).toContain('wt__cell--nav-selected')
+    expect(titleCell.classes()).toContain('wt__cell--nav-selected-p')
   })
 
   it("no nav-selected class when activeCursor is null", async () => {
@@ -318,8 +318,9 @@ describe("WeekCard — activeCursor nav highlight", () => {
     const wrapper = mountWeekCard(week)
     await wrapper.setProps({ activeCursor: null })
     await nextTick()
-    const selected = wrapper.findAll('.wt__cell--nav-selected')
-    expect(selected).toHaveLength(0)
+    const selectedP = wrapper.findAll('.wt__cell--nav-selected-p')
+    const selectedC = wrapper.findAll('.wt__cell--nav-selected-c')
+    expect(selectedP.length + selectedC.length).toBe(0)
   })
 })
 
@@ -328,14 +329,14 @@ describe('WeekCard — cell-level flash', () => {
     setActivePinia(createPinia())
   })
 
-  it('flashCellOk adds wt__cell--flash-ok class to title cell', async () => {
+  it('flashCellOk adds wt__cell--flash-ok-p class to title cell', async () => {
     const week = buildWeek()
     const wrapper = mountWeekCard(week)
     // Access exposed method
     ;(wrapper.vm as any).flashCellOk(DATE, 1)
     await nextTick()
     const cell = wrapper.find('[data-testid="cell-title-' + DATE + '"]')
-    expect(cell.classes()).toContain('wt__cell--flash-ok')
+    expect(cell.classes()).toContain('wt__cell--flash-ok-p')
   })
 })
 
@@ -368,5 +369,31 @@ describe('WeekCard — exit-edit event on ESC', () => {
     const input = wrapper.find('[data-testid="input-title-' + DATE + '"]')
     await input.trigger('keydown', { key: 'Escape' })
     expect(wrapper.emitted('exit-edit')).toBeTruthy()
+  })
+})
+
+describe('WeekCard — cursor-set emit', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+  })
+
+  it('emits cursor-set with dayIdx and fieldIdx when a planned cell is clicked', async () => {
+    const week = buildWeek()
+    const wrapper = mountWeekCard(week)
+    const titleCell = wrapper.find('[data-testid="cell-title-' + DATE + '"]')
+    await titleCell.trigger('click')
+    const emitted = wrapper.emitted('cursor-set')
+    expect(emitted).toBeTruthy()
+    expect(emitted![0][0]).toEqual({ dayIdx: 0, fieldIdx: 1 })
+  })
+
+  it('renders notes as textarea when planned zone is open', async () => {
+    const week = buildWeek()
+    const wrapper = mountWeekCard(week)
+    const titleCell = wrapper.find('[data-testid="cell-title-' + DATE + '"]')
+    await titleCell.trigger('click')
+    await nextTick()
+    const notesTextarea = wrapper.find('[data-field="notes"][data-date="' + DATE + '"]')
+    expect(notesTextarea.element.tagName).toBe('TEXTAREA')
   })
 })
