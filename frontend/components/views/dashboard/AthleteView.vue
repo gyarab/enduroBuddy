@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, watch } from "vue";
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 
 import MonthBar from "@/components/training/MonthBar.vue";
 import MonthSummaryBar from "@/components/training/MonthSummaryBar.vue";
@@ -136,6 +136,14 @@ function handleCursorSet(
 ) {
   cursor.value = { weekIdx, dayIdx: payload.dayIdx, fieldIdx: payload.fieldIdx }
 }
+
+watch(cursor, (newCursor) => {
+  if (!newCursor || editMode.value) return
+  void nextTick(() => {
+    const el = document.querySelector<HTMLElement>('.wt__cell--nav-selected-p, .wt__cell--nav-selected-c')
+    el?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' })
+  })
+})
 
 // ── Other ───────────────────────────────────────────────────
 const showGarminImportButton = computed(

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref, watch } from "vue";
+import { nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 
 import { RouterLink, useRouter } from "vue-router";
 
@@ -96,6 +96,14 @@ function handleCursorSet(
 ) {
   cursor.value = { weekIdx, dayIdx: payload.dayIdx, fieldIdx: payload.fieldIdx }
 }
+
+watch(cursor, (newCursor) => {
+  if (!newCursor || editMode.value) return
+  void nextTick(() => {
+    const el = document.querySelector<HTMLElement>('.wt__cell--nav-selected-p, .wt__cell--nav-selected-c')
+    el?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' })
+  })
+})
 
 function handleNavOut(
   dir: "next" | "prev",
