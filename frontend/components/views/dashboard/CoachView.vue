@@ -78,7 +78,7 @@ function handleKeyDown(e: KeyboardEvent) {
   }
   if (e.key === 'Escape') {
     e.preventDefault()
-    cursor.value = null
+    gridNav.clearCursor()
     return
   }
   if (PRINTABLE.test(e.key) && !e.ctrlKey && !e.metaKey && cursor.value.fieldIdx !== 0) {
@@ -117,6 +117,12 @@ function handleNavOut(
 const startRemoveId = ref<number | null>(null);
 const { t } = useI18n();
 
+function handleOutsideClick(e: MouseEvent) {
+  if (!(e.target as HTMLElement).closest('.week-card')) {
+    gridNav.clearCursor()
+  }
+}
+
 onMounted(() => {
   if (!coachStore.dashboard && !coachStore.isLoading) {
     void coachStore.loadDashboard().then(() => {
@@ -126,10 +132,12 @@ onMounted(() => {
     gridNav.initCursor(coachStore.weeks)
   }
   window.addEventListener('keydown', handleKeyDown)
+  window.addEventListener('mousedown', handleOutsideClick)
 })
 
 onUnmounted(() => {
   window.removeEventListener('keydown', handleKeyDown)
+  window.removeEventListener('mousedown', handleOutsideClick)
 })
 
 watch(

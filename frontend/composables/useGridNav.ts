@@ -14,15 +14,23 @@ export interface GridCursor {
 
 export function useGridNav() {
   const cursor: Ref<GridCursor | null> = ref(null)
+  const lastCursor: Ref<GridCursor | null> = ref(null)
   const editMode = ref(false)
   const pendingReplace: Ref<string | undefined> = ref(undefined)
+
+  function clearCursor(): void {
+    if (cursor.value) lastCursor.value = { ...cursor.value }
+    cursor.value = null
+  }
 
   function moveCursor(
     dir: 'up' | 'down' | 'left' | 'right',
     weekCount: number,
   ): void {
     if (!cursor.value) {
-      cursor.value = { weekIdx: 0, dayIdx: 0, fieldIdx: 1 }
+      cursor.value = lastCursor.value
+        ? { ...lastCursor.value }
+        : { weekIdx: 0, dayIdx: 0, fieldIdx: 1 }
       return
     }
     const c = cursor.value
@@ -67,5 +75,5 @@ export function useGridNav() {
     cursor.value = { weekIdx: 0, dayIdx: 0, fieldIdx: 1 }
   }
 
-  return { cursor, editMode, pendingReplace, moveCursor, enterEdit, exitEdit, initCursor }
+  return { cursor, lastCursor, editMode, pendingReplace, moveCursor, clearCursor, enterEdit, exitEdit, initCursor }
 }

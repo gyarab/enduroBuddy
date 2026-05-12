@@ -87,7 +87,7 @@ function handleKeyDown(e: KeyboardEvent) {
 
   if (e.key === 'Escape') {
     e.preventDefault()
-    cursor.value = null
+    gridNav.clearCursor()
     return
   }
 
@@ -97,15 +97,23 @@ function handleKeyDown(e: KeyboardEvent) {
 }
 
 // ── Lifecycle ────────────────────────────────────────────────
+function handleOutsideClick(e: MouseEvent) {
+  if (!(e.target as HTMLElement).closest('.week-card')) {
+    gridNav.clearCursor()
+  }
+}
+
 onMounted(() => {
   void trainingStore.loadDashboard().then(() => {
     gridNav.initCursor(trainingStore.weeks)
   })
   window.addEventListener('keydown', handleKeyDown)
+  window.addEventListener('mousedown', handleOutsideClick)
 })
 
 onUnmounted(() => {
   window.removeEventListener('keydown', handleKeyDown)
+  window.removeEventListener('mousedown', handleOutsideClick)
 })
 
 // Re-init cursor only when the user navigates to a different month (not on silent reloads after saves)

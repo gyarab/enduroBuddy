@@ -71,6 +71,15 @@ describe('useGridNav — moveCursor', () => {
     moveCursor('right', 2)
     expect(cursor.value).toEqual({ weekIdx: 0, dayIdx: 0, fieldIdx: 1 })
   })
+
+  it('restores lastCursor position when cursor was cleared', () => {
+    const { cursor, moveCursor, clearCursor } = useGridNav()
+    cursor.value = { weekIdx: 1, dayIdx: 3, fieldIdx: 5 }
+    clearCursor()
+    expect(cursor.value).toBeNull()
+    moveCursor('right', 3)
+    expect(cursor.value).toEqual({ weekIdx: 1, dayIdx: 3, fieldIdx: 5 })
+  })
 })
 
 describe('useGridNav — enterEdit / exitEdit', () => {
