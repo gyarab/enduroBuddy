@@ -21,7 +21,10 @@ export function useGridNav() {
     dir: 'up' | 'down' | 'left' | 'right',
     weekCount: number,
   ): void {
-    if (!cursor.value) return
+    if (!cursor.value) {
+      cursor.value = { weekIdx: 0, dayIdx: 0, fieldIdx: 1 }
+      return
+    }
     const c = cursor.value
 
     if (dir === 'left') {
@@ -61,11 +64,7 @@ export function useGridNav() {
 
   function initCursor(weeks: Array<{ week_start: string; week_end: string }>): void {
     if (!weeks.length) return
-    const today = new Date().toISOString().slice(0, 10)
-    const weekIdx = weeks.findIndex(
-      (w) => w.week_start <= today && today <= w.week_end,
-    )
-    cursor.value = { weekIdx: weekIdx >= 0 ? weekIdx : 0, dayIdx: 0, fieldIdx: 0 }
+    cursor.value = { weekIdx: 0, dayIdx: 0, fieldIdx: 1 }
   }
 
   return { cursor, editMode, pendingReplace, moveCursor, enterEdit, exitEdit, initCursor }

@@ -65,11 +65,11 @@ describe('useGridNav — moveCursor', () => {
     expect(cursor.value).toEqual({ weekIdx: 0, dayIdx: 0, fieldIdx: 1 })
   })
 
-  it('does nothing when cursor is null', () => {
+  it('initializes to top-left when cursor is null', () => {
     const { cursor, moveCursor } = useGridNav()
     cursor.value = null
     moveCursor('right', 2)
-    expect(cursor.value).toBeNull()
+    expect(cursor.value).toEqual({ weekIdx: 0, dayIdx: 0, fieldIdx: 1 })
   })
 })
 
@@ -101,26 +101,14 @@ describe('useGridNav — enterEdit / exitEdit', () => {
 })
 
 describe('useGridNav — initCursor', () => {
-  it('sets cursor to week containing today', () => {
-    const { cursor, initCursor } = useGridNav()
-    const today = new Date().toISOString().slice(0, 10)
-    const weeks = [
-      { week_start: '2020-01-01', week_end: '2020-01-07' },
-      { week_start: today, week_end: today },
-    ]
-    initCursor(weeks)
-    expect(cursor.value?.weekIdx).toBe(1)
-    expect(cursor.value?.dayIdx).toBe(0)
-    expect(cursor.value?.fieldIdx).toBe(0)
-  })
-
-  it('falls back to week 0 when today not found', () => {
+  it('always sets cursor to top-left (weekIdx=0, dayIdx=0, fieldIdx=1)', () => {
     const { cursor, initCursor } = useGridNav()
     const weeks = [
       { week_start: '2020-01-01', week_end: '2020-01-07' },
+      { week_start: '2020-01-08', week_end: '2020-01-14' },
     ]
     initCursor(weeks)
-    expect(cursor.value?.weekIdx).toBe(0)
+    expect(cursor.value).toEqual({ weekIdx: 0, dayIdx: 0, fieldIdx: 1 })
   })
 
   it('does nothing for empty weeks array', () => {

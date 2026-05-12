@@ -486,6 +486,7 @@ function handleEditKeydown(event: KeyboardEvent, field: string, slot: DaySlot) {
 
 function isNavSelected(slotDate: string, fieldIdx: number): boolean {
   if (!props.activeCursor) return false
+  if (isEditing(slotDate)) return false
   const slotIdx = daySlots.value.findIndex(s => s.date === slotDate)
   return slotIdx === props.activeCursor.dayIdx && fieldIdx === props.activeCursor.fieldIdx
 }
