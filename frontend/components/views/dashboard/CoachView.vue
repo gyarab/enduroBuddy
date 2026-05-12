@@ -36,7 +36,7 @@ function cursorForWeek(idx: number): { dayIdx: number; fieldIdx: number } | null
   return { dayIdx: cursor.value.dayIdx, fieldIdx: cursor.value.fieldIdx }
 }
 
-watch([editMode, cursor], ([active]) => {
+watch(editMode, (active) => {
   if (!active || !cursor.value) return
   const { weekIdx, dayIdx, fieldIdx } = cursor.value
   if (fieldIdx === 0) return

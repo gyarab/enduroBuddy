@@ -33,7 +33,7 @@ function cursorForWeek(idx: number): { dayIdx: number; fieldIdx: number } | null
 }
 
 // When editMode turns true: tell the right WeekCard to open the cell
-watch([editMode, cursor], ([active]) => {
+watch(editMode, (active) => {
   if (!active || !cursor.value) return
   const { weekIdx, dayIdx, fieldIdx } = cursor.value
   if (fieldIdx === 0) return  // type pill — handled directly in keydown
