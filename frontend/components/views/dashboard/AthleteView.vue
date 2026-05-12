@@ -130,6 +130,13 @@ function handleExitEdit() {
   gridNav.exitEdit()
 }
 
+function handleCursorSet(
+  weekIdx: number,
+  payload: { dayIdx: number; fieldIdx: number }
+) {
+  cursor.value = { weekIdx, dayIdx: payload.dayIdx, fieldIdx: payload.fieldIdx }
+}
+
 // ── Other ───────────────────────────────────────────────────
 const showGarminImportButton = computed(
   () => !!authStore.user?.capabilities?.garmin_connect_enabled,
@@ -192,6 +199,7 @@ async function handleAddMonth() {
           @navigate-out-next="(p) => handleNavOut('next', idx, p)"
           @navigate-out-prev="(p) => handleNavOut('prev', idx, p)"
           @exit-edit="handleExitEdit"
+          @cursor-set="(p) => handleCursorSet(idx, p)"
         />
       </div>
     </template>
