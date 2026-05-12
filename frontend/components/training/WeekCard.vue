@@ -1354,16 +1354,16 @@ defineExpose({
 
 /* ── Nav cursor highlight — zone-aware ── */
 .wt__cell--nav-selected-p {
-  outline: 2px solid #38bdf8;
-  outline-offset: -1px;
-  background: rgba(56, 189, 248, .08);
+  outline: 1px solid rgba(56, 189, 248, .55);
+  background: rgba(56, 189, 248, .07);
+  box-shadow: inset 0 0 0 1px rgba(56, 189, 248, .18);
   border-radius: 4px;
 }
 
 .wt__cell--nav-selected-c {
-  outline: 2px solid #c8ff00;
-  outline-offset: -1px;
-  background: rgba(200, 255, 0, .08);
+  outline: 1px solid rgba(200, 255, 0, .55);
+  background: rgba(200, 255, 0, .07);
+  box-shadow: inset 0 0 0 1px rgba(200, 255, 0, .18);
   border-radius: 4px;
 }
 
