@@ -1149,17 +1149,17 @@ defineExpose({
   align-items: center;
 }
 
-/* Hover: planned cell — blue ghost (cell-level) */
+/* Hover: planned cell — only when NOT nav-selected */
 .wt__row:not(.wt__row--editing-planned):not(.wt__row--editing-completed)
-  .wt__cell-p:hover {
+  .wt__cell-p:not(.wt__cell--nav-selected-p):hover {
   outline: 1px solid rgba(56, 189, 248, .38);
   background: rgba(56, 189, 248, .05);
   cursor: pointer;
 }
 
-/* Hover: completed cell — lime ghost (cell-level) */
+/* Hover: completed cell — only when NOT nav-selected */
 .wt__row:not(.wt__row--editing-planned):not(.wt__row--editing-completed)
-  .wt__cell-c:hover {
+  .wt__cell-c:not(.wt__cell--nav-selected-c):hover {
   outline: 1px solid rgba(200, 255, 0, .38);
   background: rgba(200, 255, 0, .05);
   cursor: pointer;
@@ -1241,23 +1241,23 @@ defineExpose({
   border: 1px solid rgba(200,255,0,.35);
 }
 
-/* ── Pill/dot cursor (fi=0 nav selection) ── */
+/* ── Pill/dot cursor (fi=0 nav selection) — pill-hugging ── */
 .wt__type-pill--run.wt__type-pill--cursor {
-  border: 1.5px solid #38bdf8;
-  background: rgba(56, 189, 248, .12);
-  box-shadow: 0 0 0 2px rgba(56, 189, 248, .15);
+  border-color: rgba(56, 189, 248, .75);
+  background: rgba(56, 189, 248, .14);
+  box-shadow: 0 0 0 2.5px rgba(56, 189, 248, .18), 0 0 6px rgba(56, 189, 248, .12);
 }
 
 .wt__type-pill--workout.wt__type-pill--cursor {
-  border: 1.5px solid #c8ff00;
-  background: rgba(200, 255, 0, .10);
-  box-shadow: 0 0 0 2px rgba(200, 255, 0, .12);
+  border-color: rgba(200, 255, 0, .75);
+  background: rgba(200, 255, 0, .12);
+  box-shadow: 0 0 0 2.5px rgba(200, 255, 0, .15), 0 0 6px rgba(200, 255, 0, .10);
 }
 
 .wt__type-dot--cursor {
-  border: 1.5px solid #38bdf8 !important;
-  background: rgba(56, 189, 248, .12) !important;
-  box-shadow: 0 0 0 2px rgba(56, 189, 248, .15);
+  border: 1.5px solid rgba(56, 189, 248, .75) !important;
+  background: rgba(56, 189, 248, .14) !important;
+  box-shadow: 0 0 0 2.5px rgba(56, 189, 248, .18), 0 0 6px rgba(56, 189, 248, .10);
 }
 
 .wt__type-pill--cursor:hover { opacity: 1; }
@@ -1367,10 +1367,17 @@ defineExpose({
   border-radius: 4px;
 }
 
-/* Type cell (fi=0): container has no outline, pill handles cursor */
+/* Nav cursor: pointer cursor on selected cells */
+.wt__cell--nav-selected-p,
+.wt__cell--nav-selected-c {
+  cursor: pointer;
+}
+
+/* Type cell (fi=0): container invisible — pill/dot handles cursor visually */
 .wt__cell--type.wt__cell--nav-selected-p {
   outline: none;
   background: transparent;
+  box-shadow: none;
 }
 
 /* ── Cell-level flash — zone-aware ── */
