@@ -46,7 +46,8 @@ watch(editMode, (active) => {
 const PRINTABLE = /^[a-zA-Z0-9\-.,;:!?@#%&*()/\\'"= ]$/
 
 function handleKeyDown(e: KeyboardEvent) {
-  if (editMode.value) return
+  const active = document.activeElement
+  if (editMode.value || (active instanceof HTMLInputElement || active instanceof HTMLTextAreaElement)) return
   const weekCount = coachStore.weeks.length
   if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
     e.preventDefault()

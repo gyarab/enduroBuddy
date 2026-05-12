@@ -43,8 +43,8 @@ watch(editMode, (active) => {
 const PRINTABLE = /^[a-zA-Z0-9\-.,;:!?@#%&*()/\\'"= ]$/
 
 function handleKeyDown(e: KeyboardEvent) {
-  // Let edit mode inputs handle their own keys
-  if (editMode.value) return
+  const active = document.activeElement
+  if (editMode.value || (active instanceof HTMLInputElement || active instanceof HTMLTextAreaElement)) return
 
   const weekCount = trainingStore.weeks.length
 
