@@ -1057,27 +1057,9 @@ defineExpose({
   100% { background-color: transparent; }
 }
 
-@keyframes zone-ok-planned {
-  0%   { background-color: rgba(200, 255, 0, .10); }
-  100% { background-color: transparent; }
-}
-
-@keyframes zone-ok-completed {
-  0%   { background-color: rgba(200, 255, 0, .10); }
-  100% { background-color: rgba(200, 255, 0, .07); }
-}
-
 @keyframes zone-err {
   0%   { background-color: rgba(244, 63, 94, .18); }
   100% { background-color: transparent; }
-}
-
-.wt__row--flash-planned-ok .wt__cell-p {
-  animation: zone-ok-planned 700ms ease-out;
-}
-
-.wt__row--flash-completed-ok .wt__cell-c {
-  animation: zone-ok-completed 700ms ease-out forwards;
 }
 
 .wt__row--flash-err .wt__cell-p,
