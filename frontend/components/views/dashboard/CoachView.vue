@@ -91,7 +91,7 @@ function handleExitEdit() {
   gridNav.exitEdit()
 }
 
-function handleExitEditMove(dir: 'down') {
+function handleExitEditMove(dir: 'up' | 'down') {
   gridNav.exitEdit()
   gridNav.moveCursor(dir, coachStore.weeks.length)
 }

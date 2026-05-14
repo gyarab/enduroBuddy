@@ -266,6 +266,17 @@ describe("WeekCard — keyboard navigation", () => {
     expect(wrapper.emitted("exit-edit-move")![0]).toEqual(["down"])
   })
 
+  it("Shift+Enter in notes emits exit-edit-move with 'up'", async () => {
+    const wrapper = mountWeekCard()
+    await wrapper.find(`[data-testid="cell-title-${DATE}"]`).trigger("click")
+    await nextTick()
+    await wrapper.find('[data-field="notes"]').trigger("keydown", { key: "Enter", shiftKey: true })
+    await nextTick()
+
+    expect(wrapper.emitted("exit-edit-move")).toBeTruthy()
+    expect(wrapper.emitted("exit-edit-move")![0]).toEqual(["up"])
+  })
+
   it("Ctrl+Enter in notes does not emit exit-edit-move (allows newline)", async () => {
     const wrapper = mountWeekCard()
     await wrapper.find(`[data-testid="cell-title-${DATE}"]`).trigger("click")
