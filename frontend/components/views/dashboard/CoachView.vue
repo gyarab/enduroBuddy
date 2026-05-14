@@ -46,6 +46,9 @@ watch(editMode, (active) => {
 const PRINTABLE = /^[a-zA-Z0-9\-.,;:!?@#%&*()/\\'"= ]$/
 
 function handleKeyDown(e: KeyboardEvent) {
+  const active = document.activeElement
+  const inInput = active instanceof HTMLInputElement || active instanceof HTMLTextAreaElement
+  if (editMode.value && !inInput) gridNav.exitEdit()
   if (editMode.value) return
   const weekCount = coachStore.weeks.length
   if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
