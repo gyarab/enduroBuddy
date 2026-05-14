@@ -335,12 +335,8 @@ async function autoSave(slot: DaySlot, edit: RowEdit) {
     await performSaveApiCalls(slot, edit);
     edit.isDirty = false;
     edit.saveError = false;
-    // Cell-level flash
-    if (zone === "planned") {
-      flashCellOk(slot.date, 1); flashCellOk(slot.date, 2);
-    } else {
-      for (let fi = 3; fi <= 7; fi++) flashCellOk(slot.date, fi);
-    }
+    const fi = FIELD_BY_IDX.indexOf(edit.focusField as typeof FIELD_BY_IDX[number])
+    if (fi > 0) flashCellOk(slot.date, fi)
     // Keep row-level flash for backwards compatibility with existing tests
     flashZoneOk(slot.date, zone);
     if (edit.completedId && slot.completed.length === 0) {
@@ -524,7 +520,7 @@ async function toggleSessionType(slot: DaySlot) {
       } else {
         await trainingStore.savePlannedDraft(planned.id, [{ field: "session_type", value: newType }]);
       }
-      flashRow(slot.date);
+      flashCellOk(slot.date, 0);
     } catch (err) {
       toastStore.push(err instanceof Error ? err.message : t("weekCard.createError"), "danger");
     }
