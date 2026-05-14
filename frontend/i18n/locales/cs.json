@@ -140,6 +140,7 @@
     "create": "Create",
     "creating": "Creating...",
     "createError": "Nepodarilo se vytvorit plan.",
+    "saveError": "Nepodařilo se uložit. Zkontrolujte připojení k internetu nebo to zkuste znovu.",
     "garminSync": "Sync Garmin",
     "garminSyncing": "Synchronizuji...",
     "garminSyncError": "Garmin sync selhal."

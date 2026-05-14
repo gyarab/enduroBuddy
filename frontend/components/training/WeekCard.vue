@@ -238,21 +238,7 @@ function openEdit(slot: DaySlot, focusField = "title", zone: "planned" | "comple
 }
 
 // ── Flash feedback ────────────────────────────────────────────
-const flashingRows = reactive<Set<string>>(new Set())
-const flashingPlannedOk = reactive<Set<string>>(new Set())
-const flashingCompletedOk = reactive<Set<string>>(new Set())
 const flashingError = reactive<Set<string>>(new Set())
-
-function flashRow(date: string) {
-  flashingRows.add(date)
-  setTimeout(() => flashingRows.delete(date), 600)
-}
-
-function flashZoneOk(date: string, zone: "planned" | "completed") {
-  const set = zone === "planned" ? flashingPlannedOk : flashingCompletedOk
-  set.add(date)
-  setTimeout(() => set.delete(date), 700)
-}
 
 function flashZoneErr(date: string) {
   flashingError.add(date)
@@ -260,14 +246,7 @@ function flashZoneErr(date: string) {
 }
 
 // ── Cell-level flash: key = `${date}:${fieldIdx}` ────────────
-const flashingCellsOk = reactive<Set<string>>(new Set())
 const flashingCellsErr = reactive<Set<string>>(new Set())
-
-function flashCellOk(date: string, fieldIdx: number) {
-  const key = `${date}:${fieldIdx}`
-  flashingCellsOk.add(key)
-  setTimeout(() => flashingCellsOk.delete(key), 750)
-}
 
 function flashCellErr(date: string, fieldIdx: number) {
   const key = `${date}:${fieldIdx}`
@@ -335,33 +314,23 @@ async function autoSave(slot: DaySlot, edit: RowEdit) {
     await performSaveApiCalls(slot, edit);
     edit.isDirty = false;
     edit.saveError = false;
-    const fi = FIELD_BY_IDX.indexOf(edit.focusField as typeof FIELD_BY_IDX[number])
-    if (fi > 0) flashCellOk(slot.date, fi)
-    // Keep row-level flash for backwards compatibility with existing tests
-    flashZoneOk(slot.date, zone);
     if (edit.completedId && slot.completed.length === 0) {
       await trainingStore.loadDashboard(trainingStore.selectedMonthValue, { silent: true });
     }
   } catch (err) {
     edit.saveError = true;
-    // Cell-level flash error
-    if (zone === "planned") {
-      flashCellErr(slot.date, 1); flashCellErr(slot.date, 2);
-    } else {
-      for (let fi = 3; fi <= 7; fi++) flashCellErr(slot.date, fi);
-    }
+    const fi = FIELD_BY_IDX.indexOf(edit.focusField as typeof FIELD_BY_IDX[number])
+    if (fi > 0) flashCellErr(slot.date, fi)
     flashZoneErr(slot.date);
-    toastStore.push(err instanceof Error ? err.message : t("weekCard.createError"), "danger");
+    toastStore.push(t("weekCard.saveError"), "danger");
   } finally {
     edit.isSaving = false;
     if (edit.closeAfterSave) {
       edit.closeAfterSave = false;
-      // Wait for DOM to settle, then only close if user genuinely left the row
       await nextTick();
       const rowEl = document.querySelector<HTMLElement>(`[data-row-date="${slot.date}"]`);
       if (!rowEl || !rowEl.contains(document.activeElement)) {
         editingRows.delete(slot.date);
-        flashRow(slot.date);
       }
     }
   }
@@ -378,24 +347,18 @@ async function closeAndSave(slot: DaySlot, edit: RowEdit) {
     return;
   }
   edit.isSaving = true;
-  const zone = edit.activeZone;
   try {
     await performSaveApiCalls(slot, edit);
     editingRows.delete(slot.date);
-    flashRow(slot.date);
     if (edit.completedId && slot.completed.length === 0) {
       await trainingStore.loadDashboard(trainingStore.selectedMonthValue, { silent: true });
     }
   } catch (err) {
     editingRows.delete(slot.date);
-    // Cell-level flash error
-    if (zone === "planned") {
-      flashCellErr(slot.date, 1); flashCellErr(slot.date, 2);
-    } else {
-      for (let fi = 3; fi <= 7; fi++) flashCellErr(slot.date, fi);
-    }
+    const fi = FIELD_BY_IDX.indexOf(edit.focusField as typeof FIELD_BY_IDX[number])
+    if (fi > 0) flashCellErr(slot.date, fi)
     flashZoneErr(slot.date);
-    toastStore.push(err instanceof Error ? err.message : t("weekCard.createError"), "danger");
+    toastStore.push(t("weekCard.saveError"), "danger");
   } finally {
     edit.isSaving = false;
   }
@@ -520,9 +483,9 @@ async function toggleSessionType(slot: DaySlot) {
       } else {
         await trainingStore.savePlannedDraft(planned.id, [{ field: "session_type", value: newType }]);
       }
-      flashCellOk(slot.date, 0);
     } catch (err) {
-      toastStore.push(err instanceof Error ? err.message : t("weekCard.createError"), "danger");
+      flashCellErr(slot.date, 0);
+      toastStore.push(t("weekCard.saveError"), "danger");
     }
   } else {
     openEdit(slot, "title", "planned");
@@ -594,7 +557,6 @@ defineExpose({
     }
   },
 
-  flashCellOk,
 })
 </script>
 
@@ -640,9 +602,6 @@ defineExpose({
             'wt__row--editing-completed': isEditingZone(slot.date, 'completed'),
             'wt__row--done': slot.completed[0]?.status === 'done',
             'wt__row--missed': slot.completed[0]?.status === 'missed',
-            'wt__row--saved': flashingRows.has(slot.date),
-            'wt__row--flash-planned-ok': flashingPlannedOk.has(slot.date),
-            'wt__row--flash-completed-ok': flashingCompletedOk.has(slot.date),
             'wt__row--flash-err': flashingError.has(slot.date),
             'wt__row--save-error': getEdit(slot.date)?.saveError,
           }"
@@ -660,8 +619,7 @@ defineExpose({
             :data-testid="`nav-cell-type-${slot.date}`"
             :class="[
               navSelectedClass(slot.date, 0),
-              { 'wt__cell--flash-ok-p': flashingCellsOk.has(`${slot.date}:0`) },
-              { 'wt__cell--flash-err': flashingCellsErr.has(`${slot.date}:0`) },
+{ 'wt__cell--flash-err': flashingCellsErr.has(`${slot.date}:0`) },
             ]"
             @click.stop
           >
@@ -698,8 +656,7 @@ defineExpose({
             :data-testid="`cell-title-${slot.date}`"
             :class="[
               navSelectedClass(slot.date, 1),
-              { 'wt__cell--flash-ok-p': flashingCellsOk.has(`${slot.date}:1`) },
-              { 'wt__cell--flash-err': flashingCellsErr.has(`${slot.date}:1`) },
+{ 'wt__cell--flash-err': flashingCellsErr.has(`${slot.date}:1`) },
             ]"
             @click.stop="openEdit(slot, 'title', 'planned')"
           >
@@ -729,8 +686,7 @@ defineExpose({
             class="wt__cell wt__cell--notes wt__cell-p"
             :class="[
               navSelectedClass(slot.date, 2),
-              { 'wt__cell--flash-ok-p': flashingCellsOk.has(`${slot.date}:2`) },
-              { 'wt__cell--flash-err': flashingCellsErr.has(`${slot.date}:2`) },
+{ 'wt__cell--flash-err': flashingCellsErr.has(`${slot.date}:2`) },
             ]"
             @click.stop="openEdit(slot, 'notes', 'planned')"
           >
@@ -763,8 +719,7 @@ defineExpose({
             :data-testid="`cell-km-${slot.date}`"
             :class="[
               navSelectedClass(slot.date, 3),
-              { 'wt__cell--flash-ok-c': flashingCellsOk.has(`${slot.date}:3`) },
-              { 'wt__cell--flash-err': flashingCellsErr.has(`${slot.date}:3`) },
+{ 'wt__cell--flash-err': flashingCellsErr.has(`${slot.date}:3`) },
             ]"
             @click.stop="canEditCompleted(slot) && openEdit(slot, 'km', 'completed')"
           >
@@ -791,8 +746,7 @@ defineExpose({
             class="wt__cell wt__cell--num wt__cell-c wt__cell-time"
             :class="[
               navSelectedClass(slot.date, 4),
-              { 'wt__cell--flash-ok-c': flashingCellsOk.has(`${slot.date}:4`) },
-              { 'wt__cell--flash-err': flashingCellsErr.has(`${slot.date}:4`) },
+{ 'wt__cell--flash-err': flashingCellsErr.has(`${slot.date}:4`) },
             ]"
             @click.stop="canEditCompleted(slot) && openEdit(slot, 'minutes', 'completed')"
           >
@@ -819,8 +773,7 @@ defineExpose({
             class="wt__cell wt__cell--intervals wt__cell-c"
             :class="[
               navSelectedClass(slot.date, 5),
-              { 'wt__cell--flash-ok-c': flashingCellsOk.has(`${slot.date}:5`) },
-              { 'wt__cell--flash-err': flashingCellsErr.has(`${slot.date}:5`) },
+{ 'wt__cell--flash-err': flashingCellsErr.has(`${slot.date}:5`) },
             ]"
             @click.stop="canEditCompleted(slot) && openEdit(slot, 'details', 'completed')"
           >
@@ -846,8 +799,7 @@ defineExpose({
             class="wt__cell wt__cell--num wt__cell-c wt__cell-avghr"
             :class="[
               navSelectedClass(slot.date, 6),
-              { 'wt__cell--flash-ok-c': flashingCellsOk.has(`${slot.date}:6`) },
-              { 'wt__cell--flash-err': flashingCellsErr.has(`${slot.date}:6`) },
+{ 'wt__cell--flash-err': flashingCellsErr.has(`${slot.date}:6`) },
             ]"
             @click.stop="canEditCompleted(slot) && openEdit(slot, 'avgHr', 'completed')"
           >
@@ -873,8 +825,7 @@ defineExpose({
             class="wt__cell wt__cell--num wt__cell-c wt__cell-maxhr"
             :class="[
               navSelectedClass(slot.date, 7),
-              { 'wt__cell--flash-ok-c': flashingCellsOk.has(`${slot.date}:7`) },
-              { 'wt__cell--flash-err': flashingCellsErr.has(`${slot.date}:7`) },
+{ 'wt__cell--flash-err': flashingCellsErr.has(`${slot.date}:7`) },
             ]"
             @click.stop="canEditCompleted(slot) && openEdit(slot, 'maxHr', 'completed')"
           >
@@ -1044,14 +995,6 @@ defineExpose({
 
 .wt__row--p2 { opacity: 0.75; }
 
-.wt__row--saved {
-  animation: row-saved-flash 600ms ease-out forwards;
-}
-
-@keyframes row-saved-flash {
-  0%   { background-color: rgba(200,255,0,.12); }
-  100% { background-color: transparent; }
-}
 
 @keyframes zone-err {
   0%   { background-color: rgba(244, 63, 94, .18); }
@@ -1344,18 +1287,11 @@ defineExpose({
 }
 
 /* ── Cell-level flash — zone-aware ── */
-@keyframes cell-flash-ok {
-  0%   { background-color: rgba(200, 255, 0, .30); }
-  100% { background-color: transparent; }
-}
-
 @keyframes cell-flash-err {
   0%   { background-color: rgba(244, 63, 94, 0.22); }
   100% { background-color: transparent; }
 }
 
-.wt__cell--flash-ok-p { animation: cell-flash-ok 0.7s ease-out forwards; }
-.wt__cell--flash-ok-c { animation: cell-flash-ok 0.7s ease-out forwards; }
 .wt__cell--flash-err  { animation: cell-flash-err 0.8s ease-out forwards; }
 
 /* ── Nav mode display spans ── */

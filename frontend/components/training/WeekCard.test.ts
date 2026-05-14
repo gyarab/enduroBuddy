@@ -212,20 +212,6 @@ describe("WeekCard — auto-save keeps edit open", () => {
     expect(wrapper.find(`[data-testid="input-title-${DATE}"]`).exists()).toBe(false)
   })
 
-  it("successful auto-save adds wt__row--flash-planned-ok class", async () => {
-    const wrapper = mountWeekCard()
-    const trainingStore = useTrainingStore()
-    trainingStore.savePlannedDraft = vi.fn().mockResolvedValue(undefined)
-
-    await wrapper.find(`[data-testid="cell-title-${DATE}"]`).trigger("click")
-    await wrapper.find(`[data-testid="input-title-${DATE}"]`).setValue("10 km easy")
-    await wrapper.find(`[data-testid="input-title-${DATE}"]`).trigger("input")
-    await vi.advanceTimersByTimeAsync(1100)
-    await nextTick()
-
-    expect(wrapper.find(".wt__row").classes()).toContain("wt__row--flash-planned-ok")
-  })
-
   it("failed auto-save adds wt__row--flash-err class", async () => {
     const wrapper = mountWeekCard()
     const trainingStore = useTrainingStore()
@@ -345,21 +331,6 @@ describe("WeekCard — activeCursor nav highlight", () => {
   })
 })
 
-describe('WeekCard — cell-level flash', () => {
-  beforeEach(() => {
-    setActivePinia(createPinia())
-  })
-
-  it('flashCellOk adds wt__cell--flash-ok-p class to title cell', async () => {
-    const week = buildWeek()
-    const wrapper = mountWeekCard(week)
-    // Access exposed method
-    ;(wrapper.vm as any).flashCellOk(DATE, 1)
-    await nextTick()
-    const cell = wrapper.find('[data-testid="cell-title-' + DATE + '"]')
-    expect(cell.classes()).toContain('wt__cell--flash-ok-p')
-  })
-})
 
 describe('WeekCard — focusCellByIdx', () => {
   it('opens edit for title (fieldIdx=1) on dayIdx=0', async () => {

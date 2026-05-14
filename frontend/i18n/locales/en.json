@@ -140,6 +140,7 @@
     "create": "Create",
     "creating": "Creating...",
     "createError": "Could not create plan.",
+    "saveError": "Could not save. Check your internet connection or try again.",
     "garminSync": "Sync Garmin",
     "garminSyncing": "Syncing...",
     "garminSyncError": "Garmin sync failed."
