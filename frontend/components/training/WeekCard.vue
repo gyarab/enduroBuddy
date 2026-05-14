@@ -442,6 +442,7 @@ function onRowFocusOut(slot: DaySlot, event: FocusEvent) {
     edit.debounceTimer = null;
   }
   void closeAndSave(slot, edit);
+  emit('exit-edit')
 }
 
 function handleEditKeydown(event: KeyboardEvent, field: string, slot: DaySlot) {
