@@ -32,15 +32,12 @@ function cursorForWeek(idx: number): { dayIdx: number; fieldIdx: number } | null
   return { dayIdx: cursor.value.dayIdx, fieldIdx: cursor.value.fieldIdx }
 }
 
-// When editMode turns true: tell the right WeekCard to open the cell
-watch(editMode, (active) => {
-  if (!active || !cursor.value) return
-  const { weekIdx, dayIdx, fieldIdx } = cursor.value
-  if (fieldIdx === 0) return  // type pill — handled directly in keydown
-  weekCardRefs.value[weekIdx]?.focusCellByIdx(dayIdx, fieldIdx, gridNav.pendingReplace.value)
-})
-
 const PRINTABLE = /^[a-zA-Z0-9\-.,;:!?@#%&*()/\\'"= ]$/
+
+function openCellByIdx(weekIdx: number, dayIdx: number, fieldIdx: number, replaceContent?: string) {
+  gridNav.enterEdit(replaceContent)
+  weekCardRefs.value[weekIdx]?.focusCellByIdx(dayIdx, fieldIdx, replaceContent)
+}
 
 function handleKeyDown(e: KeyboardEvent) {
   const active = document.activeElement
@@ -64,26 +61,21 @@ function handleKeyDown(e: KeyboardEvent) {
   }
 
   if (!cursor.value) return
+  const { weekIdx, dayIdx, fieldIdx } = cursor.value
 
-  if (e.key === 'Enter') {
+  if (e.key === 'Enter' || (e.key === ' ' && fieldIdx === 0)) {
     e.preventDefault()
-    if (cursor.value.fieldIdx === 0) {
-      weekCardRefs.value[cursor.value.weekIdx]?.toggleTypeByDayIdx(cursor.value.dayIdx)
+    if (fieldIdx === 0) {
+      weekCardRefs.value[weekIdx]?.toggleTypeByDayIdx(dayIdx)
     } else {
-      gridNav.enterEdit()
+      openCellByIdx(weekIdx, dayIdx, fieldIdx)
     }
     return
   }
 
-  if (e.key === ' ' && cursor.value.fieldIdx === 0) {
+  if ((e.key === 'Backspace' || e.key === 'Delete') && fieldIdx !== 0) {
     e.preventDefault()
-    weekCardRefs.value[cursor.value.weekIdx]?.toggleTypeByDayIdx(cursor.value.dayIdx)
-    return
-  }
-
-  if ((e.key === 'Backspace' || e.key === 'Delete') && cursor.value.fieldIdx !== 0) {
-    e.preventDefault()
-    gridNav.enterEdit('')
+    openCellByIdx(weekIdx, dayIdx, fieldIdx, '')
     return
   }
 
@@ -93,8 +85,9 @@ function handleKeyDown(e: KeyboardEvent) {
     return
   }
 
-  if (PRINTABLE.test(e.key) && !e.ctrlKey && !e.metaKey && cursor.value.fieldIdx !== 0) {
-    gridNav.enterEdit(e.key)
+  if (PRINTABLE.test(e.key) && !e.ctrlKey && !e.metaKey && fieldIdx !== 0) {
+    e.preventDefault()
+    openCellByIdx(weekIdx, dayIdx, fieldIdx, e.key)
   }
 }
 
