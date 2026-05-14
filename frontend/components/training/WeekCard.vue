@@ -1197,16 +1197,6 @@ defineExpose({
   pointer-events: none;
 }
 
-/* Border-left for active editing zone */
-.wt__row--editing-planned {
-  border-left: 2px solid rgba(56, 189, 248, .45);
-  padding-left: calc(1rem - 2px);
-}
-
-.wt__row--editing-completed {
-  border-left: 2px solid rgba(200, 255, 0, .4);
-  padding-left: calc(1rem - 2px);
-}
 
 /* ── Type dot ── */
 .wt__type-dot {
