@@ -21,7 +21,7 @@ const isAddingMonth = ref(false);
 const authStore = useAuthStore();
 const isGarminModalOpen = ref(false);
 
-const weekCardRefs = ref<InstanceType<typeof WeekCard>[]>([])
+const weekCardRefs: InstanceType<typeof WeekCard>[] = []
 
 // ── Grid navigation ──────────────────────────────────────────
 const gridNav = useGridNav()
@@ -36,7 +36,7 @@ const PRINTABLE = /^[a-zA-Z0-9\-.,;:!?@#%&*()/\\'"= ]$/
 
 function openCellByIdx(weekIdx: number, dayIdx: number, fieldIdx: number, replaceContent?: string) {
   gridNav.enterEdit(replaceContent)
-  weekCardRefs.value[weekIdx]?.focusCellByIdx(dayIdx, fieldIdx, replaceContent)
+  weekCardRefs[weekIdx]?.focusCellByIdx(dayIdx, fieldIdx, replaceContent)
 }
 
 function handleKeyDown(e: KeyboardEvent) {
@@ -66,7 +66,7 @@ function handleKeyDown(e: KeyboardEvent) {
   if (e.key === 'Enter' || (e.key === ' ' && fieldIdx === 0)) {
     e.preventDefault()
     if (fieldIdx === 0) {
-      weekCardRefs.value[weekIdx]?.toggleTypeByDayIdx(dayIdx)
+      weekCardRefs[weekIdx]?.toggleTypeByDayIdx(dayIdx)
     } else {
       openCellByIdx(weekIdx, dayIdx, fieldIdx)
     }
@@ -113,7 +113,7 @@ onUnmounted(() => {
 
 // Re-init cursor only when the user navigates to a different month (not on silent reloads after saves)
 watch(() => trainingStore.selectedMonthValue, () => {
-  weekCardRefs.value = []
+  weekCardRefs.length = 0
   if (trainingStore.weeks.length) gridNav.initCursor(trainingStore.weeks)
 })
 
@@ -124,7 +124,7 @@ function handleNavOut(
   payload: { field: string; zone: "planned" | "completed" },
 ) {
   const targetIdx = dir === "next" ? idx + 1 : idx - 1
-  const card = weekCardRefs.value[targetIdx]
+  const card = weekCardRefs[targetIdx]
   if (card) card.focusCell(payload.field, payload.zone, dir === "prev")
 }
 
@@ -204,7 +204,7 @@ async function handleAddMonth() {
         <WeekCard
           v-for="(week, idx) in trainingStore.weeks"
           :key="week.id"
-          :ref="(el) => { if (el && weekCardRefs.value) weekCardRefs.value[idx] = el as InstanceType<typeof WeekCard> }"
+          :ref="(el) => { if (el) weekCardRefs[idx] = el as InstanceType<typeof WeekCard> }"
           :week="week"
           :active-cursor="cursorForWeek(idx)"
           @navigate-out-next="(p) => handleNavOut('next', idx, p)"

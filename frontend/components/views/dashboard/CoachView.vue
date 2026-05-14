@@ -25,7 +25,7 @@ const isManageOpen = ref(false);
 const isSidebarOpen = ref(false);
 const isAddingMonth = ref(false);
 
-const weekCardRefs = ref<InstanceType<typeof WeekCard>[]>([])
+const weekCardRefs: InstanceType<typeof WeekCard>[] = []
 
 // ── Grid navigation ──────────────────────────────────────────
 const gridNav = useGridNav()
@@ -40,7 +40,7 @@ const PRINTABLE = /^[a-zA-Z0-9\-.,;:!?@#%&*()/\\'"= ]$/
 
 function openCellByIdx(weekIdx: number, dayIdx: number, fieldIdx: number, replaceContent?: string) {
   gridNav.enterEdit(replaceContent)
-  weekCardRefs.value[weekIdx]?.focusCellByIdx(dayIdx, fieldIdx, replaceContent)
+  weekCardRefs[weekIdx]?.focusCellByIdx(dayIdx, fieldIdx, replaceContent)
 }
 
 function handleKeyDown(e: KeyboardEvent) {
@@ -65,7 +65,7 @@ function handleKeyDown(e: KeyboardEvent) {
   if (e.key === 'Enter' || (e.key === ' ' && fieldIdx === 0)) {
     e.preventDefault()
     if (fieldIdx === 0) {
-      weekCardRefs.value[weekIdx]?.toggleTypeByDayIdx(dayIdx)
+      weekCardRefs[weekIdx]?.toggleTypeByDayIdx(dayIdx)
     } else {
       openCellByIdx(weekIdx, dayIdx, fieldIdx)
     }
@@ -112,7 +112,7 @@ function handleNavOut(
   payload: { field: string; zone: "planned" | "completed" },
 ) {
   const targetIdx = dir === "next" ? idx + 1 : idx - 1
-  const card = weekCardRefs.value[targetIdx]
+  const card = weekCardRefs[targetIdx]
   if (card) card.focusCell(payload.field, payload.zone, dir === "prev")
 }
 const startRemoveId = ref<number | null>(null);
@@ -153,7 +153,7 @@ watch(
 watch(
   () => [coachStore.selectedMonth?.value, coachStore.selectedAthlete?.id] as const,
   () => {
-    weekCardRefs.value = []
+    weekCardRefs.length = 0
     if (coachStore.weeks.length) gridNav.initCursor(coachStore.weeks)
   },
 )
@@ -326,7 +326,7 @@ async function handleAddMonth() {
           <WeekCard
             v-for="(week, idx) in coachStore.weeks"
             :key="week.id"
-            :ref="(el) => { if (el && weekCardRefs.value) weekCardRefs.value[idx] = el as InstanceType<typeof WeekCard> }"
+            :ref="(el) => { if (el) weekCardRefs[idx] = el as InstanceType<typeof WeekCard> }"
             :week="week"
             editor-context="coach"
             :active-cursor="cursorForWeek(idx)"
