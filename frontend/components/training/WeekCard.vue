@@ -266,7 +266,7 @@ const flashingCellsErr = reactive<Set<string>>(new Set())
 function flashCellOk(date: string, fieldIdx: number) {
   const key = `${date}:${fieldIdx}`
   flashingCellsOk.add(key)
-  setTimeout(() => flashingCellsOk.delete(key), 1600)
+  setTimeout(() => flashingCellsOk.delete(key), 750)
 }
 
 function flashCellErr(date: string, fieldIdx: number) {
@@ -1367,11 +1367,7 @@ defineExpose({
 
 /* ── Cell-level flash — zone-aware ── */
 @keyframes cell-flash-ok {
-  0%   { background-color: rgba(200, 255, 0,  .30); }
-  18%  { background-color: transparent; }
-  36%  { background-color: rgba(56, 189, 248, .28); }
-  54%  { background-color: transparent; }
-  72%  { background-color: rgba(56, 189, 248, .22); }
+  0%   { background-color: rgba(200, 255, 0, .30); }
   100% { background-color: transparent; }
 }
 
@@ -1380,8 +1376,8 @@ defineExpose({
   100% { background-color: transparent; }
 }
 
-.wt__cell--flash-ok-p { animation: cell-flash-ok 1.5s linear forwards; }
-.wt__cell--flash-ok-c { animation: cell-flash-ok 1.5s linear forwards; }
+.wt__cell--flash-ok-p { animation: cell-flash-ok 0.7s ease-out forwards; }
+.wt__cell--flash-ok-c { animation: cell-flash-ok 0.7s ease-out forwards; }
 .wt__cell--flash-err  { animation: cell-flash-err 0.8s ease-out forwards; }
 
 /* ── Nav mode display spans ── */
