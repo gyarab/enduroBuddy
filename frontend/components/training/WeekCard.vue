@@ -1001,10 +1001,6 @@ defineExpose({
   100% { background-color: transparent; }
 }
 
-.wt__row--flash-err .wt__cell-p,
-.wt__row--flash-err .wt__cell-c {
-  animation: zone-err 1200ms ease-out;
-}
 
 /* ── Persistent save-error state ── */
 .wt__row--save-error.wt__row--editing-planned,
