@@ -19,6 +19,7 @@ const emit = defineEmits<{
   "navigate-out-next": [payload: { field: string; zone: "planned" | "completed" }]
   "navigate-out-prev": [payload: { field: string; zone: "planned" | "completed" }]
   "exit-edit": []
+  "exit-edit-move": [direction: 'down']
   "cursor-set": [payload: { dayIdx: number; fieldIdx: number }]
 }>()
 
@@ -462,7 +463,8 @@ function handleEditKeydown(event: KeyboardEvent, field: string, slot: DaySlot) {
     event.preventDefault()
     return
   }
-  if (key === 'Enter' && field !== 'title') {
+  if (key === 'Enter') {
+    if (event.ctrlKey && (field === 'title' || field === 'notes')) return
     event.preventDefault()
     const edit = editingRows.get(slot.date)
     if (edit) {
@@ -470,7 +472,7 @@ function handleEditKeydown(event: KeyboardEvent, field: string, slot: DaySlot) {
       if (edit.isDirty) { edit.closeAfterSave = true; void autoSave(slot, edit) }
       else { editingRows.delete(slot.date) }
     }
-    emit('exit-edit')
+    emit('exit-edit-move', 'down')
     return
   }
   if (key === 'Tab') {

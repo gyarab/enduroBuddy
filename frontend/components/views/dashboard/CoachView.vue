@@ -91,6 +91,11 @@ function handleExitEdit() {
   gridNav.exitEdit()
 }
 
+function handleExitEditMove(dir: 'down') {
+  gridNav.exitEdit()
+  gridNav.moveCursor(dir, coachStore.weeks.length)
+}
+
 function handleCursorSet(
   weekIdx: number,
   payload: { dayIdx: number; fieldIdx: number }
@@ -333,6 +338,7 @@ async function handleAddMonth() {
             @navigate-out-next="(p) => handleNavOut('next', idx, p)"
             @navigate-out-prev="(p) => handleNavOut('prev', idx, p)"
             @exit-edit="handleExitEdit"
+            @exit-edit-move="(dir) => handleExitEditMove(dir)"
             @cursor-set="(p) => handleCursorSet(idx, p)"
           />
         </div>
