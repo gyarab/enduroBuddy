@@ -1176,15 +1176,6 @@ defineExpose({
   background: transparent;
 }
 
-/* Editing planned: planned cells blue tint */
-.wt__row--editing-planned .wt__cell-p {
-  background: rgba(56, 189, 248, .07);
-}
-
-/* Editing completed: completed cells lime tint */
-.wt__row--editing-completed .wt__cell-c {
-  background: rgba(200, 255, 0, .07);
-}
 
 /* Inactive zone while editing — dimmed */
 .wt__row--editing-planned .wt__cell-c {
