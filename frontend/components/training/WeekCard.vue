@@ -1064,7 +1064,6 @@ defineExpose({
 .wt__cell-p,
 .wt__cell-c {
   border-radius: 4px;
-  transition: background 120ms;
   min-height: 1.75rem;
   display: flex;
   align-items: center;
@@ -1143,7 +1142,6 @@ defineExpose({
   text-transform: uppercase;
   cursor: pointer;
   background: transparent;
-  transition: opacity 120ms;
   white-space: nowrap;
 }
 .wt__type-pill--run:hover {
