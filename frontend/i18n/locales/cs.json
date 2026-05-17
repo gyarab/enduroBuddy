@@ -1,6 +1,6 @@
 {
   "shell": {
-    "loadingWorkspace": "Nacitani workspace..."
+    "loadingWorkspace": "Načítání workspace..."
   },
   "topNav": {
     "dashboard": "Dashboard",
@@ -14,14 +14,14 @@
   "notifications": {
     "label": "Notifikace",
     "refresh": "Refresh",
-    "loading": "Nacitani...",
-    "empty": "Zatim zadne notifikace.",
-    "loadError": "Nepodarilo se nacist notifikace."
+    "loading": "Načítání...",
+    "empty": "Zatím žádné notifikace.",
+    "loadError": "Nepodařilo se načíst notifikace."
   },
   "athleteView": {
-    "loadErrorTitle": "Dashboard se nepodarilo nacist",
-    "emptyTitle": "Zatim zadny plan pro tento mesic",
-    "emptyText": "Jakmile se objevi treninkove tydny, dashboard je okamzite nacte do noveho Vue workspace."
+    "loadErrorTitle": "Dashboard se nepodařilo načíst",
+    "emptyTitle": "Zatím žádný plán pro tento měsíc",
+    "emptyText": "Jakmile se objeví tréninkové týdny, dashboard je okamžitě načte do nového Vue workspace."
   },
   "coachView": {
     "workspace": "Coach workspace",
@@ -34,8 +34,8 @@
     "saveFocus": "Save focus",
     "saving": "Saving...",
     "backToDashboard": "Athlete dashboard",
-    "noAthletesTitle": "Zatim zadni sverenci",
-    "noAthletesText": "Pridej atlety pres Manage athletes — coach kod nebo join request."
+    "noAthletesTitle": "Zatím žádní svěřenci",
+    "noAthletesText": "Přidej atlety přes Manage athletes — coach kód nebo join request."
   },
   "coachManage": {
     "workspace": "Coach workspace",
@@ -93,7 +93,7 @@
     "fitFailed": "FIT import failed."
   },
   "trainingStore": {
-    "loadError": "Nepodarilo se nacist dashboard.",
+    "loadError": "Nepodařilo se načíst dashboard.",
     "planSaved": "Plan saved.",
     "plannedUpdated": "Planned training updated.",
     "plannedCreated": "Planned training created.",
@@ -103,7 +103,7 @@
     "secondPhaseRemoved": "Second phase removed."
   },
   "coachStore": {
-    "loadError": "Nepodarilo se nacist coach dashboard.",
+    "loadError": "Nepodařilo se načíst coach dashboard.",
     "focusUpdated": "Coach focus updated.",
     "athleteOrderUpdated": "Athlete order updated.",
     "athleteHidden": "Athlete hidden from plans.",
@@ -115,7 +115,7 @@
     "secondPhaseRemoved": "Second phase removed."
   },
   "weekCard": {
-    "week": "Tyden {index}",
+    "week": "Týden {index}",
     "planned": "Planned",
     "completed": "Completed",
     "completedKm": "{value} km",
@@ -125,21 +125,21 @@
     "addPlanned": "Add planned training",
     "date": "Datum",
     "day": "Den",
-    "training": "Trenink",
-    "coachNotes": "Poznamky",
-    "time": "Cas",
+    "training": "Trénink",
+    "coachNotes": "Poznámky",
+    "time": "Čas",
     "intervals": "Intervaly",
     "total": "Celkem",
-    "clickToAdd": "Klikni pro pridani",
-    "titlePlaceholder": "Popis treninku...",
-    "notesPlaceholder": "Poznamky trenera...",
+    "clickToAdd": "Klikni pro přidání",
+    "titlePlaceholder": "Popis tréninku...",
+    "notesPlaceholder": "Poznámky trenéra...",
     "newTitle": "Title",
     "session": "Session",
     "run": "Run",
     "workout": "Workout",
     "create": "Create",
     "creating": "Creating...",
-    "createError": "Nepodarilo se vytvorit plan.",
+    "createError": "Nepodařilo se vytvořit plán.",
     "saveError": "Nepodařilo se uložit. Zkontrolujte připojení k internetu nebo to zkuste znovu.",
     "garminSync": "Sync Garmin",
     "garminSyncing": "Synchronizuji...",
@@ -164,10 +164,10 @@
     "edit": "Edit",
     "delete": "Delete",
     "confirmDelete": "Delete this planned training?",
-    "saveError": "Nepodarilo se ulozit plan.",
-    "deleteError": "Nepodarilo se smazat plan.",
-    "addSecondPhaseError": "Nepodarilo se pridat druhou fazi.",
-    "removeSecondPhaseError": "Nepodarilo se odebrat druhou fazi."
+    "saveError": "Nepodařilo se uložit plán.",
+    "deleteError": "Nepodařilo se smazat plán.",
+    "addSecondPhaseError": "Nepodařilo se přidat druhou fázi.",
+    "removeSecondPhaseError": "Nepodařilo se odebrat druhou fázi."
   },
   "completedRow": {
     "done": "Done",
@@ -187,7 +187,7 @@
     "save": "Save completed",
     "saving": "Saving...",
     "entryFallback": "Completed entry",
-    "saveError": "Nepodarilo se ulozit completed row."
+    "saveError": "Nepodařilo se uložit completed row."
   },
   "summaryBar": {
     "trainings": "Tréninky",
@@ -322,21 +322,21 @@
   },
   "profileCompletion": {
     "eyebrow": "Profile completion",
-    "titleCoach": "Dokoncime coach workspace",
-    "titleAthlete": "Dokoncime athlete workspace",
-    "description": "Dopln jmeno a potvrd roli, at te muzeme pustit do spravne casti aplikace bez dalsich redirectu.",
-    "loading": "Nacitani profilu...",
-    "firstName": "Jmeno",
-    "lastName": "Prijmeni",
+    "titleCoach": "Dokončíme coach workspace",
+    "titleAthlete": "Dokončíme athlete workspace",
+    "description": "Doplň jméno a potvrď roli, ať tě můžeme pustit do správné části aplikace bez dalších redirectů.",
+    "loading": "Načítání profilu...",
+    "firstName": "Jméno",
+    "lastName": "Příjmení",
     "role": "Role",
-    "save": "Dokoncit profil",
-    "saving": "Ukladam...",
-    "loadError": "Nepodarilo se nacist profil.",
-    "saveError": "Nepodarilo se ulozit profil."
+    "save": "Dokončit profil",
+    "saving": "Ukládám...",
+    "loadError": "Nepodařilo se načíst profil.",
+    "saveError": "Nepodařilo se uložit profil."
   },
   "athleteCtx": {
     "goToDashboard": "Athlete dashboard",
-    "hide": "Skryt atletku",
+    "hide": "Skrýt atletku",
     "show": "Zobrazit atletku",
     "remove": "Odebrat..."
   },
