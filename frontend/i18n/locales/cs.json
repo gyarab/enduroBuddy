@@ -470,7 +470,8 @@
     "lead": "EnduroBuddy - účinné od 1. 4. 2026"
   },
   "legal": {
-    "kicker": "Právní dokumenty"
+    "kicker": "Právní dokumenty",
+    "back": "Zpět"
   },
   "error": {
     "notFound": "Stránka nenalezena",

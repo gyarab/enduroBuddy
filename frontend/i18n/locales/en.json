@@ -470,7 +470,8 @@
     "lead": "EnduroBuddy - effective from April 1, 2026"
   },
   "legal": {
-    "kicker": "Legal"
+    "kicker": "Legal",
+    "back": "Back"
   },
   "error": {
     "notFound": "Page not found",
