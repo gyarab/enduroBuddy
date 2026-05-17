@@ -1090,12 +1090,14 @@ defineExpose({
   cursor: pointer;
 }
 
-/* Type cell: no outline on hover — pill handles it */
+/* Type cell: same cell highlight as planned cells on hover */
 .wt__row:not(.wt__row--editing-planned):not(.wt__row--editing-completed)
   .wt__cell--type:hover {
-  outline: none;
-  background: transparent;
-  box-shadow: none;
+  outline: 1px solid rgba(56, 189, 248, .55);
+  background: rgba(56, 189, 248, .07);
+  box-shadow: inset 0 0 0 1px rgba(56, 189, 248, .18);
+  border-radius: 4px;
+  cursor: pointer;
 }
 
 
