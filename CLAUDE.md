@@ -225,10 +225,12 @@ Spec: `docs/superpowers/specs/2026-04-18-nuxt-migration-design.md`
 **Spec:** `docs/superpowers/specs/2026-05-17-email-redesign-design.md`
 **Plán:** `docs/superpowers/plans/2026-05-17-email-redesign.md`
 
-- `base_message.html`: nový wrapper, lime logo bars (tmavé v light mode), footer s homepage odkazem, `{% block card_border_style %}` pro accent barvu, `@media (prefers-color-scheme: light)` pro dark/light přepínání
+- `base_message.html`: nový wrapper, lime logo bars (nested tables pro správné výšky 8/13/18px), footer s homepage odkazem, `{% block card_border_style %}` pro accent barvu, `@media (prefers-color-scheme: light)` pro dark/light přepínání, `bgcolor` atributy pro Outlook kompatibilitu
 - `email_confirmation_message.html`: eyebrow + headline + greeting + CTA + fallback link + disclaimer, lime top-border
 - `password_reset_key_message.html`: stejná struktura, blue `#38bdf8` top-border a eyebrow barva
 - Fonty: system font stack (`-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial`)
+- `django.contrib.sites` Site objekt: doména musí být nastavena na `endurobuddy.cz` (výchozí je `example.com`) — přes Django admin `/admin/sites/site/` nebo shell
+- **Outlook iOS** neumí dark emaily (Microsoft to záměrně blokuje) — Apple Mail, Gmail web a ostatní klienti fungují správně
 
 ---
 
