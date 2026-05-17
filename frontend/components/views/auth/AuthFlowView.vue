@@ -185,7 +185,7 @@ const cardAccentClass = computed(() => {
 watch(
   screen,
   (currentScreen) => {
-    if (!registrationEnabled && currentScreen === "signup") {
+    if (!registrationEnabled.value && currentScreen === "signup") {
       void router.replace("/accounts/login/");
     }
   },
