@@ -85,9 +85,9 @@ function getDayLabel(dateStr: string): string {
 }
 
 function formatMinutes(val: string | number | null | undefined): string {
-  if (val === null || val === undefined || val === "" || val === "0" || val === 0) return "-";
+  if (val === null || val === undefined || val === "" || val === "0" || val === 0) return "";
   const m = typeof val === "string" ? parseInt(val) : val;
-  if (isNaN(m) || m === 0) return "-";
+  if (isNaN(m) || m === 0) return "";
   const h = Math.floor(m / 60);
   const min = m % 60;
   return h > 0 ? `${h}:${min.toString().padStart(2, "0")}` : `${min}`;
@@ -677,7 +677,7 @@ defineExpose({
               />
             </template>
             <template v-else>
-              <span class="wt__nav-cell">{{ slot.planned[0]?.title || '' }}</span>
+              <span class="wt__nav-cell">{{ slot.planned[0]?.title === '-' ? '' : (slot.planned[0]?.title || '') }}</span>
             </template>
           </div>
 
@@ -737,7 +737,7 @@ defineExpose({
               />
             </template>
             <template v-else>
-              <span class="wt__nav-cell wt__nav-cell--num">{{ slot.completed[0]?.completed_metrics?.km || '-' }}</span>
+              <span class="wt__nav-cell wt__nav-cell--num">{{ slot.completed[0]?.completed_metrics?.km || '' }}</span>
             </template>
           </div>
 
@@ -816,7 +816,7 @@ defineExpose({
               />
             </template>
             <template v-else>
-              <span class="wt__nav-cell wt__nav-cell--num">{{ slot.completed[0]?.completed_metrics?.avg_hr ?? '-' }}</span>
+              <span class="wt__nav-cell wt__nav-cell--num">{{ slot.completed[0]?.completed_metrics?.avg_hr ?? '' }}</span>
             </template>
           </div>
 
@@ -842,7 +842,7 @@ defineExpose({
               />
             </template>
             <template v-else>
-              <span class="wt__nav-cell wt__nav-cell--num">{{ slot.completed[0]?.completed_metrics?.max_hr ?? '-' }}</span>
+              <span class="wt__nav-cell wt__nav-cell--num">{{ slot.completed[0]?.completed_metrics?.max_hr ?? '' }}</span>
             </template>
           </div>
         </div>
@@ -874,7 +874,7 @@ defineExpose({
         <div class="wt__cell wt__cell--num wt__summary-val">{{ week.completed_total.km }}</div>
         <div class="wt__cell wt__cell--num wt__summary-val">{{ formatMinutes(week.completed_total.time) }}</div>
         <div class="wt__cell wt__cell--intervals" />
-        <div class="wt__cell wt__cell--num wt__summary-val wt__num-val--hr">{{ week.completed_total.avg_hr ?? "-" }}</div>
+        <div class="wt__cell wt__cell--num wt__summary-val wt__num-val--hr">{{ week.completed_total.avg_hr ?? "" }}</div>
         <div class="wt__cell wt__cell--num" />
       </div>
     </div>
