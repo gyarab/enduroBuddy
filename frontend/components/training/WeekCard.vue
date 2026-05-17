@@ -1292,12 +1292,6 @@ defineExpose({
   cursor: pointer;
 }
 
-/* Type cell (fi=0): container invisible — pill/dot handles cursor visually */
-.wt__cell--type.wt__cell--nav-selected-p {
-  outline: none;
-  background: transparent;
-  box-shadow: none;
-}
 
 /* ── Cell-level flash — zone-aware ── */
 @keyframes cell-flash-err {
