@@ -220,12 +220,12 @@ Spec: `docs/superpowers/specs/2026-04-18-nuxt-migration-design.md`
 
 ## Aktivní plány a změny
 
-### 2026-05-10 — Grid Nav: Unified Mouse + Keyboard + Visual Redesign 🔄 V PLÁNU (feat/dashboard-grid-nav)
+### 2026-05-10 — Grid Nav: Unified Mouse + Keyboard + Visual Redesign ✅ KOMPLETNÍ (mergnuto do main 2026-05-17)
 
 **Spec:** `docs/superpowers/specs/2026-05-10-grid-nav-unified-design.md`
 **Plán:** `docs/superpowers/plans/2026-05-10-grid-nav-unified-design.md`
 
-**Co se implementuje (8 tasků):**
+**Co bylo implementováno (8 tasků):**
 - Task 1: Aktualizace testů — nová jména CSS tříd (nav-selected-p/c, flash-ok-p/c, cursor-set emit, notes textarea)
 - Task 2: Zone-aware nav kurzor CSS + template class bindings (`navSelectedClass()` helper)
 - Task 3: Cell-level hover, min-height prázdných buněk, zone-aware flash animace
@@ -234,6 +234,7 @@ Spec: `docs/superpowers/specs/2026-04-18-nuxt-migration-design.md`
 - Task 6: cursor-set emit z openEdit() + přidání do emits declaration
 - Task 7: AthleteView — @cursor-set listener → cursor.value sync
 - Task 8: CoachView — @cursor-set listener → cursor.value sync
+- 162 testů zelených, TypeScript: 0 chyb
 
 ---
 
