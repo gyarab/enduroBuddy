@@ -1073,16 +1073,20 @@ defineExpose({
 /* Hover: planned cell — only when NOT nav-selected */
 .wt__row:not(.wt__row--editing-planned):not(.wt__row--editing-completed)
   .wt__cell-p:not(.wt__cell--nav-selected-p):hover {
-  outline: 1px solid rgba(56, 189, 248, .38);
-  background: rgba(56, 189, 248, .05);
+  outline: 1px solid rgba(56, 189, 248, .55);
+  background: rgba(56, 189, 248, .07);
+  box-shadow: inset 0 0 0 1px rgba(56, 189, 248, .18);
+  border-radius: 4px;
   cursor: pointer;
 }
 
 /* Hover: completed cell — only when NOT nav-selected */
 .wt__row:not(.wt__row--editing-planned):not(.wt__row--editing-completed)
   .wt__cell-c:not(.wt__cell--nav-selected-c):hover {
-  outline: 1px solid rgba(200, 255, 0, .38);
-  background: rgba(200, 255, 0, .05);
+  outline: 1px solid rgba(200, 255, 0, .55);
+  background: rgba(200, 255, 0, .07);
+  box-shadow: inset 0 0 0 1px rgba(200, 255, 0, .18);
+  border-radius: 4px;
   cursor: pointer;
 }
 
@@ -1091,6 +1095,7 @@ defineExpose({
   .wt__cell--type:hover {
   outline: none;
   background: transparent;
+  box-shadow: none;
 }
 
 
@@ -1133,7 +1138,17 @@ defineExpose({
   transition: opacity 120ms;
   white-space: nowrap;
 }
-.wt__type-pill:hover { opacity: 0.75; }
+.wt__type-pill--run:hover {
+  border-color: rgba(56, 189, 248, .75);
+  background: rgba(56, 189, 248, .14);
+  box-shadow: 0 0 0 2.5px rgba(56, 189, 248, .18), 0 0 6px rgba(56, 189, 248, .12);
+}
+
+.wt__type-pill--workout:hover {
+  border-color: rgba(200, 255, 0, .75);
+  background: rgba(200, 255, 0, .12);
+  box-shadow: 0 0 0 2.5px rgba(200, 255, 0, .15), 0 0 6px rgba(200, 255, 0, .10);
+}
 .wt__type-pill--run {
   color: var(--eb-blue);
   border: 1px solid rgba(56,189,248,.35);
