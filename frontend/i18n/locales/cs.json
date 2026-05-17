@@ -469,6 +469,9 @@
     "title": "Zásady ochrany osobních údajů",
     "lead": "EnduroBuddy - účinné od 1. 4. 2026"
   },
+  "legal": {
+    "kicker": "Právní dokumenty"
+  },
   "error": {
     "notFound": "Stránka nenalezena",
     "forbidden": "Přístup zamítnut",
