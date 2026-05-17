@@ -1090,14 +1090,20 @@ defineExpose({
   cursor: pointer;
 }
 
-/* Type cell: same cell highlight as planned cells on hover */
+/* Type cell: transparent on hover — pill handles the visual */
 .wt__row:not(.wt__row--editing-planned):not(.wt__row--editing-completed)
   .wt__cell--type:hover {
-  outline: 1px solid rgba(56, 189, 248, .55);
-  background: rgba(56, 189, 248, .07);
-  box-shadow: inset 0 0 0 1px rgba(56, 189, 248, .18);
-  border-radius: 4px;
+  outline: none;
+  background: transparent;
+  box-shadow: none;
   cursor: pointer;
+}
+
+/* Type cell (fi=0): container invisible — pill/dot handles cursor visually */
+.wt__cell--type.wt__cell--nav-selected-p {
+  outline: none;
+  background: transparent;
+  box-shadow: none;
 }
 
 
