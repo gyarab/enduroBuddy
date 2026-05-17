@@ -1069,9 +1069,9 @@ defineExpose({
   align-items: center;
 }
 
-/* Hover: planned cell — only when NOT nav-selected */
+/* Hover: planned cell — only when NOT nav-selected and NOT type cell */
 .wt__row:not(.wt__row--editing-planned):not(.wt__row--editing-completed)
-  .wt__cell-p:not(.wt__cell--nav-selected-p):hover {
+  .wt__cell-p:not(.wt__cell--nav-selected-p):not(.wt__cell--type):hover {
   outline: 1px solid rgba(56, 189, 248, .55);
   background: rgba(56, 189, 248, .07);
   box-shadow: inset 0 0 0 1px rgba(56, 189, 248, .18);
