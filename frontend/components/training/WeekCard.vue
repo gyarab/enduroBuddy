@@ -1026,14 +1026,14 @@ defineExpose({
 }
 
 .wt__cell--date {
-  color: var(--eb-text-soft);
+  color: var(--eb-text);
   font-family: var(--eb-font-mono);
   font-size: 0.75rem;
   padding-left: 0;
 }
 
 .wt__cell--day {
-  color: var(--eb-text-muted);
+  color: var(--eb-text);
   font-size: 0.6875rem;
   font-weight: 700;
   letter-spacing: 0.06em;
@@ -1196,7 +1196,7 @@ defineExpose({
 .wt__notes-text {
   display: block;
   white-space: nowrap;
-  color: var(--eb-text-muted);
+  color: var(--eb-text);
   font-size: 0.75rem;
 }
 
@@ -1218,12 +1218,12 @@ defineExpose({
   display: block;
   min-height: 1.1em;
   line-height: 1.4;
-  color: var(--eb-text-muted);
+  color: var(--eb-text);
   font-family: var(--eb-font-mono);
   font-size: 0.8125rem;
 }
 .wt__num-val--done { color: var(--eb-lime); }
-.wt__num-val--hr { color: var(--eb-text-soft); }
+.wt__num-val--hr { color: var(--eb-text); }
 
 .wt__p2-label {
   display: inline-flex;
@@ -1312,7 +1312,7 @@ defineExpose({
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  color: var(--eb-text-muted);
+  color: var(--eb-text);
   font-size: 0.8125rem;
   min-height: 1.25rem;
   line-height: 1.5;
