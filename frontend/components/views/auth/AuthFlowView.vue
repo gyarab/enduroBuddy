@@ -206,14 +206,23 @@ function navigateTo(url: string) {
 }
 
 function currentEmailKey() {
-  return typeof route.params.key === "string" ? route.params.key : "";
+  // route.params.slug = ["confirm-email", "<key>"] from pages/accounts/[...slug].vue
+  const parts = route.params.slug
+  if (!Array.isArray(parts) || parts.length < 2) return ""
+  return parts.slice(1).join("/")
 }
 
 function currentResetKeyParts() {
+  // route.params.slug = ["password", "reset", "key", "<uidb36>-<key>"]
+  const parts = route.params.slug
+  if (!Array.isArray(parts) || parts.length < 4) return { uidb36: "", key: "" }
+  const combined = parts[3]
+  const dashIdx = combined.indexOf("-")
+  if (dashIdx === -1) return { uidb36: "", key: "" }
   return {
-    uidb36: typeof route.params.uidb36 === "string" ? route.params.uidb36 : "",
-    key: typeof route.params.key === "string" ? route.params.key : "",
-  };
+    uidb36: combined.slice(0, dashIdx),
+    key: combined.slice(dashIdx + 1),
+  }
 }
 
 function firstError(name: string) {
@@ -290,7 +299,7 @@ async function loadEmailConfirmState() {
     emailConfirmState.value.email = response.email || "";
     emailConfirmState.value.userDisplay = response.user?.display || "";
   } catch (error: unknown) {
-    const maybeError = error as { response?: { data?: { message?: string } } };
+    const maybeError = error as { data?: { message?: string } };
     emailConfirmState.value.canConfirm = false;
     emailConfirmState.value.message = maybeError.data?.message || "Tento potvrzovaci odkaz vyprsel nebo je neplatny.";
   } finally {
@@ -308,7 +317,7 @@ async function submitEmailConfirm() {
     const response = await confirmEmailKey(key);
     authNavigate(response.redirect_to);
   } catch (error: unknown) {
-    const maybeError = error as { response?: { data?: { message?: string } } };
+    const maybeError = error as { data?: { message?: string } };
     formError.value = maybeError.data?.message || "E-mail se nepodarilo potvrdit.";
   } finally {
     isSubmitting.value = false;
