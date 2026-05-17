@@ -60,6 +60,7 @@ Přepracovat HTML emailové šablony (ověření e-mailu, obnova hesla) tak, aby
 - `border-top: 1px solid #1f1f22` (light: `#f0f0f2`)
 - Padding: `12px 24px 18px`
 - Text: `11px` — dark: `#3f3f46`, light: `#a1a1aa`
+- Doména `{{ current_site.domain }}` je klikatelný odkaz na homepage — dark: `color: #52525b`, light: `color: #a1a1aa`
 
 ### Fonty
 - Stack: `-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif`
