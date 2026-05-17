@@ -28,24 +28,36 @@
     }
   </style>
 </head>
-<body style="margin:0;padding:0;background:#09090b;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;-webkit-font-smoothing:antialiased;">
+<body bgcolor="#09090b" style="margin:0;padding:0;background:#09090b;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;-webkit-font-smoothing:antialiased;">
 
-<table class="eb-outer" role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#09090b;padding:32px 0 48px;">
+<table class="eb-outer" role="presentation" width="100%" cellspacing="0" cellpadding="0" bgcolor="#09090b" style="background:#09090b;padding:32px 0 48px;">
   <tr>
-    <td align="center" style="padding:0 16px;">
+    <td align="center" bgcolor="#09090b" style="padding:0 16px;">
 
-      <table class="eb-card" role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:600px;background:#18181b;border:1px solid #27272a;{% block card_border_style %}border-top:2px solid #c8ff00;{% endblock %}border-radius:14px;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.03);">
+      <table class="eb-card" role="presentation" width="100%" cellspacing="0" cellpadding="0" bgcolor="#18181b" style="max-width:600px;background:#18181b;border:1px solid #27272a;{% block card_border_style %}border-top:2px solid #c8ff00;{% endblock %}border-radius:14px;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.03);">
 
         <!-- Header -->
         <tr>
-          <td class="eb-header" style="padding:16px 24px 14px;border-bottom:1px solid #1f1f22;">
+          <td class="eb-header" bgcolor="#18181b" style="padding:16px 24px 14px;border-bottom:1px solid #1f1f22;">
             <table role="presentation" cellspacing="0" cellpadding="0">
-              <tr valign="bottom">
-                <td class="eb-bar" style="width:4px;height:8px;background:#c8ff00;border-radius:2px;padding:0;"></td>
-                <td style="width:3px;padding:0;"></td>
-                <td class="eb-bar" style="width:4px;height:13px;background:#c8ff00;border-radius:2px;padding:0;"></td>
-                <td style="width:3px;padding:0;"></td>
-                <td class="eb-bar" style="width:4px;height:18px;background:#c8ff00;border-radius:2px;padding:0;"></td>
+              <tr>
+                <td valign="bottom" style="padding:0;">
+                  <table role="presentation" cellspacing="0" cellpadding="0"><tr>
+                    <td class="eb-bar" width="4" height="8" bgcolor="#c8ff00" style="width:4px;height:8px;background:#c8ff00;border-radius:2px;font-size:0;line-height:0;">&nbsp;</td>
+                  </tr></table>
+                </td>
+                <td width="3" style="width:3px;font-size:0;">&nbsp;</td>
+                <td valign="bottom" style="padding:0;">
+                  <table role="presentation" cellspacing="0" cellpadding="0"><tr>
+                    <td class="eb-bar" width="4" height="13" bgcolor="#c8ff00" style="width:4px;height:13px;background:#c8ff00;border-radius:2px;font-size:0;line-height:0;">&nbsp;</td>
+                  </tr></table>
+                </td>
+                <td width="3" style="width:3px;font-size:0;">&nbsp;</td>
+                <td valign="bottom" style="padding:0;">
+                  <table role="presentation" cellspacing="0" cellpadding="0"><tr>
+                    <td class="eb-bar" width="4" height="18" bgcolor="#c8ff00" style="width:4px;height:18px;background:#c8ff00;border-radius:2px;font-size:0;line-height:0;">&nbsp;</td>
+                  </tr></table>
+                </td>
                 <td style="width:10px;padding:0;"></td>
                 <td style="padding:0;vertical-align:middle;">
                   <span class="eb-wordmark" style="font-size:15px;font-weight:700;color:#fafafa;letter-spacing:-0.02em;">EnduroBuddy</span>
@@ -57,14 +69,14 @@
 
         <!-- Content -->
         <tr>
-          <td style="padding:28px 24px 24px;">
+          <td bgcolor="#18181b" style="padding:28px 24px 24px;">
             {% block content %}{% endblock content %}
           </td>
         </tr>
 
         <!-- Footer -->
         <tr>
-          <td class="eb-footer" style="padding:12px 24px 18px;border-top:1px solid #1f1f22;">
+          <td class="eb-footer" bgcolor="#18181b" style="padding:12px 24px 18px;border-top:1px solid #1f1f22;">
             <p class="eb-footer-text" style="margin:0;font-size:11px;line-height:1.55;color:#3f3f46;">
               {% if CURRENT_LANGUAGE == 'en' %}
                 You're receiving this email because of your account at <a class="eb-footer-link" href="https://{{ current_site.domain }}" style="color:#52525b;text-decoration:underline;">{{ current_site.domain }}</a>.
