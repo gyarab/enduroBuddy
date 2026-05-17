@@ -94,7 +94,7 @@ describe("AthleteView", () => {
 
     const wrapper = mountAthleteView();
 
-    expect(wrapper.text()).toContain("Zatim zadny plan pro tento mesic");
+    expect(wrapper.text()).toContain("Zatím žádný plán pro tento měsíc");
   });
 
   it("renders error state when dashboard load fails", () => {
@@ -106,7 +106,7 @@ describe("AthleteView", () => {
 
     const wrapper = mountAthleteView();
 
-    expect(wrapper.text()).toContain("Dashboard se nepodarilo nacist");
+    expect(wrapper.text()).toContain("Dashboard se nepodařilo načíst");
     expect(wrapper.text()).toContain("API error");
   });
 });

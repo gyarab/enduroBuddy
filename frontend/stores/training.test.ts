@@ -174,7 +174,7 @@ describe("useTrainingStore", () => {
       const store = useTrainingStore();
       await store.loadDashboard();
 
-      expect(store.errorMessage).toBe("Nepodarilo se nacist dashboard.");
+      expect(store.errorMessage).toBe("Nepodařilo se načíst dashboard.");
     });
   });
 
