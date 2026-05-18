@@ -347,9 +347,7 @@ async function handleAddMonth() {
   display: grid;
   grid-template-columns: 200px minmax(0, 1fr);
   gap: 0;
-  min-height: calc(100vh - 52px - 3rem);
-  border: 1px solid var(--eb-border);
-  border-radius: var(--eb-radius-lg);
+  min-height: calc(100vh - 52px);
   overflow: hidden;
   background: var(--eb-surface);
 }

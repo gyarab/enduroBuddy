@@ -62,4 +62,20 @@ const shellClass = computed(() => `app-shell--${props.variant}`);
     padding: 1.5rem 1.5rem calc(44px + 2.5rem);
   }
 }
+
+/* Coach view fills the full width — no side padding, no max-width centering */
+.app-shell--coach .app-shell__main {
+  padding: 0 0 calc(44px + 2rem);
+}
+
+.app-shell--coach .app-shell__content {
+  max-width: none;
+  margin: 0;
+}
+
+@media (min-width: 768px) {
+  .app-shell--coach .app-shell__main {
+    padding: 0 0 calc(44px + 2.5rem);
+  }
+}
 </style>
