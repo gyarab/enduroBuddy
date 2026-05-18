@@ -296,7 +296,7 @@ async function handleRequestCoach() {
 .ps {
   display: flex;
   flex-direction: column;
-  height: min(88vh, 26rem);
+  height: min(88vh, 28rem);
 }
 
 /* ── Header ────────────────────────────────── */
@@ -384,7 +384,6 @@ async function handleRequestCoach() {
   display: grid;
   grid-template-columns: 9.5rem 1fr;
   flex: 1;
-  overflow: hidden;
   min-height: 0;
 }
 
@@ -433,7 +432,6 @@ async function handleRequestCoach() {
 
 /* ── Right content ─────────────────────────── */
 .ps__content {
-  overflow-y: auto;
   padding: 1rem;
 }
 
