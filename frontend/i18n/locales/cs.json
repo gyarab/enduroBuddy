@@ -70,6 +70,7 @@
     "starting": "Starting...",
     "fitTitle": "FIT upload",
     "fitCopy": "Upload a FIT file from any supported device.",
+    "fitChoose": "Vybrat .fit soubor",
     "ranges": {
       "yesterday": "Yesterday",
       "last7Days": "Last 7 days",
