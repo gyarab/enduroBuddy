@@ -358,7 +358,7 @@ async function handleAddMonth() {
 .coach-view__sidebar {
   position: sticky;
   top: 52px;
-  height: calc(100vh - 52px);
+  height: calc(100vh - 52px - 44px);
   overflow-y: auto;
   border-right: 1px solid var(--eb-border);
 }
