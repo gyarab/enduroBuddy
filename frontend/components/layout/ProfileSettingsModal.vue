@@ -296,7 +296,7 @@ async function handleRequestCoach() {
 .ps {
   display: flex;
   flex-direction: column;
-  max-height: min(90vh, 42rem);
+  height: min(88vh, 26rem);
 }
 
 /* ── Header ────────────────────────────────── */
