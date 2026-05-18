@@ -7,10 +7,12 @@ import type { ContextMenuItem } from "@/components/ui/context-menu-types";
 
 const props = defineProps<{
   athletes: CoachAthlete[];
+  isManageOpen?: boolean;
 }>();
 
 const emit = defineEmits<{
   select: [athleteId: number];
+  "open-manage": [];
   reorder: [athleteIds: number[]];
   toggleHidden: [athleteId: number, hidden: boolean];
   remove: [athleteId: number];
@@ -145,6 +147,21 @@ function onCtxSelect(action: string) {
       </button>
     </div>
 
+    <div class="coach-sidebar__footer">
+      <button
+        class="coach-sidebar__manage-btn"
+        :class="{ 'coach-sidebar__manage-btn--active': isManageOpen }"
+        type="button"
+        @click="emit('open-manage')"
+      >
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+        {{ t("sidebar.manageAthletes") }}
+      </button>
+    </div>
+
     <EbContextMenu
       :open="ctxMenu.open"
       :items="ctxMenu.athlete ? ctxItems(ctxMenu.athlete) : []"
@@ -159,6 +176,8 @@ function onCtxSelect(action: string) {
 
 <style scoped>
 .coach-sidebar {
+  display: flex;
+  flex-direction: column;
   padding: 1rem 0;
   border: 1px solid var(--eb-border);
   border-radius: var(--eb-radius-lg);
@@ -265,5 +284,38 @@ function onCtxSelect(action: string) {
   letter-spacing: 0.06em;
   text-transform: uppercase;
   flex-shrink: 0;
+}
+
+.coach-sidebar__footer {
+  margin-top: auto;
+  padding: 0.75rem 0.75rem 0.5rem;
+  border-top: 1px solid var(--eb-border);
+}
+
+.coach-sidebar__manage-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--eb-text-muted);
+  font-family: var(--eb-font-body, 'Nunito', sans-serif);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 150ms, color 150ms;
+}
+
+.coach-sidebar__manage-btn:hover {
+  background: rgba(200, 255, 0, 0.06);
+  color: var(--eb-lime, #c8ff00);
+}
+
+.coach-sidebar__manage-btn--active {
+  background: rgba(200, 255, 0, 0.08);
+  color: var(--eb-lime, #c8ff00);
 }
 </style>
