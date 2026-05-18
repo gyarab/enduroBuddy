@@ -201,7 +201,7 @@ function handleMonthSelect(monthValue: string) {
 }
 
 function handleGoToDashboard() {
-  void router.push("/dashboard");
+  void router.push("/app/dashboard");
 }
 
 async function handleAddMonth() {
