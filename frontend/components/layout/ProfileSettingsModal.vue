@@ -345,7 +345,7 @@ async function handleRequestCoach() {
 .ps__role-badge {
   font-size: 0.6875rem;
   font-weight: 600;
-  color: var(--eb-text-muted, #71717a);
+  color: var(--eb-text-soft, #a1a1aa);
 }
 
 .ps__close {
@@ -371,7 +371,7 @@ async function handleRequestCoach() {
 /* ── State ─────────────────────────────────── */
 .ps__state {
   padding: 2rem 1.25rem;
-  color: var(--eb-text-muted);
+  color: var(--eb-text-soft, #a1a1aa);
   font-size: 0.875rem;
 }
 
@@ -407,7 +407,7 @@ async function handleRequestCoach() {
   border: 0;
   border-radius: 6px;
   background: transparent;
-  color: var(--eb-text-muted, #71717a);
+  color: var(--eb-text-soft, #a1a1aa);
   font-family: var(--eb-font-body, 'Nunito', sans-serif);
   font-weight: 600;
   font-size: 0.8125rem;
@@ -446,7 +446,7 @@ async function handleRequestCoach() {
   font-weight: 700;
   letter-spacing: 0.09em;
   text-transform: uppercase;
-  color: var(--eb-text-muted, #71717a);
+  color: var(--eb-text-soft, #a1a1aa);
   margin-bottom: 0.125rem;
 }
 
@@ -459,7 +459,7 @@ async function handleRequestCoach() {
 
 .ps__field span {
   font-size: 0.6875rem;
-  color: var(--eb-text-muted, #71717a);
+  color: var(--eb-text-soft, #a1a1aa);
 }
 
 .ps__field input {

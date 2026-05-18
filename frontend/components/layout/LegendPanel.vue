@@ -298,7 +298,7 @@ function removePr(index: number) {
 
 .legend-panel__subtitle {
   margin-top: 0.15rem;
-  color: var(--eb-text-muted);
+  color: var(--eb-text-soft, #a1a1aa);
   font-size: 0.6875rem;
   font-weight: 600;
   letter-spacing: 0.06em;
@@ -347,7 +347,7 @@ function removePr(index: number) {
 
 .legend-panel__section-title {
   margin: 0;
-  color: var(--eb-text-muted);
+  color: var(--eb-text-soft, #a1a1aa);
   font-size: 0.6875rem;
   font-weight: 600;
   letter-spacing: 0.08em;
@@ -362,7 +362,7 @@ function removePr(index: number) {
 
 .legend-panel__table th {
   padding: 0.3rem 0.5rem;
-  color: var(--eb-text-muted);
+  color: var(--eb-text-soft, #a1a1aa);
   font-size: 0.625rem;
   font-weight: 600;
   letter-spacing: 0.06em;
@@ -415,7 +415,7 @@ function removePr(index: number) {
 }
 
 .legend-panel__label {
-  color: var(--eb-text-muted);
+  color: var(--eb-text-soft, #a1a1aa);
   font-size: 0.6875rem;
 }
 
@@ -468,7 +468,7 @@ function removePr(index: number) {
   border: 1px solid #3f3f46;
   border-radius: 6px;
   background: transparent;
-  color: var(--eb-text-muted, #71717a);
+  color: var(--eb-text-soft, #a1a1aa);
   font-family: var(--eb-font-body, 'Nunito', sans-serif);
   font-weight: 700;
   font-size: 0.6875rem;

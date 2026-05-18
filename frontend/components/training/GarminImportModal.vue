@@ -351,7 +351,7 @@ watch(
   gap: 0.35rem;
   font-size: 0.6875rem;
   font-weight: 600;
-  color: var(--eb-text-muted, #71717a);
+  color: var(--eb-text-soft, #a1a1aa);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -416,7 +416,7 @@ watch(
   border: 0;
   border-radius: 6px;
   background: transparent;
-  color: var(--eb-text-muted, #71717a);
+  color: var(--eb-text-soft, #a1a1aa);
   font-family: var(--eb-font-body, 'Nunito', sans-serif);
   font-weight: 600;
   font-size: 0.8125rem;
@@ -467,7 +467,7 @@ watch(
   font-weight: 700;
   letter-spacing: 0.09em;
   text-transform: uppercase;
-  color: var(--eb-text-muted, #71717a);
+  color: var(--eb-text-soft, #a1a1aa);
   margin-bottom: 0.125rem;
 }
 
@@ -486,7 +486,7 @@ watch(
 
 .gi__field span {
   font-size: 0.6875rem;
-  color: var(--eb-text-muted, #71717a);
+  color: var(--eb-text-soft, #a1a1aa);
 }
 
 .gi__field input,
@@ -517,7 +517,7 @@ watch(
 .gi__copy {
   margin: 0;
   font-size: 0.8125rem;
-  color: var(--eb-text-muted, #71717a);
+  color: var(--eb-text-soft, #a1a1aa);
   line-height: 1.5;
 }
 
@@ -650,7 +650,7 @@ watch(
 .gi__job-msg {
   margin: 0;
   font-size: 0.75rem;
-  color: var(--eb-text-muted, #71717a);
+  color: var(--eb-text-soft, #a1a1aa);
 }
 
 /* ── FIT file input ────────────────────────── */
