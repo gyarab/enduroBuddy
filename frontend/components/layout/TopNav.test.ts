@@ -4,33 +4,35 @@ import { createRouter, createMemoryHistory } from "vue-router";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import TopNav from "@/components/layout/TopNav.vue";
 
-vi.mock("@/components/layout/NotificationBell.vue", () => ({ default: { template: "<div />" } }));
 vi.mock("@/components/layout/ProfileDropdown.vue", () => ({ default: { template: "<div />" } }));
-vi.mock("@/composables/useI18n", () => ({
-  useI18n: () => ({ t: (k: string, p?: Record<string, string | number>) => k }),
-}));
+vi.mock("@/components/layout/ProfileSettingsModal.vue", () => ({ default: { template: "<div />" } }));
 
-const mockAuthStore = { user: { initials: "AB", capabilities: { coached_athlete_count: 2 } }, isAuthenticated: true };
-const mockCoachStore = { selectedAthlete: null, selectedMonth: null };
-const mockTrainingStore = { selectedMonth: null };
+const mockAuthStore = {
+  user: {
+    initials: "JN",
+    first_name: "Jan",
+    last_name: "Novák",
+    capabilities: { garmin_connect_enabled: true, coached_athlete_count: 0 },
+  },
+  isAuthenticated: true,
+  isCoach: false,
+};
+const mockTrainingStore = { selectedMonth: { label: "Červen 2026" } };
+const mockCoachStore = { selectedMonth: { label: "Červen 2026" } };
+const mockLegendStore = { isPanelOpen: false };
 
-vi.mock("@/stores/auth", () => ({
-  useAuthStore: vi.fn(() => mockAuthStore),
-}));
-vi.mock("@/stores/coach", () => ({
-  useCoachStore: vi.fn(() => mockCoachStore),
-}));
-vi.mock("@/stores/training", () => ({
-  useTrainingStore: vi.fn(() => mockTrainingStore),
-}));
+vi.mock("@/stores/auth", () => ({ useAuthStore: vi.fn(() => mockAuthStore) }));
+vi.mock("@/stores/training", () => ({ useTrainingStore: vi.fn(() => mockTrainingStore) }));
+vi.mock("@/stores/coach", () => ({ useCoachStore: vi.fn(() => mockCoachStore) }));
+vi.mock("@/stores/legend", () => ({ useLegendStore: vi.fn(() => mockLegendStore) }));
+vi.mock("@/components/training/GarminImportModal.vue", () => ({ default: { template: "<div />" } }));
 
-function makeRouter(path = "/dashboard") {
+function makeRouter(path = "/app/dashboard") {
   const router = createRouter({
     history: createMemoryHistory(),
     routes: [
-      { path: "/dashboard", component: { template: "<div/>" } },
+      { path: "/app/dashboard", component: { template: "<div/>" } },
       { path: "/coach/plans", component: { template: "<div/>" } },
-      { path: "/app/profile/complete", component: { template: "<div/>" } },
     ],
   });
   router.push(path);
@@ -43,115 +45,101 @@ describe("TopNav", () => {
   beforeEach(() => {
     pinia = createPinia();
     setActivePinia(pinia);
-    // Reset shared mock state to safe defaults
-    mockAuthStore.user = { initials: "AB", capabilities: { coached_athlete_count: 2 } };
+    mockAuthStore.user = {
+      initials: "JN",
+      first_name: "Jan",
+      last_name: "Novák",
+      capabilities: { garmin_connect_enabled: true, coached_athlete_count: 0 },
+    };
     mockAuthStore.isAuthenticated = true;
-    mockCoachStore.selectedAthlete = null;
-    mockCoachStore.selectedMonth = null;
-    mockTrainingStore.selectedMonth = null;
+    mockAuthStore.isCoach = false;
+    mockTrainingStore.selectedMonth = { label: "Červen 2026" };
+    mockCoachStore.selectedMonth = { label: "Červen 2026" };
+    mockLegendStore.isPanelOpen = false;
   });
 
-  it("renders brand logo", async () => {
+  it("renders logo mark", async () => {
     const router = makeRouter();
     await router.isReady();
-    const wrapper = mount(TopNav, {
-      props: { variant: "athlete" },
-      global: { plugins: [router, pinia] },
-    });
-    expect(wrapper.find("a.top-nav__brand").exists()).toBe(true);
+    const wrapper = mount(TopNav, { props: { variant: "athlete" }, global: { plugins: [router, pinia] } });
+    expect(wrapper.find(".nav-brand__mark").exists()).toBe(true);
   });
 
-  it("athlete variant brand link points to /dashboard", async () => {
-    const router = makeRouter("/dashboard");
-    await router.isReady();
-    const wrapper = mount(TopNav, {
-      props: { variant: "athlete" },
-      global: { plugins: [router, pinia] },
-    });
-    expect(wrapper.find("a.top-nav__brand").attributes("href")).toBe("/dashboard");
-  });
-
-  it("coach variant brand link points to /coach/plans", async () => {
-    const router = makeRouter("/coach/plans");
-    await router.isReady();
-    const wrapper = mount(TopNav, {
-      props: { variant: "coach" },
-      global: { plugins: [router, pinia] },
-    });
-    expect(wrapper.find("a.top-nav__brand").attributes("href")).toBe("/coach/plans");
-  });
-
-  it("shows initials from auth store", async () => {
+  it("shows username from auth store", async () => {
     const router = makeRouter();
     await router.isReady();
-    const wrapper = mount(TopNav, {
-      props: { variant: "athlete" },
-      global: { plugins: [router, pinia] },
-    });
-    expect(wrapper.find("button.top-nav__avatar").text()).toBe("AB");
+    const wrapper = mount(TopNav, { props: { variant: "athlete" }, global: { plugins: [router, pinia] } });
+    expect(wrapper.find(".nav-brand__username").text()).toBe("Jan Novák");
   });
 
-  it("hides avatar when user is not authenticated", async () => {
-    // Override auth store to simulate unauthenticated state
+  it("shows month label", async () => {
+    const router = makeRouter();
+    await router.isReady();
+    const wrapper = mount(TopNav, { props: { variant: "athlete" }, global: { plugins: [router, pinia] } });
+    expect(wrapper.find(".nav-month").text()).toContain("Červen 2026");
+  });
+
+  it("shows sync button when garmin_connect_enabled=true", async () => {
+    const router = makeRouter();
+    await router.isReady();
+    const wrapper = mount(TopNav, { props: { variant: "athlete" }, global: { plugins: [router, pinia] } });
+    expect(wrapper.find(".nav-btn--sync").exists()).toBe(true);
+  });
+
+  it("hides sync button when garmin_connect_enabled=false", async () => {
     const { useAuthStore } = await import("@/stores/auth");
-    vi.mocked(useAuthStore).mockReturnValueOnce({ user: null, isAuthenticated: false } as any);
-
+    vi.mocked(useAuthStore).mockReturnValueOnce({
+      ...mockAuthStore,
+      user: { ...mockAuthStore.user, capabilities: { garmin_connect_enabled: false, coached_athlete_count: 0 } },
+    } as any);
     const router = makeRouter();
     await router.isReady();
-    const wrapper = mount(TopNav, {
-      props: { variant: "athlete" },
-      global: { plugins: [router, pinia] },
-    });
-    expect(wrapper.find("button.top-nav__avatar").exists()).toBe(false);
+    const wrapper = mount(TopNav, { props: { variant: "athlete" }, global: { plugins: [router, pinia] } });
+    expect(wrapper.find(".nav-btn--sync").exists()).toBe(false);
   });
 
-  it("toggles ProfileDropdown visibility when avatar button is clicked", async () => {
+  it("shows legend button in athlete variant", async () => {
     const router = makeRouter();
     await router.isReady();
-    const wrapper = mount(TopNav, {
-      props: { variant: "athlete" },
-      global: { plugins: [router, pinia] },
-    });
-
-    // ProfileDropdown should not be visible initially
-    expect(wrapper.findComponent({ name: "ProfileDropdown" }).exists()).toBe(false);
-
-    // Click avatar to open
-    await wrapper.find("button.top-nav__avatar").trigger("click");
-    expect(wrapper.findComponent({ name: "ProfileDropdown" }).exists()).toBe(true);
-
-    // Click avatar again to close
-    await wrapper.find("button.top-nav__avatar").trigger("click");
-    expect(wrapper.findComponent({ name: "ProfileDropdown" }).exists()).toBe(false);
+    const wrapper = mount(TopNav, { props: { variant: "athlete" }, global: { plugins: [router, pinia] } });
+    expect(wrapper.find(".nav-btn--legend").exists()).toBe(true);
   });
 
-  it("shows coachWorkspace title on /coach path", async () => {
+  it("hides legend button in coach variant", async () => {
     const router = makeRouter("/coach/plans");
     await router.isReady();
-    const wrapper = mount(TopNav, {
-      props: { variant: "coach" },
-      global: { plugins: [router, pinia] },
-    });
-    expect(wrapper.find(".top-nav__title").text()).toBe("Coach Workspace");
+    const wrapper = mount(TopNav, { props: { variant: "coach" }, global: { plugins: [router, pinia] } });
+    expect(wrapper.find(".nav-btn--legend").exists()).toBe(false);
   });
 
-  it("shows completeProfile title on /profile path", async () => {
-    const router = makeRouter("/app/profile/complete");
+  it("shows coach badge when isCoach=true and variant=athlete", async () => {
+    const { useAuthStore } = await import("@/stores/auth");
+    vi.mocked(useAuthStore).mockReturnValueOnce({ ...mockAuthStore, isCoach: true } as any);
+    const router = makeRouter();
     await router.isReady();
-    const wrapper = mount(TopNav, {
-      props: { variant: "athlete" },
-      global: { plugins: [router, pinia] },
-    });
-    expect(wrapper.find(".top-nav__title").text()).toBe("Complete Profile");
+    const wrapper = mount(TopNav, { props: { variant: "athlete" }, global: { plugins: [router, pinia] } });
+    expect(wrapper.find(".nav-btn--coach").exists()).toBe(true);
   });
 
-  it("shows dashboard title on /dashboard path", async () => {
-    const router = makeRouter("/dashboard");
+  it("shows myPlan button in coach variant", async () => {
+    const router = makeRouter("/coach/plans");
     await router.isReady();
-    const wrapper = mount(TopNav, {
-      props: { variant: "athlete" },
-      global: { plugins: [router, pinia] },
-    });
-    expect(wrapper.find(".top-nav__title").text()).toBe("Dashboard");
+    const wrapper = mount(TopNav, { props: { variant: "coach" }, global: { plugins: [router, pinia] } });
+    expect(wrapper.find(".nav-btn--myplan").exists()).toBe(true);
+  });
+
+  it("shows avatar with initials", async () => {
+    const router = makeRouter();
+    await router.isReady();
+    const wrapper = mount(TopNav, { props: { variant: "athlete" }, global: { plugins: [router, pinia] } });
+    expect(wrapper.find(".nav-avatar").text()).toBe("JN");
+  });
+
+  it("clicking legend button sets legendStore.isPanelOpen = true", async () => {
+    const router = makeRouter();
+    await router.isReady();
+    const wrapper = mount(TopNav, { props: { variant: "athlete" }, global: { plugins: [router, pinia] } });
+    await wrapper.find(".nav-btn--legend").trigger("click");
+    expect(mockLegendStore.isPanelOpen).toBe(true);
   });
 });
