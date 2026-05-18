@@ -4,7 +4,6 @@ import { computed, ref, watch } from "vue";
 import { changePassword } from "~/utils/api/auth";
 import { requestCoachByCode } from "~/utils/api/coach";
 import { fetchProfileSettings, saveProfileSettings, type ProfileSettingsPayload } from "~/utils/api/profile";
-import EbButton from "@/components/ui/EbButton.vue";
 import EbModal from "@/components/ui/EbModal.vue";
 import { useAuthStore } from "@/stores/auth";
 import { useToastStore } from "@/stores/toasts";
@@ -28,22 +27,22 @@ const isLoading = ref(false);
 const isSaving = ref(false);
 const errorMessage = ref("");
 
-// Password change
 const currentPassword = ref("");
 const newPassword = ref("");
 const confirmPassword = ref("");
 const isChangingPassword = ref(false);
 
-// Coach connection
 const coachCode = ref("");
 const isRequestingCoach = ref(false);
 
 const roleLabel = computed(() => {
-  if (profile.value?.role === "COACH") {
-    return t("profileSettings.roleCoach");
-  }
+  if (profile.value?.role === "COACH") return t("profileSettings.roleCoach");
   return t("profileSettings.roleAthlete");
 });
+
+const canChangePassword = computed(
+  () => !!(currentPassword.value && newPassword.value && confirmPassword.value),
+);
 
 watch(
   () => props.open,
@@ -52,7 +51,6 @@ watch(
       errorMessage.value = "";
       return;
     }
-
     isLoading.value = true;
     errorMessage.value = "";
     try {
@@ -92,16 +90,11 @@ async function save() {
 
 async function toggleLanguage() {
   await setLocale(locale.value === "cs" ? "en" : "cs");
-  if (profile.value) {
-    profile.value = {
-      ...profile.value,
-      language: locale.value,
-    };
-  }
+  if (profile.value) profile.value = { ...profile.value, language: locale.value };
 }
 
 async function handleChangePassword() {
-  if (!currentPassword.value || !newPassword.value || !confirmPassword.value) return;
+  if (!canChangePassword.value) return;
   isChangingPassword.value = true;
   try {
     await changePassword(currentPassword.value, newPassword.value, confirmPassword.value);
@@ -110,7 +103,10 @@ async function handleChangePassword() {
     newPassword.value = "";
     confirmPassword.value = "";
   } catch (error) {
-    toastStore.push(error instanceof Error ? error.message : t("profileSettings.changePasswordError"), "danger");
+    toastStore.push(
+      error instanceof Error ? error.message : t("profileSettings.changePasswordError"),
+      "danger",
+    );
   } finally {
     isChangingPassword.value = false;
   }
@@ -133,297 +129,382 @@ async function handleRequestCoach() {
 
 <template>
   <EbModal :open="open">
-    <div class="profile-settings">
-      <div class="profile-settings__header">
-        <div>
-          <div class="profile-settings__eyebrow">{{ t("profileSettings.eyebrow") }}</div>
-          <h2 class="profile-settings__title">{{ t("profileSettings.title") }}</h2>
+    <div class="ps">
+      <!-- Header -->
+      <div class="ps__header">
+        <div class="ps__avatar">{{ authStore.user?.initials || "?" }}</div>
+        <div class="ps__header-info">
+          <div class="ps__display-name">
+            {{ `${firstName} ${lastName}`.trim() || authStore.user?.email || "—" }}
+          </div>
+          <div class="ps__role-badge">{{ profile ? roleLabel : "…" }}</div>
         </div>
-        <EbButton variant="ghost" @click="emit('close')">{{ t("profileSettings.close") }}</EbButton>
+        <button class="ps__close" type="button" :aria-label="t('profileSettings.close')" @click="emit('close')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+            <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
       </div>
 
-      <div v-if="isLoading" class="profile-settings__state">{{ t("profileSettings.loading") }}</div>
+      <!-- Loading / Error -->
+      <div v-if="isLoading" class="ps__state">{{ t("profileSettings.loading") }}</div>
+      <div v-else-if="errorMessage" class="ps__state ps__state--error">{{ errorMessage }}</div>
 
-      <div v-else-if="errorMessage" class="profile-settings__state profile-settings__state--error">
-        {{ errorMessage }}
-      </div>
-
-      <div v-else-if="profile" class="profile-settings__body">
-        <section class="profile-settings__panel">
-          <div class="profile-settings__panel-title">{{ t("profileSettings.identity") }}</div>
-          <div class="profile-settings__grid">
-            <label class="profile-settings__field">
+      <div v-else-if="profile" class="ps__body">
+        <!-- Profile -->
+        <section class="ps__section">
+          <div class="ps__section-label">{{ t("profileSettings.identity") }}</div>
+          <div class="ps__two-col">
+            <label class="ps__field">
               <span>{{ t("profileSettings.firstName") }}</span>
               <input v-model="firstName" :disabled="isSaving" />
             </label>
-            <label class="profile-settings__field">
+            <label class="ps__field">
               <span>{{ t("profileSettings.lastName") }}</span>
               <input v-model="lastName" :disabled="isSaving" />
             </label>
-            <label class="profile-settings__field profile-settings__field--wide">
-              <span>{{ t("profileSettings.email") }}</span>
-              <input :value="profile.email" disabled />
-            </label>
           </div>
+          <label class="ps__field">
+            <span>{{ t("profileSettings.email") }}</span>
+            <input :value="profile.email" disabled />
+          </label>
         </section>
 
-        <section class="profile-settings__panel">
-          <div class="profile-settings__panel-title">{{ t("profileSettings.workspace") }}</div>
-          <div class="profile-settings__meta">
-            <div class="profile-settings__meta-row">
-              <span>{{ t("profileSettings.role") }}</span>
-              <strong>{{ roleLabel }}</strong>
-            </div>
-            <div class="profile-settings__meta-row">
-              <span>{{ t("profileSettings.defaultRoute") }}</span>
-              <a :href="profile.default_app_route">{{ profile.default_app_route }}</a>
-            </div>
-            <div class="profile-settings__meta-row">
-              <span>{{ t("profileSettings.language") }}</span>
-              <button class="profile-settings__lang-toggle" type="button" @click="toggleLanguage">
-                {{ locale === "cs" ? "EN" : "CS" }}
-              </button>
-            </div>
-          </div>
-        </section>
-
-        <section class="profile-settings__panel">
-          <div class="profile-settings__panel-title">{{ t("profileSettings.security") }}</div>
-          <div class="profile-settings__grid">
-            <label class="profile-settings__field">
+        <!-- Password -->
+        <section class="ps__section">
+          <div class="ps__section-label">{{ t("profileSettings.security") }}</div>
+          <div class="ps__two-col">
+            <label class="ps__field">
               <span>{{ t("profileSettings.currentPassword") }}</span>
               <input v-model="currentPassword" type="password" :disabled="isChangingPassword" />
             </label>
-            <label class="profile-settings__field">
+            <label class="ps__field">
               <span>{{ t("profileSettings.newPassword") }}</span>
               <input v-model="newPassword" type="password" :disabled="isChangingPassword" />
             </label>
-            <label class="profile-settings__field profile-settings__field--wide">
+          </div>
+          <div class="ps__inline-row">
+            <label class="ps__field" style="flex: 1">
               <span>{{ t("profileSettings.confirmPassword") }}</span>
               <input v-model="confirmPassword" type="password" :disabled="isChangingPassword" />
             </label>
-          </div>
-          <div class="profile-settings__panel-footer">
-            <EbButton
-              variant="secondary"
-              :disabled="isChangingPassword || !currentPassword || !newPassword || !confirmPassword"
+            <button
+              class="ps__action-btn"
+              type="button"
+              :disabled="isChangingPassword || !canChangePassword"
               @click="handleChangePassword"
             >
               {{ isChangingPassword ? t("profileSettings.changingPassword") : t("profileSettings.changePassword") }}
-            </EbButton>
+            </button>
           </div>
         </section>
 
-        <section v-if="profile.role === 'ATHLETE'" class="profile-settings__panel">
-          <div class="profile-settings__panel-title">{{ t("profileSettings.connectCoach") }}</div>
-          <div class="profile-settings__request-row">
-            <label class="profile-settings__field" style="flex: 1">
+        <!-- Connect coach (athletes only) -->
+        <section v-if="profile.role === 'ATHLETE'" class="ps__section">
+          <div class="ps__section-label">{{ t("profileSettings.connectCoach") }}</div>
+          <div class="ps__inline-row">
+            <label class="ps__field" style="flex: 1">
               <span>{{ t("profileSettings.coachCodeLabel") }}</span>
               <input
                 v-model="coachCode"
-                class="profile-settings__mono-input"
+                class="ps__mono"
                 :placeholder="t('profileSettings.coachCodePlaceholder')"
                 :disabled="isRequestingCoach"
               />
             </label>
-            <EbButton
-              variant="secondary"
+            <button
+              class="ps__action-btn"
+              type="button"
               :disabled="isRequestingCoach || !coachCode.trim()"
               @click="handleRequestCoach"
             >
               {{ isRequestingCoach ? t("profileSettings.requestCoachSubmitting") : t("profileSettings.requestCoach") }}
-            </EbButton>
+            </button>
           </div>
         </section>
+      </div>
 
-        <div class="profile-settings__footer">
-          <EbButton variant="ghost" :disabled="isSaving" @click="emit('close')">{{ t("profileSettings.cancel") }}</EbButton>
-          <EbButton :disabled="isSaving" @click="save">{{ isSaving ? t("profileSettings.saving") : t("profileSettings.save") }}</EbButton>
-        </div>
+      <!-- Footer -->
+      <div class="ps__footer">
+        <button class="ps__lang-toggle" type="button" @click="toggleLanguage">
+          {{ locale === "cs" ? "EN" : "CS" }}
+        </button>
+        <button
+          class="ps__save-btn"
+          type="button"
+          :disabled="isSaving || !profile"
+          @click="save"
+        >
+          {{ isSaving ? t("profileSettings.saving") : t("profileSettings.save") }}
+        </button>
       </div>
     </div>
   </EbModal>
 </template>
 
 <style scoped>
-.profile-settings {
-  display: flex;
-  flex-direction: column;
-  max-height: min(88vh, 50rem);
+/* Override modal panel width to popup size */
+:deep(.eb-modal__panel) {
+  width: min(100%, 30rem);
 }
 
-.profile-settings__header {
+.ps {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 1.25rem 1.5rem 1rem;
+  flex-direction: column;
+  max-height: min(90vh, 44rem);
+}
+
+/* ── Header ──────────────────────────────────── */
+.ps__header {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  padding: 1rem 1.125rem;
+  border-bottom: 1px solid var(--eb-border);
+  flex-shrink: 0;
+}
+
+.ps__avatar {
+  display: inline-grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #1c1c20;
+  border: 1px solid #3f3f46;
+  color: var(--eb-lime, #c8ff00);
+  font-family: var(--eb-font-body, 'Nunito', sans-serif);
+  font-weight: 700;
+  font-size: 11px;
+  flex-shrink: 0;
+}
+
+.ps__header-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.ps__display-name {
+  font-family: var(--eb-font-body, 'Nunito', sans-serif);
+  font-weight: 700;
+  font-size: 0.875rem;
+  color: var(--eb-text, #fafafa);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ps__role-badge {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--eb-text-muted, #71717a);
+  letter-spacing: 0.04em;
+}
+
+.ps__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--eb-border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--eb-text-muted);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: color 150ms ease-out, border-color 150ms ease-out;
+}
+
+.ps__close:hover {
+  color: var(--eb-text);
+  border-color: #52525b;
+}
+
+/* ── State ───────────────────────────────────── */
+.ps__state {
+  padding: 2rem 1.25rem;
+  color: var(--eb-text-muted);
+  font-size: 0.875rem;
+}
+
+.ps__state--error {
+  color: var(--eb-danger, #f43f5e);
+}
+
+/* ── Body ────────────────────────────────────── */
+.ps__body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0;
+}
+
+/* ── Sections ────────────────────────────────── */
+.ps__section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  padding: 1rem 1.125rem;
   border-bottom: 1px solid var(--eb-border);
 }
 
-.profile-settings__eyebrow {
-  color: var(--eb-text-muted);
-  font-size: 0.6875rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.profile-settings__title {
-  margin: 0.45rem 0 0;
-  font-family: var(--eb-font-display);
-  font-size: 1.3rem;
-}
-
-.profile-settings__state {
-  padding: 2rem 1.5rem;
-  color: var(--eb-text-soft);
-  font-size: 0.875rem;
-}
-
-.profile-settings__state--error {
-  color: var(--eb-danger);
-}
-
-.profile-settings__body {
-  display: grid;
-  gap: 1rem;
-  padding: 1rem 1.5rem 1.5rem;
-  overflow-y: auto;
-}
-
-.profile-settings__panel {
-  display: grid;
-  gap: 0.85rem;
-  padding: 1rem;
-  border: 1px solid var(--eb-border);
-  border-radius: var(--eb-radius-md);
-  background: var(--eb-bg-elevated);
-}
-
-.profile-settings__panel-title {
-  color: var(--eb-text-muted);
-  font-size: 0.6875rem;
+.ps__section-label {
+  font-size: 0.625rem;
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.09em;
   text-transform: uppercase;
+  color: var(--eb-text-muted, #71717a);
+  margin-bottom: 0.125rem;
 }
 
-.profile-settings__grid {
+/* ── Fields ──────────────────────────────────── */
+.ps__two-col {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.85rem;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.625rem;
 }
 
-.profile-settings__field {
-  display: grid;
-  gap: 0.4rem;
+.ps__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
 }
 
-.profile-settings__field--wide {
-  grid-column: 1 / -1;
+.ps__field span {
+  font-size: 0.6875rem;
+  color: var(--eb-text-muted, #71717a);
 }
 
-.profile-settings__field span {
-  color: var(--eb-text-muted);
-  font-size: 0.75rem;
-}
-
-.profile-settings__field input {
+.ps__field input {
   width: 100%;
-  border: 1px solid var(--eb-border);
-  border-radius: var(--eb-radius-sm);
-  background: var(--eb-bg);
-  color: var(--eb-text);
-  padding: 0.75rem 0.85rem;
+  padding: 0.5rem 0.7rem;
+  border: 1px solid var(--eb-border, #27272a);
+  border-radius: var(--eb-radius-sm, 6px);
+  background: var(--eb-bg, #09090b);
+  color: var(--eb-text, #fafafa);
   font: inherit;
+  font-size: 0.8125rem;
+  transition: border-color 150ms ease-out;
 }
 
-.profile-settings__meta {
-  display: grid;
-  gap: 0.75rem;
+.ps__field input:focus {
+  outline: none;
+  border-color: rgba(200, 255, 0, 0.35);
 }
 
-.profile-settings__meta-row {
+.ps__field input:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.ps__mono {
+  font-family: var(--eb-font-mono, 'JetBrains Mono', monospace);
+  font-size: 0.8125rem;
+  letter-spacing: 0.03em;
+}
+
+/* ── Inline row (confirm + button / code + button) */
+.ps__inline-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.625rem;
+}
+
+.ps__action-btn {
+  flex-shrink: 0;
+  height: 34px;
+  padding: 0 0.875rem;
+  border: 1px solid #3f3f46;
+  border-radius: var(--eb-radius-sm, 6px);
+  background: transparent;
+  color: var(--eb-text-muted, #71717a);
+  font-family: var(--eb-font-body, 'Nunito', sans-serif);
+  font-weight: 700;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: border-color 150ms ease-out, color 150ms ease-out;
+}
+
+.ps__action-btn:hover:not(:disabled) {
+  border-color: #52525b;
+  color: var(--eb-text, #fafafa);
+}
+
+.ps__action-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* ── Footer ──────────────────────────────────── */
+.ps__footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
-  color: var(--eb-text-soft);
-  font-size: 0.875rem;
+  gap: 0.75rem;
+  padding: 0.875rem 1.125rem;
+  border-top: 1px solid var(--eb-border);
+  flex-shrink: 0;
 }
 
-.profile-settings__meta-row strong,
-.profile-settings__meta-row a {
-  color: var(--eb-text);
-  font-family: var(--eb-font-mono);
-  font-size: 0.8125rem;
-}
-
-.profile-settings__lang-toggle {
-  min-width: 3rem;
-  padding: 0.35rem 0.65rem;
-  border: 1px solid var(--eb-border);
+.ps__lang-toggle {
+  height: 28px;
+  padding: 0 0.75rem;
+  border: 1px solid #3f3f46;
   border-radius: 999px;
   background: transparent;
-  color: var(--eb-lime);
-  font-size: 0.6875rem;
+  color: var(--eb-lime, #c8ff00);
+  font-family: var(--eb-font-body, 'Nunito', sans-serif);
   font-weight: 700;
+  font-size: 0.6875rem;
   letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: border-color 150ms ease-out;
 }
 
-.profile-settings__panel-footer {
-  display: flex;
-  justify-content: flex-end;
+.ps__lang-toggle:hover {
+  border-color: rgba(200, 255, 0, 0.4);
 }
 
-.profile-settings__request-row {
-  display: flex;
-  align-items: flex-end;
-  gap: 0.75rem;
+.ps__save-btn {
+  height: 34px;
+  padding: 0 1.125rem;
+  border: 1px solid rgba(200, 255, 0, 0.4);
+  border-radius: var(--eb-radius-sm, 6px);
+  background: rgba(200, 255, 0, 0.08);
+  color: var(--eb-lime, #c8ff00);
+  font-family: var(--eb-font-body, 'Nunito', sans-serif);
+  font-weight: 700;
+  font-size: 0.8125rem;
+  cursor: pointer;
+  transition: background 150ms ease-out, border-color 150ms ease-out;
 }
 
-.profile-settings__mono-input {
-  width: 100%;
-  border: 1px solid var(--eb-border);
-  border-radius: var(--eb-radius-sm);
-  background: var(--eb-bg);
-  color: var(--eb-text);
-  font-family: var(--eb-font-mono);
-  font-size: var(--eb-type-mono-size);
-  letter-spacing: var(--eb-type-mono-tracking);
-  padding: 0.75rem 0.85rem;
+.ps__save-btn:hover:not(:disabled) {
+  background: rgba(200, 255, 0, 0.14);
+  border-color: rgba(200, 255, 0, 0.55);
 }
 
-.profile-settings__footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.75rem;
-  padding-top: 0.25rem;
+.ps__save-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
 }
 
-@media (max-width: 767px) {
-  .profile-settings__header,
-  .profile-settings__body {
-    padding-inline: 1rem;
-  }
-
-  .profile-settings__grid {
+@media (max-width: 540px) {
+  .ps__two-col {
     grid-template-columns: 1fr;
   }
 
-  .profile-settings__meta-row {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .profile-settings__footer {
-    flex-direction: column-reverse;
-  }
-
-  .profile-settings__request-row {
+  .ps__inline-row {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .ps__action-btn {
+    height: 38px;
   }
 }
 </style>
