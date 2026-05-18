@@ -9,7 +9,8 @@
     "dashboardOverview": "Dashboard overview",
     "plansAndFocus": "Plans and athlete focus",
     "athletesReady": "{count} athletes ready",
-    "switchToCoach": "Coach"
+    "switchToCoach": "Coach",
+    "myPlan": "Můj plán"
   },
   "notifications": {
     "label": "Notifikace",
@@ -260,7 +261,12 @@
     "save": "Uložit",
     "saving": "Ukládám...",
     "saveError": "Nepodařilo se uložit legendu.",
-    "loadError": "Nepodařilo se načíst legendu."
+    "loadError": "Nepodařilo se načíst legendu.",
+    "panelTitle": "Moje legenda",
+    "panelSubtitle": "Upravuje trenér",
+    "panelAthleteTitle": "Legenda — {name}",
+    "panelAthleteSubtitle": "Upravuje trenér · vidí sportovec",
+    "autoSave": "Změny se ukládají automaticky"
   },
   "invite": {
     "loading": "Načítám pozvánku...",
@@ -341,7 +347,8 @@
     "remove": "Odebrat..."
   },
   "sidebar": {
-    "athletesHeading": "Atleti"
+    "athletesHeading": "Atleti",
+    "manageAthletes": "Správa svěřenců"
   },
   "nav": {
     "home": "Domů",
@@ -492,6 +499,18 @@
     "typeTV": "tempo vytrvalost",
     "intervalsTitle": "Intervaly",
     "intervalsExample": "10 km base + 5 intervalů po 1 km Z"
+  },
+  "managePanel": {
+    "title": "Správa svěřenců",
+    "summary": "{total} celkem · {active} aktivní",
+    "athletes": "Svěřenci",
+    "invite": "Pozvat",
+    "requests": "Žádosti",
+    "autoSave": "Změny se ukládají automaticky",
+    "codeHint": "Sdílej tento kód s atlety. Kód zůstává stále stejný."
+  },
+  "coachToolbar": {
+    "legendBtn": "Legenda atleta"
   },
   "page": {
     "about": "O aplikaci",

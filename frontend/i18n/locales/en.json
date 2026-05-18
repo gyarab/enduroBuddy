@@ -9,7 +9,8 @@
     "dashboardOverview": "Dashboard overview",
     "plansAndFocus": "Plans and athlete focus",
     "athletesReady": "{count} athletes ready",
-    "switchToCoach": "Coach"
+    "switchToCoach": "Coach",
+    "myPlan": "My plan"
   },
   "notifications": {
     "label": "Notifications",
@@ -260,7 +261,12 @@
     "save": "Save",
     "saving": "Saving...",
     "saveError": "Could not save legend.",
-    "loadError": "Could not load legend."
+    "loadError": "Could not load legend.",
+    "panelTitle": "My legend",
+    "panelSubtitle": "Edited by coach",
+    "panelAthleteTitle": "Legend — {name}",
+    "panelAthleteSubtitle": "Edited by coach · seen by athlete",
+    "autoSave": "Changes are saved automatically"
   },
   "invite": {
     "loading": "Loading invite...",
@@ -341,7 +347,8 @@
     "remove": "Remove..."
   },
   "sidebar": {
-    "athletesHeading": "Athletes"
+    "athletesHeading": "Athletes",
+    "manageAthletes": "Manage athletes"
   },
   "nav": {
     "home": "Home",
@@ -492,6 +499,18 @@
     "typeTV": "tempo endurance",
     "intervalsTitle": "Intervals",
     "intervalsExample": "10 km base + 5 intervals of 1 km Z"
+  },
+  "managePanel": {
+    "title": "Manage athletes",
+    "summary": "{total} total · {active} active",
+    "athletes": "Athletes",
+    "invite": "Invite",
+    "requests": "Requests",
+    "autoSave": "Changes are saved automatically",
+    "codeHint": "Share this code with athletes. The code stays the same."
+  },
+  "coachToolbar": {
+    "legendBtn": "Athlete legend"
   },
   "page": {
     "about": "About",

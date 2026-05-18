@@ -8,6 +8,7 @@ export const useLegendStore = defineStore("legend", () => {
   const isLoading = ref(false);
   const isSaving = ref(false);
   const error = ref("");
+  const isPanelOpen = ref(false);
 
   async function load() {
     if (state.value !== null) return;
@@ -37,5 +38,5 @@ export const useLegendStore = defineStore("legend", () => {
     }
   }
 
-  return { state, isLoading, isSaving, error, load, save };
+  return { state, isLoading, isSaving, error, isPanelOpen, load, save };
 });
