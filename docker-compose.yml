@@ -77,14 +77,14 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=proxy"
-      # Jediná backend service sdílená všemi routery
+
       - "traefik.http.services.endurobuddy-nginx.loadbalancer.server.port=80"
-      # HTTPS — hlavní doména
+
       - "traefik.http.routers.endurobuddy.rule=Host(`endurobuddy.cz`)"
       - "traefik.http.routers.endurobuddy.entrypoints=websecure"
       - "traefik.http.routers.endurobuddy.tls.certresolver=letsencrypt"
       - "traefik.http.routers.endurobuddy.service=endurobuddy-nginx"
-      # HTTPS — www → root redirect
+
       - "traefik.http.routers.endurobuddy-www.rule=Host(`www.endurobuddy.cz`)"
       - "traefik.http.routers.endurobuddy-www.entrypoints=websecure"
       - "traefik.http.routers.endurobuddy-www.tls.certresolver=letsencrypt"
@@ -93,7 +93,7 @@ services:
       - "traefik.http.middlewares.www-to-root.redirectregex.regex=^https://www\\.endurobuddy\\.cz/(.*)"
       - "traefik.http.middlewares.www-to-root.redirectregex.replacement=https://endurobuddy.cz/$${1}"
       - "traefik.http.middlewares.www-to-root.redirectregex.permanent=true"
-      # HTTPS — app subdoména (přihlášená část)
+
       - "traefik.http.routers.endurobuddy-app.rule=Host(`app.endurobuddy.cz`)"
       - "traefik.http.routers.endurobuddy-app.entrypoints=websecure"
       - "traefik.http.routers.endurobuddy-app.tls.certresolver=letsencrypt"
