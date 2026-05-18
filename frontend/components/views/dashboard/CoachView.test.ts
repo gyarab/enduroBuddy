@@ -62,9 +62,16 @@ function mountCoachView() {
         RouterLink: { template: "<a><slot /></a>" },
         CoachSidebar: {
           template: "<div class='coach-sidebar-stub' />",
+          props: ["athletes", "isManageOpen"],
+          emits: ["select", "open-manage", "reorder", "toggle-hidden", "remove", "go-to-dashboard"],
         },
-        AthleteManageModal: {
-          template: "<div class='athlete-manage-modal-stub' />",
+        ManagePanel: {
+          template: "<div class='manage-panel-stub' />",
+          props: ["open", "athletes"],
+        },
+        LegendPanel: {
+          template: "<div class='legend-panel-stub' />",
+          props: ["open", "title", "subtitle", "athleteId", "editable"],
         },
         MonthSummaryBar: { template: "<div />" },
         WeekCard: { template: "<div />" },
@@ -94,7 +101,7 @@ describe("CoachView", () => {
     expect(store.loadDashboard).toHaveBeenCalledOnce();
   });
 
-  it("2. Manage athletes button is visible with no selected athlete", async () => {
+  it("2. workspace title is visible with no selected athlete", async () => {
     const store = useCoachStore();
     store.loadDashboard = vi.fn().mockResolvedValue(undefined);
     store.loadAthletes = vi.fn().mockResolvedValue(undefined);
@@ -102,8 +109,7 @@ describe("CoachView", () => {
 
     const wrapper = mountCoachView();
 
-    const manageButton = wrapper.findAll("button").find((btn) => btn.text().includes("Manage athletes"));
-    expect(manageButton).toBeTruthy();
+    expect(wrapper.html()).toContain("Coach workspace");
   });
 
   it("3. empty state card shown when no athlete selected", async () => {
@@ -130,33 +136,31 @@ describe("CoachView", () => {
     expect(wrapper.html()).toContain("Alice Runner");
   });
 
-  it("5. focus input and Save focus button call coachStore.saveFocus", async () => {
+  it("5. focus input calls coachStore.saveFocus on blur", async () => {
     const store = useCoachStore();
     store.dashboard = { ...dashboardPayload };
     store.saveFocus = vi.fn().mockResolvedValue(undefined);
     store.loadDashboard = vi.fn().mockResolvedValue(undefined);
 
     const wrapper = mountCoachView();
-    const input = wrapper.get("#coach-focus-input");
+    const input = wrapper.find(".coach-toolbar__focus-input");
+    expect(input.exists()).toBe(true);
     await input.setValue("Trail");
-
-    const saveButton = wrapper.findAll("button").find((btn) => btn.text().includes("Save focus"));
-    expect(saveButton).toBeDefined();
-    await saveButton!.trigger("click");
+    await input.trigger("blur");
 
     expect(store.saveFocus).toHaveBeenCalledWith("Trail");
   });
 
-  it("6. clicking Manage athletes button opens modal (calls loadAthletes)", async () => {
+  it("6. openManage() calls loadAthletes and opens manage panel", async () => {
     const store = useCoachStore();
     store.dashboard = { ...dashboardPayload };
     store.loadAthletes = vi.fn().mockResolvedValue(undefined);
     store.loadDashboard = vi.fn().mockResolvedValue(undefined);
 
     const wrapper = mountCoachView();
-    const manageButton = wrapper.findAll("button").find((btn) => btn.text().includes("Manage athletes"));
-    expect(manageButton).toBeTruthy();
-    await manageButton!.trigger("click");
+    const vm = wrapper.vm as any;
+    vm.openManage();
+    await wrapper.vm.$nextTick();
 
     expect(store.loadAthletes).toHaveBeenCalledOnce();
   });
