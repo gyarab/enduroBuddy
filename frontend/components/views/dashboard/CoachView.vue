@@ -382,6 +382,9 @@ async function handleAddMonth() {
   border-bottom: 1px solid #1e1e22;
   background: #111113;
   flex-shrink: 0;
+  position: sticky;
+  top: 52px;
+  z-index: 10;
 }
 
 .coach-toolbar__name {
