@@ -246,13 +246,16 @@ async function handleAddMonth() {
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
             </svg>
-            <input
-              v-model="focusDraft"
-              class="coach-toolbar__focus-input"
-              maxlength="10"
-              :placeholder="t('coachView.focus')"
-              @blur="saveFocus"
-            />
+            <div class="coach-toolbar__focus-sizer">
+              <span class="coach-toolbar__focus-mirror" aria-hidden="true">{{ focusDraft || t('coachView.focus') }}</span>
+              <input
+                v-model="focusDraft"
+                class="coach-toolbar__focus-input"
+                maxlength="10"
+                :placeholder="t('coachView.focus')"
+                @blur="saveFocus"
+              />
+            </div>
           </div>
         </template>
         <template v-else>
@@ -348,11 +351,15 @@ async function handleAddMonth() {
   grid-template-columns: 200px minmax(0, 1fr);
   gap: 0;
   min-height: calc(100vh - 52px);
-  overflow: hidden;
   background: var(--eb-surface);
+  align-items: start;
 }
 
 .coach-view__sidebar {
+  position: sticky;
+  top: 52px;
+  height: calc(100vh - 52px);
+  overflow-y: auto;
   border-right: 1px solid var(--eb-border);
 }
 
@@ -404,22 +411,38 @@ async function handleAddMonth() {
   color: var(--eb-blue, #38bdf8);
 }
 
-.coach-toolbar__focus-input {
-  width: 6rem;
-  border: 0;
-  background: transparent;
-  color: var(--eb-blue, #38bdf8);
+.coach-toolbar__focus-sizer {
+  display: inline-grid;
+}
+
+.coach-toolbar__focus-sizer > * {
+  grid-area: 1 / 1;
   font-family: var(--eb-font-body, 'Nunito', sans-serif);
   font-size: 0.6875rem;
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
+}
+
+.coach-toolbar__focus-mirror {
+  visibility: hidden;
+  white-space: pre;
+  padding: 0;
+  border: 0;
+  min-width: 2ch;
+}
+
+.coach-toolbar__focus-input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: var(--eb-blue, #38bdf8);
   outline: none;
 }
 
 .coach-toolbar__focus-input::placeholder {
   color: rgba(56, 189, 248, 0.4);
-  text-transform: uppercase;
 }
 
 .coach-toolbar__workspace {
