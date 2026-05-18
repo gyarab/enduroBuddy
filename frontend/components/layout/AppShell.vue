@@ -65,17 +65,12 @@ const shellClass = computed(() => `app-shell--${props.variant}`);
 
 /* Coach view fills the full width — no side padding, no max-width centering */
 .app-shell--coach .app-shell__main {
-  padding: 0 0 calc(44px + 2rem);
+  padding: 0;
+  background: var(--eb-surface);
 }
 
 .app-shell--coach .app-shell__content {
   max-width: none;
   margin: 0;
-}
-
-@media (min-width: 768px) {
-  .app-shell--coach .app-shell__main {
-    padding: 0 0 calc(44px + 2.5rem);
-  }
 }
 </style>

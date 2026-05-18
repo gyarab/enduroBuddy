@@ -351,8 +351,9 @@ async function handleAddMonth() {
   grid-template-columns: 200px minmax(0, 1fr);
   gap: 0;
   min-height: calc(100vh - 52px);
-  background: var(--eb-surface);
+  background: linear-gradient(to right, #111113 200px, var(--eb-surface) 200px);
   align-items: start;
+  padding-bottom: 44px;
 }
 
 .coach-view__sidebar {
