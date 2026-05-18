@@ -200,10 +200,6 @@ function handleMonthSelect(monthValue: string) {
   if (athlete) void coachStore.loadDashboard(athlete.id, monthValue);
 }
 
-function handleGoToDashboard() {
-  void router.push("/dashboard");
-}
-
 async function handleAddMonth() {
   if (!coachStore.selectedAthlete) return;
   isAddingMonth.value = true;
@@ -231,7 +227,6 @@ async function handleAddMonth() {
         @reorder="handleSidebarReorder"
         @toggle-hidden="handleToggleHidden"
         @remove="handleSidebarRemove"
-        @go-to-dashboard="handleGoToDashboard"
       />
     </aside>
 
@@ -332,7 +327,6 @@ async function handleAddMonth() {
     @close="isManageOpen = false"
     @toggle-hidden="handleToggleHidden"
     @athlete-removed="(id) => void coachStore.loadAthletes()"
-    @go-to-dashboard="handleGoToDashboard"
   />
 
   <LegendPanel

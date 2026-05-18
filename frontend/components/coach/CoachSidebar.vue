@@ -16,7 +16,6 @@ const emit = defineEmits<{
   reorder: [athleteIds: number[]];
   toggleHidden: [athleteId: number, hidden: boolean];
   remove: [athleteId: number];
-  goToDashboard: [];
 }>();
 
 const { t } = useI18n();
