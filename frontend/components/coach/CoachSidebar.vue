@@ -138,7 +138,6 @@ function onCtxSelect(action: string) {
         @dragend="onDragEnd"
         @keydown="onKeydown($event, index)"
       >
-        <span class="coach-sidebar__drag-handle" aria-hidden="true">⠿</span>
         <span class="coach-sidebar__dot" :class="{ 'coach-sidebar__dot--active': athlete.selected }" />
         <span class="coach-sidebar__name" :title="athlete.name">{{ athlete.name }}</span>
         <span v-if="athlete.focus" class="coach-sidebar__focus">{{ athlete.focus }}</span>
@@ -199,7 +198,7 @@ function onCtxSelect(action: string) {
 
 .coach-sidebar__item {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 10px;
   width: 100%;
   padding: 10px 16px;
@@ -247,19 +246,6 @@ function onCtxSelect(action: string) {
   opacity: 0.4;
 }
 
-.coach-sidebar__drag-handle {
-  font-size: 0.75rem;
-  color: #3f3f46;
-  opacity: 0;
-  transition: opacity 150ms;
-  cursor: grab;
-  flex-shrink: 0;
-}
-
-.coach-sidebar__item:hover .coach-sidebar__drag-handle {
-  opacity: 1;
-}
-
 /* Dot — outlined by default, filled when active */
 .coach-sidebar__dot {
   width: 7px;
@@ -278,8 +264,9 @@ function onCtxSelect(action: string) {
 .coach-sidebar__name {
   flex: 1;
   min-width: 0;
-  word-break: break-word;
-  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .coach-sidebar__focus {
