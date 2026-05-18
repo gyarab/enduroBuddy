@@ -6,7 +6,6 @@ import { logoutFromSession } from "@/utils/api/auth";
 
 const emit = defineEmits<{
   openSettings: [];
-  openGarmin: [];
 }>();
 
 const authStore = useAuthStore();
@@ -41,7 +40,6 @@ async function handleLogout() {
   <div class="profile-dropdown">
     <div class="profile-dropdown__name">{{ displayName }}</div>
     <button class="profile-dropdown__item" type="button" @click="emit('openSettings')">{{ t("profileDropdown.profile") }}</button>
-    <button class="profile-dropdown__item" type="button" @click="emit('openGarmin')">{{ t("profileDropdown.garmin") }}</button>
     <div class="profile-dropdown__divider" />
     <button class="profile-dropdown__item profile-dropdown__item--danger" type="button" :disabled="isLoggingOut" @click="handleLogout">{{ t("profileDropdown.logout") }}</button>
   </div>

@@ -132,7 +132,7 @@ onBeforeUnmount(() => document.removeEventListener("click", handleDocumentClick)
         <button class="nav-avatar" type="button" @click.stop="isProfileOpen = !isProfileOpen">
           {{ authStore.user?.initials || "?" }}
         </button>
-        <ProfileDropdown v-if="isProfileOpen" @open-settings="openProfileSettings" @open-garmin="openGarmin" />
+        <ProfileDropdown v-if="isProfileOpen" @open-settings="openProfileSettings" />
       </div>
     </div>
   </header>
