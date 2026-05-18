@@ -252,6 +252,7 @@ async function handleAddMonth() {
                 v-model="focusDraft"
                 class="coach-toolbar__focus-input"
                 maxlength="10"
+                size="1"
                 :placeholder="t('coachView.focus')"
                 @blur="saveFocus"
               />
@@ -436,6 +437,7 @@ async function handleAddMonth() {
 .coach-toolbar__focus-input {
   width: 100%;
   min-width: 0;
+  padding: 0;
   border: 0;
   background: transparent;
   color: var(--eb-blue, #38bdf8);
