@@ -26,9 +26,13 @@ def legend(request):
         try:
             athlete_id = int(athlete_id_raw)
             target_user = User.objects.get(pk=athlete_id)
-            profile = target_user.profile
         except (ValueError, User.DoesNotExist):
             return json_error("Athlete not found.", status=404)
+        try:
+            profile = target_user.profile
+        except Exception:
+            from accounts.models import Profile as _Profile
+            profile, _ = _Profile.objects.get_or_create(user=target_user)
         if not _coach_can_access_athlete(coach_user=request.user, athlete_id=athlete_id):
             return json_error("Athlete not found.", status=404)
 
