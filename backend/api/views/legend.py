@@ -9,7 +9,7 @@ from django.views.decorators.http import require_http_methods
 
 from dashboard.api import json_error
 from dashboard.texts import ApiText
-from dashboard.views_shared import sanitize_legend_state
+from dashboard.views_shared import _coach_can_access_athlete, sanitize_legend_state
 
 User = get_user_model()
 
@@ -28,6 +28,8 @@ def legend(request):
             target_user = User.objects.get(pk=athlete_id)
             profile = target_user.profile
         except (ValueError, User.DoesNotExist):
+            return json_error("Athlete not found.", status=404)
+        if not _coach_can_access_athlete(coach_user=request.user, athlete_id=athlete_id):
             return json_error("Athlete not found.", status=404)
 
     if request.method == "GET":

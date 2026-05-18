@@ -1,6 +1,8 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 
+from accounts.models import CoachAthlete
+
 User = get_user_model()
 
 
@@ -16,6 +18,7 @@ class LegendAthleteIdTest(TestCase):
         )
         self.athlete.profile.legend_state = {"zones": {"1": {"from": "100", "to": "120"}}}
         self.athlete.profile.save()
+        CoachAthlete.objects.create(coach=self.coach, athlete=self.athlete)
 
     def test_coach_can_get_athlete_legend(self):
         self.client.force_login(self.coach)
@@ -37,4 +40,16 @@ class LegendAthleteIdTest(TestCase):
     def test_invalid_athlete_id_returns_404(self):
         self.client.force_login(self.coach)
         resp = self.client.get("/api/v1/legend/?athlete_id=999999")
+        self.assertEqual(resp.status_code, 404)
+
+    def test_coach_cannot_get_unmanaged_athlete_legend(self):
+        """A coach who does not manage an athlete must not be able to read their legend."""
+        other_athlete = User.objects.create_user(
+            username="other@test.com", password="pass", email="other@test.com"
+        )
+        other_athlete.profile.legend_state = {"zones": {"1": {"from": "140", "to": "160"}}}
+        other_athlete.profile.save()
+        # No CoachAthlete link between self.coach and other_athlete
+        self.client.force_login(self.coach)
+        resp = self.client.get(f"/api/v1/legend/?athlete_id={other_athlete.id}")
         self.assertEqual(resp.status_code, 404)
