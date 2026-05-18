@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, computed } from "vue";
+import { ref, watch, computed, onUnmounted } from "vue";
 
 import type { CoachAthlete, CoachJoinRequest } from "~/utils/api/coach";
 import {
@@ -25,6 +25,9 @@ const emit = defineEmits<{
 
 const { t } = useI18n();
 const toastStore = useToastStore();
+
+let _unmounted = false;
+onUnmounted(() => { _unmounted = true; });
 
 type Section = "athletes" | "invite" | "requests";
 const activeSection = ref<Section>("athletes");
@@ -57,16 +60,20 @@ watch(activeSection, async (section) => {
   if (section === "invite" && !coachCode.value) {
     try {
       const data = await fetchCoachCode();
+      if (_unmounted) return;
       coachCode.value = data.coach_join_code;
     } catch {
+      if (_unmounted) return;
       toastStore.push(t("coachCode.loadError"), "danger");
     }
   }
   if (section === "requests") {
     try {
       const data = await fetchJoinRequests();
+      if (_unmounted) return;
       joinRequests.value = data.requests;
     } catch {
+      if (_unmounted) return;
       toastStore.push("Could not load join requests.", "danger");
     }
   }
@@ -80,15 +87,17 @@ function startRemove(athleteId: number, athleteName: string) {
 
 async function confirmRemove() {
   const athleteId = removeAthleteId.value;
-  if (!athleteId) return;
+  if (athleteId === null) return;
   isRemoving.value = true;
   try {
     await removeAthlete(athleteId, removeConfirmName.value);
+    if (_unmounted) return;
     emit("athleteRemoved", athleteId);
     removeAthleteId.value = null;
     removeConfirmName.value = "";
     toastStore.push(t("removeAthlete.success"), "success");
   } catch {
+    if (_unmounted) return;
     toastStore.push(t("removeAthlete.error"), "danger");
   } finally {
     isRemoving.value = false;
@@ -98,8 +107,10 @@ async function confirmRemove() {
 async function copyCode() {
   try {
     await navigator.clipboard.writeText(coachCode.value);
+    if (_unmounted) return;
     toastStore.push(t("coachCode.copied"), "success");
   } catch {
+    if (_unmounted) return;
     toastStore.push(t("coachCode.copyError"), "danger");
   }
 }
@@ -108,9 +119,11 @@ async function approve(requestId: number) {
   processingRequestId.value = requestId;
   try {
     await approveJoinRequest(requestId);
+    if (_unmounted) return;
     joinRequests.value = joinRequests.value.filter((r) => r.id !== requestId);
     toastStore.push(t("joinRequests.approve"), "success");
   } catch {
+    if (_unmounted) return;
     toastStore.push(t("joinRequests.approveError"), "danger");
   } finally {
     processingRequestId.value = null;
@@ -121,9 +134,11 @@ async function reject(requestId: number) {
   processingRequestId.value = requestId;
   try {
     await rejectJoinRequest(requestId);
+    if (_unmounted) return;
     joinRequests.value = joinRequests.value.filter((r) => r.id !== requestId);
     toastStore.push(t("joinRequests.reject"), "success");
   } catch {
+    if (_unmounted) return;
     toastStore.push(t("joinRequests.rejectError"), "danger");
   } finally {
     processingRequestId.value = null;

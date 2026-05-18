@@ -1,10 +1,10 @@
-import { apiFetch } from "~/utils/apiFetch"
+﻿import { apiFetch } from "~/utils/apiFetch"
 import type { DashboardPayload, PlannedTrainingDraft } from "~/utils/api/training"
 
 export type CoachAthlete = {
   id: number
   name: string
-  focus: string
+  focus: string | null
   hidden: boolean
   sort_order: number
   selected: boolean

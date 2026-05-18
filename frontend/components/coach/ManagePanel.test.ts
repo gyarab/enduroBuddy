@@ -62,4 +62,42 @@ describe("ManagePanel", () => {
     await wrapper.find(".manage-panel__close").trigger("click");
     expect(wrapper.emitted("close")).toHaveLength(1);
   });
+
+  it("disables remove confirm button when typed name does not match athlete name", async () => {
+    const wrapper = mount(ManagePanel, {
+      props: { open: true, athletes },
+    });
+    // Click the remove button on the first athlete (Jan Novák)
+    const removeBtn = wrapper
+      .findAll(".manage-panel__icon-btn--danger")
+      .at(0);
+    await removeBtn!.trigger("click");
+    // Confirm dialog appears — confirm button should be disabled with empty input
+    const confirmBtn = wrapper.find(".manage-panel__btn--danger");
+    expect(confirmBtn.attributes("disabled")).toBeDefined();
+    // Type wrong name
+    const input = wrapper.find(".manage-panel__remove-input");
+    await input.setValue("Wrong Name");
+    expect(wrapper.find(".manage-panel__btn--danger").attributes("disabled")).toBeDefined();
+    // Type correct name
+    await input.setValue("Jan Novák");
+    expect(wrapper.find(".manage-panel__btn--danger").attributes("disabled")).toBeUndefined();
+  });
+
+  it("emits athleteRemoved after confirming remove with correct name", async () => {
+    const wrapper = mount(ManagePanel, {
+      props: { open: true, athletes },
+    });
+    const removeBtn = wrapper.findAll(".manage-panel__icon-btn--danger").at(0);
+    await removeBtn!.trigger("click");
+    const input = wrapper.find(".manage-panel__remove-input");
+    await input.setValue("Jan Novák");
+    const confirmBtn = wrapper.find(".manage-panel__btn--danger");
+    await confirmBtn.trigger("click");
+    // Wait for async removeAthlete mock to resolve
+    await new Promise((r) => setTimeout(r, 0));
+    await wrapper.vm.$nextTick();
+    expect(wrapper.emitted("athleteRemoved")).toBeTruthy();
+    expect(wrapper.emitted("athleteRemoved")![0]).toEqual([1]);
+  });
 });
