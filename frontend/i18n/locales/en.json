@@ -343,6 +343,7 @@
   },
   "athleteCtx": {
     "goToDashboard": "Athlete dashboard",
+    "switchToDashboard": "Go to plan",
     "hide": "Hide athlete",
     "show": "Show athlete",
     "remove": "Remove..."

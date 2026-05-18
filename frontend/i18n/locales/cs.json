@@ -343,6 +343,7 @@
   },
   "athleteCtx": {
     "goToDashboard": "Athlete dashboard",
+    "switchToDashboard": "Přejít na plán",
     "hide": "Skrýt atletku",
     "show": "Zobrazit atletku",
     "remove": "Odebrat..."

@@ -33,11 +33,25 @@ const coachCode = ref("");
 const joinRequests = ref<CoachJoinRequest[]>([]);
 const processingRequestId = ref<number | null>(null);
 const removeAthleteId = ref<number | null>(null);
+const removeAthleteName = ref("");
 const removeConfirmName = ref("");
 const isRemoving = ref(false);
 
 const visibleCount = computed(() => props.athletes.filter((a) => !a.hidden).length);
 const totalCount = computed(() => props.athletes.length);
+
+watch(
+  () => props.open,
+  async (open) => {
+    if (!open) return;
+    try {
+      const data = await fetchJoinRequests();
+      joinRequests.value = data.requests;
+    } catch {
+      // silently ignore — badge simply won't show
+    }
+  }
+);
 
 watch(activeSection, async (section) => {
   if (section === "invite" && !coachCode.value) {
@@ -58,8 +72,9 @@ watch(activeSection, async (section) => {
   }
 });
 
-function startRemove(athleteId: number) {
+function startRemove(athleteId: number, athleteName: string) {
   removeAthleteId.value = athleteId;
+  removeAthleteName.value = athleteName;
   removeConfirmName.value = "";
 }
 
@@ -207,10 +222,21 @@ async function reject(requestId: number) {
                   </svg>
                 </button>
                 <button
+                  class="manage-panel__icon-btn"
+                  type="button"
+                  :title="t('athleteCtx.switchToDashboard')"
+                  @click="emit('goToDashboard')"
+                >
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M8 3 4 7l4 4"/><path d="M4 7h16"/>
+                    <path d="M16 21l4-4-4-4"/><path d="M20 17H4"/>
+                  </svg>
+                </button>
+                <button
                   class="manage-panel__icon-btn manage-panel__icon-btn--danger"
                   type="button"
                   :title="t('removeAthlete.button')"
-                  @click="startRemove(athlete.id)"
+                  @click="startRemove(athlete.id, athlete.name)"
                 >
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
                     <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/>
@@ -232,7 +258,7 @@ async function reject(requestId: number) {
                   <button class="manage-panel__btn manage-panel__btn--ghost" type="button" :disabled="isRemoving" @click="removeAthleteId = null">
                     {{ t("coachManage.cancel") }}
                   </button>
-                  <button class="manage-panel__btn manage-panel__btn--danger" type="button" :disabled="isRemoving" @click="confirmRemove">
+                  <button class="manage-panel__btn manage-panel__btn--danger" type="button" :disabled="isRemoving || removeConfirmName !== removeAthleteName" @click="confirmRemove">
                     {{ isRemoving ? t("removeAthlete.confirming") : t("removeAthlete.confirm") }}
                   </button>
                 </div>
