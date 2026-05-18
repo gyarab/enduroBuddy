@@ -220,6 +220,26 @@ Spec: `docs/superpowers/specs/2026-04-18-nuxt-migration-design.md`
 
 ## Aktivní plány a změny
 
+### 2026-05-18 — Dashboard layout redesign ✅ KOMPLETNÍ (mergnuto do main)
+
+**Spec:** `docs/superpowers/specs/2026-05-18-dashboard-layout-redesign.md`
+**Plán:** `docs/superpowers/plans/2026-05-18-dashboard-layout-redesign.md`
+
+**Co bylo implementováno:**
+- `TopNav.vue`: logo vlevo, uprostřed jméno uživatele + měsíc/rok, vpravo tlačítka Legend + Coach + Profile; odstraněn notification bell (zůstal jako Nuxt default placeholder); `ProfileDropdown` zjednodušen — odstraněno tlačítko Garmin
+- `ProfileSettingsModal.vue`: kompletní přepis — kompaktní popup s levým sidebar nav (Profile / Security / Coach), fixní výška `min(88vh, 28rem)`, CSS grid `9.5rem 1fr`, tmavý sidebar `#111113`; odstraněno pole Email (jen pro čtení, bez funkce)
+- `GarminImportModal.vue`: kompletní přepis ve stejném designovém duchu — zelený tón `#7ecf7e`, sidebar nav Garmin/FIT, styled file input pro FIT upload, footer pro status/error
+- `LegendPanel.vue`: nová komponenta nahrazující `LegendModal.vue` — slide-in panel, pencil button pro přepnutí do edit módu (read-only by default), `isEditing` state oddělený od `editable` prop
+- `ManagePanel.vue`: nová komponenta nahrazující `AthleteManageModal.vue` — odstraněno tlačítko "Zpět na dashboard" (nedávalo logický smysl)
+- `CoachSidebar.vue`: odstraněn emit `goToDashboard`
+- `CoachView.vue`: integrován nový `ManagePanel`, `LegendPanel` místo `LegendModal`; odstraněn `handleGoToDashboard`
+- `AthleteView.vue`: integrován `LegendPanel` místo `LegendModal`
+- Text barvy: funkční UI elementy (section labels, field labels, nav items, copy text) upgradovány z `--eb-text-muted` (`#71717a`) na `--eb-text-soft` (`#a1a1aa`) napříč ProfileSettingsModal, GarminImportModal a LegendPanel
+- Backend: nový endpoint `GET/PUT /api/v1/legend/` s `LegendAPIView`, testy v `test_legend_api.py`
+- Testy: 175 frontend testů zelených, backend OK
+
+---
+
 ### 2026-05-17 — Email redesign: Auth Card Match ✅ KOMPLETNÍ
 
 **Spec:** `docs/superpowers/specs/2026-05-17-email-redesign-design.md`
