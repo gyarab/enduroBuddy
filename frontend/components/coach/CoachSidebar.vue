@@ -177,7 +177,6 @@ function onCtxSelect(action: string) {
   flex-direction: column;
   height: 100%;
   background: #111113;
-  overflow-y: auto;
 }
 
 .coach-sidebar__header {
@@ -194,6 +193,8 @@ function onCtxSelect(action: string) {
 .coach-sidebar__list {
   display: flex;
   flex-direction: column;
+  flex: 1;
+  overflow-y: auto;
 }
 
 .coach-sidebar__item {
