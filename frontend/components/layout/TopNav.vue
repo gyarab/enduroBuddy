@@ -29,7 +29,7 @@ const monthLabel = computed(() => {
   return trainingStore.selectedMonth?.label ?? "";
 });
 
-const showSync = computed(() => !!authStore.user?.capabilities?.garmin_connect_enabled);
+const showSync = computed(() => props.variant === "athlete" && !!authStore.user?.capabilities?.garmin_connect_enabled);
 const showCoachBtn = computed(() => authStore.isCoach && props.variant === "athlete");
 const showLegendBtn = computed(() => props.variant === "athlete");
 const showMyPlanBtn = computed(() => props.variant === "coach");
