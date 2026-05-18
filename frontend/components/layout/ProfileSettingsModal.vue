@@ -35,6 +35,9 @@ const isChangingPassword = ref(false);
 const coachCode = ref("");
 const isRequestingCoach = ref(false);
 
+type Section = "profile" | "security" | "coach";
+const activeSection = ref<Section>("profile");
+
 const roleLabel = computed(() => {
   if (profile.value?.role === "COACH") return t("profileSettings.roleCoach");
   return t("profileSettings.roleAthlete");
@@ -44,11 +47,14 @@ const canChangePassword = computed(
   () => !!(currentPassword.value && newPassword.value && confirmPassword.value),
 );
 
+const showCoachSection = computed(() => profile.value?.role === "ATHLETE");
+
 watch(
   () => props.open,
   async (open) => {
     if (!open) {
       errorMessage.value = "";
+      activeSection.value = "profile";
       return;
     }
     isLoading.value = true;
@@ -130,6 +136,7 @@ async function handleRequestCoach() {
 <template>
   <EbModal :open="open">
     <div class="ps">
+
       <!-- Header -->
       <div class="ps__header">
         <div class="ps__avatar">{{ authStore.user?.initials || "?" }}</div>
@@ -146,15 +153,57 @@ async function handleRequestCoach() {
         </button>
       </div>
 
-      <!-- Loading / Error -->
+      <!-- Loading / error (no sidebar yet) -->
       <div v-if="isLoading" class="ps__state">{{ t("profileSettings.loading") }}</div>
       <div v-else-if="errorMessage" class="ps__state ps__state--error">{{ errorMessage }}</div>
 
-      <div v-else-if="profile" class="ps__body">
-        <!-- Profile -->
-        <section class="ps__section">
-          <div class="ps__section-label">{{ t("profileSettings.identity") }}</div>
-          <div class="ps__two-col">
+      <!-- Two-column body -->
+      <div v-else-if="profile" class="ps__layout">
+
+        <!-- Left nav -->
+        <nav class="ps__nav">
+          <button
+            class="ps__nav-item"
+            :class="{ 'ps__nav-item--active': activeSection === 'profile' }"
+            type="button"
+            @click="activeSection = 'profile'"
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+            </svg>
+            {{ t("profileSettings.identity") }}
+          </button>
+          <button
+            class="ps__nav-item"
+            :class="{ 'ps__nav-item--active': activeSection === 'security' }"
+            type="button"
+            @click="activeSection = 'security'"
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+            {{ t("profileSettings.security") }}
+          </button>
+          <button
+            v-if="showCoachSection"
+            class="ps__nav-item"
+            :class="{ 'ps__nav-item--active': activeSection === 'coach' }"
+            type="button"
+            @click="activeSection = 'coach'"
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+            {{ t("profileSettings.connectCoach") }}
+          </button>
+        </nav>
+
+        <!-- Right content -->
+        <div class="ps__content">
+
+          <!-- Profile section -->
+          <section v-if="activeSection === 'profile'" class="ps__section">
+            <div class="ps__section-label">{{ t("profileSettings.identity") }}</div>
             <label class="ps__field">
               <span>{{ t("profileSettings.firstName") }}</span>
               <input v-model="firstName" :disabled="isSaving" />
@@ -163,17 +212,11 @@ async function handleRequestCoach() {
               <span>{{ t("profileSettings.lastName") }}</span>
               <input v-model="lastName" :disabled="isSaving" />
             </label>
-          </div>
-          <label class="ps__field">
-            <span>{{ t("profileSettings.email") }}</span>
-            <input :value="profile.email" disabled />
-          </label>
-        </section>
+          </section>
 
-        <!-- Password -->
-        <section class="ps__section">
-          <div class="ps__section-label">{{ t("profileSettings.security") }}</div>
-          <div class="ps__two-col">
+          <!-- Security section -->
+          <section v-else-if="activeSection === 'security'" class="ps__section">
+            <div class="ps__section-label">{{ t("profileSettings.security") }}</div>
             <label class="ps__field">
               <span>{{ t("profileSettings.currentPassword") }}</span>
               <input v-model="currentPassword" type="password" :disabled="isChangingPassword" />
@@ -182,28 +225,26 @@ async function handleRequestCoach() {
               <span>{{ t("profileSettings.newPassword") }}</span>
               <input v-model="newPassword" type="password" :disabled="isChangingPassword" />
             </label>
-          </div>
-          <div class="ps__inline-row">
-            <label class="ps__field" style="flex: 1">
+            <label class="ps__field">
               <span>{{ t("profileSettings.confirmPassword") }}</span>
               <input v-model="confirmPassword" type="password" :disabled="isChangingPassword" />
             </label>
-            <button
-              class="ps__action-btn"
-              type="button"
-              :disabled="isChangingPassword || !canChangePassword"
-              @click="handleChangePassword"
-            >
-              {{ isChangingPassword ? t("profileSettings.changingPassword") : t("profileSettings.changePassword") }}
-            </button>
-          </div>
-        </section>
+            <div class="ps__section-footer">
+              <button
+                class="ps__primary-btn"
+                type="button"
+                :disabled="isChangingPassword || !canChangePassword"
+                @click="handleChangePassword"
+              >
+                {{ isChangingPassword ? t("profileSettings.changingPassword") : t("profileSettings.changePassword") }}
+              </button>
+            </div>
+          </section>
 
-        <!-- Connect coach (athletes only) -->
-        <section v-if="profile.role === 'ATHLETE'" class="ps__section">
-          <div class="ps__section-label">{{ t("profileSettings.connectCoach") }}</div>
-          <div class="ps__inline-row">
-            <label class="ps__field" style="flex: 1">
+          <!-- Coach section -->
+          <section v-else-if="activeSection === 'coach'" class="ps__section">
+            <div class="ps__section-label">{{ t("profileSettings.connectCoach") }}</div>
+            <label class="ps__field">
               <span>{{ t("profileSettings.coachCodeLabel") }}</span>
               <input
                 v-model="coachCode"
@@ -212,24 +253,28 @@ async function handleRequestCoach() {
                 :disabled="isRequestingCoach"
               />
             </label>
-            <button
-              class="ps__action-btn"
-              type="button"
-              :disabled="isRequestingCoach || !coachCode.trim()"
-              @click="handleRequestCoach"
-            >
-              {{ isRequestingCoach ? t("profileSettings.requestCoachSubmitting") : t("profileSettings.requestCoach") }}
-            </button>
-          </div>
-        </section>
+            <div class="ps__section-footer">
+              <button
+                class="ps__primary-btn"
+                type="button"
+                :disabled="isRequestingCoach || !coachCode.trim()"
+                @click="handleRequestCoach"
+              >
+                {{ isRequestingCoach ? t("profileSettings.requestCoachSubmitting") : t("profileSettings.requestCoach") }}
+              </button>
+            </div>
+          </section>
+
+        </div>
       </div>
 
       <!-- Footer -->
-      <div class="ps__footer">
+      <div v-if="!isLoading && !errorMessage" class="ps__footer">
         <button class="ps__lang-toggle" type="button" @click="toggleLanguage">
           {{ locale === "cs" ? "EN" : "CS" }}
         </button>
         <button
+          v-if="activeSection === 'profile'"
           class="ps__save-btn"
           type="button"
           :disabled="isSaving || !profile"
@@ -238,28 +283,28 @@ async function handleRequestCoach() {
           {{ isSaving ? t("profileSettings.saving") : t("profileSettings.save") }}
         </button>
       </div>
+
     </div>
   </EbModal>
 </template>
 
 <style scoped>
-/* Override modal panel width to popup size */
 :deep(.eb-modal__panel) {
-  width: min(100%, 30rem);
+  width: min(100%, 34rem);
 }
 
 .ps {
   display: flex;
   flex-direction: column;
-  max-height: min(90vh, 44rem);
+  max-height: min(90vh, 42rem);
 }
 
-/* ── Header ──────────────────────────────────── */
+/* ── Header ────────────────────────────────── */
 .ps__header {
   display: flex;
   align-items: center;
   gap: 0.875rem;
-  padding: 1rem 1.125rem;
+  padding: 0.875rem 1rem;
   border-bottom: 1px solid var(--eb-border);
   flex-shrink: 0;
 }
@@ -267,8 +312,8 @@ async function handleRequestCoach() {
 .ps__avatar {
   display: inline-grid;
   place-items: center;
-  width: 36px;
-  height: 36px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
   background: #1c1c20;
   border: 1px solid #3f3f46;
@@ -280,11 +325,11 @@ async function handleRequestCoach() {
 }
 
 .ps__header-info {
+  flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 2px;
-  flex: 1;
-  min-width: 0;
 }
 
 .ps__display-name {
@@ -301,7 +346,6 @@ async function handleRequestCoach() {
   font-size: 0.6875rem;
   font-weight: 600;
   color: var(--eb-text-muted, #71717a);
-  letter-spacing: 0.04em;
 }
 
 .ps__close {
@@ -316,7 +360,7 @@ async function handleRequestCoach() {
   color: var(--eb-text-muted);
   cursor: pointer;
   flex-shrink: 0;
-  transition: color 150ms ease-out, border-color 150ms ease-out;
+  transition: color 150ms, border-color 150ms;
 }
 
 .ps__close:hover {
@@ -324,7 +368,7 @@ async function handleRequestCoach() {
   border-color: #52525b;
 }
 
-/* ── State ───────────────────────────────────── */
+/* ── State ─────────────────────────────────── */
 .ps__state {
   padding: 2rem 1.25rem;
   color: var(--eb-text-muted);
@@ -335,20 +379,68 @@ async function handleRequestCoach() {
   color: var(--eb-danger, #f43f5e);
 }
 
-/* ── Body ────────────────────────────────────── */
-.ps__body {
+/* ── Two-column layout ─────────────────────── */
+.ps__layout {
+  display: grid;
+  grid-template-columns: 9.5rem 1fr;
   flex: 1;
-  overflow-y: auto;
-  padding: 0;
+  overflow: hidden;
+  min-height: 0;
 }
 
-/* ── Sections ────────────────────────────────── */
+/* ── Left nav ──────────────────────────────── */
+.ps__nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0.75rem 0.625rem;
+  border-right: 1px solid var(--eb-border);
+  background: #111113;
+  flex-shrink: 0;
+}
+
+.ps__nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.5rem 0.625rem;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--eb-text-muted, #71717a);
+  font-family: var(--eb-font-body, 'Nunito', sans-serif);
+  font-weight: 600;
+  font-size: 0.8125rem;
+  text-align: left;
+  cursor: pointer;
+  transition: background 150ms, color 150ms;
+}
+
+.ps__nav-item:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: #a1a1aa;
+}
+
+.ps__nav-item--active {
+  background: rgba(200, 255, 0, 0.07);
+  color: var(--eb-lime, #c8ff00);
+}
+
+.ps__nav-item--active svg {
+  color: var(--eb-lime, #c8ff00);
+}
+
+/* ── Right content ─────────────────────────── */
+.ps__content {
+  overflow-y: auto;
+  padding: 1rem;
+}
+
 .ps__section {
   display: flex;
   flex-direction: column;
-  gap: 0.625rem;
-  padding: 1rem 1.125rem;
-  border-bottom: 1px solid var(--eb-border);
+  gap: 0.75rem;
 }
 
 .ps__section-label {
@@ -360,13 +452,7 @@ async function handleRequestCoach() {
   margin-bottom: 0.125rem;
 }
 
-/* ── Fields ──────────────────────────────────── */
-.ps__two-col {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.625rem;
-}
-
+/* ── Fields ────────────────────────────────── */
 .ps__field {
   display: flex;
   flex-direction: column;
@@ -387,7 +473,7 @@ async function handleRequestCoach() {
   color: var(--eb-text, #fafafa);
   font: inherit;
   font-size: 0.8125rem;
-  transition: border-color 150ms ease-out;
+  transition: border-color 150ms;
 }
 
 .ps__field input:focus {
@@ -406,52 +492,51 @@ async function handleRequestCoach() {
   letter-spacing: 0.03em;
 }
 
-/* ── Inline row (confirm + button / code + button) */
-.ps__inline-row {
+.ps__section-footer {
   display: flex;
-  align-items: flex-end;
-  gap: 0.625rem;
+  justify-content: flex-end;
+  padding-top: 0.25rem;
 }
 
-.ps__action-btn {
-  flex-shrink: 0;
+/* Action button inside sections (password, coach) */
+.ps__primary-btn {
   height: 34px;
-  padding: 0 0.875rem;
-  border: 1px solid #3f3f46;
+  padding: 0 1rem;
+  border: 1px solid rgba(200, 255, 0, 0.35);
   border-radius: var(--eb-radius-sm, 6px);
-  background: transparent;
-  color: var(--eb-text-muted, #71717a);
+  background: rgba(200, 255, 0, 0.07);
+  color: var(--eb-lime, #c8ff00);
   font-family: var(--eb-font-body, 'Nunito', sans-serif);
   font-weight: 700;
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   white-space: nowrap;
   cursor: pointer;
-  transition: border-color 150ms ease-out, color 150ms ease-out;
+  transition: background 150ms, border-color 150ms;
 }
 
-.ps__action-btn:hover:not(:disabled) {
-  border-color: #52525b;
-  color: var(--eb-text, #fafafa);
+.ps__primary-btn:hover:not(:disabled) {
+  background: rgba(200, 255, 0, 0.13);
+  border-color: rgba(200, 255, 0, 0.55);
 }
 
-.ps__action-btn:disabled {
+.ps__primary-btn:disabled {
   opacity: 0.4;
   cursor: default;
 }
 
-/* ── Footer ──────────────────────────────────── */
+/* ── Footer ────────────────────────────────── */
 .ps__footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
-  padding: 0.875rem 1.125rem;
+  padding: 0.75rem 1rem;
   border-top: 1px solid var(--eb-border);
   flex-shrink: 0;
 }
 
 .ps__lang-toggle {
-  height: 28px;
+  height: 26px;
   padding: 0 0.75rem;
   border: 1px solid #3f3f46;
   border-radius: 999px;
@@ -462,7 +547,7 @@ async function handleRequestCoach() {
   font-size: 0.6875rem;
   letter-spacing: 0.08em;
   cursor: pointer;
-  transition: border-color 150ms ease-out;
+  transition: border-color 150ms;
 }
 
 .ps__lang-toggle:hover {
@@ -480,7 +565,7 @@ async function handleRequestCoach() {
   font-weight: 700;
   font-size: 0.8125rem;
   cursor: pointer;
-  transition: background 150ms ease-out, border-color 150ms ease-out;
+  transition: background 150ms, border-color 150ms;
 }
 
 .ps__save-btn:hover:not(:disabled) {
@@ -494,17 +579,21 @@ async function handleRequestCoach() {
 }
 
 @media (max-width: 540px) {
-  .ps__two-col {
+  .ps__layout {
     grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
   }
 
-  .ps__inline-row {
-    flex-direction: column;
-    align-items: stretch;
+  .ps__nav {
+    flex-direction: row;
+    border-right: 0;
+    border-bottom: 1px solid var(--eb-border);
+    padding: 0.5rem;
+    overflow-x: auto;
   }
 
-  .ps__action-btn {
-    height: 38px;
+  .ps__nav-item {
+    white-space: nowrap;
   }
 }
 </style>
