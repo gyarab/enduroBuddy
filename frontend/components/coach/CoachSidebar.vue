@@ -199,7 +199,7 @@ function onCtxSelect(action: string) {
 
 .coach-sidebar__item {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 10px;
   width: 100%;
   padding: 10px 16px;
@@ -278,9 +278,8 @@ function onCtxSelect(action: string) {
 .coach-sidebar__name {
   flex: 1;
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  word-break: break-word;
+  line-height: 1.3;
 }
 
 .coach-sidebar__focus {
