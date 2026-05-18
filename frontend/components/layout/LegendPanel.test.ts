@@ -71,6 +71,9 @@ describe("LegendPanel", () => {
     });
     await vi.runAllTimersAsync(); // let load complete
 
+    // activate edit mode via pencil button
+    await wrapper.find(".legend-panel__edit-btn").trigger("click");
+
     const input = wrapper.find<HTMLInputElement>(".legend-panel__input");
     await input.setValue("999");
     await wrapper.vm.$nextTick();

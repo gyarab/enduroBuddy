@@ -268,7 +268,9 @@
     "panelSubtitle": "Upravuje trenér",
     "panelAthleteTitle": "Legenda — {name}",
     "panelAthleteSubtitle": "Upravuje trenér · vidí sportovec",
-    "autoSave": "Změny se ukládají automaticky"
+    "autoSave": "Změny se ukládají automaticky",
+    "edit": "Upravit",
+    "doneEditing": "Hotovo"
   },
   "invite": {
     "loading": "Načítám pozvánku...",

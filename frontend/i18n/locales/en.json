@@ -268,7 +268,9 @@
     "panelSubtitle": "Edited by coach",
     "panelAthleteTitle": "Legend — {name}",
     "panelAthleteSubtitle": "Edited by coach · seen by athlete",
-    "autoSave": "Changes are saved automatically"
+    "autoSave": "Changes are saved automatically",
+    "edit": "Edit",
+    "doneEditing": "Done"
   },
   "invite": {
     "loading": "Loading invite...",

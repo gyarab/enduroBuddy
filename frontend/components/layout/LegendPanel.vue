@@ -6,7 +6,7 @@ import { fetchLegend, saveLegend, PR_DISTANCES, type LegendPR, type LegendState 
 const props = defineProps<{
   open: boolean;
   title: string;
-  subtitle: string;
+  subtitle?: string;
   editable?: boolean;
   athleteId?: number;
 }>();
@@ -36,12 +36,16 @@ const isLoading = ref(false);
 const isSaving = ref(false);
 const loadError = ref("");
 const saveError = ref("");
+const isEditing = ref(false);
 let saveTimer: ReturnType<typeof setTimeout> | null = null;
 
 watch(
   () => props.open,
   async (open) => {
-    if (!open) return;
+    if (!open) {
+      isEditing.value = false;
+      return;
+    }
     isLoading.value = true;
     loadError.value = "";
     try {
@@ -70,7 +74,7 @@ watch(
 watch(
   draft,
   () => {
-    if (!props.open || !props.editable) return;
+    if (!props.open || !props.editable || !isEditing.value) return;
     if (saveTimer !== null) clearTimeout(saveTimer);
     saveTimer = setTimeout(async () => {
       isSaving.value = true;
@@ -91,7 +95,7 @@ async function flushSave() {
   if (saveTimer === null) return;
   clearTimeout(saveTimer);
   saveTimer = null;
-  if (!props.editable) return;
+  if (!props.editable || !isEditing.value) return;
   isSaving.value = true;
   try {
     await saveLegend(draft.value, props.athleteId);
@@ -154,11 +158,11 @@ function removePr(index: number) {
             <tr v-for="zone in ZONES" :key="zone">
               <td class="legend-panel__zone-label">{{ zone.toUpperCase() }}</td>
               <td>
-                <input v-if="editable" v-model="draft.zones[zone].from" class="legend-panel__input" />
+                <input v-if="editable && isEditing" v-model="draft.zones[zone].from" class="legend-panel__input" />
                 <span v-else>{{ draft.zones[zone].from || "—" }}</span>
               </td>
               <td>
-                <input v-if="editable" v-model="draft.zones[zone].to" class="legend-panel__input" />
+                <input v-if="editable && isEditing" v-model="draft.zones[zone].to" class="legend-panel__input" />
                 <span v-else>{{ draft.zones[zone].to || "—" }}</span>
               </td>
             </tr>
@@ -172,12 +176,12 @@ function removePr(index: number) {
         <div class="legend-panel__threshold-grid">
           <label class="legend-panel__field">
             <span class="legend-panel__label">{{ t("legend.aerobicThreshold") }}</span>
-            <input v-if="editable" v-model="draft.aerobic_threshold" class="legend-panel__input" />
+            <input v-if="editable && isEditing" v-model="draft.aerobic_threshold" class="legend-panel__input" />
             <span v-else>{{ draft.aerobic_threshold || "—" }}</span>
           </label>
           <label class="legend-panel__field">
             <span class="legend-panel__label">{{ t("legend.anaerobicThreshold") }}</span>
-            <input v-if="editable" v-model="draft.anaerobic_threshold" class="legend-panel__input" />
+            <input v-if="editable && isEditing" v-model="draft.anaerobic_threshold" class="legend-panel__input" />
             <span v-else>{{ draft.anaerobic_threshold || "—" }}</span>
           </label>
         </div>
@@ -191,22 +195,22 @@ function removePr(index: number) {
             <tr>
               <th>{{ t("legend.distance") }}</th>
               <th>{{ t("legend.time") }}</th>
-              <th v-if="editable" />
+              <th v-if="editable && isEditing" />
             </tr>
           </thead>
           <tbody>
             <tr v-for="(pr, index) in draft.prs" :key="index">
               <td>
-                <select v-if="editable" v-model="pr.distance" class="legend-panel__select">
+                <select v-if="editable && isEditing" v-model="pr.distance" class="legend-panel__select">
                   <option v-for="d in PR_DISTANCES" :key="d" :value="d">{{ d }}</option>
                 </select>
                 <span v-else>{{ pr.distance }}</span>
               </td>
               <td>
-                <input v-if="editable" v-model="pr.time" class="legend-panel__input" />
+                <input v-if="editable && isEditing" v-model="pr.time" class="legend-panel__input" />
                 <span v-else>{{ pr.time }}</span>
               </td>
-              <td v-if="editable">
+              <td v-if="editable && isEditing">
                 <button class="legend-panel__remove-btn" type="button" @click="removePr(index)">
                   {{ t("legend.removePr") }}
                 </button>
@@ -214,21 +218,42 @@ function removePr(index: number) {
             </tr>
           </tbody>
         </table>
-        <button v-if="editable" class="legend-panel__add-btn" type="button" @click="addPr">
+        <button v-if="editable && isEditing" class="legend-panel__add-btn" type="button" @click="addPr">
           {{ t("legend.addPr") }}
         </button>
       </section>
     </div>
 
     <div class="legend-panel__footer">
-      <span v-if="saveError" class="legend-panel__save-error">{{ saveError }}</span>
-      <span v-else-if="isSaving" class="legend-panel__saving">{{ t("legend.saving") }}</span>
-      <span v-else class="legend-panel__autosave">
+      <!-- Status (only visible while editing) -->
+      <span v-if="editable && isEditing && saveError" class="legend-panel__save-error">{{ saveError }}</span>
+      <span v-else-if="editable && isEditing && isSaving" class="legend-panel__saving">{{ t("legend.saving") }}</span>
+      <span v-else-if="editable && isEditing" class="legend-panel__autosave">
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
           <polyline points="20 6 9 17 4 12" />
         </svg>
         {{ t("legend.autoSave") }}
       </span>
+      <span v-else />
+
+      <!-- Pencil toggle (only when editable) -->
+      <button
+        v-if="editable"
+        class="legend-panel__edit-btn"
+        :class="{ 'legend-panel__edit-btn--active': isEditing }"
+        type="button"
+        :title="isEditing ? t('legend.doneEditing') : t('legend.edit')"
+        @click="isEditing = !isEditing"
+      >
+        <svg v-if="!isEditing" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4Z"/>
+        </svg>
+        <svg v-else width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+          <polyline points="20 6 9 17 4 12" />
+        </svg>
+        {{ isEditing ? t("legend.doneEditing") : t("legend.edit") }}
+      </button>
     </div>
   </aside>
 </template>
@@ -425,9 +450,48 @@ function removePr(index: number) {
 }
 
 .legend-panel__footer {
-  padding: 0.75rem 1.125rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.625rem 1.125rem;
   border-top: 1px solid var(--eb-border);
   flex-shrink: 0;
+}
+
+.legend-panel__edit-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  height: 28px;
+  padding: 0 0.75rem;
+  border: 1px solid #3f3f46;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--eb-text-muted, #71717a);
+  font-family: var(--eb-font-body, 'Nunito', sans-serif);
+  font-weight: 700;
+  font-size: 0.6875rem;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: color 150ms, border-color 150ms, background 150ms;
+}
+
+.legend-panel__edit-btn:hover {
+  color: #a1a1aa;
+  border-color: #52525b;
+}
+
+.legend-panel__edit-btn--active {
+  border-color: rgba(200, 255, 0, 0.4);
+  background: rgba(200, 255, 0, 0.07);
+  color: var(--eb-lime, #c8ff00);
+}
+
+.legend-panel__edit-btn--active:hover {
+  border-color: rgba(200, 255, 0, 0.6);
+  background: rgba(200, 255, 0, 0.12);
+  color: var(--eb-lime, #c8ff00);
 }
 
 .legend-panel__autosave,
