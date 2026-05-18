@@ -284,7 +284,6 @@ function onCtxSelect(action: string) {
 }
 
 .coach-sidebar__footer {
-  margin-top: auto;
   padding: 12px 16px;
   border-top: 1px solid #1e1e22;
   flex-shrink: 0;
@@ -297,21 +296,20 @@ function onCtxSelect(action: string) {
   gap: 6px;
   width: 100%;
   height: 32px;
-  border: 1px solid #3f3f46;
+  border: 1px solid rgba(200, 255, 0, 0.35);
   border-radius: 7px;
-  background: transparent;
-  color: #71717a;
+  background: rgba(200, 255, 0, 0.05);
+  color: var(--eb-lime, #c8ff00);
   font-family: var(--eb-font-body, 'Nunito', sans-serif);
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
-  transition: border-color 150ms, color 150ms, background 150ms;
+  transition: border-color 150ms, background 150ms;
 }
 
 .coach-sidebar__manage-btn:hover,
 .coach-sidebar__manage-btn--active {
-  border-color: rgba(200, 255, 0, 0.4);
-  color: var(--eb-lime, #c8ff00);
-  background: rgba(200, 255, 0, 0.06);
+  border-color: rgba(200, 255, 0, 0.6);
+  background: rgba(200, 255, 0, 0.1);
 }
 </style>
