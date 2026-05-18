@@ -339,7 +339,6 @@ async function handleAddMonth() {
     v-if="coachStore.selectedAthlete"
     :open="isLegendOpen"
     :title="t('legend.panelAthleteTitle', { name: coachStore.selectedAthlete.name })"
-    :subtitle="t('legend.panelAthleteSubtitle')"
     :athlete-id="coachStore.selectedAthlete.id"
     :editable="true"
     @close="isLegendOpen = false"

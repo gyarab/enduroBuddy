@@ -221,7 +221,6 @@ async function handleAddMonth() {
   <LegendPanel
     :open="legendStore.isPanelOpen"
     :title="t('legend.panelTitle')"
-    :subtitle="t('legend.panelSubtitle')"
     :editable="false"
     @close="legendStore.isPanelOpen = false"
   />

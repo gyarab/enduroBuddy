@@ -122,7 +122,7 @@ function removePr(index: number) {
     <div class="legend-panel__header">
       <div class="legend-panel__header-text">
         <div class="legend-panel__title">{{ title }}</div>
-        <div class="legend-panel__subtitle">{{ subtitle }}</div>
+        <div v-if="subtitle" class="legend-panel__subtitle">{{ subtitle }}</div>
       </div>
       <button class="legend-panel__close" type="button" :aria-label="t('legend.close')" @click="emit('close')">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
