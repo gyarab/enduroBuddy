@@ -94,7 +94,6 @@ function openCtxMenu(e: MouseEvent, athlete: CoachAthlete) {
 
 function ctxItems(athlete: CoachAthlete): ContextMenuItem[] {
   return [
-    { action: "go", label: t("athleteCtx.goToDashboard"), icon: "→" },
     {
       action: athlete.hidden ? "show" : "hide",
       label: athlete.hidden ? t("athleteCtx.show") : t("athleteCtx.hide"),
@@ -108,7 +107,6 @@ function onCtxSelect(action: string) {
   const athlete = ctxMenu.value.athlete;
   ctxMenu.value.open = false;
   if (!athlete) return;
-  if (action === "go") emit("goToDashboard");
   if (action === "hide") emit("toggleHidden", athlete.id, true);
   if (action === "show") emit("toggleHidden", athlete.id, false);
   if (action === "remove") emit("remove", athlete.id);
@@ -141,7 +139,7 @@ function onCtxSelect(action: string) {
         @keydown="onKeydown($event, index)"
       >
         <span class="coach-sidebar__drag-handle" aria-hidden="true">⠿</span>
-        <span class="coach-sidebar__dot" :class="{ 'coach-sidebar__dot--muted': !athlete.selected }" />
+        <span class="coach-sidebar__dot" :class="{ 'coach-sidebar__dot--active': athlete.selected }" />
         <span class="coach-sidebar__name" :title="athlete.name">{{ athlete.name }}</span>
         <span v-if="athlete.focus" class="coach-sidebar__focus">{{ athlete.focus }}</span>
       </button>
@@ -178,43 +176,48 @@ function onCtxSelect(action: string) {
 .coach-sidebar {
   display: flex;
   flex-direction: column;
-  padding: 1rem 0;
-  border: 1px solid var(--eb-border);
-  border-radius: var(--eb-radius-lg);
-  background: var(--eb-surface);
-  box-shadow: var(--eb-shadow-soft);
+  height: 100%;
+  background: #111113;
+  overflow-y: auto;
 }
 
 .coach-sidebar__header {
-  padding: 0 1rem 0.75rem;
-  color: var(--eb-text-muted);
-  font-size: 0.6875rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
+  padding: 14px 16px 10px;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
+  color: #52525b;
+  border-bottom: 1px solid #1e1e22;
+  flex-shrink: 0;
 }
 
 .coach-sidebar__list {
-  display: grid;
+  display: flex;
+  flex-direction: column;
 }
 
 .coach-sidebar__item {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 10px;
   width: 100%;
-  padding: 0.875rem 1rem;
+  padding: 10px 16px;
   border: 0;
   border-left: 2px solid transparent;
   background: transparent;
-  color: var(--eb-text-soft);
+  color: #71717a;
+  font-family: var(--eb-font-body, 'Nunito', sans-serif);
+  font-size: 13px;
+  font-weight: 600;
   text-align: left;
   cursor: pointer;
+  transition: background 120ms, color 120ms;
 }
 
 .coach-sidebar__item:hover {
-  background: var(--eb-surface-hover);
-  color: var(--eb-text);
+  background: rgba(255, 255, 255, 0.03);
+  color: #a1a1aa;
 }
 
 .coach-sidebar__item:focus-visible {
@@ -224,12 +227,12 @@ function onCtxSelect(action: string) {
 
 .coach-sidebar__item--active {
   border-left-color: var(--eb-lime);
-  background: rgba(200, 255, 0, 0.06);
-  color: var(--eb-text);
+  background: rgba(200, 255, 0, 0.04);
+  color: #fafafa;
 }
 
 .coach-sidebar__item--hidden {
-  opacity: 0.4;
+  opacity: 0.45;
 }
 
 .coach-sidebar__item--hidden .coach-sidebar__name {
@@ -246,7 +249,7 @@ function onCtxSelect(action: string) {
 
 .coach-sidebar__drag-handle {
   font-size: 0.75rem;
-  color: var(--eb-border);
+  color: #3f3f46;
   opacity: 0;
   transition: opacity 150ms;
   cursor: grab;
@@ -257,16 +260,19 @@ function onCtxSelect(action: string) {
   opacity: 1;
 }
 
+/* Dot — outlined by default, filled when active */
 .coach-sidebar__dot {
-  width: 0.5rem;
-  height: 0.5rem;
-  border-radius: 999px;
-  background: var(--eb-lime);
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  border: 1.5px solid #3f3f46;
+  background: transparent;
   flex-shrink: 0;
 }
 
-.coach-sidebar__dot--muted {
-  background: var(--eb-border);
+.coach-sidebar__dot--active {
+  background: var(--eb-lime);
+  border-color: var(--eb-lime);
 }
 
 .coach-sidebar__name {
@@ -278,44 +284,47 @@ function onCtxSelect(action: string) {
 }
 
 .coach-sidebar__focus {
-  color: var(--eb-blue);
-  font-size: 0.6875rem;
-  font-weight: 600;
+  font-size: 8px;
+  font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.08);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  border-radius: 4px;
+  padding: 2px 5px;
   flex-shrink: 0;
 }
 
 .coach-sidebar__footer {
   margin-top: auto;
-  padding: 0.75rem 0.75rem 0.5rem;
-  border-top: 1px solid var(--eb-border);
+  padding: 12px 16px;
+  border-top: 1px solid #1e1e22;
+  flex-shrink: 0;
 }
 
 .coach-sidebar__manage-btn {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  justify-content: center;
+  gap: 6px;
   width: 100%;
-  padding: 0.6rem 0.75rem;
-  border: 0;
-  border-radius: 6px;
+  height: 32px;
+  border: 1px solid #3f3f46;
+  border-radius: 7px;
   background: transparent;
-  color: var(--eb-text-muted);
+  color: #71717a;
   font-family: var(--eb-font-body, 'Nunito', sans-serif);
-  font-size: 0.8125rem;
-  font-weight: 600;
+  font-size: 12px;
+  font-weight: 700;
   cursor: pointer;
-  transition: background 150ms, color 150ms;
+  transition: border-color 150ms, color 150ms, background 150ms;
 }
 
-.coach-sidebar__manage-btn:hover {
-  background: rgba(200, 255, 0, 0.06);
-  color: var(--eb-lime, #c8ff00);
-}
-
+.coach-sidebar__manage-btn:hover,
 .coach-sidebar__manage-btn--active {
-  background: rgba(200, 255, 0, 0.08);
+  border-color: rgba(200, 255, 0, 0.4);
   color: var(--eb-lime, #c8ff00);
+  background: rgba(200, 255, 0, 0.06);
 }
 </style>
