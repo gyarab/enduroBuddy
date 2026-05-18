@@ -260,6 +260,7 @@
     "removePr": "Odebrat",
     "save": "Uložit",
     "saving": "Ukládám...",
+    "loading": "Načítám...",
     "saveError": "Nepodařilo se uložit legendu.",
     "loadError": "Nepodařilo se načíst legendu.",
     "panelTitle": "Moje legenda",

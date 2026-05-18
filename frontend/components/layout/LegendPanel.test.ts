@@ -92,4 +92,18 @@ describe("LegendPanel", () => {
     expect(wrapper.find(".legend-panel__input").exists()).toBe(false);
     expect(saveLegend).not.toHaveBeenCalled();
   });
+
+  it("does NOT auto-save when editable=false even if draft changes", async () => {
+    const { saveLegend } = await import("~/utils/api/legend");
+    const wrapper = mount(LegendPanel, {
+      props: { open: true, title: "Legenda", subtitle: "Sub", editable: false },
+    });
+    await vi.runAllTimersAsync();
+    // Directly mutate the draft via exposed ref
+    (wrapper.vm as any).draft.aerobic_threshold = "999";
+    await wrapper.vm.$nextTick();
+    vi.advanceTimersByTime(800);
+    await wrapper.vm.$nextTick();
+    expect(saveLegend).not.toHaveBeenCalled();
+  });
 });

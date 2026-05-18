@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from "vue";
+import { ref, watch, onUnmounted } from "vue";
 
 import { fetchLegend, saveLegend, PR_DISTANCES, type LegendPR, type LegendState } from "~/utils/api/legend";
 
@@ -34,6 +34,8 @@ function emptyDraft(): LegendState {
 const draft = ref<LegendState>(emptyDraft());
 const isLoading = ref(false);
 const isSaving = ref(false);
+const loadError = ref("");
+const saveError = ref("");
 let saveTimer: ReturnType<typeof setTimeout> | null = null;
 
 watch(
@@ -41,6 +43,7 @@ watch(
   async (open) => {
     if (!open) return;
     isLoading.value = true;
+    loadError.value = "";
     try {
       const data = await fetchLegend(props.athleteId);
       const s = data.state as Partial<LegendState> & { zones?: Partial<LegendState["zones"]> };
@@ -56,6 +59,8 @@ watch(
         anaerobic_threshold: s.anaerobic_threshold ?? "",
         prs: s.prs ?? [],
       };
+    } catch {
+      loadError.value = t("legend.loadError");
     } finally {
       isLoading.value = false;
     }
@@ -69,8 +74,11 @@ watch(
     if (saveTimer !== null) clearTimeout(saveTimer);
     saveTimer = setTimeout(async () => {
       isSaving.value = true;
+      saveError.value = "";
       try {
         await saveLegend(draft.value, props.athleteId);
+      } catch {
+        saveError.value = t("legend.saveError");
       } finally {
         isSaving.value = false;
       }
@@ -78,6 +86,27 @@ watch(
   },
   { deep: true }
 );
+
+async function flushSave() {
+  if (saveTimer === null) return;
+  clearTimeout(saveTimer);
+  saveTimer = null;
+  if (!props.editable) return;
+  isSaving.value = true;
+  try {
+    await saveLegend(draft.value, props.athleteId);
+  } catch {
+    // save error on unmount — nothing to show
+  } finally {
+    isSaving.value = false;
+  }
+}
+
+onUnmounted(() => {
+  flushSave();
+});
+
+defineExpose({ draft });
 
 function addPr() {
   draft.value.prs.push({ distance: PR_DISTANCES[0] as string, time: "" });
@@ -103,7 +132,10 @@ function removePr(index: number) {
     </div>
 
     <div v-if="isLoading" class="legend-panel__loading">
-      <span>{{ t("legend.loadError") }}</span>
+      <span>{{ t("legend.loading") }}</span>
+    </div>
+    <div v-else-if="loadError" class="legend-panel__load-error">
+      {{ loadError }}
     </div>
 
     <div v-else class="legend-panel__body">
@@ -165,13 +197,13 @@ function removePr(index: number) {
           <tbody>
             <tr v-for="(pr, index) in draft.prs" :key="index">
               <td>
-                <select v-if="editable" v-model="(draft.prs[index] as LegendPR).distance" class="legend-panel__select">
+                <select v-if="editable" v-model="pr.distance" class="legend-panel__select">
                   <option v-for="d in PR_DISTANCES" :key="d" :value="d">{{ d }}</option>
                 </select>
                 <span v-else>{{ pr.distance }}</span>
               </td>
               <td>
-                <input v-if="editable" v-model="(draft.prs[index] as LegendPR).time" class="legend-panel__input" />
+                <input v-if="editable" v-model="pr.time" class="legend-panel__input" />
                 <span v-else>{{ pr.time }}</span>
               </td>
               <td v-if="editable">
@@ -189,7 +221,8 @@ function removePr(index: number) {
     </div>
 
     <div class="legend-panel__footer">
-      <span v-if="isSaving" class="legend-panel__saving">{{ t("legend.saving") }}</span>
+      <span v-if="saveError" class="legend-panel__save-error">{{ saveError }}</span>
+      <span v-else-if="isSaving" class="legend-panel__saving">{{ t("legend.saving") }}</span>
       <span v-else class="legend-panel__autosave">
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
           <polyline points="20 6 9 17 4 12" />
@@ -408,5 +441,19 @@ function removePr(index: number) {
 
 .legend-panel__autosave svg {
   color: #4ade80;
+}
+
+.legend-panel__load-error {
+  padding: 1.5rem;
+  color: #f43f5e;
+  font-size: 0.875rem;
+}
+
+.legend-panel__save-error {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: #f43f5e;
+  font-size: 0.6875rem;
 }
 </style>

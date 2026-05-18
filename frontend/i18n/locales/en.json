@@ -260,6 +260,7 @@
     "removePr": "Remove",
     "save": "Save",
     "saving": "Saving...",
+    "loading": "Loading...",
     "saveError": "Could not save legend.",
     "loadError": "Could not load legend.",
     "panelTitle": "My legend",
