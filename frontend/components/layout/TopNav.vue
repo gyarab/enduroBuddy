@@ -97,7 +97,16 @@ onBeforeUnmount(() => document.removeEventListener("click", handleDocumentClick)
         </svg>
         {{ t("topNav.switchToCoach") }}
       </RouterLink>
-      <div v-if="showCoachBtn" class="nav-divider" aria-hidden="true" />
+      <div v-if="showCoachBtn && showSync" class="nav-divider" aria-hidden="true" />
+
+      <!-- Můj plán btn (coach view) — BEFORE sync -->
+      <RouterLink v-if="showMyPlanBtn" class="nav-btn nav-btn--myplan" to="/app/dashboard" :title="t('topNav.myPlan')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M8 3 4 7l4 4"/><path d="M4 7h16"/><path d="M16 21l4-4-4-4"/><path d="M20 17H4"/>
+        </svg>
+        {{ t("topNav.myPlan") }}
+      </RouterLink>
+      <div v-if="showMyPlanBtn && showSync" class="nav-divider" aria-hidden="true" />
 
       <!-- Sync btn (Garmin enabled) -->
       <button v-if="showSync" class="nav-btn nav-btn--sync" type="button" :title="t('imports.open')" @click="isGarminOpen = true">
@@ -108,7 +117,7 @@ onBeforeUnmount(() => document.removeEventListener("click", handleDocumentClick)
           <path d="M3 21v-5h5"/>
         </svg>
       </button>
-      <div v-if="showSync" class="nav-divider" aria-hidden="true" />
+      <div v-if="showLegendBtn && showSync" class="nav-divider" aria-hidden="true" />
 
       <!-- Legend btn (athlete view only) -->
       <button v-if="showLegendBtn" class="nav-btn nav-btn--legend" type="button" :title="t('legend.button')" @click="legendStore.isPanelOpen = true">
@@ -117,15 +126,6 @@ onBeforeUnmount(() => document.removeEventListener("click", handleDocumentClick)
           <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
         </svg>
       </button>
-
-      <!-- Můj plán btn (coach view) -->
-      <RouterLink v-if="showMyPlanBtn" class="nav-btn nav-btn--myplan" to="/app/dashboard" :title="t('topNav.myPlan')">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M8 3 4 7l4 4"/><path d="M4 7h16"/><path d="M16 21l4-4-4-4"/><path d="M20 17H4"/>
-        </svg>
-        {{ t("topNav.myPlan") }}
-      </RouterLink>
-      <div v-if="showMyPlanBtn && showSync" class="nav-divider" aria-hidden="true" />
 
       <!-- Avatar -->
       <div v-if="authStore.isAuthenticated" ref="profileRootRef" class="nav-profile">
