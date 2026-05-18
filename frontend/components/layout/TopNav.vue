@@ -100,7 +100,7 @@ onBeforeUnmount(() => document.removeEventListener("click", handleDocumentClick)
       <div v-if="showCoachBtn && showSync" class="nav-divider" aria-hidden="true" />
 
       <!-- Můj plán btn (coach view) — BEFORE sync -->
-      <RouterLink v-if="showMyPlanBtn" class="nav-btn nav-btn--myplan" to="/app/dashboard" :title="t('topNav.myPlan')">
+      <RouterLink v-if="showMyPlanBtn" class="nav-btn nav-btn--myplan" to="/dashboard" :title="t('topNav.myPlan')">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M8 3 4 7l4 4"/><path d="M4 7h16"/><path d="M16 21l4-4-4-4"/><path d="M20 17H4"/>
         </svg>
